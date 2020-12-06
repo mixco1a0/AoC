@@ -32,7 +32,35 @@ namespace _2020
 
         protected override void RunPart2Solution(List<string>inputs)
         {
-            LogAnswer("NA");
+            int count = 0;
+            List<string> sharedInput = new List<string>();
+            bool newGroup = true;
+            foreach (string input in inputs)
+            {
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    // group end
+                    Debug($"group count = {sharedInput.Count()}");
+                    count += sharedInput.Count();
+                    sharedInput.Clear();
+                    newGroup = true;
+                    continue;
+                }
+                
+                var cur = input.ToCharArray().Select(c => c.ToString());
+                if (newGroup)
+                {
+                    sharedInput = cur.ToList();
+                    newGroup = false;
+                }
+                else
+                {
+                    sharedInput = sharedInput.Intersect(cur).ToList();
+                }
+                
+            }
+            count += sharedInput.Count();
+            LogAnswer($"{count}");
         }
     }
 }
