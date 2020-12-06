@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 
 namespace _2020
 {
@@ -33,13 +32,16 @@ namespace _2020
                 {
                     continue;
                 }
+                
+                string letter = split[2];
+                string password = split[3];
 
-                string removedLetters = split[3].Replace(split[2], "");
-                int diff = split[3].Length - removedLetters.Length;
+                string removedLetters = password.Replace(letter, "");
+                int diff = password.Length - removedLetters.Length;
                 if (diff >= min && diff <= max)
                 {
                     ++validPasswords;
-                    //Debug($"Valid password found: {input} [{split[2]} was found {diff} times]");
+                    //Debug($"Valid password found: {input} [{letter} was found {diff} times]");
                 }
             }
             
