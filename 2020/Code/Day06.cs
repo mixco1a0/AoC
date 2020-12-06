@@ -40,7 +40,6 @@ namespace _2020
                 if (string.IsNullOrWhiteSpace(input))
                 {
                     // group end
-                    Debug($"group count = {sharedInput.Count()}");
                     count += sharedInput.Count();
                     sharedInput.Clear();
                     newGroup = true;
