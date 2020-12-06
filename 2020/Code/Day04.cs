@@ -2,7 +2,6 @@ using System.Globalization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 
 namespace _2020
 {
@@ -65,7 +64,7 @@ namespace _2020
         private bool CheckIsValid(string passportData)
         {
             List<string> requiredFields = new List<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
-            Dictionary<string, string> fields = passportData.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToDictionary(str => str.Substring(0, 3));
+            Dictionary<string, string> fields = passportData.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToDictionary(str => str[0..3]);
             foreach(string requiredField in requiredFields)
             {
                 if (!fields.ContainsKey(requiredField))
@@ -79,9 +78,9 @@ namespace _2020
         private bool CheckIsValidStringent(string passportData)
         {
             Dictionary<string, Func<string, bool>> requiredFieldChecks = new Dictionary<string, Func<string, bool>>();
-            requiredFieldChecks["byr"] = CheckIsValidBYR;
-            requiredFieldChecks["iyr"] = CheckIsValidIYR;
-            requiredFieldChecks["eyr"] = CheckIsValidEYR;
+            requiredFieldChecks["byr"] = val => CheckIsValid(val, 4, 1920, 2002);
+            requiredFieldChecks["iyr"] = val => CheckIsValid(val, 4, 2010, 2020);
+            requiredFieldChecks["eyr"] = val => CheckIsValid(val, 4, 2020, 2030);
             requiredFieldChecks["hgt"] = CheckIsValidHGT;
             requiredFieldChecks["hcl"] = CheckIsValidHCL;
             requiredFieldChecks["ecl"] = CheckIsValidECL;
@@ -102,36 +101,6 @@ namespace _2020
             return true;
         }
 
-        private bool CheckIsValidBYR(string val)
-        {
-            int year;
-            if (val.Length != 4 || !int.TryParse(val, out year))
-            {
-                return false;
-            }
-            return year >= 1920 && year <= 2002;
-        }
-
-        private bool CheckIsValidIYR(string val)
-        {
-            int year;
-            if (val.Length != 4 || !int.TryParse(val, out year))
-            {
-                return false;
-            }
-            return year >= 2010 && year <= 2020;
-        }
-
-        private bool CheckIsValidEYR(string val)
-        {
-            int year;
-            if (val.Length != 4 || !int.TryParse(val, out year))
-            {
-                return false;
-            }
-            return year >= 2020 && year <= 2030;
-        }
-
         struct MinMax
         {
             public int min;
@@ -139,11 +108,21 @@ namespace _2020
             public bool InRange(int val) { return val >= min && val <= max;}
         };
 
+        private bool CheckIsValid(string val, int len, int min, int max)
+        {
+            int valInt;
+            if (val.Length != len || !int.TryParse(val, out valInt))
+            {
+                return false;
+            }
+            return new MinMax{min=min, max=max}.InRange(valInt);
+        }
+
         private bool CheckIsValidHGT(string val)
         {
             Dictionary<string, MinMax> valids = new Dictionary<string, MinMax>{{"cm", new MinMax{min=150, max=193}},{"in", new MinMax{min=59, max=76}}};
-            string height = val.Substring(0, val.Length-2);
-            string unit = val.Substring(val.Length-2);
+            string height = val[0..^2];
+            string unit = val[^2..];
             int heightVal;
             if (!valids.Keys.Contains(unit) || !int.TryParse(height, out heightVal))
             {
@@ -159,7 +138,7 @@ namespace _2020
                 return false;
             }
 
-            string code = val.Substring(1);
+            string code = val[1..];
             int hex;
             if (code.Length != 6 || !int.TryParse(code, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out hex))
             {
@@ -170,7 +149,7 @@ namespace _2020
 
         private bool CheckIsValidECL(string val)
         {
-            List<string> valids = new List<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
+            HashSet<string> valids = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
             return valids.Contains(val);
         }
 

@@ -14,15 +14,10 @@ namespace _2020
             int highestId = 0;
             foreach (string input in inputs)
             {
-                string row = input.Substring(0, 7).Replace('F', '0').Replace('B', '1');
-                int rowVal = Convert.ToInt32(row, 2);
-                
-                string col = input.Substring(7).Replace('L', '0').Replace('R', '1');
-                int colVal = Convert.ToInt32(col, 2);
-
-                highestId = Math.Max(highestId, rowVal * 8 + colVal);
+                string binary = input.Replace('F', '0').Replace('B', '1').Replace('L', '0').Replace('R', '1');
+                highestId = Math.Max(highestId, Convert.ToInt32(binary, 2));
             }
-            LogAnswer($"{highestId} highest id");
+            LogAnswer($"highest id is {highestId}");
         }
 
         protected override void RunPart2Solution(List<string>inputs)
@@ -30,19 +25,14 @@ namespace _2020
             HashSet<int> ids = new HashSet<int>();
             foreach (string input in inputs)
             {
-                string row = input.Substring(0, 7).Replace('F', '0').Replace('B', '1');
-                int rowVal = Convert.ToInt32(row, 2);
-                
-                string col = input.Substring(7).Replace('L', '0').Replace('R', '1');
-                int colVal = Convert.ToInt32(col, 2);
-
-                ids.Add(rowVal * 8 + colVal);
+                string binary = input.Replace('F', '0').Replace('B', '1').Replace('L', '0').Replace('R', '1');
+                ids.Add(Convert.ToInt32(binary, 2));
             }
             foreach(int id in ids)
             {
                 if (!ids.Contains(id + 1) && ids.Contains(id + 2))
                 {
-                    LogAnswer($"{id+1} my id");
+                    LogAnswer($"my id is {id+1}");
                 }
             }
         }
