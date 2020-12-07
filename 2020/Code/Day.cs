@@ -7,13 +7,23 @@ namespace _2020
 {
     abstract class Day
     {
+        private enum RunType
+        {
+            Example,
+            Problem
+        }
+
         private string m_logID;
 
         protected abstract string GetDay();
-        protected abstract void RunPart1Solution(List<string> inputs);
-        protected abstract void RunPart2Solution(List<string> inputs);
+        protected abstract string GetPart1ExampleInput();
+        protected abstract string GetPart1ExampleAnswer();
+        protected abstract string RunPart1Solution(List<string> inputs);
+        protected abstract string GetPart2ExampleInput();
+        protected abstract string GetPart2ExampleAnswer();
+        protected abstract string RunPart2Solution(List<string> inputs);
 
-        private string DefaultLogID { get { return new string('.', 19); }}
+        private string DefaultLogID { get { return new string('.', 19); } }
 
         protected Day()
         {
@@ -29,49 +39,53 @@ namespace _2020
             }
         }
 
+        private delegate void RunPartX(RunType runType, List<string> inputs);
+
         private void Run()
         {
-            SharedRun(false /* run example */);
-
-            // break up the logs a bit
-            LogFiller();
-            LogFiller();
-
-            SharedRun(true  /* run problem */);
-        }
-
-        private void SharedRun(bool isProblem)
-        {
-            string fileName = string.Format("{0}{1}{2}", GetDay(), isProblem ? "" : "_example", ".txt");
-            m_logID = string.Format("{0}|{1}|partX", GetDay(), isProblem ? "problem" : "example");
-
+            // file input
+            string fileName = string.Format("{0}.txt", GetDay());
             string inputFile = Path.Combine(Directory.GetCurrentDirectory(), "Data", fileName);
-            string[] rawFileRead = File.ReadAllText(inputFile).Split('\n').Select(str => str.Trim('\r')).ToArray();
+            IEnumerable<string> rawFileRead = File.ReadAllText(inputFile).Split('\n').Select(str => str.Trim('\r'));
 
-            List<string> inputs = rawFileRead.ToList();
-            Timer timer = new Timer();
-            timer.Start();
-            RunPart1(inputs);
-            timer.Stop();
-            Log($"{timer.Print()}");
-            LogFiller();
+            // run part 1
+            IEnumerable<string> part1ExampleInput = GetPart1ExampleInput().Split('\n').Select(str => str.Trim('\r'));
+            SharedRun(RunPart1, part1ExampleInput, rawFileRead);
 
-            inputs = rawFileRead.ToList();
-            timer.Start();
-            RunPart2(inputs);
-            timer.Stop();
-            Log($"{timer.Print()}");
-            LogFiller();
+            // run part 2
+            IEnumerable<string> part2ExampleInput = GetPart1ExampleInput().Split('\n').Select(str => str.Trim('\r'));
+            SharedRun(RunPart2, part2ExampleInput, rawFileRead);
 
+            // reset logging
             m_logID = DefaultLogID;
         }
-        
-        private void RunPart1(List<string> inputs)
+
+        private void SharedRun(RunPartX runPartX, IEnumerable<string> exampleInput, IEnumerable<string> problemInput)
         {
-            m_logID = $"{m_logID[0..^1]}1";
+            runPartX(RunType.Example, exampleInput.ToList());
+            LogFiller();
+            Timer timer = new Timer();
+            timer.Start();
+            runPartX(RunType.Problem, problemInput.ToList());
+            timer.Stop();
+            Log($"{timer.Print()}");
+            LogFiller();
+        }
+
+        private void RunPart1(RunType runType, List<string> inputs)
+        {
+            m_logID = string.Format("{0}|{1}|part1", GetDay(), runType == RunType.Problem ? "problem" : "example");
             try
             {
-                RunPart1Solution(inputs);
+                string answer = RunPart1Solution(inputs);
+                if (runType == RunType.Example && answer != GetPart1ExampleAnswer())
+                {
+                    LogAnswer($"[ERROR] Expected: {GetPart1ExampleAnswer()} - Actual: {answer} [ERROR]");
+                }
+                else
+                {
+                    LogAnswer(answer);
+                }
             }
             catch (Exception e)
             {
@@ -79,13 +93,21 @@ namespace _2020
                 Log($"{e.StackTrace.Split('\r').FirstOrDefault()}");
             }
         }
-        
-        private void RunPart2(List<string>inputs)
+
+        private void RunPart2(RunType runType, List<string> inputs)
         {
-            m_logID = $"{m_logID[0..^1]}2";
+            m_logID = string.Format("{0}|{1}|part2", GetDay(), runType == RunType.Problem ? "problem" : "example");
             try
             {
-                RunPart2Solution(inputs);
+                string answer = RunPart2Solution(inputs);
+                if (runType == RunType.Example && answer != GetPart2ExampleAnswer())
+                {
+                    LogAnswer($"[ERROR] Expected: {GetPart2ExampleAnswer()} - Actual: {answer} [ERROR]");
+                }
+                else
+                {
+                    LogAnswer(answer);
+                }
             }
             catch (Exception e)
             {
@@ -104,17 +126,17 @@ namespace _2020
             Console.WriteLine($"[{DefaultLogID}]");
         }
 
-        protected void Debug(string log)
-        {
-            Console.WriteLine($"[{m_logID}] \t{log}");
-        }
-
-        protected void LogAnswer(string answer)
+        private void LogAnswer(string answer)
         {
             string buffer = new string('*', answer.Length);
             Console.WriteLine($"[{m_logID}] *****{buffer}*****");
             Console.WriteLine($"[{m_logID}] ***  {answer}  ***");
             Console.WriteLine($"[{m_logID}] *****{buffer}*****");
+        }
+
+        protected void Debug(string log)
+        {
+            Console.WriteLine($"[{m_logID}] \t{log}");
         }
     }
 }
