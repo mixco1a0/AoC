@@ -6,14 +6,22 @@ namespace _2020
 {
     class Day02 : Day
     {
-        public Day02() : base() {}
-        
+        public Day02() : base() { }
+
         protected override string GetDay() { return nameof(Day02).ToLower(); }
 
-        protected override void RunPart1Solution(List<string> inputs)
+        protected override string GetPart1ExampleInput()
+        {
+            return
+@"1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc";
+        }
+        protected override string GetPart1ExampleAnswer() { return "2"; }
+        protected override string RunPart1Solution(List<string> inputs)
         {
             int validPasswords = 0;
-            foreach(string input in inputs)
+            foreach (string input in inputs)
             {
                 string[] split = input.Split("-: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 if (split.Length != 4)
@@ -32,7 +40,7 @@ namespace _2020
                 {
                     continue;
                 }
-                
+
                 string letter = split[2];
                 string password = split[3];
 
@@ -44,14 +52,19 @@ namespace _2020
                     //Debug($"Valid password found: {input} [{letter} was found {diff} times]");
                 }
             }
-            
-            LogAnswer($"{validPasswords} valid passwords");
+
+            return validPasswords.ToString();
         }
 
-        protected override void RunPart2Solution(List<string>inputs)
+        protected override string GetPart2ExampleInput()
+        {
+            return GetPart1ExampleInput();
+        }
+        protected override string GetPart2ExampleAnswer() { return "1"; }
+        protected override string RunPart2Solution(List<string> inputs)
         {
             int validPasswords = 0;
-            foreach(string input in inputs)
+            foreach (string input in inputs)
             {
                 string[] split = input.Split("-: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 if (split.Length != 4)
@@ -94,8 +107,8 @@ namespace _2020
                     //Debug($"Valid password found: {input} [{letter} was found at index {idx2+1}]");
                 }
             }
-            
-            LogAnswer($"{validPasswords} valid passwords");
+
+            return validPasswords.ToString();
         }
     }
 }

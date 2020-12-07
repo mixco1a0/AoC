@@ -5,16 +5,37 @@ namespace _2020
 {
     class Day03 : Day
     {
-        public Day03() : base() {}
+        public Day03() : base() { }
 
         protected override string GetDay() { return nameof(Day03).ToLower(); }
 
-        protected override void RunPart1Solution(List<string> inputs)
+        protected override string GetPart1ExampleInput()
         {
-            LogAnswer($"{SlopeCheck(3, 1, inputs)} trees");
+            return
+@"..##.......
+#...#...#..
+.#....#..#.
+..#.#...#.#
+.#...##..#.
+..#.##.....
+.#.#.#....#
+.#........#
+#.##...#...
+#...##....#
+.#..#...#.#";
+        }
+        protected override string GetPart1ExampleAnswer() { return "7"; }
+        protected override string RunPart1Solution(List<string> inputs)
+        {
+            return $"{SlopeCheck(3, 1, inputs)}";
         }
 
-        protected override void RunPart2Solution(List<string> inputs)
+        protected override string GetPart2ExampleInput()
+        {
+            return GetPart1ExampleInput();
+        }
+        protected override string GetPart2ExampleAnswer() { return "336"; }
+        protected override string RunPart2Solution(List<string> inputs)
         {
             /*
             Right 1, down 1.
@@ -25,21 +46,21 @@ namespace _2020
             */
 
             long a = SlopeCheck(1, 1, inputs);
-            Debug($"Saw {a} trees.");
+            //Debug($"Saw {a} trees.");
 
             long b = SlopeCheck(3, 1, inputs);
-            Debug($"Saw {b} trees.");
+            //Debug($"Saw {b} trees.");
 
             long c = SlopeCheck(5, 1, inputs);
-            Debug($"Saw {c} trees.");
+            //Debug($"Saw {c} trees.");
 
             long d = SlopeCheck(7, 1, inputs);
-            Debug($"Saw {d} trees.");
+            //Debug($"Saw {d} trees.");
 
             long e = SlopeCheck(1, 2, inputs);
-            Debug($"Saw {e} trees.");
+            //Debug($"Saw {e} trees.");
 
-            LogAnswer($"{a*b*c*d*e} trees");
+            return $"{a * b * c * d * e}";
         }
 
         private int SlopeCheck(int rightStep, int downStep, List<string> inputs)

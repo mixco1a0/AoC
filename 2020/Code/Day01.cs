@@ -4,11 +4,22 @@ namespace _2020
 {
     class Day01 : Day
     {
-        public Day01() : base() {}
-        
+        public Day01() : base() { }
+
         protected override string GetDay() { return nameof(Day01).ToLower(); }
 
-        protected override void RunPart1Solution(List<string> inputs)
+        protected override string GetPart1ExampleInput()
+        {
+            return
+@"1721
+979
+366
+299
+675
+1456";
+        }
+        protected override string GetPart1ExampleAnswer() { return "514579"; }
+        protected override string RunPart1Solution(List<string> inputs)
         {
             inputs.Sort();
             for (int i = 0; i < inputs.Count; ++i)
@@ -34,14 +45,20 @@ namespace _2020
 
                     if (inputI + inputJ == 2020)
                     {
-                        LogAnswer($"{inputI * inputJ}");
-                        return;
+                        return $"{inputI * inputJ}";
                     }
                 }
             }
+
+            return "";
         }
 
-        protected override void RunPart2Solution(List<string>inputs)
+        protected override string GetPart2ExampleInput()
+        {
+            return GetPart1ExampleInput();
+        }
+        protected override string GetPart2ExampleAnswer() { return "241861950"; }
+        protected override string RunPart2Solution(List<string> inputs)
         {
             inputs.Sort();
             for (int i = 0; i < inputs.Count; ++i)
@@ -70,12 +87,13 @@ namespace _2020
 
                         if (inputI + inputJ + inputK == 2020)
                         {
-                            LogAnswer($"{inputI * inputJ * inputK}");
-                            return;
+                            return $"{inputI * inputJ * inputK}";
                         }
                     }
                 }
             }
+
+            return "";
         }
     }
 }
