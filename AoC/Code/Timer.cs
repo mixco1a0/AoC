@@ -23,7 +23,6 @@ namespace AoC
         {
             if (m_stopwatch != null)
             {
-                //return $"Elapsed: {m_stopwatch.Elapsed.TotalMilliseconds} (ms) [{m_stopwatch.Elapsed.Ticks} (ticks)]";
                 return $"Elapsed: {m_stopwatch.Elapsed.TotalMilliseconds} (ms)";
             }
 

@@ -2,11 +2,11 @@
 
 using System.Collections.Generic;
 
-namespace _AoC
+namespace _AoC.YYYY
 {
     class DayXX : Day
     {
-        public DayXX() : base() {}
+        public DayXX() : base("YYYY") {}
         
         protected override string GetDay() { return nameof(DayXX).ToLower(); }
 

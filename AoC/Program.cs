@@ -1,16 +1,20 @@
-﻿namespace AoC
+﻿using System;
+
+namespace AoC
 {
     class Program
     {
         static void Main(string[] args)
         {
-            new Day01();
-            new Day02();
-            new Day03();
-            new Day04();
-            new Day05();
-            new Day06();
-            new Day07();
+            Console.WriteLine("");
+            
+            new _2020.Day01();
+            new _2020.Day02();
+            new _2020.Day03();
+            new _2020.Day04();
+            new _2020.Day05();
+            new _2020.Day06();
+            new _2020.Day07();
         }
     }
 }
