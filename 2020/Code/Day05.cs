@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace _2020
+namespace AoC
 {
     class Day05 : Day
     {
@@ -9,11 +9,13 @@ namespace _2020
 
         protected override string GetDay() { return "day05"; }
 
-        protected override string GetPart1ExampleInput()
+        protected override List<TestDatum> GetTestData()
         {
-            return @"FBFBBFFRLR";
+            List<TestDatum> testData = new List<TestDatum>();
+            testData.Add(new TestDatum { TestPart = TestPart.One, Output = "357", RawInput = "FBFBBFFRLR" });
+            return testData;
         }
-        protected override string GetPart1ExampleAnswer() { return "357"; }
+
         protected override string RunPart1Solution(List<string> inputs)
         {
             int highestId = 0;
@@ -25,11 +27,6 @@ namespace _2020
             return highestId.ToString();
         }
 
-        protected override string GetPart2ExampleInput()
-        {
-            return @"";
-        }
-        protected override string GetPart2ExampleAnswer() { return ""; }
         protected override string RunPart2Solution(List<string> inputs)
         {
             HashSet<int> ids = new HashSet<int>();

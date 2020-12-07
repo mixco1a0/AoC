@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace _2020
+namespace AoC
 {
     class Day03 : Day
     {
@@ -9,9 +9,14 @@ namespace _2020
 
         protected override string GetDay() { return nameof(Day03).ToLower(); }
 
-        protected override string GetPart1ExampleInput()
+        protected override List<TestDatum> GetTestData()
         {
-            return
+            List<TestDatum> testData = new List<TestDatum>();
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.One,
+                Output = "7",
+                RawInput =
 @"..##.......
 #...#...#..
 .#....#..#.
@@ -22,19 +27,33 @@ namespace _2020
 .#........#
 #.##...#...
 #...##....#
-.#..#...#.#";
+.#..#...#.#"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "336",
+                RawInput =
+@"..##.......
+#...#...#..
+.#....#..#.
+..#.#...#.#
+.#...##..#.
+..#.##.....
+.#.#.#....#
+.#........#
+#.##...#...
+#...##....#
+.#..#...#.#"
+            });
+            return testData;
         }
-        protected override string GetPart1ExampleAnswer() { return "7"; }
+
         protected override string RunPart1Solution(List<string> inputs)
         {
             return $"{SlopeCheck(3, 1, inputs)}";
         }
 
-        protected override string GetPart2ExampleInput()
-        {
-            return GetPart1ExampleInput();
-        }
-        protected override string GetPart2ExampleAnswer() { return "336"; }
         protected override string RunPart2Solution(List<string> inputs)
         {
             /*

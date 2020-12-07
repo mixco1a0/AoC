@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace _2020
+namespace AoC
 {
     class Day04 : Day
     {
@@ -11,9 +11,14 @@ namespace _2020
 
         protected override string GetDay() { return nameof(Day04).ToLower(); }
 
-        protected override string GetPart1ExampleInput()
+        protected override List<TestDatum> GetTestData()
         {
-            return
+            List<TestDatum> testData = new List<TestDatum>();
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.One,
+                Output = "2",
+                RawInput =
 @"ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
 byr:1937 iyr:2017 cid:147 hgt:183cm
 
@@ -26,9 +31,48 @@ ecl:brn pid:760753108 byr:1931
 hgt:179cm
 
 hcl:#cfa07d eyr:2025 pid:166559648
-iyr:2011 ecl:brn hgt:59in";
+iyr:2011 ecl:brn hgt:59in"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "0",
+                RawInput =
+@"eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "4",
+                RawInput =
+@"pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
+            });
+            return testData;
         }
-        protected override string GetPart1ExampleAnswer() { return "2"; }
+
         protected override string RunPart1Solution(List<string> inputs)
         {
             int validPassports = 0;
@@ -54,38 +98,6 @@ iyr:2011 ecl:brn hgt:59in";
             return validPassports.ToString();
         }
 
-        // TODO: this is getting the wrong answer
-        protected override string GetPart2ExampleInput()
-        {
-            return
-@"eyr:1972 cid:100
-hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
-
-iyr:2019
-hcl:#602927 eyr:1967 hgt:170cm
-ecl:grn pid:012533040 byr:1946
-
-hcl:dab227 iyr:2012
-ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
-
-hgt:59cm ecl:zzz
-eyr:2038 hcl:74454a iyr:2023
-pid:3556412378 byr:2007
-
-pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
-hcl:#623a2f
-
-eyr:2029 ecl:blu cid:129 byr:1989
-iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
-
-hcl:#888785
-hgt:164cm byr:2001 iyr:2015 cid:88
-pid:545766238 ecl:hzl
-eyr:2022
-
-iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
-        }
-        protected override string GetPart2ExampleAnswer() { return "4"; }
         protected override string RunPart2Solution(List<string> inputs)
         {
             int validPassports = 0;
@@ -151,12 +163,6 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
             return true;
         }
 
-        struct MinMax
-        {
-            public int min;
-            public int max;
-            public bool InRange(int val) { return val >= min && val <= max; }
-        };
 
         private bool CheckIsValid(string val, int len, int min, int max)
         {
@@ -165,12 +171,12 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
             {
                 return false;
             }
-            return new MinMax { min = min, max = max }.InRange(valInt);
+            return new MinMax { Min = min, Max = max }.GTE_LTE(valInt);
         }
 
         private bool CheckIsValidHGT(string val)
         {
-            Dictionary<string, MinMax> valids = new Dictionary<string, MinMax> { { "cm", new MinMax { min = 150, max = 193 } }, { "in", new MinMax { min = 59, max = 76 } } };
+            Dictionary<string, MinMax> valids = new Dictionary<string, MinMax> { { "cm", new MinMax { Min = 150, Max = 193 } }, { "in", new MinMax { Min = 59, Max = 76 } } };
             string height = val[0..^2];
             string unit = val[^2..];
             int heightVal;
@@ -178,7 +184,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
             {
                 return false;
             }
-            return valids[unit].InRange(heightVal);
+            return valids[unit].GTE_LTE(heightVal);
         }
 
         private bool CheckIsValidHCL(string val)
