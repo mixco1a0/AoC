@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace _2020
+namespace AoC
 {
     class Day01 : Day
     {
@@ -8,17 +8,35 @@ namespace _2020
 
         protected override string GetDay() { return nameof(Day01).ToLower(); }
 
-        protected override string GetPart1ExampleInput()
+        protected override List<TestDatum> GetTestData()
         {
-            return
+            List<TestDatum> testData = new List<TestDatum>();
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.One,
+                Output = "514579",
+                RawInput =
 @"1721
 979
 366
 299
 675
-1456";
+1456"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "241861950",
+                RawInput =
+@"1721
+979
+366
+299
+675
+1456"
+            });
+            return testData;
         }
-        protected override string GetPart1ExampleAnswer() { return "514579"; }
         protected override string RunPart1Solution(List<string> inputs)
         {
             inputs.Sort();
@@ -53,11 +71,6 @@ namespace _2020
             return "";
         }
 
-        protected override string GetPart2ExampleInput()
-        {
-            return GetPart1ExampleInput();
-        }
-        protected override string GetPart2ExampleAnswer() { return "241861950"; }
         protected override string RunPart2Solution(List<string> inputs)
         {
             inputs.Sort();

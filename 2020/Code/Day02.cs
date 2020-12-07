@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace _2020
+namespace AoC
 {
     class Day02 : Day
     {
@@ -10,14 +10,30 @@ namespace _2020
 
         protected override string GetDay() { return nameof(Day02).ToLower(); }
 
-        protected override string GetPart1ExampleInput()
+        protected override List<TestDatum> GetTestData()
         {
-            return
+            List<TestDatum> testData = new List<TestDatum>();
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.One,
+                Output = "2",
+                RawInput =
 @"1-3 a: abcde
 1-3 b: cdefg
-2-9 c: ccccccccc";
+2-9 c: ccccccccc"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "1",
+                RawInput =
+@"1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc"
+            });
+            return testData;
         }
-        protected override string GetPart1ExampleAnswer() { return "2"; }
+
         protected override string RunPart1Solution(List<string> inputs)
         {
             int validPasswords = 0;
@@ -56,11 +72,6 @@ namespace _2020
             return validPasswords.ToString();
         }
 
-        protected override string GetPart2ExampleInput()
-        {
-            return GetPart1ExampleInput();
-        }
-        protected override string GetPart2ExampleAnswer() { return "1"; }
         protected override string RunPart2Solution(List<string> inputs)
         {
             int validPasswords = 0;

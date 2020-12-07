@@ -1,5 +1,5 @@
 using System.Diagnostics;
-namespace _2020
+namespace AoC
 {
     public class Timer
     {
@@ -23,7 +23,8 @@ namespace _2020
         {
             if (m_stopwatch != null)
             {
-                return $"Elapsed: {m_stopwatch.Elapsed.ToString(@"m\:ss\.fff")} [{m_stopwatch.Elapsed.Ticks}]";
+                //return $"Elapsed: {m_stopwatch.Elapsed.TotalMilliseconds} (ms) [{m_stopwatch.Elapsed.Ticks} (ticks)]";
+                return $"Elapsed: {m_stopwatch.Elapsed.TotalMilliseconds} (ms)";
             }
 
             return "[Error] Not Running.";

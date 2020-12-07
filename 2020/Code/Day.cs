@@ -1,35 +1,43 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 
-namespace _2020
+namespace AoC
 {
     abstract class Day
     {
         private enum RunType
         {
-            Example,
+            Testing,
             Problem
         }
 
-        private string m_logID;
-
+        #region Required Overrides
         protected abstract string GetDay();
-        protected abstract string GetPart1ExampleInput();
-        protected abstract string GetPart1ExampleAnswer();
+        protected abstract List<TestDatum> GetTestData();
         protected abstract string RunPart1Solution(List<string> inputs);
-        protected abstract string GetPart2ExampleInput();
-        protected abstract string GetPart2ExampleAnswer();
         protected abstract string RunPart2Solution(List<string> inputs);
+        #endregion
 
         private string DefaultLogID { get { return new string('.', 19); } }
+
+        private string m_logID;
+        private Dictionary<string, List<TestDatum>> m_testData;
+        private Dictionary<TestPart, Func<List<string>, string>> m_partSpecificFunctions;
 
         protected Day()
         {
             try
             {
                 m_logID = DefaultLogID;
+                m_testData = new Dictionary<string, List<TestDatum>>();
+                m_testData[GetDay()] = GetTestData();
+                m_partSpecificFunctions = new Dictionary<TestPart, Func<List<string>, string>>
+                {
+                    {TestPart.One, RunPart1Solution},
+                    {TestPart.Two, RunPart2Solution}
+                };
                 Run();
             }
             catch (Exception e)
@@ -39,74 +47,61 @@ namespace _2020
             }
         }
 
-        private delegate void RunPartX(RunType runType, List<string> inputs);
-
         private void Run()
         {
             // file input
             string fileName = string.Format("{0}.txt", GetDay());
             string inputFile = Path.Combine(Directory.GetCurrentDirectory(), "Data", fileName);
-            IEnumerable<string> rawFileRead = File.ReadAllText(inputFile).Split('\n').Select(str => str.Trim('\r'));
+            IEnumerable<string> rawFileRead = Util.ConvertInputToList(File.ReadAllText(inputFile));
 
             // run part 1
-            IEnumerable<string> part1ExampleInput = GetPart1ExampleInput().Split('\n').Select(str => str.Trim('\r'));
-            SharedRun(RunPart1, part1ExampleInput, rawFileRead);
+            RunAll(TestPart.One, rawFileRead);
 
             // run part 2
-            IEnumerable<string> part2ExampleInput = GetPart1ExampleInput().Split('\n').Select(str => str.Trim('\r'));
-            SharedRun(RunPart2, part2ExampleInput, rawFileRead);
+            RunAll(TestPart.Two, rawFileRead);
 
             // reset logging
             m_logID = DefaultLogID;
         }
 
-        private void SharedRun(RunPartX runPartX, IEnumerable<string> exampleInput, IEnumerable<string> problemInput)
+        private void RunAll(TestPart testPart, IEnumerable<string> problemInput)
         {
-            runPartX(RunType.Example, exampleInput.ToList());
-            LogFiller();
+            // get test data if there is any
+            IEnumerable<KeyValuePair<IEnumerable<string>, string>> partSpecificTestData = m_testData[GetDay()]
+                .Where(datum => datum.TestPart == testPart)
+                .Select(datum => new KeyValuePair<IEnumerable<string>, string>(datum.Input, datum.Output));
+
+            // run tests if there any
+            foreach (var pair in partSpecificTestData)
+            {
+                RunPart(RunType.Testing, testPart, pair.Key.ToList(), pair.Value);
+                LogFiller();
+            }
+
+            // run problem
             Timer timer = new Timer();
             timer.Start();
-            runPartX(RunType.Problem, problemInput.ToList());
+            RunPart(RunType.Problem, testPart, problemInput.ToList(), "");
             timer.Stop();
+
+            // print time
             Log($"{timer.Print()}");
             LogFiller();
         }
 
-        private void RunPart1(RunType runType, List<string> inputs)
+        private void RunPart(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput)
         {
-            m_logID = string.Format("{0}|{1}|part1", GetDay(), runType == RunType.Problem ? "problem" : "example");
+            m_logID = string.Format("{0}|{1}|part{2}", GetDay(), runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
             try
             {
-                string answer = RunPart1Solution(inputs);
-                if (runType == RunType.Example && answer != GetPart1ExampleAnswer())
+                string actualOutput = m_partSpecificFunctions[testPart](inputs);
+                if (runType == RunType.Testing && actualOutput != expectedOuput)
                 {
-                    LogAnswer($"[ERROR] Expected: {GetPart1ExampleAnswer()} - Actual: {answer} [ERROR]");
+                    LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]");
                 }
                 else
                 {
-                    LogAnswer(answer);
-                }
-            }
-            catch (Exception e)
-            {
-                Log($"{e.Message}");
-                Log($"{e.StackTrace.Split('\r').FirstOrDefault()}");
-            }
-        }
-
-        private void RunPart2(RunType runType, List<string> inputs)
-        {
-            m_logID = string.Format("{0}|{1}|part2", GetDay(), runType == RunType.Problem ? "problem" : "example");
-            try
-            {
-                string answer = RunPart2Solution(inputs);
-                if (runType == RunType.Example && answer != GetPart2ExampleAnswer())
-                {
-                    LogAnswer($"[ERROR] Expected: {GetPart2ExampleAnswer()} - Actual: {answer} [ERROR]");
-                }
-                else
-                {
-                    LogAnswer(answer);
+                    LogAnswer(actualOutput);
                 }
             }
             catch (Exception e)
@@ -140,28 +135,3 @@ namespace _2020
         }
     }
 }
-
-/*
-using System.Collections.Generic;
-
-namespace _2020
-{
-    class DayXX : Day
-    {
-        public DayXX() : base() {}
-        
-        protected override string GetDay() { return nameof(DayXX).ToLower(); }
-
-        protected override void RunPart1Solution(List<string> inputs)
-        {
-            LogAnswer("NA");
-        }
-
-        protected override void RunPart2Solution(List<string>inputs)
-        {
-            LogAnswer("NA");
-        }
-    }
-}
-
-*/
