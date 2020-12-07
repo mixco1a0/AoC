@@ -2,13 +2,11 @@
 
 using System.Collections.Generic;
 
-namespace _AoC.YYYY
+namespace _AoC._0000
 {
     class DayXX : Day
     {
-        public DayXX() : base("YYYY") {}
-        
-        protected override string GetDay() { return nameof(DayXX).ToLower(); }
+        public DayXX() { }
 
         protected override List<TestDatum> GetTestData()
         {
