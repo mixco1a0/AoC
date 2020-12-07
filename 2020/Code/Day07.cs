@@ -63,20 +63,66 @@ dotted black bags contain no other bags.";
                     }
                 }
             }
-            
+
             curBagList = newBagList;
             return newBagList.Count;
         }
 
         protected override string GetPart2ExampleInput()
         {
-            return
-@"";
+            //return GetPart1ExampleInput();
+                        return @"shiny gold bags contain 2 dark red bags.
+            dark red bags contain 2 dark orange bags.
+            dark orange bags contain 2 dark yellow bags.
+            dark yellow bags contain 2 dark green bags.
+            dark green bags contain 2 dark blue bags.
+            dark blue bags contain 2 dark violet bags.
+            dark violet bags contain no other bags.";
         }
-        protected override string GetPart2ExampleAnswer() { return ""; }
+        protected override string GetPart2ExampleAnswer() { return "126"; }
         protected override string RunPart2Solution(List<string> inputs)
         {
-            return "";
+            Dictionary<string, List<string>> bagsToInput = new Dictionary<string, List<string>>();
+            Dictionary<string, List<int>> bagsToCount = new Dictionary<string, List<int>>();
+            foreach (string input in inputs)
+            {
+                string[] cur = input.Split("contain");
+                string id = cur[0].Replace("bags", "").Replace(" ", "");
+                string bags = cur[1].Replace("bags", "").Replace("bag", "").Replace(" ", "").Replace(".", "");
+                List<string> bagList = bags.Split(",").ToList();
+                if (bagList[0] == "noother")
+
+                {
+                    bagsToInput[id] = new List<string>();
+                    bagsToCount[id] = new List<int>();
+                }
+                else
+                {
+                    bagsToInput[id] = bagList.Select(color => color[1..]).ToList();
+                    bagsToCount[id] = bagList.Select(color => int.Parse(color[0..1])).ToList();
+                }
+            }
+
+            int totalCount = GetPossibleBagCount(bagsToInput, bagsToCount, "shinygold", 1)-1;
+            return totalCount.ToString();
+        }
+
+        private int GetPossibleBagCount(Dictionary<string, List<string>> bagsToInput, Dictionary<string, List<int>> bagsToCount, string curBag, int myCount)
+        {
+            int count = myCount;
+            if (bagsToInput[curBag].Count == 0)
+            {
+                Debug($"{curBag} has no other bags");
+            }
+            else
+            {
+                for (int i = 0; i < bagsToInput[curBag].Count; ++i)
+                {
+                    int bagCount = GetPossibleBagCount(bagsToInput, bagsToCount, bagsToInput[curBag][i], bagsToCount[curBag][i]);
+                    count += bagCount * myCount;
+                }
+            }
+            return count;
         }
     }
 }

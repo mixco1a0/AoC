@@ -53,7 +53,7 @@ namespace _2020
             SharedRun(RunPart1, part1ExampleInput, rawFileRead);
 
             // run part 2
-            IEnumerable<string> part2ExampleInput = GetPart1ExampleInput().Split('\n').Select(str => str.Trim('\r'));
+            IEnumerable<string> part2ExampleInput = GetPart2ExampleInput().Split('\n').Select(str => str.Trim('\r'));
             SharedRun(RunPart2, part2ExampleInput, rawFileRead);
 
             // reset logging
