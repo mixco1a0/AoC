@@ -20,16 +20,19 @@ namespace AoC
         protected abstract string RunPart2Solution(List<string> inputs);
         #endregion
 
-        private string DefaultLogID { get { return new string('.', 19); } }
+        private string DefaultLogID { get { return new string('.', 24); } }
 
+        private string m_year;
         private string m_logID;
         private Dictionary<string, List<TestDatum>> m_testData;
         private Dictionary<TestPart, Func<List<string>, string>> m_partSpecificFunctions;
 
-        protected Day()
+        private Day() { }
+        protected Day(string year)
         {
             try
             {
+                m_year = year;
                 m_logID = DefaultLogID;
                 m_testData = new Dictionary<string, List<TestDatum>>();
                 m_testData[GetDay()] = GetTestData();
@@ -51,7 +54,7 @@ namespace AoC
         {
             // file input
             string fileName = string.Format("{0}.txt", GetDay());
-            string inputFile = Path.Combine(Directory.GetCurrentDirectory(), "Data", fileName);
+            string inputFile = Path.Combine(Directory.GetCurrentDirectory(), "Data", m_year, fileName);
             IEnumerable<string> rawFileRead = Util.ConvertInputToList(File.ReadAllText(inputFile));
 
             // run part 1
@@ -91,7 +94,7 @@ namespace AoC
 
         private void RunPart(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput)
         {
-            m_logID = string.Format("{0}|{1}|part{2}", GetDay(), runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
+            m_logID = string.Format("{0}|{1}|{2}|part{3}", m_year, GetDay(), runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
             try
             {
                 string actualOutput = m_partSpecificFunctions[testPart](inputs);

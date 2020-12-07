@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AoC
+namespace AoC._2020
 {
     class Day06 : Day
     {
-        public Day06() : base() { }
+        public Day06() : base("2020") { }
 
         protected override string GetDay() { return nameof(Day06).ToLower(); }
 
