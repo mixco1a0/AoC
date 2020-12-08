@@ -1,13 +1,11 @@
-/*
-
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AoC._0000
+namespace AoC._2020
 {
-    class DayXX : Day
+    class Day08 : Day
     {
-        public DayXX() { }
+        public Day08() { }
 
         protected override List<TestDatum> GetTestData()
         {
@@ -30,5 +28,3 @@ namespace AoC._0000
         }
     }
 }
-
-*/
