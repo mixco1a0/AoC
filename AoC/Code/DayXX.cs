@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace _AoC._0000
+namespace AoC._0000
 {
     class DayXX : Day
     {
