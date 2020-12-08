@@ -5,9 +5,7 @@ namespace AoC._2020
 {
     class Day03 : Day
     {
-        public Day03() : base("2020") { }
-
-        protected override string GetDay() { return nameof(Day03).ToLower(); }
+        public Day03() { }
 
         protected override List<TestDatum> GetTestData()
         {

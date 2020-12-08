@@ -5,9 +5,7 @@ namespace AoC._2020
 {
     class Day05 : Day
     {
-        public Day05() : base("2020") { }
-
-        protected override string GetDay() { return "day05"; }
+        public Day05() { }
 
         protected override List<TestDatum> GetTestData()
         {

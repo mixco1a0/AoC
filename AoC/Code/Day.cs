@@ -14,7 +14,6 @@ namespace AoC
         }
 
         #region Required Overrides
-        protected abstract string GetDay();
         protected abstract List<TestDatum> GetTestData();
         protected abstract string RunPart1Solution(List<string> inputs);
         protected abstract string RunPart2Solution(List<string> inputs);
@@ -23,19 +22,20 @@ namespace AoC
         private string DefaultLogID { get { return new string('.', 24); } }
 
         private string m_year;
+        private string m_dayName;
         private string m_logID;
         private Dictionary<string, List<TestDatum>> m_testData;
         private Dictionary<TestPart, Func<List<string>, string>> m_partSpecificFunctions;
 
-        private Day() { }
-        protected Day(string year)
+        protected Day()
         {
             try
             {
-                m_year = year;
+                m_year = this.GetType().Namespace.ToString()[^4..];
+                m_dayName = this.GetType().ToString()[^5..].ToLower();
                 m_logID = DefaultLogID;
                 m_testData = new Dictionary<string, List<TestDatum>>();
-                m_testData[GetDay()] = GetTestData();
+                m_testData[m_dayName] = GetTestData();
                 m_partSpecificFunctions = new Dictionary<TestPart, Func<List<string>, string>>
                 {
                     {TestPart.One, RunPart1Solution},
@@ -53,7 +53,7 @@ namespace AoC
         private void Run()
         {
             // file input
-            string fileName = string.Format("{0}.txt", GetDay());
+            string fileName = string.Format("{0}.txt", m_dayName);
             string inputFile = Path.Combine(Directory.GetCurrentDirectory(), "Data", m_year, fileName);
             IEnumerable<string> rawFileRead = Util.ConvertInputToList(File.ReadAllText(inputFile));
 
@@ -70,7 +70,7 @@ namespace AoC
         private void RunAll(TestPart testPart, IEnumerable<string> problemInput)
         {
             // get test data if there is any
-            IEnumerable<KeyValuePair<IEnumerable<string>, string>> partSpecificTestData = m_testData[GetDay()]
+            IEnumerable<KeyValuePair<IEnumerable<string>, string>> partSpecificTestData = m_testData[m_dayName]
                 .Where(datum => datum.TestPart == testPart)
                 .Select(datum => new KeyValuePair<IEnumerable<string>, string>(datum.Input, datum.Output));
 
@@ -94,7 +94,7 @@ namespace AoC
 
         private void RunPart(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput)
         {
-            m_logID = string.Format("{0}|{1}|{2}|part{3}", m_year, GetDay(), runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
+            m_logID = string.Format("{0}|{1}|{2}|part{3}", m_year, m_dayName, runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
             try
             {
                 string actualOutput = m_partSpecificFunctions[testPart](inputs);
