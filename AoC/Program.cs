@@ -31,7 +31,8 @@ namespace AoC
             Console.WriteLine("Running 2015 Advent of Code");
             Console.WriteLine("");
 
-            new _2015.Day03();
+            new _2015.Day04();
+            // new _2015.Day03();
             // new _2015.Day02();
             // new _2015.Day01();
         }
