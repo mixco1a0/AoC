@@ -34,7 +34,7 @@ ieodomkazucvgmuy"
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int count = 0;
             foreach (string input in inputs)
@@ -56,7 +56,7 @@ ieodomkazucvgmuy"
             return count.ToString();
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int count = 0;
             foreach (string input in inputs)

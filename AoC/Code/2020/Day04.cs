@@ -71,7 +71,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int validPassports = 0;
             string curInfo = "";
@@ -96,7 +96,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             return validPassports.ToString();
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int validPassports = 0;
             string curInfo = "";

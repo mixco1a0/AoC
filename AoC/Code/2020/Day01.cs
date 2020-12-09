@@ -35,7 +35,7 @@ namespace AoC._2020
             });
             return testData;
         }
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             inputs.Sort();
             for (int i = 0; i < inputs.Count; ++i)
@@ -69,7 +69,7 @@ namespace AoC._2020
             return "";
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             inputs.Sort();
             for (int i = 0; i < inputs.Count; ++i)

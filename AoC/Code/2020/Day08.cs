@@ -88,7 +88,7 @@ acc +6"
             return acc.ToString();
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int idx;
             List<KeyValuePair<int, Op>> opsRun;
@@ -96,7 +96,7 @@ acc +6"
             return GetAcc(operations, out idx, out opsRun);
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int idx;
             List<KeyValuePair<int, Op>> opsRun;
