@@ -7,7 +7,7 @@ namespace AoC
         static void Main(string[] args)
         {            
             Run2020();
-            Run2015();
+            //Run2015();
         }
 
         static private void Run2020()
@@ -16,7 +16,8 @@ namespace AoC
             Console.WriteLine("Running 2020 Advent of Code");
             Console.WriteLine("");
 
-            new _2020.Day08();
+            new _2020.Day09();
+            // new _2020.Day08();
             // new _2020.Day07();
             // new _2020.Day06();
             // new _2020.Day05();
