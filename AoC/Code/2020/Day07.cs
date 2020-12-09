@@ -56,7 +56,7 @@ dark violet bags contain no other bags."
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             Dictionary<string, List<string>> bagsToInput = new Dictionary<string, List<string>>();
             foreach (string input in inputs)
@@ -101,7 +101,7 @@ dark violet bags contain no other bags."
             return newBagList.Count;
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             Dictionary<string, List<string>> bagsToInput = new Dictionary<string, List<string>>();
             Dictionary<string, List<int>> bagsToCount = new Dictionary<string, List<int>>();

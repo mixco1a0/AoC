@@ -42,7 +42,7 @@ namespace AoC._2015
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int needed = 0;
             foreach (string input in inputs)
@@ -59,7 +59,7 @@ namespace AoC._2015
             return needed.ToString();
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int needed = 0;
             foreach (string input in inputs)
