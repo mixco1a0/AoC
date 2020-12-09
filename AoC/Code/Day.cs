@@ -17,9 +17,15 @@ namespace AoC
         protected abstract List<TestDatum> GetTestData();
         protected abstract string RunPart1Solution(List<string> inputs);
         protected abstract string RunPart2Solution(List<string> inputs);
+        protected virtual string GetSolutionVersion(TestPart testPart)
+        {
+            return "0";
+        }
         #endregion
 
         private string DefaultLogID { get { return new string('.', 24); } }
+        public string WorkingDirectory {get;set;}
+        public Dictionary<TestPart, double> TestTiming { get; private set; }
 
         private string m_year;
         private string m_dayName;
@@ -31,6 +37,8 @@ namespace AoC
         {
             try
             {
+                TestTiming = new Dictionary<TestPart, double>();
+
                 m_year = this.GetType().Namespace.ToString()[^4..];
                 m_dayName = this.GetType().ToString()[^5..].ToLower();
                 m_logID = DefaultLogID;
@@ -54,7 +62,7 @@ namespace AoC
         {
             // file input
             string fileName = string.Format("{0}.txt", m_dayName);
-            string inputFile = Path.Combine(Directory.GetCurrentDirectory(), "Data", m_year, fileName);
+            string inputFile = Path.Combine(WorkingDirectory, "Data", m_year, fileName);
             IEnumerable<string> rawFileRead = Util.ConvertInputToList(File.ReadAllText(inputFile));
 
             // run part 1
@@ -86,6 +94,7 @@ namespace AoC
             timer.Start();
             RunPart(RunType.Problem, testPart, problemInput.ToList(), "");
             timer.Stop();
+            TestTiming[testPart] = timer.GetElapsedMs();
 
             // print time
             Log($"{timer.Print()}");
