@@ -19,6 +19,11 @@ namespace AoC
             }
         }
 
+        public double GetElapsedMs()
+        {
+            return m_stopwatch.Elapsed.TotalMilliseconds;
+        }
+
         public string Print()
         {
             if (m_stopwatch != null)

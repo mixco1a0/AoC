@@ -4,11 +4,11 @@ namespace AoC
 {
     public enum TestPart
     {
-        One,
-        Two
+        One = 1,
+        Two = 2
     }
 
-    class TestDatum
+    public class TestDatum
     {
         public TestPart TestPart { get; set; }
         public string RawInput { private get; set; }

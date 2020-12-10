@@ -1,3 +1,4 @@
+using System.IO;
 using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
@@ -15,6 +16,40 @@ namespace AoC
             }
             return input.Split('\n').Select(str => str.Trim('\r'));
         }
+
+        private static string s_workingDirectory;
+        static public string WorkingDirectory
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(s_workingDirectory))
+                {
+                    string curDir = Directory.GetCurrentDirectory();
+                    string dirRoot = Path.GetPathRoot(curDir);
+                    while (true)
+                    {
+                        if (curDir == dirRoot)
+                            break;
+
+                        if (Path.GetFileName(curDir) == nameof(AoC))
+                            break;
+
+                        curDir = Path.GetDirectoryName(curDir);
+                    }
+
+                    if (curDir != dirRoot)
+                    {
+                        s_workingDirectory = curDir;
+                    }
+                    else
+                    {
+                        throw new DirectoryNotFoundException($"Unable to find base directory */{nameof(AoC)}/*");
+                    }
+                }
+                return s_workingDirectory;
+            }
+        }
+
     }
 
     class MinMax
@@ -25,5 +60,5 @@ namespace AoC
         public bool GT_LTE(int val) { return Min < val && val <= Max; }
         public bool GTE_LT(int val) { return Min <= val && val < Max; }
         public bool GT_LT(int val) { return Min < val && val < Max; }
-    };
+    }
 }
