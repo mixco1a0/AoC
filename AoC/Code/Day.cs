@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace AoC
 {
-    abstract class Day
+    abstract public class Day
     {
         private enum RunType
         {
@@ -17,18 +17,18 @@ namespace AoC
         protected abstract List<TestDatum> GetTestData();
         protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
         protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
-        protected virtual string GetSolutionVersion(TestPart testPart)
+        public virtual string GetSolutionVersion(TestPart testPart)
         {
             return "0";
         }
         #endregion
 
         private string DefaultLogID { get { return new string('.', 24); } }
-        public string WorkingDirectory {get;set;}
-        public Dictionary<TestPart, double> TestTiming { get; private set; }
 
-        private string m_year;
-        private string m_dayName;
+        public string Year { get; private set; }
+        public string DayName { get; private set; }
+        public Dictionary<TestPart, double> TimeResults { get; private set; }
+
         private string m_logID;
         private Dictionary<string, List<TestDatum>> m_testData;
         private Dictionary<TestPart, Func<List<string>, Dictionary<string, string>, string>> m_partSpecificFunctions;
@@ -37,13 +37,13 @@ namespace AoC
         {
             try
             {
-                TestTiming = new Dictionary<TestPart, double>();
+                TimeResults = new Dictionary<TestPart, double>();
 
-                m_year = this.GetType().Namespace.ToString()[^4..];
-                m_dayName = this.GetType().ToString()[^5..].ToLower();
+                Year = this.GetType().Namespace.ToString()[^4..];
+                DayName = this.GetType().ToString()[^5..].ToLower();
                 m_logID = DefaultLogID;
                 m_testData = new Dictionary<string, List<TestDatum>>();
-                m_testData[m_dayName] = GetTestData();
+                m_testData[DayName] = GetTestData();
                 m_partSpecificFunctions = new Dictionary<TestPart, Func<List<string>, Dictionary<string, string>, string>>
                 {
                     {TestPart.One, RunPart1Solution},
@@ -61,8 +61,8 @@ namespace AoC
         private void Run()
         {
             // file input
-            string fileName = string.Format("{0}.txt", m_dayName);
-            string inputFile = Path.Combine(WorkingDirectory, "Data", m_year, fileName);
+            string fileName = string.Format("{0}.txt", DayName);
+            string inputFile = Path.Combine(Util.WorkingDirectory, "Data", Year, fileName);
             IEnumerable<string> rawFileRead = Util.ConvertInputToList(File.ReadAllText(inputFile));
 
             // run part 1
@@ -78,7 +78,7 @@ namespace AoC
         private void RunAll(TestPart testPart, IEnumerable<string> problemInput)
         {
             // get test data if there is any
-            IEnumerable<TestDatum> partSpecificTestData = m_testData[m_dayName].Where(datum => datum.TestPart == testPart);
+            IEnumerable<TestDatum> partSpecificTestData = m_testData[DayName].Where(datum => datum.TestPart == testPart);
 
             // run tests if there any
             foreach (TestDatum datum in partSpecificTestData)
@@ -92,7 +92,7 @@ namespace AoC
             timer.Start();
             RunPart(RunType.Problem, testPart, problemInput.ToList(), "", null);
             timer.Stop();
-            TestTiming[testPart] = timer.GetElapsedMs();
+            TimeResults[testPart] = timer.GetElapsedMs();
 
             // print time
             Log($"{timer.Print()}");
@@ -101,7 +101,7 @@ namespace AoC
 
         private void RunPart(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
         {
-            m_logID = string.Format("{0}|{1}|{2}|part{3}", m_year, m_dayName, runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
+            m_logID = string.Format("{0}|{1}|{2}|part{3}", Year, DayName, runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
             try
             {
                 string actualOutput = m_partSpecificFunctions[testPart](inputs, variables);

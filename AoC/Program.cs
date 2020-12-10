@@ -7,51 +7,31 @@ namespace AoC
     class EntryPoint
     {
         static void Main(string[] args)
-        {            
+        {
             new Program();
         }
     }
 
     class Program
     {
-        Json.RunData m_runData;
-        string m_workingDirectory;
+        private string m_runDataFile;
+        private Json.RunData m_runData;
 
         public Program()
         {
-            SetWorkingDirectory();
             LoadRunData();
             Run2020();
             //Run2015();
-        }
-
-        private void SetWorkingDirectory()
-        {
-            string curDir = Directory.GetCurrentDirectory();
-            string dirRoot = Path.GetPathRoot(curDir);
-            while (true)
-            {
-                if (curDir == dirRoot)
-                    break;
-                if (Path.GetFileName(curDir) == nameof(AoC))
-                    break;
-                curDir = Path.GetDirectoryName(curDir);
-            }
-            if (curDir != dirRoot)
-            {
-                m_workingDirectory = curDir;
-            }
-            else
-            {
-                throw new DirectoryNotFoundException($"Unable to find base directory */{nameof(AoC)}/*");
-            }
+            SaveRunData();
         }
 
         private void LoadRunData()
         {
-            if (File.Exists(Path.Combine(m_workingDirectory, "rundata.json")))
+            string workingDir = Util.WorkingDirectory;
+            m_runDataFile = Path.Combine(workingDir, "rundata.json");
+            if (File.Exists(m_runDataFile))
             {
-                string rawJson = File.ReadAllText(Path.Combine(m_workingDirectory, "rundata.json"));
+                string rawJson = File.ReadAllText(m_runDataFile);
                 m_runData = JsonConvert.DeserializeObject<Json.RunData>(rawJson);
             }
             else
@@ -66,16 +46,16 @@ namespace AoC
             Console.WriteLine("Running 2020 Advent of Code");
             Console.WriteLine("");
 
-            new _2020.Day09();
-            // new _2020.Day08();
-            // new _2020.Day07();
-            // new _2020.Day06();
-            // new _2020.Day05();
-            // new _2020.Day04();
-            // new _2020.Day03();
-            // new _2020.Day02();
-            new _2020.Day01{WorkingDirectory=m_workingDirectory};
-            
+            // m_runData.AddData(new _2020.Day09());
+            // m_runData.AddData(new _2020.Day08());
+            // m_runData.AddData(new _2020.Day07());
+            // m_runData.AddData(new _2020.Day06());
+            // m_runData.AddData(new _2020.Day05());
+            // m_runData.AddData(new _2020.Day04());
+            // m_runData.AddData(new _2020.Day03());
+            // m_runData.AddData(new _2020.Day02());
+            //m_runData.AddData(new _2020.Day01());
+
         }
 
         private void Run2015()
@@ -84,11 +64,20 @@ namespace AoC
             Console.WriteLine("Running 2015 Advent of Code");
             Console.WriteLine("");
 
-            // new _2015.Day05();
-            // new _2015.Day04();
-            // new _2015.Day03();
-            // new _2015.Day02();
-            // new _2015.Day01();
+            // m_runData.AddData(new _2015.Day05());
+            // m_runData.AddData(new _2015.Day04());
+            // m_runData.AddData(new _2015.Day03());
+            // m_runData.AddData(new _2015.Day02());
+            // m_runData.AddData(new _2015.Day01());
+        }
+
+        private void SaveRunData()
+        {
+            string rawJson = JsonConvert.SerializeObject(m_runData, Formatting.Indented);
+            using (StreamWriter sWriter = new StreamWriter(m_runDataFile))
+            {
+                sWriter.Write(rawJson);
+            }
         }
     }
 }

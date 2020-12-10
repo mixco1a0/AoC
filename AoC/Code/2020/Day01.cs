@@ -6,7 +6,7 @@ namespace AoC._2020
     {
         public Day01() { }
 
-        protected override string GetSolutionVersion(TestPart testPart)
+        public override string GetSolutionVersion(TestPart testPart)
         {
             switch (testPart)
             {
