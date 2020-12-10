@@ -143,5 +143,10 @@ namespace AoC
         {
             Console.WriteLine($"[{m_logID}] \t{log}");
         }
+
+        protected void DebugWrite(string log)
+        {
+            Console.Write($"[{m_logID}] \t{log}");
+        }
     }
 }
