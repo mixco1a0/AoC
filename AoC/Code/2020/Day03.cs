@@ -47,12 +47,12 @@ namespace AoC._2020
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             return $"{SlopeCheck(3, 1, inputs)}";
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             /*
             Right 1, down 1.

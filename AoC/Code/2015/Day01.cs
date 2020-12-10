@@ -61,14 +61,14 @@ namespace AoC._2015
             });
             return testData;
         }
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             string oneLine = string.Join("", inputs);
             int diff = oneLine.Where(c => c == '(').Count() - oneLine.Where(c => c == ')').Count();
             return diff.ToString();
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             string oneLine = string.Join("", inputs);
             int curFloor = 0;

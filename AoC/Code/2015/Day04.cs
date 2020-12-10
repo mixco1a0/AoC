@@ -28,7 +28,7 @@ namespace AoC._2015
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             string input = inputs[0];
             using (MD5 md5 = MD5.Create())
@@ -49,7 +49,7 @@ namespace AoC._2015
             return "NaN";
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             string input = inputs[0];
             using (MD5 md5 = MD5.Create())

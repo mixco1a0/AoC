@@ -66,7 +66,7 @@ namespace AoC._2015
             }
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             Coords cur = new Coords { X = 0, Y = 0 };
             List<Coords> allCoords = new List<Coords>();
@@ -93,7 +93,7 @@ namespace AoC._2015
             return allCoords.Distinct().Count().ToString();
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             Coords curSanta = new Coords { X = 0, Y = 0 };
             Coords curRobot = new Coords { X = 0, Y = 0 };

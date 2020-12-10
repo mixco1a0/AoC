@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 
 namespace AoC
@@ -26,5 +25,6 @@ namespace AoC
             }
         }
         public string Output { get; set; }
+        public Dictionary<string, string> Variables { get; set; }
     }
 }

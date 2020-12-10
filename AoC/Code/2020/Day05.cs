@@ -14,7 +14,7 @@ namespace AoC._2020
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int highestId = 0;
             foreach (string input in inputs)
@@ -25,7 +25,7 @@ namespace AoC._2020
             return highestId.ToString();
         }
 
-        protected override string RunPart2Solution(List<string> inputs)
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             HashSet<int> ids = new HashSet<int>();
             foreach (string input in inputs)
