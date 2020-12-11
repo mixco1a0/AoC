@@ -21,7 +21,7 @@ namespace AoC
         {
             LoadRunData();
             Run2020();
-            //Run2015();
+            Run2015();
             SaveRunData();
         }
 
@@ -46,7 +46,7 @@ namespace AoC
             Console.WriteLine("Running 2020 Advent of Code");
             Console.WriteLine("");
 
-            new _2020.Day10();
+            // m_runData.AddData(new _2020.Day10());
             // m_runData.AddData(new _2020.Day09());
             // m_runData.AddData(new _2020.Day08());
             // m_runData.AddData(new _2020.Day07());
@@ -65,6 +65,7 @@ namespace AoC
             Console.WriteLine("Running 2015 Advent of Code");
             Console.WriteLine("");
 
+            new _2015.Day06();
             // m_runData.AddData(new _2015.Day05());
             // m_runData.AddData(new _2015.Day04());
             // m_runData.AddData(new _2015.Day03());
