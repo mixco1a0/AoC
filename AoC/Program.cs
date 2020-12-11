@@ -65,7 +65,8 @@ namespace AoC
             Console.WriteLine("Running 2015 Advent of Code");
             Console.WriteLine("");
 
-            new _2015.Day06();
+            // new _2015.Day07(); still broken
+            // m_runData.AddData(new _2015.Day06());
             // m_runData.AddData(new _2015.Day05());
             // m_runData.AddData(new _2015.Day04());
             // m_runData.AddData(new _2015.Day03());
