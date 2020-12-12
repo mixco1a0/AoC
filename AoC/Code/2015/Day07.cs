@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -65,76 +64,213 @@ NOT y -> i"
             return testData;
         }
 
-
-        private void ExecuteInstruction(string instruction, ref Dictionary<string, int> signals)
+        public class Instruction
         {
-            List<string> split;
-            // determine the instruction
-            if (instruction.Contains("AND"))
+            public enum InstructionType
             {
-                split = instruction.Replace("AND", "").Replace("->", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if (signals.ContainsKey(split[0]) && signals.ContainsKey(split[1]))
-                {
-                    Debug(instruction);
-                    signals[split[2]] = signals[split[0]] & signals[split[1]];
-                    signals[split[2]] &= ushort.MaxValue;
-                }
+                And,
+                AndRef,
+                Or,
+                OrRef,
+                LShift,
+                RShift,
+                Not,
+                Set,
+                SetRef
             }
-            else if (instruction.Contains("OR"))
-            {
-                split = instruction.Replace("OR", "").Replace("->", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if (signals.ContainsKey(split[0]) && signals.ContainsKey(split[1]))
-                {
-                    Debug(instruction);
-                    signals[split[2]] = signals[split[0]] | signals[split[1]];
-                    signals[split[2]] &= ushort.MaxValue;
-                }
-            }
-            else if (instruction.Contains("LSHIFT"))
-            {
-                split = instruction.Replace("LSHIFT", "").Replace("->", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if (signals.ContainsKey(split[0]) && signals.ContainsKey(split[1]))
-                {
-                    Debug(instruction);
-                    signals[split[2]] = signals[split[0]] << int.Parse(split[1]);
-                    signals[split[2]] &= ushort.MaxValue;
-                }
-            }
-            else if (instruction.Contains("RSHIFT"))
-            {
-                split = instruction.Replace("RSHIFT", "").Replace("->", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if (signals.ContainsKey(split[0]) && signals.ContainsKey(split[1]))
-                {
 
-                    Debug(instruction);
-                    signals[split[2]] = signals[split[0]] >> int.Parse(split[1]);
-                }
-            }
-            else if (instruction.Contains("NOT"))
+            public InstructionType Type { get; private set; }
+            public string Source { get; private set; }
+            public string Source2 { get; private set; }
+            public string Destination { get; private set; }
+            public bool Complete { get; private set; }
+
+            public Instruction(string instruction)
             {
-                split = instruction.Replace("NOT", "").Replace("->", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if (signals.ContainsKey(split[0]))
+                Source2 = "";
+                List<string> split = instruction.Split(" ").ToList();
+                if (instruction.Contains("AND"))
                 {
-                    Debug(instruction);
-                    signals[split[1]] = ~signals[split[0]];
-                    signals[split[1]] &= ushort.MaxValue;
+                    int test;
+                    if (int.TryParse(split[0], out test) || int.TryParse(split[2], out test))
+                    {
+                        Type = InstructionType.And;
+                    }
+                    else
+                    {
+                        Type = InstructionType.AndRef;
+                    }
+                }
+                else if (instruction.Contains("OR"))
+                {
+                    int test;
+                    if (int.TryParse(split[0], out test) || int.TryParse(split[2], out test))
+                    {
+                        Type = InstructionType.Or;
+                    }
+                    else
+                    {
+                        Type = InstructionType.OrRef;
+                    }
+                }
+                else if (instruction.Contains("LSHIFT"))
+                    Type = InstructionType.LShift;
+                else if (instruction.Contains("RSHIFT"))
+                    Type = InstructionType.RShift;
+                else if (instruction.Contains("NOT"))
+                    Type = InstructionType.Not;
+                else
+                {
+                    int test;
+                    if (int.TryParse(split[0], out test))
+                    {
+                        Type = InstructionType.Set;
+                    }
+                    else
+                    {
+                        Type = InstructionType.SetRef;
+                    }
+                }
+
+                switch (Type)
+                {
+                    case InstructionType.AndRef:
+                    case InstructionType.OrRef:
+                    case InstructionType.LShift:
+                    case InstructionType.RShift:
+                        Source = split[0];
+                        Source2 = split[2];
+                        Destination = split[4];
+                        break;
+                    case InstructionType.And:
+                    case InstructionType.Or:
+                        int test;
+                        if (int.TryParse(split[0], out test))
+                        {
+                            Source = split[2];
+                            Source2 = split[0];
+                            Destination = split[4];
+                        }
+                        else
+                        {
+                            Source = split[0];
+                            Source2 = split[2];
+                            Destination = split[4];
+                        }
+                        break;
+                    case InstructionType.Not:
+                        Source = split[1];
+                        Destination = split[3];
+                        break;
+                    case InstructionType.Set:
+                    case InstructionType.SetRef:
+                        Source = split[0];
+                        Destination = split[2];
+                        break;
                 }
             }
-            else
+
+            public bool CanExecute(Dictionary<string, int> signals)
             {
-                split = instruction.Replace("->", "").Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                int value;
-                if (int.TryParse(split[0], out value))
+                switch (Type)
                 {
-                    Debug(instruction);
-                    signals[split[1]] = value;
+                    case InstructionType.AndRef:
+                    case InstructionType.OrRef:
+                        if (signals.ContainsKey(Source) && signals.ContainsKey(Source2))
+                        {
+                            return !Complete;
+                        }
+                        break;
+                    case InstructionType.And:
+                    case InstructionType.Or:
+                    case InstructionType.LShift:
+                    case InstructionType.RShift:
+                    case InstructionType.Not:
+                    case InstructionType.SetRef:
+                        if (signals.ContainsKey(Source))
+                        {
+                            return !Complete;
+                        }
+                        break;
+                    case InstructionType.Set:
+                        return !Complete;
                 }
-                else if (signals.ContainsKey(split[0]))
+                return false;
+            }
+
+            public void Execute(ref Dictionary<string, int> signals)
+            {
+                switch (Type)
                 {
-                    Debug(instruction);
-                    signals[split[1]] = signals[split[0]];
+                    case InstructionType.And:
+                        signals[Destination] = signals[Source] & int.Parse(Source2);
+                        break;
+                    case InstructionType.AndRef:
+                        signals[Destination] = signals[Source] & signals[Source2];
+                        break;
+                    case InstructionType.Or:
+                        signals[Destination] = signals[Source] | int.Parse(Source2);
+                        break;
+                    case InstructionType.OrRef:
+                        signals[Destination] = signals[Source] | signals[Source2];
+                        break;
+                    case InstructionType.LShift:
+                        signals[Destination] = signals[Source] << int.Parse(Source2);
+                        break;
+                    case InstructionType.RShift:
+                        signals[Destination] = signals[Source] >> int.Parse(Source2);
+                        break;
+                    case InstructionType.Not:
+                        signals[Destination] = ~signals[Source];
+                        break;
+                    case InstructionType.Set:
+                        signals[Destination] = int.Parse(Source);
+                        Complete = true;
+                        break;
+                    case InstructionType.SetRef:
+                        signals[Destination] = signals[Source];
+                        Complete = true;
+                        break;
+                }
+                signals[Destination] &= ushort.MaxValue;
+                Complete = true;
+            }
+
+            public override string ToString()
+            {
+                switch (Type)
+                {
+                    case InstructionType.And:
+                    case InstructionType.AndRef:
+                    case InstructionType.Or:
+                    case InstructionType.OrRef:
+                    case InstructionType.LShift:
+                    case InstructionType.RShift:
+                        return $"{Source} {Type} {Source2} -> {Destination}";
+                    case InstructionType.Not:
+                        return $"{Type} {Source} -> {Destination}";
+                    case InstructionType.Set:
+                    case InstructionType.SetRef:
+                        return $"{Source} -> {Destination}";
+                }
+                return base.ToString();
+            }
+        }
+
+        private Dictionary<string, int> RunToCompletion(List<Instruction> instructions)
+        {
+            Dictionary<string, int> signals = new Dictionary<string, int>();
+            while (instructions.Where(ins => !ins.Complete).Count() > 0)
+            {
+                List<Instruction> curInstructions = instructions.Where(ins => ins.CanExecute(signals)).ToList();
+                foreach (Instruction instruction in curInstructions)
+                {
+                    Debug(instruction.ToString());
+                    instruction.Execute(ref signals);
                 }
             }
+
+            return signals;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -145,12 +281,8 @@ NOT y -> i"
                 wire = variables[nameof(wire)];
             }
 
-            Dictionary<string, int> signals = new Dictionary<string, int>();
-            foreach (string input in inputs)
-            {
-                ExecuteInstruction(input, ref signals);
-            }
-
+            List<Instruction> instructions = inputs.Select(input => new Instruction(input)).ToList();
+            Dictionary<string, int> signals = RunToCompletion(instructions);
             return signals[wire].ToString();
         }
 
