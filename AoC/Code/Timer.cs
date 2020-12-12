@@ -1,4 +1,5 @@
 using System.Diagnostics;
+
 namespace AoC
 {
     public class Timer
