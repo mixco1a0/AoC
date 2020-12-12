@@ -24,9 +24,13 @@ F11"
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
-                Output = "",
+                Output = "286",
                 RawInput =
-@""
+@"F10
+N3
+F7
+R90
+F11"
             });
             return testData;
         }
@@ -120,7 +124,75 @@ F11"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int x = 0;
+            int y = 0;
+            int waypointX = 10;
+            int waypointY = 1;
+            foreach (string input in inputs)
+            {
+                char instruction = input[0..1].First();
+                int value = int.Parse(input[1..]);
+                switch (instruction)
+                {
+                    case 'N':
+                        waypointY += value;
+                        break;
+                    case 'S':
+                        waypointY -= value;
+                        break;
+                    case 'E':
+                        waypointX += value;
+                        break;
+                    case 'W':
+                        waypointX -= value;
+                        break;
+                    case 'L':
+                        while (value > 0)
+                        {
+                            int tempX = waypointX;
+                            int tempY = waypointY;
+                            waypointY = tempX;
+                            waypointX = tempY;
+                            if (tempX >= 0 && tempY >= 0)
+                                waypointX *= -1;
+                            if (tempX <= 0 && tempY >= 0)
+                                waypointX *= -1;
+                            if (tempX <= 0 && tempY <= 0)
+                                waypointX *= -1;
+                            if (tempX >= 0 && tempY <= 0)
+                            {
+                                waypointX *= -1;
+                            }
+                            value -= 90;
+                        }
+                        break;
+                    case 'R':
+                        while (value > 0)
+                        {
+                            int tempX = waypointX;
+                            int tempY = waypointY;
+                            waypointY = tempX;
+                            waypointX = tempY;
+                            if (tempX >= 0 && tempY >= 0)
+                                waypointY *= -1;
+                            if (tempX >= 0 && tempY <= 0)
+                            {
+                                waypointY *= -1;
+                            }
+                            if (tempX <= 0 && tempY <= 0)
+                                waypointY *= -1;
+                            if (tempX <= 0 && tempY >= 0)
+                                waypointY *= -1;
+                            value -= 90;
+                        }
+                        break;
+                    case 'F':
+                        x += waypointX * value;
+                        y += waypointY * value;
+                        break;
+                }
+            }
+            return (Math.Abs(x) + Math.Abs(y)).ToString();
         }
     }
 }
