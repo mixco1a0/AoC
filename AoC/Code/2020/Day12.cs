@@ -42,7 +42,7 @@ F11"
             int y = 0;
             foreach (string input in inputs)
             {
-                char instruction = input[0..1].First();
+                char instruction = input.First();
                 int value = int.Parse(input[1..]);
                 switch (instruction)
                 {
@@ -130,7 +130,7 @@ F11"
             int waypointY = 1;
             foreach (string input in inputs)
             {
-                char instruction = input[0..1].First();
+                char instruction = input.First();
                 int value = int.Parse(input[1..]);
                 switch (instruction)
                 {
@@ -150,39 +150,17 @@ F11"
                         while (value > 0)
                         {
                             int tempX = waypointX;
-                            int tempY = waypointY;
+                            waypointX = waypointY * -1;
                             waypointY = tempX;
-                            waypointX = tempY;
-                            if (tempX >= 0 && tempY >= 0)
-                                waypointX *= -1;
-                            if (tempX <= 0 && tempY >= 0)
-                                waypointX *= -1;
-                            if (tempX <= 0 && tempY <= 0)
-                                waypointX *= -1;
-                            if (tempX >= 0 && tempY <= 0)
-                            {
-                                waypointX *= -1;
-                            }
                             value -= 90;
                         }
                         break;
                     case 'R':
                         while (value > 0)
                         {
-                            int tempX = waypointX;
                             int tempY = waypointY;
-                            waypointY = tempX;
+                            waypointY = waypointX * -1;
                             waypointX = tempY;
-                            if (tempX >= 0 && tempY >= 0)
-                                waypointY *= -1;
-                            if (tempX >= 0 && tempY <= 0)
-                            {
-                                waypointY *= -1;
-                            }
-                            if (tempX <= 0 && tempY <= 0)
-                                waypointY *= -1;
-                            if (tempX <= 0 && tempY >= 0)
-                                waypointY *= -1;
                             value -= 90;
                         }
                         break;
