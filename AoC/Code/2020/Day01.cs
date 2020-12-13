@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AoC._2020
 {
@@ -11,9 +12,9 @@ namespace AoC._2020
             switch (testPart)
             {
                 case TestPart.One:
-                    return "1";
+                    return "2";
                 case TestPart.Two:
-                    return "1";
+                    return "2";
                 default:
                     return base.GetSolutionVersion(testPart);
             }
@@ -50,31 +51,16 @@ namespace AoC._2020
         }
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            inputs.Sort();
+            List<int> numList = inputs.Select(int.Parse).OrderBy(_ => _).ToList();
             for (int i = 0; i < inputs.Count; ++i)
             {
-                int inputI;
-                if (!int.TryParse(inputs[i], out inputI))
+                int numI = numList[i];
+                for (int j = inputs.Count - 1; j >= 0 && j > i; --j)
                 {
-                    continue;
-                }
-
-                for (int j = inputs.Count - 1; j >= 0; --j)
-                {
-                    if (i == j)
+                    int numJ = numList[j];
+                    if (numI + numJ == 2020)
                     {
-                        continue;
-                    }
-
-                    int inputJ;
-                    if (!int.TryParse(inputs[j], out inputJ))
-                    {
-                        continue;
-                    }
-
-                    if (inputI + inputJ == 2020)
-                    {
-                        return $"{inputI * inputJ}";
+                        return $"{numI * numJ}";
                     }
                 }
             }
@@ -84,34 +70,19 @@ namespace AoC._2020
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            inputs.Sort();
+            List<int> numList = inputs.Select(int.Parse).OrderBy(_ => _).ToList();
             for (int i = 0; i < inputs.Count; ++i)
             {
-                int inputI;
-                if (!int.TryParse(inputs[i], out inputI))
-                {
-                    continue;
-                }
-
+                int numI = numList[i];
                 for (int j = i + 1; j < inputs.Count; ++j)
                 {
-                    int inputJ;
-                    if (!int.TryParse(inputs[j], out inputJ))
-                    {
-                        continue;
-                    }
-
+                    int numJ = numList[j];
                     for (int k = j + 1; k < inputs.Count; ++k)
                     {
-                        int inputK;
-                        if (!int.TryParse(inputs[k], out inputK))
+                        int numK = numList[k];
+                        if (numI + numJ + numK == 2020)
                         {
-                            continue;
-                        }
-
-                        if (inputI + inputJ + inputK == 2020)
-                        {
-                            return $"{inputI * inputJ * inputK}";
+                            return $"{numI * numJ * numK}";
                         }
                     }
                 }
