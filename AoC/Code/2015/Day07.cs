@@ -54,13 +54,6 @@ y RSHIFT 2 -> g
 NOT x -> h
 NOT y -> i"
             });
-            testData.Add(new TestDatum
-            {
-                TestPart = TestPart.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
@@ -265,7 +258,6 @@ NOT y -> i"
                 List<Instruction> curInstructions = instructions.Where(ins => ins.CanExecute(signals)).ToList();
                 foreach (Instruction instruction in curInstructions)
                 {
-                    Debug(instruction.ToString());
                     instruction.Execute(ref signals);
                 }
             }
@@ -288,7 +280,19 @@ NOT y -> i"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            string wire = "a";
+            if (variables != null && variables.ContainsKey(nameof(wire)))
+            {
+                wire = variables[nameof(wire)];
+            }
+
+            List<Instruction> instructions = inputs.Select(input => new Instruction(input)).ToList();
+            Dictionary<string, int> signals = RunToCompletion(instructions);
+            string bValue = signals[wire].ToString();
+            instructions = inputs.Select(input => new Instruction(input)).Where(ins => ins.Destination != "b").ToList();
+            instructions.Add(new Instruction($"{bValue} -> b"));
+            signals = RunToCompletion(instructions);
+            return signals[wire].ToString();
         }
     }
 }
