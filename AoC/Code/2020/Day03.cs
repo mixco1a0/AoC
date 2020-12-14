@@ -60,6 +60,21 @@ namespace AoC._2020
             return testData;
         }
 
+        private int SlopeCheck(int rightStep, int downStep, List<string> inputs)
+        {
+            int curIdx = 0;
+            int treeCount = 0;
+            for (int i = downStep; i < inputs.Count; i += downStep)
+            {
+                curIdx = (curIdx + rightStep) % inputs[i].Length;
+                if (inputs[i].ElementAt(curIdx) == '#')
+                {
+                    ++treeCount;
+                }
+            }
+            return treeCount;
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             return $"{SlopeCheck(3, 1, inputs)}";
@@ -91,21 +106,6 @@ namespace AoC._2020
             //Debug($"Saw {e} trees.");
 
             return $"{a * b * c * d * e}";
-        }
-
-        private int SlopeCheck(int rightStep, int downStep, List<string> inputs)
-        {
-            int curIdx = 0;
-            int treeCount = 0;
-            for (int i = downStep; i < inputs.Count; i += downStep)
-            {
-                curIdx = (curIdx + rightStep) % inputs[i].Length;
-                if (inputs[i].ElementAt(curIdx) == '#')
-                {
-                    ++treeCount;
-                }
-            }
-            return treeCount;
         }
     }
 }

@@ -76,9 +76,7 @@ namespace AoC._2020
                 string removedLetters = passwordInput.Word.Replace(passwordInput.Letter, "");
                 int diff = passwordInput.Word.Length - removedLetters.Length;
                 if (diff >= passwordInput.LowValue && diff <= passwordInput.HighValue)
-                {
                     ++validPasswords;
-                }
             }
 
             return validPasswords.ToString();
