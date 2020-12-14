@@ -46,9 +46,10 @@ namespace AoC
             Console.WriteLine("Running 2020 Advent of Code");
             Console.WriteLine("");
 
-            new _2020.Day13();
+            new _2020.Day14();
             // for (int i = 0; i < 50; ++i)
             // {
+            //     m_runData.AddData(new _2020.Day13());
             //     m_runData.AddData(new _2020.Day12());
             //     m_runData.AddData(new _2020.Day11());
             //     m_runData.AddData(new _2020.Day10());
