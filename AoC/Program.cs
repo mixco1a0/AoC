@@ -19,10 +19,10 @@ namespace AoC
 
         public Program()
         {
-            // LoadRunData();
+            LoadRunData();
             Run2020();
             // Run2015();
-            // SaveRunData();
+            SaveRunData();
         }
 
         private void LoadRunData()
@@ -46,7 +46,7 @@ namespace AoC
             Console.WriteLine("Running 2020 Advent of Code");
             Console.WriteLine("");
 
-            new _2020.Day13();
+            new _2020.Day02();
             // for (int i = 0; i < 50; ++i)
             // {
             //     m_runData.AddData(new _2020.Day12());
