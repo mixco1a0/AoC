@@ -19,10 +19,10 @@ namespace AoC
 
         public Program()
         {
-            LoadRunData();
+            // LoadRunData();
             Run2020();
             // Run2015();
-            SaveRunData();
+            // SaveRunData();
         }
 
         private void LoadRunData()
@@ -56,15 +56,15 @@ namespace AoC
             // new _2020.Day07();
             // new _2020.Day06();
             // new _2020.Day05();
-            // new _2020.Day04();
+            //new _2020.Day04();
             // new _2020.Day03();
             // new _2020.Day02();
             // new _2020.Day01();
 
-            for (int i = 0; i < 50; ++i)
-            {
-                m_runData.AddData(new _2020.Day03());
-            }
+            // for (int i = 0; i < 50; ++i)
+            // {
+            //     m_runData.AddData(new _2020.Day04());
+            // }
         }
 
         private void Run2015()
