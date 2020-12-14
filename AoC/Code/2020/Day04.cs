@@ -84,6 +84,20 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             return testData;
         }
 
+        private bool CheckIsValid(string passportData)
+        {
+            List<string> requiredFields = new List<string> { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
+            Dictionary<string, string> fields = passportData.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToDictionary(str => str[0..3]);
+            foreach (string requiredField in requiredFields)
+            {
+                if (!fields.ContainsKey(requiredField))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int validPassports = 0;
@@ -132,20 +146,6 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             }
 
             return validPassports.ToString();
-        }
-
-        private bool CheckIsValid(string passportData)
-        {
-            List<string> requiredFields = new List<string> { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
-            Dictionary<string, string> fields = passportData.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToDictionary(str => str[0..3]);
-            foreach (string requiredField in requiredFields)
-            {
-                if (!fields.ContainsKey(requiredField))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         private bool CheckIsValidStringent(string passportData)
