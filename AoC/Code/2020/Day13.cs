@@ -68,7 +68,7 @@ namespace AoC._2020
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            List<KeyValuePair<int, int>> buses = inputs[1].Split(",", StringSplitOptions.RemoveEmptyEntries).Select((bus, index) => new { Bus = bus, Index = index }).Where(pair => pair.Bus != "x").Select(pair => new KeyValuePair<int, int>(int.Parse(pair.Bus), pair.Index)).ToList();
+            List<KeyValuePair<int, int>> buses = inputs[1].Split(",", StringSplitOptions.RemoveEmptyEntries).Select((bus, index) => new { Digit = bus, Index = index }).Where(pair => pair.Digit != "x").Select(pair => new KeyValuePair<int, int>(int.Parse(pair.Digit), pair.Index)).ToList();
 
             long increment = 1;
             long start = 0;
