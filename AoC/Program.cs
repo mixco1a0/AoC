@@ -46,22 +46,24 @@ namespace AoC
             Console.WriteLine("Running 2020 Advent of Code");
             Console.WriteLine("");
 
-            new _2020.Day14();
+            // new _2020.Day14();
+            // new _2020.Day13();
+            // new _2020.Day12();
+            // new _2020.Day11();
+            // new _2020.Day10();
+            // new _2020.Day09();
+            // new _2020.Day08();
+            // new _2020.Day07();
+            // new _2020.Day06();
+            // new _2020.Day05();
+            //new _2020.Day04();
+            // new _2020.Day03();
+            // new _2020.Day02();
+            // new _2020.Day01();
+
             // for (int i = 0; i < 50; ++i)
             // {
-            //     m_runData.AddData(new _2020.Day13());
-            //     m_runData.AddData(new _2020.Day12());
-            //     m_runData.AddData(new _2020.Day11());
-            //     m_runData.AddData(new _2020.Day10());
-            //     m_runData.AddData(new _2020.Day09());
-            //     m_runData.AddData(new _2020.Day08());
-            //     m_runData.AddData(new _2020.Day07());
-            //     m_runData.AddData(new _2020.Day06());
-            //     m_runData.AddData(new _2020.Day05());
             //     m_runData.AddData(new _2020.Day04());
-            //     m_runData.AddData(new _2020.Day03());
-            //     m_runData.AddData(new _2020.Day02());
-            //     m_runData.AddData(new _2020.Day01());
             // }
         }
 
@@ -70,15 +72,17 @@ namespace AoC
             Console.WriteLine("");
             Console.WriteLine("Running 2015 Advent of Code");
             Console.WriteLine("");
+            
+            new _2015.Day07();
+            new _2015.Day06();
+            new _2015.Day05();
+            new _2015.Day04();
+            new _2015.Day03();
+            new _2015.Day02();
+            new _2015.Day01();
 
             // for (int i = 0; i < 50; ++i)
             // {
-            //     m_runData.AddData(new _2015.Day07());
-            //     m_runData.AddData(new _2015.Day06());
-            //     m_runData.AddData(new _2015.Day05());
-            //     m_runData.AddData(new _2015.Day04());
-            //     m_runData.AddData(new _2015.Day03());
-            //     m_runData.AddData(new _2015.Day02());
             //     m_runData.AddData(new _2015.Day01());
             // }
         }
