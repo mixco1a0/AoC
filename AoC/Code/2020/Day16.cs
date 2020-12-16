@@ -40,29 +40,11 @@ nearby tickets:
 55,2,20
 38,6,12"
             });
-            testData.Add(new TestDatum
-            {
-                TestPart = TestPart.Two,
-                Output = "13",
-                RawInput =
-@"class: 0-1 or 4-19
-row: 0-5 or 8-19
-seat: 0-13 or 16-19
-
-your ticket:
-11,12,13
-
-nearby tickets:
-3,9,18
-15,1,5
-5,14,9"
-            });
             return testData;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            List<TicketInfo> ticketInfo = new List<TicketInfo>();
             List<MinMax> ranges = new List<MinMax>();
             bool myTicket = false;
             int invalids = 0;
@@ -111,7 +93,6 @@ nearby tickets:
         {
             List<TicketInfo> ticketInfo = new List<TicketInfo>();
             bool myTicket = false;
-            int invalids = 0;
             List<int> myTicketValues = new List<int>();
             List<List<int>> validTickets = new List<List<int>>();
             foreach (string input in inputs)
