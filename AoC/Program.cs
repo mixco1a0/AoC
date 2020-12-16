@@ -35,7 +35,7 @@ namespace AoC
 
                 Day latestDay = RunLatestDay(baseNamespace);
                 if (latestDay == null)
-                    Log($"Unable to find any day solutions for namespace {baseNamespace}");
+                    LogLine($"Unable to find any solutions for namespace {baseNamespace}");
 
                 // if the latest solution includes valid versions, run performance
                 else if (latestDay.GetSolutionVersion(TestPart.One) != "v0" && latestDay.GetSolutionVersion(TestPart.Two) != "v0")
@@ -67,9 +67,9 @@ namespace AoC
         /// <returns></returns>
         private Day RunLatestDay(string baseNamespace)
         {
-            Log("");
-            Log($"Running Latest {baseNamespace} Advent of Code");
-            Log("");
+            LogLine("");
+            LogLine($"Running Latest {baseNamespace} Advent of Code");
+            LogLine("");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
@@ -93,17 +93,16 @@ namespace AoC
         /// <param name="existingRecords"></param>
         private void RunPerformance(Type dayType, long existingRecords)
         {
-            Log("");
-            Log($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
+            LogLine($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
             for (int i = 0; i < (RecordCount - existingRecords); ++i)
             {
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
                     if (i > 0 && i % (RecordCount / 20) == 0)
-                        Log($"...{i} runs completed");
+                        LogLine($"...{i} runs completed");
                 }
                 else
-                    InPlaceLog(string.Format("{0:000.00}%", (double)i / (double)(RecordCount - existingRecords) * 100.0f));
+                    LogSameLine(string.Format("{0:000.00}%", (double)i / (double)(RecordCount - existingRecords) * 100.0f));
 
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -115,21 +114,19 @@ namespace AoC
                 m_runData.AddData(day);
             }
             if (!System.Diagnostics.Debugger.IsAttached)
-            {
-                Log("100.00%");
-            }
-            Log("");
+                LogLine("100.00%");
+            else
+                LogLine($"...{RecordCount - existingRecords} runs completed");
         }
 
         private void RunPerformance(string baseNamespace)
         {
             Day.UseLogs = false;
-            Log("");
-            Log($"Running {baseNamespace} Performance");
-            Log("");
-
-
+            LogLine("");
             LoadRunData();
+            LogLine($"Running {baseNamespace} Performance");
+
+
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -150,8 +147,10 @@ namespace AoC
                     }
                 }
             }
+
             SaveRunData();
             PrintMetrics(baseNamespace);
+            LogLine("");
             Day.UseLogs = true;
         }
 
@@ -161,10 +160,10 @@ namespace AoC
             if (System.Diagnostics.Debugger.IsAttached)
                 m_runDataFile = Path.Combine(workingDir, "rundata_debugger.json");
             else
-                m_runDataFile = Path.Combine(workingDir, "rundata.json");
+                m_runDataFile = Path.Combine(workingDir, "rundata_cmd.json");
             if (File.Exists(m_runDataFile))
             {
-                Log($"Loading {m_runDataFile}");
+                LogLine($"Loading {m_runDataFile}");
                 string rawJson = File.ReadAllText(m_runDataFile);
                 m_runData = JsonConvert.DeserializeObject<RunData>(rawJson);
             }
@@ -177,7 +176,7 @@ namespace AoC
 
         private void SaveRunData()
         {
-            Log($"Saving {m_runDataFile}");
+            LogLine($"Saving {m_runDataFile}");
             string rawJson = JsonConvert.SerializeObject(m_runData, Formatting.Indented);
             using (StreamWriter sWriter = new StreamWriter(m_runDataFile))
             {
@@ -187,9 +186,9 @@ namespace AoC
 
         private void PrintMetrics(string baseNamespace)
         {
-            Log("");
-            Log($"{baseNamespace} Performance Metrics");
-            Log("");
+            LogLine("");
+            LogLine($"{baseNamespace} Performance Metrics");
+            LogLine("");
 
             double p1Total = 0.0f;
             double p2Total = 0.0f;
@@ -198,6 +197,7 @@ namespace AoC
             double max = double.MinValue;
             string maxStr = "";
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
+            int maxStringLength = 0;
             foreach (string key in days.Keys)
             {
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[key].FullName);
@@ -213,7 +213,7 @@ namespace AoC
                             string logLine = $"[{day.Year}|{day.DayName}|part{(int)testPart}|{solutionVersion}]";
                             if (stats == null)
                             {
-                                Log($"{logLine} No stats found");
+                                logLine = $"{logLine} No stats found";
                             }
                             else
                             {
@@ -231,32 +231,42 @@ namespace AoC
                                 if (testPart == TestPart.Two)
                                     p2Total += stats.Avg;
 
-                                string statsString = string.Format("Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={3:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
-                                Log($"{logLine} {statsString}");
+                                logLine += string.Format(" Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={3:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
                             }
+                            LogLine(logLine);
+                            maxStringLength = Math.Max(maxStringLength, logLine.Length);
                         }
+                        LogLine(new string('#', maxStringLength));
                     }
                 }
             }
 
             double totals = p1Total + p2Total;
-            Log($"[{baseNamespace[^4..]}|total|part1|--] Avg={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
-            Log($"[{baseNamespace[^4..]}|total|part2|--] Avg={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
-            Log($"[{baseNamespace[^4..]}|total|-all-|--] Avg={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
+            LogLine($"[{baseNamespace[^4..]}|total|part1|--] Avg={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
+            LogLine($"[{baseNamespace[^4..]}|total|part2|--] Avg={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
+            LogLine($"[{baseNamespace[^4..]}|total|-all-|--] Avg={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
+            LogLine(new string('#', maxStringLength));
 
             if (totals > 0)
             {
-                Log($"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
-                Log($"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
+                LogLine($"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
+                LogLine($"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
+                LogLine(new string('#', maxStringLength));
+                LogLine(new string('#', maxStringLength));
             }
         }
 
         private void Log(string message)
         {
+            Console.Write($"|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
+        }
+
+        private void LogLine(string message)
+        {
             Console.WriteLine($"|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
         }
 
-        private void InPlaceLog(string message)
+        private void LogSameLine(string message)
         {
             Console.Write($"\r|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
         }
