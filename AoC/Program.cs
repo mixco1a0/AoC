@@ -158,7 +158,10 @@ namespace AoC
         private void LoadRunData()
         {
             string workingDir = Util.WorkingDirectory;
-            m_runDataFile = Path.Combine(workingDir, "rundata.json");
+            if (System.Diagnostics.Debugger.IsAttached)
+                m_runDataFile = Path.Combine(workingDir, "rundata_debugger.json");
+            else
+                m_runDataFile = Path.Combine(workingDir, "rundata.json");
             if (File.Exists(m_runDataFile))
             {
                 Log($"Loading {m_runDataFile}");
