@@ -7,6 +7,18 @@ namespace AoC._2020
     class Day13 : Day
     {
         public Day13() { }
+        public override string GetSolutionVersion(TestPart testPart)
+        {
+            switch (testPart)
+            {
+                case TestPart.One:
+                    return "v1";
+                case TestPart.Two:
+                    return "v1";
+                default:
+                    return base.GetSolutionVersion(testPart);
+            }
+        }
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -63,7 +75,6 @@ namespace AoC._2020
                     }
                 }
             }
-            return "";
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)

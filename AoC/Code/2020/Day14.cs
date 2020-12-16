@@ -1,4 +1,3 @@
-using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,18 @@ namespace AoC._2020
     class Day14 : Day
     {
         public Day14() { }
+        public override string GetSolutionVersion(TestPart testPart)
+        {
+            switch (testPart)
+            {
+                case TestPart.One:
+                    return "v1";
+                case TestPart.Two:
+                    return "v1";
+                default:
+                    return base.GetSolutionVersion(testPart);
+            }
+        }
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -93,7 +104,7 @@ mem[26] = 1"
                         chars[pair.Value] = pair.Key;
 
                         if (pair.Key == '1')
-                        memAddress[pair.Value] = '1';
+                            memAddress[pair.Value] = '1';
                     }
 
                     var allXs = chars.Select((c, idx) => new { Letter = c, Index = idx }).Where(pair => pair.Letter == 'X').Select(pair => new KeyValuePair<char, int>(pair.Letter, pair.Index)).ToList();
@@ -104,7 +115,7 @@ mem[26] = 1"
                         char[] curAddress = string.Join("", memAddress).ToCharArray();
                         for (int j = 0; j < curReplace.Length; ++j)
                         {
-                          curAddress[allXs[j].Value] = curReplace[j];
+                            curAddress[allXs[j].Value] = curReplace[j];
                         }
                         memory[string.Join("", curAddress)] = long.Parse(split[2]);
                     }

@@ -1,6 +1,6 @@
-using System.Globalization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace AoC._2020
@@ -8,20 +8,18 @@ namespace AoC._2020
     class Day04 : Day
     {
         public Day04() { }
-
         public override string GetSolutionVersion(TestPart testPart)
         {
             switch (testPart)
             {
                 case TestPart.One:
-                    return "1";
+                    return "v1";
                 case TestPart.Two:
-                    return "1";
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(testPart);
             }
         }
-
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
