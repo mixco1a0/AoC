@@ -207,7 +207,7 @@ namespace AoC
                         {
                             string solutionVersion = day.GetSolutionVersion(testPart);
                             Stats stats = m_runData.Get(day.Year, day.DayName, solutionVersion, testPart);
-                            string logLine = $"[{day.Year}|{day.DayName}|{solutionVersion}|part{(int)testPart}]";
+                            string logLine = $"[{day.Year}|{day.DayName}|part{(int)testPart}|{solutionVersion}]";
                             if (stats == null)
                             {
                                 Log($"{logLine} No stats found");
@@ -237,9 +237,9 @@ namespace AoC
             }
 
             double totals = p1Total + p2Total;
-            Log($"[{baseNamespace[^4..]}|total|--|part1] Avg={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
-            Log($"[{baseNamespace[^4..]}|total|--|part2] Avg={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
-            Log($"[{baseNamespace[^4..]}|total|--|-all-] Avg={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
+            Log($"[{baseNamespace[^4..]}|total|part1|--] Avg={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
+            Log($"[{baseNamespace[^4..]}|total|part2|--] Avg={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
+            Log($"[{baseNamespace[^4..]}|total|-all-|--] Avg={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
 
             if (totals > 0)
             {
