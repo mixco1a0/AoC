@@ -7,6 +7,8 @@ namespace AoC
 {
     abstract public class Day
     {
+        public static bool UseLogs { get; set; }
+
         private enum RunType
         {
             Testing,
@@ -19,7 +21,7 @@ namespace AoC
         protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
         public virtual string GetSolutionVersion(TestPart testPart)
         {
-            return "0";
+            return "v0";
         }
         #endregion
 
@@ -49,7 +51,6 @@ namespace AoC
                     {TestPart.One, RunPart1Solution},
                     {TestPart.Two, RunPart2Solution}
                 };
-                Run();
             }
             catch (Exception e)
             {
@@ -58,7 +59,7 @@ namespace AoC
             }
         }
 
-        private void Run()
+        public void Run()
         {
             // file input
             string fileName = string.Format("{0}.txt", DayName);
@@ -123,30 +124,37 @@ namespace AoC
 
         private void Log(string log)
         {
-            Console.WriteLine($"[{m_logID}] {log}");
+            if (UseLogs)
+                Console.WriteLine($"[{m_logID}] {log}");
         }
 
         private void LogFiller()
         {
-            Console.WriteLine($"[{DefaultLogID}]");
+            if (UseLogs)
+                Console.WriteLine($"[{DefaultLogID}]");
         }
 
         private void LogAnswer(string answer)
         {
-            string buffer = new string('*', answer.Length);
-            Console.WriteLine($"[{m_logID}] *****{buffer}*****");
-            Console.WriteLine($"[{m_logID}] ***  {answer}  ***");
-            Console.WriteLine($"[{m_logID}] *****{buffer}*****");
+            if (UseLogs)
+            {
+                string buffer = new string('*', answer.Length);
+                Console.WriteLine($"[{m_logID}] *****{buffer}*****");
+                Console.WriteLine($"[{m_logID}] ***  {answer}  ***");
+                Console.WriteLine($"[{m_logID}] *****{buffer}*****");
+            }
         }
 
         protected void Debug(string log)
         {
-            Console.WriteLine($"[{m_logID}] \t{log}");
+            if (UseLogs)
+                Console.WriteLine($"[{m_logID}] \t{log}");
         }
 
         protected void DebugWrite(string log)
         {
-            Console.Write($"[{m_logID}] \t{log}");
+            if (UseLogs)
+                Console.Write($"[{m_logID}] \t{log}");
         }
     }
 }

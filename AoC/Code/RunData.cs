@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AoC.Json
+namespace AoC
 {
     public class Stats
     {
@@ -47,6 +47,13 @@ namespace AoC.Json
             }
             StatData[testPart].AddData(elapsedMs);
         }
+
+        public Stats Get(TestPart testPart)
+        {
+            if (StatData.ContainsKey(testPart))
+                return StatData[testPart];
+            return null;
+        }
     }
 
     public class Versions
@@ -74,6 +81,13 @@ namespace AoC.Json
                 PartData[version].AddData(pair.Key, pair.Value);
             }
         }
+
+        public Stats Get(string version, TestPart testPart)
+        {
+            if (PartData.ContainsKey(version))
+                return PartData[version].Get(testPart);
+            return null;
+        }
     }
 
     public class Days
@@ -93,6 +107,13 @@ namespace AoC.Json
             }
             DayData[day.DayName].AddData(day);
         }
+
+        public Stats Get(string day, string version, TestPart testPart)
+        {
+            if (DayData.ContainsKey(day))
+                return DayData[day].Get(version, testPart);
+            return null;
+        }
     }
 
     public class RunData
@@ -111,6 +132,13 @@ namespace AoC.Json
                 YearData[day.Year] = new Days();
             }
             YearData[day.Year].AddData(day);
+        }
+
+        public Stats Get(string year, string day, string version, TestPart testPart)
+        {
+            if (YearData.ContainsKey(year))
+                return YearData[year].Get(day, version, testPart);
+            return null;
         }
     }
 }

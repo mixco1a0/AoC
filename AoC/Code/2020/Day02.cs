@@ -7,20 +7,18 @@ namespace AoC._2020
     class Day02 : Day
     {
         public Day02() { }
-
         public override string GetSolutionVersion(TestPart testPart)
         {
             switch (testPart)
             {
                 case TestPart.One:
-                    return "2";
+                    return "v2";
                 case TestPart.Two:
-                    return "2";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(testPart);
             }
         }
-
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();

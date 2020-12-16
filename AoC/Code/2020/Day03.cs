@@ -6,20 +6,18 @@ namespace AoC._2020
     class Day03 : Day
     {
         public Day03() { }
-
         public override string GetSolutionVersion(TestPart testPart)
         {
             switch (testPart)
             {
                 case TestPart.One:
-                    return "1";
+                    return "v1";
                 case TestPart.Two:
-                    return "1";
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(testPart);
             }
         }
-
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -87,7 +85,7 @@ namespace AoC._2020
             Right 7, down 1.
             Right 1, down 2.
             */
-            
+
             return (SlopeCheck(1, 1, inputs) *
                     SlopeCheck(3, 1, inputs) *
                     SlopeCheck(5, 1, inputs) *

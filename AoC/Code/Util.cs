@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace AoC
         }
 
     }
-
+    
     class MinMax
     {
         public int Min { get; set; }

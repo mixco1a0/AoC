@@ -1,5 +1,3 @@
-using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,20 +6,18 @@ namespace AoC._2020
     class Day10 : Day
     {
         public Day10() { }
-
-        // public override string GetSolutionVersion(TestPart testPart)
-        // {
-        //     switch (testPart)
-        //     {
-        //         case TestPart.One:
-        //             return "1";
-        //         case TestPart.Two:
-        //             return "1";
-        //         default:
-        //             return base.GetSolutionVersion(testPart);
-        //     }
-        // }
-
+        public override string GetSolutionVersion(TestPart testPart)
+        {
+            switch (testPart)
+            {
+                case TestPart.One:
+                    return "v1";
+                case TestPart.Two:
+                    return "v1";
+                default:
+                    return base.GetSolutionVersion(testPart);
+            }
+        }
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
