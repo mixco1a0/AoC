@@ -97,9 +97,15 @@ namespace AoC
             Log($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
             for (int i = 0; i < (RecordCount - existingRecords); ++i)
             {
-                if (i > 0 && i % (RecordCount/20) == 0)
-                Log($"...{i} runs completed");
-                
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    if (i > 0 && i % (RecordCount / 20) == 0)
+                        Log($"...{i} runs completed");
+                }
+                else
+                    InPlaceLog(string.Format("{0:000.00}%", (double)i / (double)(RecordCount - existingRecords) * 100.0f));
+
+
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
                 if (handle == null)
                     break;
@@ -107,6 +113,10 @@ namespace AoC
                 Day day = (Day)handle.Unwrap();
                 day.Run();
                 m_runData.AddData(day);
+            }
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                Log("100.00%");
             }
             Log("");
         }
@@ -218,7 +228,7 @@ namespace AoC
                                 if (testPart == TestPart.Two)
                                     p2Total += stats.Avg;
 
-                                string statsString = string.Format("Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={2:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
+                                string statsString = string.Format("Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={3:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
                                 Log($"{logLine} {statsString}");
                             }
                         }
@@ -241,6 +251,11 @@ namespace AoC
         private void Log(string message)
         {
             Console.WriteLine($"|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
+        }
+
+        private void InPlaceLog(string message)
+        {
+            Console.Write($"\r|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
         }
     }
 }
