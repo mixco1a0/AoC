@@ -43,15 +43,26 @@ nearby tickets:
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
-                Output = "",
+                Output = "13",
                 RawInput =
-@""
+@"class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
+
+your ticket:
+11,12,13
+
+nearby tickets:
+3,9,18
+15,1,5
+5,14,9"
             });
             return testData;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
+            List<TicketInfo> ticketInfo = new List<TicketInfo>();
             List<MinMax> ranges = new List<MinMax>();
             bool myTicket = false;
             int invalids = 0;
@@ -84,9 +95,114 @@ nearby tickets:
             return invalids.ToString();
         }
 
+        class TicketInfo
+        {
+            public string Name { get; set; }
+            public MinMax Lower { get; set; }
+            public MinMax Higher { get; set; }
+
+            public override string ToString()
+            {
+                return $"{Name}: {Lower.Min}-{Lower.Max} or {Higher.Min}-{Higher.Max}";
+            }
+        }
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<TicketInfo> ticketInfo = new List<TicketInfo>();
+            bool myTicket = false;
+            int invalids = 0;
+            List<int> myTicketValues = new List<int>();
+            List<List<int>> validTickets = new List<List<int>>();
+            foreach (string input in inputs)
+            {
+                if (input.Contains("or"))
+                {
+                    string name = input.Split(':').First();
+                    string[] split = input.Split("abcdefghijklmnopqrstuvwxyz: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                    string[] lower = split[0].Split('-');
+                    string[] higher = split[1].Split('-');
+                    ticketInfo.Add(new TicketInfo { Name = name, Lower = new MinMax { Min = int.Parse(lower[0]), Max = int.Parse(lower[1]) }, Higher = new MinMax { Min = int.Parse(higher[0]), Max = int.Parse(higher[1]) } });
+                }
+                else if (input.Contains(","))
+                {
+                    if (!myTicket)
+                    {
+                        myTicket = true;
+                        myTicketValues = input.Split(',').Select(int.Parse).ToList();
+                        continue;
+                    }
+
+                    int[] split = input.Split(',').Select(int.Parse).ToArray();
+                    bool valid = true;
+                    for (int i = 0; i < split.Length && valid; ++i)
+                    {
+                        if (ticketInfo.Where(info => info.Lower.GTE_LTE(split[i]) || info.Higher.GTE_LTE(split[i])).Count() <= 0)
+                            valid = false;
+                    }
+                    if (valid)
+                    {
+                        validTickets.Add(input.Split(',').Select(int.Parse).ToList());
+                    }
+                }
+            }
+
+            // solve each index
+            List<List<string>> possibilities = new List<List<string>>();
+            for (int i = 0; i < myTicketValues.Count; ++i)
+            {
+                possibilities.Add(new List<string>());
+                foreach (List<int> ticket in validTickets)
+                {
+                    int valueToCheck = ticket[i];
+                    var inRange = ticketInfo.Where(info => info.Lower.GTE_LTE(valueToCheck) || info.Higher.GTE_LTE(valueToCheck)).ToList();
+                    if (inRange.Count() > 0)
+                    {
+                        if (possibilities[i].Count == 0)
+                            possibilities[i].AddRange(inRange.Select(info => info.Name));
+                        else
+                            possibilities[i] = possibilities[i].Intersect(inRange.Select(info => info.Name)).ToList();
+                    }
+
+                    if (possibilities[i].Count == 0)
+                        break;
+                }
+            }
+
+            List<string> removals = new List<string>();
+            while (true)
+            {
+                foreach (List<string> list in possibilities)
+                {
+                    if (list.Count == 1)
+                    {
+                        removals.Add(list.First());
+                    }
+                }
+
+                bool removed = false;
+                foreach (List<string> list in possibilities)
+                {
+                    if (list.Count != 1)
+                    {
+                        removed = true;
+                        list.RemoveAll(l => removals.Contains(l));
+                    }
+                }
+
+                if (!removed)
+                    break;
+            }
+
+            Dictionary<string, int> nameToIdx = possibilities.Select(list => list.First()).Select((value,index) => new {Value=value,Index=index}).ToDictionary(pair => pair.Value, pair => pair.Index);
+            var smalls = nameToIdx.Where(pair => pair.Key.Contains("departure")).ToList();
+            long multValue = 1;
+            foreach (var pair in smalls)
+            {
+                multValue *= myTicketValues[pair.Value];
+            }
+
+            return multValue.ToString();
         }
     }
 }
