@@ -17,6 +17,42 @@ namespace AoC
         }
     }
 
+    class CommandLineArgs
+    {
+        public Dictionary<string, string> Args { get; private set; }
+
+        public CommandLineArgs(string[] args)
+        {
+            Args = new Dictionary<string, string>();
+
+            string curArg = string.Empty;
+            foreach (string arg in args)
+            {
+                if (arg.First() == '-')
+                {
+                    curArg = arg[1..];
+                    Args[curArg] = string.Empty;
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(curArg))
+                        Args[curArg] = arg;
+                    curArg = string.Empty;
+                }
+            }
+        }
+
+        public bool HasArg(string arg)
+        {
+            return Args.ContainsKey(arg);
+        }
+
+        public bool HasArgValue(string arg)
+        {
+            return HasArg(arg) && !string.IsNullOrWhiteSpace(Args[arg]);
+        }
+    }
+
     class Program
     {
         // private enum Args
@@ -32,16 +68,6 @@ namespace AoC
         private long RecordCount { get { return 1000; } }
         private long MaxPerfTimeMs { get { return 10000; } }
 
-        // private Dictionary<string, string> CommandArgs { get; set; }
-        // private bool HasCommandArg(string arg)
-        // {
-        //     return CommandArgs.ContainsKey(arg);
-        // }
-        // private bool HasCommandArgValue(string arg)
-        // {
-        //     return HasCommandArg(arg) && !string.IsNullOrWhiteSpace(CommandArgs[arg]);
-        // }
-
         public Program(string[] args)
         {
             try
@@ -49,20 +75,24 @@ namespace AoC
                 Day.UseLogs = true;
 
                 // parse command args
-                ParseCommandArgs(args);
+                CommandLineArgs commandLineArgs = ParseCommandLineArgs(args);
+
+                // get the namespace to use
+                string baseNamespace = nameof(AoC._2020);
+                if (commandLineArgs.HasArgValue("namespace"))
+                    baseNamespace = commandLineArgs.Args["namespace"];
 
                 // run the latest day in the given namespace
-                string baseNamespace = nameof(AoC._2020);
-                // if (HasCommandArgValue(nameof(baseNamespace)))
-                //     baseNamespace = CommandArgs[nameof(baseNamespace)];
+                if (!commandLineArgs.HasArg("skiplatest"))
+                {
+                    Day latestDay = RunLatestDay(baseNamespace);
+                    if (latestDay == null)
+                        LogLine($"Unable to find any solutions for namespace {baseNamespace}");
+                }
 
-                Day latestDay = RunLatestDay(baseNamespace);
-                if (latestDay == null)
-                    LogLine($"Unable to find any solutions for namespace {baseNamespace}");
-
-                // if the latest solution includes valid versions, run performance
-                // else if (latestDay.GetSolutionVersion(TestPart.One) != "v0" && latestDay.GetSolutionVersion(TestPart.Two) != "v0")
-                //     RunPerformance(baseNamespace);
+                // run performance tests
+                if (commandLineArgs.HasArg("runperf"))
+                    RunPerformance(baseNamespace);
             }
             catch (Exception e)
             {
@@ -71,33 +101,18 @@ namespace AoC
             }
         }
 
-        private void ParseCommandArgs(string[] args)
+        /// <summary>
+        /// Parse the command line arguments
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private CommandLineArgs ParseCommandLineArgs(string[] args)
         {
-            // CommandArgs = new Dictionary<string, string>();
-
-            // string curArg = string.Empty;
-            // foreach (string arg in args)
-            // {
-            //     if (arg.First() == '-')
-            //     {
-            //         curArg = arg[1..];
-            //         CommandArgs[curArg] = string.Empty;
-            //     }
-            //     else
-            //     {
-            //         if (string.IsNullOrWhiteSpace(curArg))
-            //             LogLine($"Failed to parse {arg}");
-            //         else
-            //             CommandArgs[curArg] = arg;
-            //         curArg = string.Empty;
-            //     }
-            // }
-
-            // LogLine("Using the command args:");
-            // foreach (KeyValuePair<string, string> arg in CommandArgs)
-            // {
-            //     LogLine($"   -{arg.Key} {arg.Value}");
-            // }
+            LogLine("Command line");
+            CommandLineArgs commandLineArgs = new CommandLineArgs(args);
+            foreach (var argPair in commandLineArgs.Args)
+                LogLine($"     -{argPair.Key} {argPair.Value}");
+            return commandLineArgs;
         }
 
         /// <summary>
@@ -143,6 +158,8 @@ namespace AoC
         /// </summary>
         /// <param name="dayType"></param>
         /// <param name="existingRecords"></param>
+        /// <param name="runData"></param>
+        /// <returns></returns>
         private bool RunPerformance(Type dayType, long existingRecords, ref RunData runData)
         {
             Timer timer = new Timer();
@@ -182,6 +199,10 @@ namespace AoC
             return i == maxI;
         }
 
+        /// <summary>
+        /// Run performance for a specific namespace
+        /// </summary>
+        /// <param name="baseNamespace"></param>
         private void RunPerformance(string baseNamespace)
         {
             Day.UseLogs = false;
@@ -190,10 +211,7 @@ namespace AoC
             string runDataFileName;
             LoadRunData(out runDataFileName, out runData);
 
-            LogLine("");
             LogLine($"Running {baseNamespace} Performance");
-
-
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -225,6 +243,11 @@ namespace AoC
             Day.UseLogs = true;
         }
 
+        /// <summary>
+        /// Load the save data from previous runs
+        /// </summary>
+        /// <param name="runDataFileName"></param>
+        /// <param name="runData"></param>
         private void LoadRunData(out string runDataFileName, out RunData runData)
         {
             string workingDir = Util.WorkingDirectory;
@@ -234,6 +257,7 @@ namespace AoC
                 runDataFileName = Path.Combine(workingDir, "rundata_cmd.json");
             if (File.Exists(runDataFileName))
             {
+                LogLine("");
                 LogLine($"Loading {runDataFileName}");
                 string rawJson = File.ReadAllText(runDataFileName);
                 runData = JsonConvert.DeserializeObject<RunData>(rawJson);
@@ -244,7 +268,11 @@ namespace AoC
             }
         }
 
-
+        /// <summary>
+        /// Save the current run data to a specific file
+        /// </summary>
+        /// <param name="runDataFileName"></param>
+        /// <param name="runData"></param>
         private void SaveRunData(string runDataFileName, RunData runData)
         {
             LogLine($"Saving {runDataFileName}");
@@ -255,6 +283,11 @@ namespace AoC
             }
         }
 
+        /// <summary>
+        /// Print out all the metrics from run data
+        /// </summary>
+        /// <param name="baseNamespace"></param>
+        /// <param name="runData"></param>
         private void PrintMetrics(string baseNamespace, RunData runData)
         {
             LogLine("");
@@ -328,16 +361,28 @@ namespace AoC
             }
         }
 
+        /// <summary>
+        /// Console.Write with a timestamp
+        /// </summary>
+        /// <param name="message"></param>
         private void Log(string message)
         {
             Console.Write($"{Util.GetLogTimeStamp()} {message}");
         }
 
+        /// <summary>
+        /// Console.WriteLine with a timestamp
+        /// </summary>
+        /// <param name="message"></param>
         private void LogLine(string message)
         {
             Console.WriteLine($"{Util.GetLogTimeStamp()} {message}");
         }
 
+        /// <summary>
+        /// Console.Write into the previous console location
+        /// </summary>
+        /// <param name="message"></param>
         private void LogSameLine(string message)
         {
             Console.Write($"\r{Util.GetLogTimeStamp()} {message}");
