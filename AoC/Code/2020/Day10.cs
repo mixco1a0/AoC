@@ -158,7 +158,9 @@ namespace AoC._2020
                 prevNumber = number;
 
                 if (!canContinue)
+                {
                     break;
+                }
             }
 
             return (oneJoltDiff * (threeJoltDiff + 1)).ToString();

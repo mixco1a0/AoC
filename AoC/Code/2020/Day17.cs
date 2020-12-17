@@ -46,7 +46,7 @@ namespace AoC._2020
 
         private void Print(List<List<List<char>>> matrix)
         {
-            Debug("Print() - START");
+            // DebugWriteLine("Print() - START");
             for (int i = 0; i < matrix.Count; ++i)
             {
                 Console.WriteLine($"Layer {i}");
@@ -59,7 +59,7 @@ namespace AoC._2020
                     Console.WriteLine("");
                 }
             }
-            Debug("Print() - END");
+            // DebugWriteLine("Print() - END");
         }
 
         private List<List<List<char>>> Grow(List<List<List<char>>> matrix)
@@ -126,25 +126,35 @@ namespace AoC._2020
             {
                 // Debug($"Checking matrix[{z}]");
                 if (z < 0 || z >= matrix.Count)
+                {
                     continue;
+                }
 
                 for (int x = xIdx - 1; x <= xIdx + 1; ++x)
                 {
                     // Debug($"Checking matrix[{z}][{x}]");
                     if (x < 0 || x >= matrix[z].Count)
+                    {
                         continue;
+                    }
 
                     for (int y = yIdx - 1; y <= yIdx + 1; ++y)
                     {
                         // Debug($"Checking matrix[{z}][{x}][{y}]");
                         if (z == zIdx && x == xIdx && y == yIdx)
+                        {
                             continue;
+                        }
 
                         if (y < 0 || y >= matrix[z][x].Count)
+                        {
                             continue;
+                        }
 
                         if (matrix[z][x][y] == '#')
+                        {
                             ++activeCount;
+                        }
                     }
                 }
             }
@@ -262,31 +272,43 @@ namespace AoC._2020
             for (int w = wIdx - 1; w <= wIdx + 1; ++w)
             {
                 if (w < 0 || w >= matrix.Count)
+                {
                     continue;
+                }
 
                 for (int z = zIdx - 1; z <= zIdx + 1; ++z)
                 {
                     // Debug($"Checking matrix[{z}]");
                     if (z < 0 || z >= matrix[w].Count)
+                    {
                         continue;
+                    }
 
                     for (int x = xIdx - 1; x <= xIdx + 1; ++x)
                     {
                         // Debug($"Checking matrix[{z}][{x}]");
                         if (x < 0 || x >= matrix[w][z].Count)
+                        {
                             continue;
+                        }
 
                         for (int y = yIdx - 1; y <= yIdx + 1; ++y)
                         {
                             // Debug($"Checking matrix[{z}][{x}][{y}]");
                             if (w == wIdx && z == zIdx && x == xIdx && y == yIdx)
+                            {
                                 continue;
+                            }
 
                             if (y < 0 || y >= matrix[w][z][x].Count)
+                            {
                                 continue;
+                            }
 
                             if (matrix[w][z][x][y] == '#')
+                            {
                                 ++activeCount;
+                            }
                         }
                     }
                 }
@@ -332,7 +354,7 @@ namespace AoC._2020
 
         private void Print(List<List<List<List<char>>>> matrix)
         {
-            Debug("Print() - START");
+            // DebugWriteLine("Print() - START");
             for (int w = 0; w < matrix.Count; ++w)
             {
                 for (int z = 0; z < matrix[w].Count; ++z)
@@ -348,7 +370,7 @@ namespace AoC._2020
                     }
                 }
             }
-            Debug("Print() - END");
+            // DebugWriteLine("Print() - END");
         }
     }
 }

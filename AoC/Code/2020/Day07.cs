@@ -77,7 +77,9 @@ dark violet bags contain no other bags."
                 string bags = cur[1].Replace("bags", "").Replace("bag", "").Replace(" ", "").Replace(".", "");
                 List<string> bagList = bags.Split(",").ToList();
                 if (bagList[0] == "noother")
+                {
                     continue;
+                }
 
                 bagsToInput[id] = bagList.Select(color => color[1..]).ToList();
             }
@@ -88,7 +90,9 @@ dark violet bags contain no other bags."
             {
                 int returnVal = GetPossibleBags(bagsToInput, ref usedBags, ref curBagList);
                 if (returnVal == 0)
+                {
                     break;
+                }
             }
             return usedBags.Count.ToString();
         }
@@ -123,7 +127,6 @@ dark violet bags contain no other bags."
                 string bags = cur[1].Replace("bags", "").Replace("bag", "").Replace(" ", "").Replace(".", "");
                 List<string> bagList = bags.Split(",").ToList();
                 if (bagList[0] == "noother")
-
                 {
                     bagsToInput[id] = new List<string>();
                     bagsToCount[id] = new List<int>();

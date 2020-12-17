@@ -105,7 +105,9 @@ namespace AoC._2020
                 for (int b = 0; b < buses.Count && found; ++b)
                 {
                     if ((time + buses[b].Value) % buses[b].Key != 0)
+                    {
                         found = false;
+                    }
                 }
 
                 if (found)

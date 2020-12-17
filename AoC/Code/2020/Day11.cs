@@ -64,21 +64,31 @@ L.LLLLL.LL"
             for (int i = x - 1; i <= x + 1; ++i)
             {
                 if (i < 0 || i >= seats.Count)
+                {
                     continue;
+                }
 
                 for (int j = y - 1; j <= y + 1; ++j)
                 {
                     if (i == x && j == y)
+                    {
                         continue;
+                    }
 
                     if (j < 0 || j >= seats[x].Count)
+                    {
                         continue;
+                    }
 
                     if (seats[i][j] == '#')
+                    {
                         ++fullCount;
+                    }
 
                     if (seats[i][j] == 'L')
+                    {
                         ++emptyCount;
+                    }
                 }
             }
 
@@ -89,7 +99,6 @@ L.LLLLL.LL"
                 case '#':
                     return fullCount >= 4 ? 'L' : '#';
             }
-
 
             return '!';
         }
@@ -106,7 +115,9 @@ L.LLLLL.LL"
                 for (int y = 0; y < seats[x].Count; ++y)
                 {
                     if (seats[x][y] == '.')
+                    {
                         continue;
+                    }
 
                     newSeats[x][y] = GetLocationStateFunc(x, y, seats);
                 }
@@ -141,15 +152,21 @@ L.LLLLL.LL"
             for (int i = x - 1; i <= x + 1; ++i)
             {
                 if (i < 0 || i >= seats.Count)
+                {
                     continue;
+                }
 
                 for (int j = y - 1; j <= y + 1; ++j)
                 {
                     if (i == x && j == y)
+                    {
                         continue;
+                    }
 
                     if (j < 0 || j >= seats[x].Count)
+                    {
                         continue;
+                    }
 
                     if (seats[i][j] == '#')
                     {
@@ -195,10 +212,14 @@ L.LLLLL.LL"
             for (int i = xFunc(x), j = yFunc(y); ; i = xFunc(i), j = yFunc(j))
             {
                 if (i == x && j == y)
+                {
                     continue;
+                }
 
                 if (i < 0 || j < 0 || i >= seats.Count || j >= seats[i].Count)
+                {
                     break;
+                }
 
                 if (seats[i][j] == '#')
                 {

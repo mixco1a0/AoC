@@ -74,7 +74,9 @@ namespace AoC._2020
                 string removedLetters = passwordInput.Word.Replace(passwordInput.Letter, "");
                 int diff = passwordInput.Word.Length - removedLetters.Length;
                 if (diff >= passwordInput.LowValue && diff <= passwordInput.HighValue)
+                {
                     ++validPasswords;
+                }
             }
 
             return validPasswords.ToString();
@@ -90,9 +92,14 @@ namespace AoC._2020
                 char lowChar = passwordInput.Word.ElementAt(passwordInput.LowValue - 1);
                 char highChar = passwordInput.Word.ElementAt(passwordInput.HighValue - 1);
                 if (lowChar == highChar)
+                {
                     continue;
+                }
+
                 if (lowChar == passwordInput.SingleLetter || highChar == passwordInput.SingleLetter)
+                {
                     ++validPasswords;
+                }
             }
 
             return validPasswords.ToString();

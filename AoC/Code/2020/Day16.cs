@@ -70,7 +70,9 @@ nearby tickets:
                     for (int i = 0; i < split.Length; ++i)
                     {
                         if (ranges.Where(range => range.GTE_LTE(split[i])).Count() <= 0)
+                        {
                             invalids += split[i];
+                        }
                     }
                 }
             }
@@ -119,8 +121,11 @@ nearby tickets:
                     for (int i = 0; i < split.Length && valid; ++i)
                     {
                         if (ticketInfo.Where(info => info.Lower.GTE_LTE(split[i]) || info.Higher.GTE_LTE(split[i])).Count() <= 0)
+                        {
                             valid = false;
+                        }
                     }
+
                     if (valid)
                     {
                         validTickets.Add(input.Split(',').Select(int.Parse).ToList());
@@ -140,13 +145,19 @@ nearby tickets:
                     if (inRange.Count() > 0)
                     {
                         if (possibilities[i].Count == 0)
+                        {
                             possibilities[i].AddRange(inRange.Select(info => info.Name));
+                        }
                         else
+                        {
                             possibilities[i] = possibilities[i].Intersect(inRange.Select(info => info.Name)).ToList();
+                        }
                     }
 
                     if (possibilities[i].Count == 0)
+                    {
                         break;
+                    }
                 }
             }
 
@@ -172,7 +183,9 @@ nearby tickets:
                 }
 
                 if (!removed)
+                {
                     break;
+                }
             }
 
             Dictionary<string, int> nameToIdx = possibilities.Select(list => list.First()).Select((value,index) => new {Value=value,Index=index}).ToDictionary(pair => pair.Value, pair => pair.Index);

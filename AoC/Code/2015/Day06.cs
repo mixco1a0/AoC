@@ -55,13 +55,13 @@ namespace AoC._2015
                         switch (instruction[0..2])
                         {
                             case "on":
-                                array[i,j] = true;
+                                array[i, j] = true;
                                 break;
                             case "of":
-                                array[i,j] = false;
+                                array[i, j] = false;
                                 break;
                             case "to":
-                                array[i,j] = !array[i,j];
+                                array[i, j] = !array[i, j];
                                 break;
                             default:
                                 break;
@@ -104,14 +104,16 @@ namespace AoC._2015
                         switch (instruction[0..2])
                         {
                             case "on":
-                                ++array[i,j];
+                                ++array[i, j];
                                 break;
                             case "of":
-                            if (array[i,j] > 0)
-                                --array[i,j];
+                                if (array[i, j] > 0)
+                                {
+                                    --array[i, j];
+                                }
                                 break;
                             case "to":
-                                array[i,j] += 2;
+                                array[i, j] += 2;
                                 break;
                             default:
                                 break;

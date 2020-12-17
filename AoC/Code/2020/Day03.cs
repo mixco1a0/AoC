@@ -66,7 +66,9 @@ namespace AoC._2020
             {
                 curIdx = (curIdx + rightStep) % inputs[i].Length;
                 if (inputs[i].ElementAt(curIdx) == '#')
+                {
                     ++treeCount;
+                }
             }
             return treeCount;
         }

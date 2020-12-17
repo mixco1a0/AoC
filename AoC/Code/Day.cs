@@ -25,7 +25,7 @@ namespace AoC
         }
         #endregion
 
-        private string DefaultLogID { get { return new string('.', 24); } }
+        private string DefaultLogID { get { return new string('.', 27); } }
 
         public string Year { get; private set; }
         public string DayName { get; private set; }
@@ -84,35 +84,39 @@ namespace AoC
             // run tests if there any
             foreach (TestDatum datum in partSpecificTestData)
             {
-                RunPart(RunType.Testing, testPart, datum.Input.ToList(), datum.Output, datum.Variables);
-                LogFiller();
+                TimedRun(RunType.Testing, testPart, datum.Input.ToList(), datum.Output, datum.Variables);
             }
 
-            // run problem
+            TimeResults[testPart] = TimedRun(RunType.Problem, testPart, problemInput.ToList(), "", null);
+            LogFiller();
+        }
+
+        private double TimedRun(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
+        {
+            LogFiller();
+
             Timer timer = new Timer();
             timer.Start();
-            RunPart(RunType.Problem, testPart, problemInput.ToList(), "", null);
+            RunPart(runType, testPart, inputs, expectedOuput, variables);
             timer.Stop();
-            TimeResults[testPart] = timer.GetElapsedMs();
 
-            // print time
             Log($"{timer.Print()}");
-            LogFiller();
+            return timer.GetElapsedMs();
         }
 
         private void RunPart(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
         {
-            m_logID = string.Format("{0}|{1}|{2}|part{3}", Year, DayName, runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2");
+            m_logID = string.Format("{0}|{1}|{2}|part{3}|{4}", Year, DayName, runType == RunType.Problem ? "problem" : "testing", testPart == TestPart.One ? "1" : "2", GetSolutionVersion(testPart));
             try
             {
                 string actualOutput = m_partSpecificFunctions[testPart](inputs, variables);
                 if (runType == RunType.Testing && actualOutput != expectedOuput)
                 {
-                    LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]");
+                    LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", '!');
                 }
                 else
                 {
-                    LogAnswer(actualOutput);
+                    LogAnswer(actualOutput, runType == RunType.Problem ? '#' : '?');
                 }
             }
             catch (Exception e)
@@ -125,36 +129,47 @@ namespace AoC
         private void Log(string log)
         {
             if (UseLogs)
+            {
                 Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {log}");
+            }
         }
 
         private void LogFiller()
         {
             if (UseLogs)
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{DefaultLogID}]");
-        }
-
-        private void LogAnswer(string answer)
-        {
-            if (UseLogs)
             {
-                string buffer = new string('*', answer.Length);
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] *****{buffer}*****");
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] ***  {answer}  ***");
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] *****{buffer}*****");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{DefaultLogID}]");
             }
         }
 
-        protected void Debug(string log)
+        private void LogAnswer(string answer, char filler)
         {
             if (UseLogs)
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+            {
+                string buffer = new string(filler, answer.Length);
+                string empty = new string(' ', answer.Length);
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 5)}{buffer}{new string(filler, 5)}");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 3)}  {empty }  {new string(filler, 3)}");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 3)}  {answer}  {new string(filler, 3)}");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 3)}  {empty }  {new string(filler, 3)}");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 5)}{buffer}{new string(filler, 5)}");
+            }
         }
 
         protected void DebugWrite(string log)
         {
             if (UseLogs)
+            {
                 Console.Write($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+            }
+        }
+
+        protected void DebugWriteLine(string log)
+        {
+            if (UseLogs)
+            {
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+            }
         }
     }
 }

@@ -50,7 +50,9 @@ namespace AoC._2020
             public long GetNext()
             {
                 if (PrevIndex == -1)
+                {
                     return 0;
+                }
                 return Index - PrevIndex;
             }
         }
@@ -72,12 +74,18 @@ namespace AoC._2020
                 TurnInfo turnInfo = turns[prevNumber];
                 long curNumber = turnInfo.GetNext();
                 if (index == 2020)
+                {
                     return curNumber.ToString();
+                }
 
                 if (!turns.ContainsKey(curNumber))
+                {
                     turns[curNumber] = new TurnInfo { Index = index++, PrevIndex = -1 };
+                }
                 else
+                {
                     turns[curNumber].Bump(index++);
+                }
 
                 prevNumber = curNumber;
             }
@@ -100,12 +108,18 @@ namespace AoC._2020
                 TurnInfo turnInfo = turns[prevNumber];
                 long curNumber = turnInfo.GetNext();
                 if (index == 30000000)
+                {
                     return curNumber.ToString();
+                }
 
                 if (!turns.ContainsKey(curNumber))
+                {
                     turns[curNumber] = new TurnInfo { Index = index++, PrevIndex = -1 };
+                }
                 else
+                {
                     turns[curNumber].Bump(index++);
+                }
 
                 prevNumber = curNumber;
             }
