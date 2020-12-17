@@ -16,6 +16,11 @@ namespace AoC
             return input.Split('\n').Select(str => str.Trim('\r'));
         }
 
+        static public string GetLogTimeStamp()
+        {
+            return $"|{DateTime.Now.ToString("hh:mm:ss.fff")}| ";
+        }
+
         private static string s_workingDirectory;
         static public string WorkingDirectory
         {

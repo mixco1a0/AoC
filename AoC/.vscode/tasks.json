@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build debug",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -10,6 +10,23 @@
                 "${workspaceFolder}/AoC.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build release",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/AoC.csproj",
+                "/property:GenerateFullPaths=true",
+                "-c",
+                "Release"
             ],
             "problemMatcher": "$msCompile"
         },
