@@ -19,10 +19,28 @@ namespace AoC
 
     class Program
     {
+        // private enum Args
+        // {
+        //     Namespace = 0,
+        //     Timeout = 1,
+        // }
+        // private string[] ArgStrings = new string[]
+        // {
+        //     "namespace",
+        //     "timeout"
+        // };
         private long RecordCount { get { return 1000; } }
+        private long MaxPerfTimeMs { get { return 10000; } }
 
-        private string m_runDataFile;
-        private RunData m_runData;
+        // private Dictionary<string, string> CommandArgs { get; set; }
+        // private bool HasCommandArg(string arg)
+        // {
+        //     return CommandArgs.ContainsKey(arg);
+        // }
+        // private bool HasCommandArgValue(string arg)
+        // {
+        //     return HasCommandArg(arg) && !string.IsNullOrWhiteSpace(CommandArgs[arg]);
+        // }
 
         public Program(string[] args)
         {
@@ -30,22 +48,56 @@ namespace AoC
             {
                 Day.UseLogs = true;
 
+                // parse command args
+                ParseCommandArgs(args);
+
                 // run the latest day in the given namespace
                 string baseNamespace = nameof(AoC._2020);
+                // if (HasCommandArgValue(nameof(baseNamespace)))
+                //     baseNamespace = CommandArgs[nameof(baseNamespace)];
 
                 Day latestDay = RunLatestDay(baseNamespace);
                 if (latestDay == null)
                     LogLine($"Unable to find any solutions for namespace {baseNamespace}");
 
                 // if the latest solution includes valid versions, run performance
-                else if (latestDay.GetSolutionVersion(TestPart.One) != "v0" && latestDay.GetSolutionVersion(TestPart.Two) != "v0")
-                    RunPerformance(baseNamespace);
+                // else if (latestDay.GetSolutionVersion(TestPart.One) != "v0" && latestDay.GetSolutionVersion(TestPart.Two) != "v0")
+                //     RunPerformance(baseNamespace);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
             }
+        }
+
+        private void ParseCommandArgs(string[] args)
+        {
+            // CommandArgs = new Dictionary<string, string>();
+
+            // string curArg = string.Empty;
+            // foreach (string arg in args)
+            // {
+            //     if (arg.First() == '-')
+            //     {
+            //         curArg = arg[1..];
+            //         CommandArgs[curArg] = string.Empty;
+            //     }
+            //     else
+            //     {
+            //         if (string.IsNullOrWhiteSpace(curArg))
+            //             LogLine($"Failed to parse {arg}");
+            //         else
+            //             CommandArgs[curArg] = arg;
+            //         curArg = string.Empty;
+            //     }
+            // }
+
+            // LogLine("Using the command args:");
+            // foreach (KeyValuePair<string, string> arg in CommandArgs)
+            // {
+            //     LogLine($"   -{arg.Key} {arg.Value}");
+            // }
         }
 
         /// <summary>
@@ -91,10 +143,14 @@ namespace AoC
         /// </summary>
         /// <param name="dayType"></param>
         /// <param name="existingRecords"></param>
-        private void RunPerformance(Type dayType, long existingRecords)
+        private bool RunPerformance(Type dayType, long existingRecords, ref RunData runData)
         {
+            Timer timer = new Timer();
+            timer.Start();
             LogLine($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
-            for (int i = 0; i < (RecordCount - existingRecords); ++i)
+            long i = 0;
+            long maxI = RecordCount - existingRecords;
+            for (; i < maxI; ++i)
             {
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
@@ -102,7 +158,7 @@ namespace AoC
                         LogLine($"...{i} runs completed");
                 }
                 else
-                    LogSameLine(string.Format("{0:000.00}%", (double)i / (double)(RecordCount - existingRecords) * 100.0f));
+                    LogSameLine(string.Format("...{0:000.0}%", (double)i / (double)(maxI) * 100.0f));
 
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -111,19 +167,30 @@ namespace AoC
 
                 Day day = (Day)handle.Unwrap();
                 day.Run();
-                m_runData.AddData(day);
+                runData.AddData(day);
+
+                if (timer.GetElapsedMs() > MaxPerfTimeMs)
+                    break;
             }
             if (!System.Diagnostics.Debugger.IsAttached)
-                LogLine("100.00%");
+            {
+                LogSameLine(string.Format("...{0:000.0}%\n\r", (double)i / (double)(maxI) * 100.0f));
+            }
             else
-                LogLine($"...{RecordCount - existingRecords} runs completed");
+                LogLine($"...{maxI} runs completed");
+
+            return i == maxI;
         }
 
         private void RunPerformance(string baseNamespace)
         {
             Day.UseLogs = false;
+
+            RunData runData;
+            string runDataFileName;
+            LoadRunData(out runDataFileName, out runData);
+
             LogLine("");
-            LoadRunData();
             LogLine($"Running {baseNamespace} Performance");
 
 
@@ -138,54 +205,59 @@ namespace AoC
                     {
                         for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
                         {
-                            Stats stats = m_runData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
+                            bool completed = false;
+                            Stats stats = runData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
                             if (stats == null)
-                                RunPerformance(day.GetType(), 0);
+                                completed = RunPerformance(day.GetType(), 0, ref runData);
                             else if (stats.Count < RecordCount)
-                                RunPerformance(day.GetType(), stats.Count);
+                                completed = RunPerformance(day.GetType(), stats.Count, ref runData);
+
+                            if (!completed)
+                                break;
                         }
                     }
                 }
             }
 
-            SaveRunData();
-            PrintMetrics(baseNamespace);
+            SaveRunData(runDataFileName, runData);
+            PrintMetrics(baseNamespace, runData);
             LogLine("");
             Day.UseLogs = true;
         }
 
-        private void LoadRunData()
+        private void LoadRunData(out string runDataFileName, out RunData runData)
         {
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
-                m_runDataFile = Path.Combine(workingDir, "rundata_debugger.json");
+                runDataFileName = Path.Combine(workingDir, "rundata_debugger.json");
             else
-                m_runDataFile = Path.Combine(workingDir, "rundata_cmd.json");
-            if (File.Exists(m_runDataFile))
+                runDataFileName = Path.Combine(workingDir, "rundata_cmd.json");
+            if (File.Exists(runDataFileName))
             {
-                LogLine($"Loading {m_runDataFile}");
-                string rawJson = File.ReadAllText(m_runDataFile);
-                m_runData = JsonConvert.DeserializeObject<RunData>(rawJson);
+                LogLine($"Loading {runDataFileName}");
+                string rawJson = File.ReadAllText(runDataFileName);
+                runData = JsonConvert.DeserializeObject<RunData>(rawJson);
             }
             else
             {
-                m_runData = new RunData();
+                runData = new RunData();
             }
         }
 
 
-        private void SaveRunData()
+        private void SaveRunData(string runDataFileName, RunData runData)
         {
-            LogLine($"Saving {m_runDataFile}");
-            string rawJson = JsonConvert.SerializeObject(m_runData, Formatting.Indented);
-            using (StreamWriter sWriter = new StreamWriter(m_runDataFile))
+            LogLine($"Saving {runDataFileName}");
+            string rawJson = JsonConvert.SerializeObject(runData, Formatting.Indented);
+            using (StreamWriter sWriter = new StreamWriter(runDataFileName))
             {
                 sWriter.Write(rawJson);
             }
         }
 
-        private void PrintMetrics(string baseNamespace)
+        private void PrintMetrics(string baseNamespace, RunData runData)
         {
+            LogLine("");
             LogLine("");
             LogLine($"{baseNamespace} Performance Metrics");
             LogLine("");
@@ -209,7 +281,7 @@ namespace AoC
                         for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
                         {
                             string solutionVersion = day.GetSolutionVersion(testPart);
-                            Stats stats = m_runData.Get(day.Year, day.DayName, solutionVersion, testPart);
+                            Stats stats = runData.Get(day.Year, day.DayName, solutionVersion, testPart);
                             string logLine = $"[{day.Year}|{day.DayName}|part{(int)testPart}|{solutionVersion}]";
                             if (stats == null)
                             {
@@ -258,17 +330,17 @@ namespace AoC
 
         private void Log(string message)
         {
-            Console.Write($"|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
+            Console.Write($"{Util.GetLogTimeStamp()} {message}");
         }
 
         private void LogLine(string message)
         {
-            Console.WriteLine($"|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
+            Console.WriteLine($"{Util.GetLogTimeStamp()} {message}");
         }
 
         private void LogSameLine(string message)
         {
-            Console.Write($"\r|{DateTime.Now.ToString("hh:mm:ss.fff")}| {message}");
+            Console.Write($"\r{Util.GetLogTimeStamp()} {message}");
         }
     }
 }
