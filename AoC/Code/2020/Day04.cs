@@ -82,6 +82,26 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             return testData;
         }
 
+        private int GetValidPassportCount(List<string> inputs, Func<string,bool> CheckIsValidFunc)
+        {
+            int validPassports = 0;
+            string curInfo = "";
+            for (int i = 0; i < inputs.Count; ++i)
+            {
+                curInfo += $"{inputs[i]} ";
+                if (string.IsNullOrWhiteSpace(inputs[i]) || i + 1 == inputs.Count)
+                {
+                    if (CheckIsValidFunc(curInfo))
+                    {
+                        ++validPassports;
+                    }
+                    curInfo = "";
+                }
+            }
+
+            return validPassports;
+        }
+
         private bool CheckIsValid(string passportData)
         {
             List<string> requiredFields = new List<string> { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
@@ -98,52 +118,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int validPassports = 0;
-            string curInfo = "";
-            foreach (string input in inputs)
-            {
-                curInfo += $"{input} ";
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    if (CheckIsValid(curInfo))
-                    {
-                        ++validPassports;
-                    }
-                    curInfo = "";
-                }
-            }
-
-            if (CheckIsValid(curInfo))
-            {
-                ++validPassports;
-            }
-
-            return validPassports.ToString();
-        }
-
-        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            int validPassports = 0;
-            string curInfo = "";
-            foreach (string input in inputs)
-            {
-                curInfo += $"{input} ";
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    if (CheckIsValidStringent(curInfo))
-                    {
-                        ++validPassports;
-                    }
-                    curInfo = "";
-                }
-            }
-
-            if (CheckIsValidStringent(curInfo))
-            {
-                ++validPassports;
-            }
-
-            return validPassports.ToString();
+            return GetValidPassportCount(inputs, CheckIsValid).ToString();
         }
 
         private bool CheckIsValidStringent(string passportData)
@@ -226,6 +201,11 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
                 return false;
             }
             return true;
+        }
+
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
+            return GetValidPassportCount(inputs, CheckIsValidStringent).ToString();
         }
     }
 }
