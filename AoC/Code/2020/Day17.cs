@@ -25,9 +25,11 @@ namespace AoC._2020
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.One,
-                Output = "",
+                Output = "112",
                 RawInput =
-@""
+@".#.
+..#
+###"
             });
             testData.Add(new TestDatum
             {
@@ -39,9 +41,145 @@ namespace AoC._2020
             return testData;
         }
 
+        private void Print(List<List<List<char>>> matrix)
+        {
+            Debug("Print() - START");
+            for (int i = 0; i < matrix.Count; ++i)
+            {
+                Console.WriteLine($"Layer {i}");
+                for (int j = 0; j < matrix[i].Count; ++j)
+                {
+                    for (int k = 0; k < matrix[i][j].Count; ++k)
+                    {
+                        Console.Write(matrix[i][j][k]);
+                    }
+                    Console.WriteLine("");
+                }
+            }
+            Debug("Print() - END");
+        }
+
+        private List<List<List<char>>> Grow(List<List<List<char>>> matrix)
+        {
+            List<List<List<char>>> newMatrix = new List<List<List<char>>>();
+            int zCount = matrix.Count + 2;
+            int xCount = matrix[0].Count + 2;
+            int yCount = matrix[0][0].Count + 2;
+
+            // grow
+            for (int z = 0; z < zCount; ++z)
+            {
+                newMatrix.Add(new List<List<char>>());
+                for (int x = 0; x < xCount; ++x)
+                {
+                    newMatrix[z].Add(new List<char>());
+                    for (int y = 0; y < yCount; ++y)
+                    {
+                        newMatrix[z][x].Add('.');
+                    }
+                }
+            }
+
+            // copy
+            for (int z = 1; z < zCount - 1; ++z)
+            {
+                for (int x = 1; x < xCount - 1; ++x)
+                {
+                    for (int y = 1; y < yCount - 1; ++y)
+                    {
+                        newMatrix[z][x][y] = matrix[z - 1][x - 1][y - 1];
+                    }
+                }
+            }
+
+            return newMatrix;
+        }
+
+
+        private List<List<List<char>>> Update(List<List<List<char>>> matrix)
+        {
+            // deep copy
+            List<List<List<char>>> newMatrix = new List<List<List<char>>>();
+            for (int z = 0; z < matrix.Count; ++z)
+            {
+                newMatrix.Add(new List<List<char>>());
+                for (int x = 0; x < matrix[0].Count; ++x)
+                {
+                    newMatrix[z].Add(new List<char>());
+                    for (int y = 0; y < matrix[0][0].Count; ++y)
+                    {
+                        newMatrix[z][x].Add(' ');
+                        newMatrix[z][x][y] = GetCubeInfo(z, x, y, matrix);
+                    }
+                }
+            }
+            return newMatrix;
+        }
+
+        private char GetCubeInfo(int zIdx, int xIdx, int yIdx, List<List<List<char>>> matrix)
+        {
+            int activeCount = 0;
+            for (int z = zIdx - 1; z <= zIdx + 1; ++z)
+            {
+                // Debug($"Checking matrix[{z}]");
+                if (z < 0 || z >= matrix.Count)
+                    continue;
+
+                for (int x = xIdx - 1; x <= xIdx + 1; ++x)
+                {
+                    // Debug($"Checking matrix[{z}][{x}]");
+                    if (x < 0 || x >= matrix[z].Count)
+                        continue;
+
+                    for (int y = yIdx - 1; y <= yIdx + 1; ++y)
+                    {
+                        // Debug($"Checking matrix[{z}][{x}][{y}]");
+                        if (z == zIdx && x == xIdx && y == yIdx)
+                            continue;
+
+                        if (y < 0 || y >= matrix[z][x].Count)
+                            continue;
+
+                        if (matrix[z][x][y] == '#')
+                            ++activeCount;
+                    }
+                }
+            }
+
+            switch (matrix[zIdx][xIdx][yIdx])
+            {
+                case '.':
+                    return activeCount == 3 ? '#' : '.';
+                case '#':
+                    return activeCount >= 2 && activeCount <= 3 ? '#' : '.';
+            }
+
+            return '!';
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<List<List<char>>> matrix = new List<List<List<char>>>();
+            int originalSize = inputs.Count;
+            matrix.Add(new List<List<char>>());
+            for (int i = 0; i < originalSize; ++i)
+            {
+                matrix[0].Add(new List<char>());
+                for (int j = 0; j < originalSize; ++j)
+                {
+                    matrix[0][i].Add(inputs[i].ElementAt(j));
+                }
+            }
+
+            Print(matrix);
+            for (int i = 0; i < 6; ++i)
+            {
+                matrix = Grow(matrix);
+                matrix = Update(matrix);
+                Print(matrix);
+            }
+
+            return string.Join("", matrix.Select(x => string.Join("", x.Select(y => string.Join("", y))))).Replace(".", "").Count().ToString(); ;
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
