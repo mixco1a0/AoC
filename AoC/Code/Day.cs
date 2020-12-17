@@ -125,13 +125,13 @@ namespace AoC
         private void Log(string log)
         {
             if (UseLogs)
-                Console.WriteLine($"[{m_logID}] {log}");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {log}");
         }
 
         private void LogFiller()
         {
             if (UseLogs)
-                Console.WriteLine($"[{DefaultLogID}]");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{DefaultLogID}]");
         }
 
         private void LogAnswer(string answer)
@@ -139,22 +139,22 @@ namespace AoC
             if (UseLogs)
             {
                 string buffer = new string('*', answer.Length);
-                Console.WriteLine($"[{m_logID}] *****{buffer}*****");
-                Console.WriteLine($"[{m_logID}] ***  {answer}  ***");
-                Console.WriteLine($"[{m_logID}] *****{buffer}*****");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] *****{buffer}*****");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] ***  {answer}  ***");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] *****{buffer}*****");
             }
         }
 
         protected void Debug(string log)
         {
             if (UseLogs)
-                Console.WriteLine($"[{m_logID}] \t{log}");
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
         }
 
         protected void DebugWrite(string log)
         {
             if (UseLogs)
-                Console.Write($"[{m_logID}] \t{log}");
+                Console.Write($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
         }
     }
 }
