@@ -51,7 +51,9 @@ namespace AoC
         public Stats Get(TestPart testPart)
         {
             if (StatData.ContainsKey(testPart))
+            {
                 return StatData[testPart];
+            }
             return null;
         }
     }
@@ -72,7 +74,9 @@ namespace AoC
             {
                 string version = day.GetSolutionVersion(pair.Key);
                 if (version == "0")
+                {
                     continue;
+                }
 
                 if (!PartData.ContainsKey(version))
                 {
@@ -85,7 +89,9 @@ namespace AoC
         public Stats Get(string version, TestPart testPart)
         {
             if (PartData.ContainsKey(version))
+            {
                 return PartData[version].Get(testPart);
+            }
             return null;
         }
     }
@@ -111,7 +117,9 @@ namespace AoC
         public Stats Get(string day, string version, TestPart testPart)
         {
             if (DayData.ContainsKey(day))
+            {
                 return DayData[day].Get(version, testPart);
+            }
             return null;
         }
     }
@@ -137,7 +145,9 @@ namespace AoC
         public Stats Get(string year, string day, string version, TestPart testPart)
         {
             if (YearData.ContainsKey(year))
+            {
                 return YearData[year].Get(day, version, testPart);
+            }
             return null;
         }
     }

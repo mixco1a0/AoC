@@ -49,12 +49,9 @@ namespace AoC._2015
             {
                 List<int> dims = input.Split("x").Select(c => int.Parse(c)).ToList();
                 dims.Sort();
-
                 int x = dims[0], y = dims[1], z = dims[2];
-
                 needed += 2 * x * y + 2 * x * z + 2 * y * z + x * y;
             }
-
 
             return needed.ToString();
         }
@@ -66,9 +63,7 @@ namespace AoC._2015
             {
                 List<int> dims = input.Split("x").Select(c => int.Parse(c)).ToList();
                 dims.Sort();
-
                 int x = dims[0], y = dims[1], z = dims[2];
-
                 needed += 2 * x + 2 * y + x * y * z;
             }
 

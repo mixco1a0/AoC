@@ -33,10 +33,14 @@ namespace AoC
                     while (true)
                     {
                         if (curDir == dirRoot)
+                        {
                             break;
+                        }
 
                         if (Path.GetFileName(curDir) == nameof(AoC))
+                        {
                             break;
+                        }
 
                         curDir = Path.GetDirectoryName(curDir);
                     }

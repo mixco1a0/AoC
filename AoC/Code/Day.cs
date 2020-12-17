@@ -125,13 +125,17 @@ namespace AoC
         private void Log(string log)
         {
             if (UseLogs)
+            {
                 Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {log}");
+            }
         }
 
         private void LogFiller()
         {
             if (UseLogs)
+            {
                 Console.WriteLine($"{Util.GetLogTimeStamp()} [{DefaultLogID}]");
+            }
         }
 
         private void LogAnswer(string answer)
@@ -145,16 +149,20 @@ namespace AoC
             }
         }
 
-        protected void Debug(string log)
-        {
-            if (UseLogs)
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
-        }
-
         protected void DebugWrite(string log)
         {
             if (UseLogs)
+            {
                 Console.Write($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+            }
+        }
+
+        protected void DebugWriteLine(string log)
+        {
+            if (UseLogs)
+            {
+                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+            }
         }
     }
 }

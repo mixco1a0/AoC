@@ -107,11 +107,17 @@ NOT y -> i"
                     }
                 }
                 else if (instruction.Contains("LSHIFT"))
+                {
                     Type = InstructionType.LShift;
+                }
                 else if (instruction.Contains("RSHIFT"))
+                {
                     Type = InstructionType.RShift;
+                }
                 else if (instruction.Contains("NOT"))
+                {
                     Type = InstructionType.Not;
+                }
                 else
                 {
                     int test;

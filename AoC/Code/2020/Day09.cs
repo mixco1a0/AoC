@@ -94,7 +94,9 @@ namespace AoC._2020
             for (int i = preamble; i < numbers.Count(); ++i)
             {
                 if (!FindSum(numbers.Skip(i - preamble).Take(preamble).ToList(), numbers[i]))
+                {
                     return numbers[i].ToString();
+                }
             }
             return "NaN";
         }
@@ -106,7 +108,9 @@ namespace AoC._2020
                 for (int j = i + 1; j < list.Count(); ++j)
                 {
                     if (list[i] + list[j] == num)
+                    {
                         return true;
+                    }
                 }
             }
 
@@ -137,7 +141,9 @@ namespace AoC._2020
                         return (subset.First() + subset.Last()).ToString();
                     }
                     else if (runningTotal > weakness)
+                    {
                         break;
+                    }
                 }
             }
 

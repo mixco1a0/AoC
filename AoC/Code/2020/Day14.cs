@@ -56,7 +56,6 @@ mem[26] = 1"
                     List<string> split = input.Split(" =".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToList();
 
                     masks = split[1].ToCharArray().Select((digit, index) => new { Digit = digit, Index = index }).Where(pair => pair.Digit != 'X').Select(pair => new KeyValuePair<char, int>(pair.Digit, pair.Index)).ToList();
-                    // set mask
                 }
                 else
                 {
@@ -90,7 +89,6 @@ mem[26] = 1"
                     List<string> split = input.Split(" =".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToList();
 
                     masks = split[1].ToCharArray().Select((digit, index) => new { Digit = digit, Index = index }).Select(pair => new KeyValuePair<char, int>(pair.Digit, pair.Index)).ToList();
-                    // set mask
                 }
                 else
                 {
@@ -100,11 +98,15 @@ mem[26] = 1"
                     foreach (var pair in masks)
                     {
                         if (pair.Key == '0')
+                        {
                             continue;
-                        chars[pair.Value] = pair.Key;
+                        }
 
+                        chars[pair.Value] = pair.Key;
                         if (pair.Key == '1')
+                        {
                             memAddress[pair.Value] = '1';
+                        }
                     }
 
                     var allXs = chars.Select((c, idx) => new { Letter = c, Index = idx }).Where(pair => pair.Letter == 'X').Select(pair => new KeyValuePair<char, int>(pair.Letter, pair.Index)).ToList();

@@ -69,13 +69,17 @@ acc +6"
             while (true)
             {
                 if (idx >= operations.Count)
+                {
                     break;
+                }
 
                 Op cur = operations[idx];
                 //Debug($"[{idx}] {cur.Operation} {cur.Arg}");
 
                 if (alreadyVisited.Contains(idx))
+                {
                     break;
+                }
 
 
                 opsRun.Add(new KeyValuePair<int, Op>(idx, cur));
@@ -115,7 +119,9 @@ acc +6"
 
             string acc = GetAcc(operations, out idx, out opsRun);
             if (idx < operations.Count())
+            {
                 return RunChange(operations, opsRun);
+            }
 
             // try changing things instead
             return acc.ToString();

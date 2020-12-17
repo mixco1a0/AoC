@@ -75,12 +75,18 @@ namespace AoC._2015
             for (int i = 0; i < oneLine.Length; ++i)
             {
                 if (oneLine[i] == '(')
+                {
                     ++curFloor;
+                }
                 else if (oneLine[i] == ')')
+                {
                     --curFloor;
+                }
 
                 if (curFloor < 0)
+                {
                     return (i + 1).ToString();
+                }
 
             }
             return "NaN";

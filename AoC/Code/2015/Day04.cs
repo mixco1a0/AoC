@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace AoC._2015
 {

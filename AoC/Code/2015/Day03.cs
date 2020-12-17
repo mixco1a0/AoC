@@ -106,33 +106,54 @@ namespace AoC._2015
                 {
                     case '>':
                         if (santaMove)
+                        {
                             ++curSanta.X;
+                        }
                         else
+                        {
                             ++curRobot.X;
+                        }
                         break;
                     case '<':
                         if (santaMove)
+                        {
                             --curSanta.X;
+                        }
                         else
+                        {
                             --curRobot.X;
+                        }
                         break;
                     case '^':
                         if (santaMove)
+                        {
                             ++curSanta.Y;
+                        }
                         else
+                        {
                             ++curRobot.Y;
+                        }
                         break;
                     case 'v':
                         if (santaMove)
+                        {
                             --curSanta.Y;
+                        }
                         else
+                        {
                             --curRobot.Y;
+                        }
                         break;
                 }
+
                 if (santaMove)
+                {
                     allCoords.Add(curSanta);
+                }
                 else
+                {
                     allCoords.Add(curRobot);
+                }
                 santaMove = !santaMove;
             }
             return allCoords.Distinct().Count().ToString();

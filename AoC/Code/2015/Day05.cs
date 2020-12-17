@@ -40,9 +40,14 @@ ieodomkazucvgmuy"
             foreach (string input in inputs)
             {
                 if (input.Contains("ab") || input.Contains("cd") || input.Contains("pq") || input.Contains("xy"))
+                {
                     continue;
+                }
+
                 if (input.Length - input.Replace("a", "").Replace("e", "").Replace("i", "").Replace("o", "").Replace("u", "").Count() < 3)
+                {
                     continue;
+                }
 
                 for (int i = 0; i < input.Length - 1; ++i)
                 {

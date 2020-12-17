@@ -63,7 +63,7 @@ namespace AoC._2020
                 }
             }
 
-            return "";
+            return "NaN";
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -86,7 +86,7 @@ namespace AoC._2020
                 }
             }
 
-            return "";
+            return "NaN";
         }
     }
 }
