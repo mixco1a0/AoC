@@ -85,24 +85,33 @@ namespace AoC
 
         public void Print(Action<string> PrintFunc)
         {
-            PrintFunc("Command line arguments");
-            foreach (KeyValuePair<SupportedArgument, string> argPair in Args)
+            if (Args.Count > 0)
             {
-                PrintFunc($"     -{string.Format("{0,-2}", SupportedArgs[argPair.Key].First())} {argPair.Value}");
+                PrintFunc("Command line arguments");
+                foreach (KeyValuePair<SupportedArgument, string> argPair in Args)
+                {
+                    PrintFunc($"     -{string.Format("{0,-2}", SupportedArgs[argPair.Key].First())} {argPair.Value}");
+                }
             }
 
-            PrintFunc("");
-            PrintFunc("Invalid arguments");
-            foreach (string invalidArg in InvalidArgs)
+            if (InvalidArgs.Count > 0)
             {
-                PrintFunc($"     -{invalidArg}");
+                PrintFunc("");
+                PrintFunc("Invalid arguments");
+                foreach (string invalidArg in InvalidArgs)
+                {
+                    PrintFunc($"     -{invalidArg}");
+                }
             }
 
-            PrintFunc("");
-            PrintFunc("Duplicate arguments");
-            foreach (string duplicateArg in DuplicateArgs)
+            if (DuplicateArgs.Count > 0)
             {
-                PrintFunc($"     -{duplicateArg}");
+                PrintFunc("");
+                PrintFunc("Duplicate arguments");
+                foreach (string duplicateArg in DuplicateArgs)
+                {
+                    PrintFunc($"     -{duplicateArg}");
+                }
             }
             PrintFunc("");
         }

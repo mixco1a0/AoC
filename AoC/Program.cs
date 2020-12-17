@@ -52,6 +52,10 @@ namespace AoC
                     {
                         LogLine($"Unable to find {baseNamespace}.{commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]}");
                     }
+                    else
+                    {
+                        LogLine("");
+                    }
                 }
                 else if (!commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.SkipLatest))
                 {
@@ -59,6 +63,10 @@ namespace AoC
                     if (latestDay == null)
                     {
                         LogLine($"Unable to find any solutions for namespace {baseNamespace}");
+                    }
+                    else
+                    {
+                        LogLine("");
                     }
                 }
 
@@ -123,7 +131,6 @@ namespace AoC
         /// <returns></returns>
         private Day RunDay(string baseNamespace, string dayName)
         {
-            LogLine("");
             LogLine($"Running {baseNamespace}.{dayName} Advent of Code");
             LogLine("");
 
@@ -204,11 +211,12 @@ namespace AoC
         {
             Day.UseLogs = false;
 
+            LogLine($"Running {baseNamespace} Performance");
+            LogLine("");
+
             RunData runData;
             string runDataFileName;
             LoadRunData(out runDataFileName, out runData);
-
-            LogLine($"Running {baseNamespace} Performance");
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -242,7 +250,6 @@ namespace AoC
 
             SaveRunData(runDataFileName, runData);
             PrintMetrics(baseNamespace, runData);
-            LogLine("");
             Day.UseLogs = true;
         }
 
@@ -264,8 +271,8 @@ namespace AoC
             }
             if (File.Exists(runDataFileName))
             {
-                LogLine("");
                 LogLine($"Loading {runDataFileName}");
+                LogLine("");
                 string rawJson = File.ReadAllText(runDataFileName);
                 runData = JsonConvert.DeserializeObject<RunData>(rawJson);
             }
@@ -283,6 +290,7 @@ namespace AoC
         private void SaveRunData(string runDataFileName, RunData runData)
         {
             LogLine($"Saving {runDataFileName}");
+            LogLine("");
             string rawJson = JsonConvert.SerializeObject(runData, Formatting.Indented);
             using (StreamWriter sWriter = new StreamWriter(runDataFileName))
             {
@@ -297,8 +305,6 @@ namespace AoC
         /// <param name="runData"></param>
         private void PrintMetrics(string baseNamespace, RunData runData)
         {
-            LogLine("");
-            LogLine("");
             LogLine($"{baseNamespace} Performance Metrics");
             LogLine("");
 
