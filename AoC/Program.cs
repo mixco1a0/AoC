@@ -17,54 +17,8 @@ namespace AoC
         }
     }
 
-    class CommandLineArgs
-    {
-        public Dictionary<string, string> Args { get; private set; }
-
-        public CommandLineArgs(string[] args)
-        {
-            Args = new Dictionary<string, string>();
-
-            string curArg = string.Empty;
-            foreach (string arg in args)
-            {
-                if (arg.First() == '-')
-                {
-                    curArg = arg[1..];
-                    Args[curArg] = string.Empty;
-                }
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace(curArg))
-                        Args[curArg] = arg;
-                    curArg = string.Empty;
-                }
-            }
-        }
-
-        public bool HasArg(string arg)
-        {
-            return Args.ContainsKey(arg);
-        }
-
-        public bool HasArgValue(string arg)
-        {
-            return HasArg(arg) && !string.IsNullOrWhiteSpace(Args[arg]);
-        }
-    }
-
     class Program
     {
-        // private enum Args
-        // {
-        //     Namespace = 0,
-        //     Timeout = 1,
-        // }
-        // private string[] ArgStrings = new string[]
-        // {
-        //     "namespace",
-        //     "timeout"
-        // };
         private long RecordCount { get { return 1000; } }
         private long MaxPerfTimeMs { get { return 10000; } }
 
@@ -77,22 +31,42 @@ namespace AoC
                 // parse command args
                 CommandLineArgs commandLineArgs = ParseCommandLineArgs(args);
 
+                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.Help))
+                {
+                    commandLineArgs.PrintHelp(LogLine);
+                    return;
+                }
+
                 // get the namespace to use
                 string baseNamespace = nameof(AoC._2020);
-                if (commandLineArgs.HasArgValue("namespace"))
-                    baseNamespace = commandLineArgs.Args["namespace"];
+                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.Namespace))
+                {
+                    baseNamespace = commandLineArgs.Args[CommandLineArgs.SupportedArgument.Namespace];
+                }
 
-                // run the latest day in the given namespace
-                if (!commandLineArgs.HasArg("skiplatest"))
+                // run the day specified or the latest day
+                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.Day))
+                {
+                    Day latestDay = RunDay(baseNamespace, commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]);
+                    if (latestDay == null)
+                    {
+                        LogLine($"Unable to find {baseNamespace}.{commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]}");
+                    }
+                }
+                else if (!commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.SkipLatest))
                 {
                     Day latestDay = RunLatestDay(baseNamespace);
                     if (latestDay == null)
+                    {
                         LogLine($"Unable to find any solutions for namespace {baseNamespace}");
+                    }
                 }
 
                 // run performance tests
-                if (commandLineArgs.HasArg("runperf"))
+                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.RunPerf))
+                {
                     RunPerformance(baseNamespace);
+                }
             }
             catch (Exception e)
             {
@@ -108,10 +82,8 @@ namespace AoC
         /// <returns></returns>
         private CommandLineArgs ParseCommandLineArgs(string[] args)
         {
-            LogLine("Command line");
             CommandLineArgs commandLineArgs = new CommandLineArgs(args);
-            foreach (var argPair in commandLineArgs.Args)
-                LogLine($"     -{argPair.Key} {argPair.Value}");
+            commandLineArgs.Print(LogLine);
             return commandLineArgs;
         }
 
@@ -134,15 +106,31 @@ namespace AoC
         /// <returns></returns>
         private Day RunLatestDay(string baseNamespace)
         {
+            Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
+            if (days.Count > 0)
+            {
+                string latestDay = days.Keys.Select(k => k[3..]).Select(int.Parse).Max().ToString();
+                return RunDay(baseNamespace, latestDay);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Run the latest day in the given namespace.
+        /// </summary>
+        /// <param name="baseNamespace"></param>
+        /// <param name="dayName"></param>
+        /// <returns></returns>
+        private Day RunDay(string baseNamespace, string dayName)
+        {
             LogLine("");
-            LogLine($"Running Latest {baseNamespace} Advent of Code");
+            LogLine($"Running {baseNamespace}.{dayName} Advent of Code");
             LogLine("");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
             {
-                string latestDay = days.Keys.Select(k => k[3..]).Select(int.Parse).Max().ToString();
-                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[days.Keys.Where(k => k.Contains(latestDay)).First()].FullName);
+                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[days.Keys.Where(k => k.ToLower().Contains(dayName.ToLower())).First()].FullName);
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();
@@ -172,29 +160,38 @@ namespace AoC
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
                     if (i > 0 && i % (RecordCount / 20) == 0)
+                    {
                         LogLine($"...{i} runs completed");
+                    }
                 }
                 else
+                {
                     LogSameLine(string.Format("...{0:000.0}%", (double)i / (double)(maxI) * 100.0f));
-
+                }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
                 if (handle == null)
+                {
                     break;
+                }
 
                 Day day = (Day)handle.Unwrap();
                 day.Run();
                 runData.AddData(day);
 
                 if (timer.GetElapsedMs() > MaxPerfTimeMs)
+                {
                     break;
+                }
             }
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 LogSameLine(string.Format("...{0:000.0}%\n\r", (double)i / (double)(maxI) * 100.0f));
             }
             else
+            {
                 LogLine($"...{maxI} runs completed");
+            }
 
             return i == maxI;
         }
@@ -226,12 +223,18 @@ namespace AoC
                             bool completed = false;
                             Stats stats = runData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
                             if (stats == null)
+                            {
                                 completed = RunPerformance(day.GetType(), 0, ref runData);
+                            }
                             else if (stats.Count < RecordCount)
+                            {
                                 completed = RunPerformance(day.GetType(), stats.Count, ref runData);
+                            }
 
                             if (!completed)
+                            {
                                 break;
+                            }
                         }
                     }
                 }
@@ -252,9 +255,13 @@ namespace AoC
         {
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
+            {
                 runDataFileName = Path.Combine(workingDir, "rundata_debugger.json");
+            }
             else
+            {
                 runDataFileName = Path.Combine(workingDir, "rundata_cmd.json");
+            }
             if (File.Exists(runDataFileName))
             {
                 LogLine("");
@@ -325,16 +332,25 @@ namespace AoC
                                 // todo: make this smarter
                                 min = Math.Min(min, stats.Avg);
                                 if (min == stats.Avg)
+                                {
                                     minStr = logLine;
+                                }
 
                                 max = Math.Max(max, stats.Avg);
                                 if (max == stats.Avg)
+                                {
                                     maxStr = logLine;
+                                }
 
                                 if (testPart == TestPart.One)
+                                {
                                     p1Total += stats.Avg;
+                                }
+
                                 if (testPart == TestPart.Two)
+                                {
                                     p2Total += stats.Avg;
+                                }
 
                                 logLine += string.Format(" Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={3:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
                             }
