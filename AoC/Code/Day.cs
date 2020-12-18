@@ -88,7 +88,6 @@ namespace AoC
             }
 
             TimeResults[testPart] = TimedRun(RunType.Problem, testPart, problemInput.ToList(), "", null);
-            LogFiller();
         }
 
         private double TimedRun(RunType runType, TestPart testPart, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)

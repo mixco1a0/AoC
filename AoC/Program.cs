@@ -20,7 +20,7 @@ namespace AoC
     class Program
     {
         private long RecordCount { get { return 1000; } }
-        private long MaxPerfTimeMs { get { return 10000; } }
+        private long MaxPerfTimeMs { get { return 1000000; } }
 
         public Program(string[] args)
         {
@@ -173,7 +173,7 @@ namespace AoC
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}%", (double)i / (double)(maxI) * 100.0f));
+                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1:000.000} (s)]", (double)i / (double)(maxI) * 100.0f, (MaxPerfTimeMs-timer.GetElapsedMs())/1000));
                 }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -193,7 +193,7 @@ namespace AoC
             }
             if (!System.Diagnostics.Debugger.IsAttached)
             {
-                LogSameLine(string.Format("...{0:000.0}%\n\r", (double)i / (double)(maxI) * 100.0f));
+                LogSameLine(string.Format("...{0:000.0}%                                   \n\r", (double)i / (double)(maxI) * 100.0f));
             }
             else
             {
@@ -390,6 +390,15 @@ namespace AoC
         private void Log(string message)
         {
             Console.Write($"{Util.GetLogTimeStamp()} {message}");
+        }
+
+        /// <summary>
+        /// Console.Write without a timestamp
+        /// </summary>
+        /// <param name="message"></param>
+        private void LogAppend(string message)
+        {
+            Console.Write($"{message}");
         }
 
         /// <summary>
