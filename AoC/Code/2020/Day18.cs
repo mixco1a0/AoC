@@ -39,9 +39,23 @@ namespace AoC._2020
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
-                Output = "",
+                Output = "231",
                 RawInput =
-@""
+@"1 + 2 * 3 + 4 * 5 + 6"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "51",
+                RawInput =
+@"1 + (2 * 3) + (4 * (5 + 6))"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
+                Output = "669060",
+                RawInput =
+@"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"
             });
             return testData;
         }
@@ -63,9 +77,9 @@ namespace AoC._2020
                 // find the last index of '(' and replace the bit
                 int end = equation.IndexOf(')');
                 int start = equation.Substring(0, end).LastIndexOf('(');
-                string subequation = equation.Substring(start+1, end-start-1);
+                string subequation = equation.Substring(start + 1, end - start - 1);
                 string replace = Perform(subequation).ToString();
-                equation = equation.Replace(equation.Substring(start, end-start+1), replace);
+                equation = equation.Replace(equation.Substring(start, end - start + 1), replace);
                 return Perform(equation);
             }
             else
@@ -116,33 +130,6 @@ namespace AoC._2020
                     leftHandValue *= long.Parse(curLeftHand);
                 }
             }
-            /*
-
-                            string basic = input.Replace(" ", "");
-                            string[] test = input.Split('(');
-                            string curNumber = "";
-                            long leftHandSide = 0;
-                            long temp = 0;
-                            for (int i = 0; i < basic.Length; ++i)
-                            {
-                                switch (basic[i])
-                                {
-                                    case '+':
-                                        temp = int.Parse(curNumber);
-                                        curNumber = "";
-                                        break;
-                                    case '*':
-                                        break;
-                                    case '(':
-                                        break;
-                                    case ')':
-                                        break;
-                                    default:
-                                        curNumber += basic[i];
-                                        break;
-                                }
-                            }
-            */
             return leftHandValue;
         }
 
@@ -156,9 +143,53 @@ namespace AoC._2020
             return sum.ToString();
         }
 
+        private long PerformPrecedence(string equation)
+        {
+            if (equation.Contains(')'))
+            {
+                // find the last index of '(' and replace the bit
+                int end = equation.IndexOf(')');
+                int start = equation.Substring(0, end).LastIndexOf('(');
+                string subequation = equation.Substring(start + 1, end - start - 1);
+                string replace = PerformPrecedence(subequation).ToString();
+                equation = equation.Replace(equation.Substring(start, end - start + 1), replace);
+                return PerformPrecedence(equation);
+            }
+            else if (equation.Contains('+'))
+            {
+                int plusSign = equation.IndexOfAny("+".ToCharArray());
+                int end = equation.IndexOfAny("+*".ToCharArray(), plusSign + 1);
+                if (end == -1)
+                {
+                    end = equation.Length;
+                }
+                int start = equation.LastIndexOfAny("+*".ToCharArray(), plusSign - 1) + 1;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+                long sum = long.Parse(equation.Substring(start, plusSign - start)) + long.Parse(equation.Substring(plusSign + 1, end - (plusSign + 1)));
+                equation = equation.Remove(start, end - start).Insert(start, sum.ToString());
+                return PerformPrecedence(equation);
+            }
+
+            long[] vals = equation.Split('*').Select(long.Parse).ToArray();
+            long mult = vals[0];
+            for (int i = 1; i < vals.Length; ++i)
+            {
+                mult *= vals[i];
+            }
+            return mult;
+        }
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            long sum = 0;
+            foreach (string input in inputs)
+            {
+                sum += PerformPrecedence(input.Replace(" ", ""));
+            }
+            return sum.ToString();
         }
     }
 }
