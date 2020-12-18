@@ -143,7 +143,7 @@ namespace AoC
 
         private void LogAnswer(string answer, char filler)
         {
-            if (UseLogs)
+            if (UseLogs && !string.IsNullOrWhiteSpace(answer))
             {
                 string buffer = new string(filler, answer.Length);
                 string empty = new string(' ', answer.Length);
