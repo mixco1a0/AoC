@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -267,8 +268,12 @@ Tile 3079:
             public List<string> Raw { get; set; }
 
             public List<string> Actions { get; set; }
+            public Dictionary<string, int> BorderCounts { get; set; }
 
-            public int[] Counts { get; set; }
+            public Tile()
+            {
+                ID = "";
+            }
 
             public void Eval(ref List<string> allSides)
             {
@@ -277,24 +282,31 @@ Tile 3079:
                 Bottom = Raw.Last();
                 Left = string.Join("", Raw.Select(c => c[..1]));
                 Actions = new List<string>();
-                Counts = new int[4];
+                BorderCounts = new Dictionary<string, int>();
 
-                allSides.Add(Top);
-                allSides.Add(TopR);
-                allSides.Add(Right);
-                allSides.Add(RightR);
-                allSides.Add(Bottom);
-                allSides.Add(BottomR);
-                allSides.Add(Left);
-                allSides.Add(LeftR);
+                if (allSides != null)
+                {
+                    allSides.Add(Top);
+                    allSides.Add(TopR);
+                    allSides.Add(Right);
+                    allSides.Add(RightR);
+                    allSides.Add(Bottom);
+                    allSides.Add(BottomR);
+                    allSides.Add(Left);
+                    allSides.Add(LeftR);
+                }
             }
 
             public void SetCounts(int t, int r, int b, int l)
             {
-                Counts[0] = t;
-                Counts[1] = r;
-                Counts[2] = b;
-                Counts[3] = l;
+                BorderCounts[Top] = t;
+                BorderCounts[TopR] = t;
+                BorderCounts[Right] = r;
+                BorderCounts[RightR] = r;
+                BorderCounts[Bottom] = b;
+                BorderCounts[BottomR] = b;
+                BorderCounts[Left] = l;
+                BorderCounts[LeftR] = l;
             }
 
             public bool IsAdjacent(char side, Tile tile)
@@ -331,77 +343,158 @@ Tile 3079:
                         tile.LeftR == sideToCheck;
             }
 
-            public void Match(char side, Tile tile)
+            public void Match(char side, string source)
             {
                 switch (side)
                 {
-                    case 'T':
-                        MatchT(tile);
-                        break;
                     case 'R':
-                        MatchR(tile);
+                        MatchR(source);
                         break;
                     case 'B':
-                        MatchB(tile);
-                        break;
-                    case 'L':
-                        MatchL(tile);
+                        MatchB(source);
                         break;
                 }
             }
 
-            private void MatchT(Tile tile)
+            private void MatchR(string sourceRight)
             {
-
-            }
-
-            private void MatchR(Tile tile)
-            {
-                if (tile.Right == tile.Left)
+                ///   -   -
+                //   | > > |
+                //    -   -
+                if (sourceRight == Left)
                 {
                     return;
                 }
 
-                if (tile.Right == tile.Top)
+                ///   -   -
+                //   | > < |
+                //    -   -
+                else if (sourceRight == LeftR)
                 {
-
+                    FlipV();
                 }
 
+                ///   -   v      -   ^
+                //   | > | |    | > | |
+                //    -   -      -   -
+                else if (sourceRight == Top || sourceRight == TopR)
+                {
+                    RotateL();
+                }
+
+                ///   -   -      -   -
+                //   | > | |    | > | |
+                //    -   ^      -   v
+                else if (sourceRight == Bottom || sourceRight == BottomR)
+                {
+                    RotateR();
+                }
+
+                ///   -   -      -   -
+                //   | > | <    | > | >
+                //    -   -      -   -
+                else
+                {
+                    RotateR();
+                }
+
+                MatchR(sourceRight);
             }
 
-            private void MatchB(Tile tile)
+            private void MatchB(string sourceBottom)
             {
+                ///   -   v
+                //   | | | |
+                //    v   -
+                if (sourceBottom == Top)
+                {
+                    return;
+                }
 
+                ///   -   ^
+                //   | | | |
+                //    v   -
+                else if (sourceBottom == TopR)
+                {
+                    FlipH();
+                }
+
+                ///   -   -
+                //   | | | *
+                //    v   -
+                else if (sourceBottom == Right || sourceBottom == RightR)
+                {
+                    RotateL();
+                }
+
+                ///   -   -
+                //   | | * |
+                //    v   -
+                else if (sourceBottom == Left || sourceBottom == LeftR)
+                {
+                    RotateR();
+                }
+
+                ///   -   -
+                //   | | | |
+                //    v   *
+                else
+                {
+                    RotateR();
+                }
+
+                MatchB(sourceBottom);
             }
 
-            private void MatchL(Tile tile)
+            private void RotateR()
             {
-
+                Actions.Add("R");
+                string temp = Top;
+                Top = LeftR;
+                Left = Bottom;
+                Bottom = RightR;
+                Right = temp;
+                // todo: rotate Raw :'(
             }
 
-            public Tile RotateR()
+            private void RotateL()
             {
-                return new Tile { ID = ID, Top = Left, Right = Top, Bottom = Right, Left = Bottom, Actions = Actions.Append("R").ToList() };
+                Actions.Add("L");
+                string temp = TopR;
+                Top = Right;
+                Right = BottomR;
+                Bottom = Left;
+                Left = temp;
+                // todo: rotate Raw :'(
             }
 
-            public Tile RotateL()
+            public void FlipV()
             {
-                return new Tile { ID = ID, Top = Right, Right = Bottom, Bottom = Left, Left = Top, Actions = Actions.Append("L").ToList() };
+                Actions.Add("V");
+                string temp = Top;
+                Top = Bottom;
+                Bottom = temp;
+
+                Right = RightR;
+                Left = LeftR;
+                // todo: flip Raw :'(
             }
 
-            public Tile FlipV()
+            public void FlipH()
             {
-                return new Tile { ID = ID, Top = Bottom, Right = RightR, Bottom = Top, Left = LeftR, Actions = Actions.Append("V").ToList() };
-            }
+                Actions.Add("H");
+                string temp = Right;
+                Right = Left;
+                Left = temp;
 
-            public Tile FlipH()
-            {
-                return new Tile { ID = ID, Top = TopR, Right = Left, Bottom = BottomR, Left = Right, Actions = Actions.Append("H").ToList() };
+                Top = TopR;
+                Bottom = BottomR;
+                // todo: flip Raw :'(
             }
 
             public override string ToString()
             {
-                return $"ID={ID}|T={Counts[0]}|R={Counts[1]}|B={Counts[2]}|L={Counts[3]}";
+                return $"ID={ID} Actions={string.Join("", Actions)}";
             }
         }
 
@@ -481,7 +574,8 @@ Tile 3079:
                 }
             }
 
-            List<Tile> fourCorners = new List<Tile>();
+            DebugWriteLine($"Get New Starting Tile");
+            Tile startingTile = null;
             foreach (Tile tile in tiles)
             {
                 int tC = allSides.Where(s => s == tile.Top).Count();
@@ -495,40 +589,91 @@ Tile 3079:
                     (bC == 1 && lC == 1) ||
                     (lC == 1 && tC == 1))
                 {
-                    fourCorners.Add(tile);
+                    // get starting tile and orient it correctly
+                    startingTile = tile;
+                    ///   1 
+                    //   ? ?
+                    //    - 
+                    if (tC == 1)
+                    {
+                        ///   1 
+                        //   | 1
+                        //    - 
+                        if (rC == 1)
+                        {
+                            tile.FlipH();
+                        }
+                        ///   1 
+                        //   1 |
+                        //    - 
+                    }
+                    ///   _ 
+                    //   ? ?
+                    //    1 
+                    else
+                    {
+                        ///   - 
+                        //   | 1
+                        //    1 
+                        if (rC == 1)
+                        {
+                            tile.FlipH();
+                        }
+                        ///   _
+                        //   1 |
+                        //    1
+                        tile.FlipV();
+                        ///   1 
+                        //   1 |
+                        //    - 
+                    }
+                    DebugWriteLine($"Match Found : Tile #{startingTile.ID} [Actions: {string.Join("", startingTile.Actions)}]");
+                    break;
                 }
             }
 
             // // build tileset row by row
             List<List<Tile>> tileSet = new List<List<Tile>>();
-            tileSet.Add(new List<Tile>());
-            Tile startingTile = fourCorners[0];
-            tiles.Remove(startingTile);
-            char dir = 'R';
-            while (true)
+            do
             {
-                Tile adj = GetAdjacent(startingTile, dir, tiles);
+                DebugWriteLine($"Starting New Row");
+                List<Tile> row = new List<Tile>();
+                BuildRow(startingTile, ref row, ref tiles);
+                tileSet.Add(row);
 
-                if (fourCorners.Where(fc => adj.ID == fc.ID).Count() > 0)
-                {
-                    break;
-                }
-            }
+                DebugWriteLine("");
+                DebugWriteLine($"Get New Starting Tile");
+                startingTile = GetAdjacent(row[0], 'B', tiles);
+            } while (startingTile != null);
 
+            // grid is sorted
+            // todo: go through todos and fix raw square
 
             return "";
         }
 
-        private Tile GetAdjacent(Tile startingTile, char side, List<Tile> tiles)
+        private void BuildRow(Tile startingTile, ref List<Tile> row, ref List<Tile> tiles)
         {
-            Tile tile = tiles.Where(t => startingTile.IsAdjacent(side, t)).First();
-            tile.Match(side, startingTile);
-            return tile;
+            do
+            {
+                row.Add(startingTile);
+                startingTile = GetAdjacent(startingTile, 'R', tiles);
+            } while (startingTile != null);
         }
 
-        // private List<Tile> BuildRow(Tile startingTile, List<Tile> fourCorners, List<Tile> tiles)
-        // {
-
-        // }
+        private Tile GetAdjacent(Tile tile, char side, List<Tile> tiles)
+        {
+            Tile adjacentTile = tiles.Where(t => tile.IsAdjacent(side, t)).FirstOrDefault();
+            if (adjacentTile != null)
+            {
+                adjacentTile.Match(side, side == 'R' ? tile.Right : tile.Bottom);
+                DebugWriteLine($"Match Found : Tile #{adjacentTile.ID} [Actions: {string.Join("", adjacentTile.Actions)}]");
+            }
+            else
+            {
+                DebugWriteLine($"No Match Found");
+            }
+            return adjacentTile;
+        }
     }
 }
