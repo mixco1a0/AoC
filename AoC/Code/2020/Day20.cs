@@ -255,6 +255,13 @@ Tile 3079:
             return testData;
         }
 
+        static string monster =
+@"                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #";
+        static string[] monsterParts = monster.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(p => p.Replace(' ', '.')).ToArray();
+        static int monsterWidth = monsterParts[0].Length;
+
         class Tile
         {
             public string ID { get; set; }
@@ -688,61 +695,106 @@ Tile 3079:
                 }
             }
 
-            string monster =
-@"                  # 
-#    ##    ##    ###
- #  #  #  #  #  #";
-            string[] monsterParts = monster.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(p => p.Replace(' ', '.')).ToArray();
-            int imageWidth = actualImage.First().Length;
-            int monsterWidth = monsterParts[0].Length;
-            int requiredLength = imageWidth - monsterWidth;
-            for (int i = 0; i < monsterParts.Length - 1; ++i)
-            {
-                monsterParts[i] = $"{monsterParts[i]}{new string('.', requiredLength)}";
-            }
-
-            int checkCount = 0;
             int monsterCount = 0;
             string imageSearch;
-            string monsterRegex;
-            string monsterPrint;
-            while (true)
+            bool hasMonsters = FixGridOrientation(ref actualImage, out imageSearch);
+            if (hasMonsters)
             {
-                imageSearch = string.Join("", actualImage);
-                monsterRegex = string.Join("", monsterParts);
-                MatchCollection matches = Regex.Matches(imageSearch, monsterRegex);
-                if (matches.Count > 0)
-                {
-                    monsterCount = matches.Count;
-                    monsterPrint = imageSearch.Replace('#', ',');
-                    monsterRegex = monsterRegex.Replace('#', 'O');
-                    foreach (Match match in matches)
-                    {
-                        monsterPrint = monsterPrint.Remove(match.Index, match.Length).Insert(match.Index, monsterRegex);
-                    }
-                    break;
-                }
+                List<string> modifiedImage;
+                monsterCount = GetMonsterCount(actualImage, out modifiedImage);
 
-                // DebugWriteLine($"[{checkCount}] No monsters found, rotating image");
-                Util.RotateGrid(true, ref actualImage);
-                if (++checkCount % 4 == 0)
-                {
-                    // DebugWriteLine($"[{checkCount}] No monsters found, flipping image");
-                    Util.FlipGrid(true, ref actualImage);
-                }
+                // print out all found monsters
+                Util.PrintGrid(modifiedImage, DebugWriteLine);
             }
 
-            // print out all found monsters
-            // int k = 0;
-            // List<string> monsterGrid = monsterPrint.ToLookup(c => Math.Floor((decimal)(k++ / imageWidth))).Select(e => new string(e.ToArray())).ToList();
-            // Util.PrintGrid(monsterGrid, DebugWriteLine);
-            
+            // todo: actually count the # characters from modifiedImage
             int hashCount = imageSearch.Replace(".", "").Length;
-            int monsterHashCount = monsterRegex.Replace(".", "").Length;
+            int monsterHashCount = 15;
 
             // Util.PrintGrid(actualImage, DebugWriteLine);
 
             return (hashCount - (monsterHashCount * monsterCount)).ToString();
+        }
+
+        private bool FixGridOrientation(ref List<string> grid, out string imageSearch)
+        {
+            int imageWidth = grid.First().Length;
+            int requiredLength = imageWidth - monsterWidth;
+            string[] monsterPartsWithPadding = new string[monsterParts.Length];
+            for (int i = 0; i < monsterPartsWithPadding.Length - 1; ++i)
+            {
+                monsterPartsWithPadding[i] = $"{monsterParts[i]}{new string('.', requiredLength)}";
+            }
+            monsterPartsWithPadding[2] = monsterParts[2];
+            string monsterRegex = string.Join("", monsterPartsWithPadding);
+            Regex regex = new Regex(monsterRegex);
+
+            int checkCount = 0;
+            imageSearch = string.Empty;
+            while (true)
+            {
+                imageSearch = string.Join("", grid);
+                if (regex.IsMatch(imageSearch))
+                {
+                    break;
+                }
+
+                // DebugWriteLine($"[{checkCount}] No monsters found, rotating image");
+                Util.RotateGrid(true, ref grid);
+                if (++checkCount % 4 == 0)
+                {
+                    // DebugWriteLine($"[{checkCount}] No monsters found, flipping image");
+                    Util.FlipGrid(true, ref grid);
+                }
+
+                if (checkCount > 8)
+                {
+                    DebugWriteLine($"[{checkCount}] No monsters found in grid");
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+        private int GetMonsterCount(List<string> grid, out List<string> modifiedGrid)
+        {
+            int monsterCount = 0;
+            modifiedGrid = new List<string>(grid);
+
+            int imageWidth = grid.First().Length;
+            int requiredLength = imageWidth - monsterWidth;
+            string[] monsterPartsWithPadding = new string[monsterParts.Length];
+            for (int i = 0; i < monsterPartsWithPadding.Length - 1; ++i)
+            {
+                monsterPartsWithPadding[i] = $"{monsterParts[i]}{new string('.', requiredLength)}";
+            }
+            monsterPartsWithPadding[2] = monsterParts[2];
+            string monsterRegex = string.Join("", monsterPartsWithPadding);
+            Regex regex = new Regex(monsterRegex);
+
+            string imageSearch;
+            string monsterPrint = string.Join("", grid);
+            int curMonsterIdx = 0;
+            do
+            {
+                ++monsterCount;
+                imageSearch = string.Join("", grid);
+                Match match = regex.Match(imageSearch, curMonsterIdx);
+                List<int> replaceIndices = monsterRegex.Select((c, i) => new { Letter = c, Index = i }).Where(pair => pair.Letter == '#').Select(pair => pair.Index).ToList();
+                foreach (int replaceIdx in replaceIndices)
+                {
+                    monsterPrint = monsterPrint.Remove(match.Index + replaceIdx, 1).Insert(match.Index + replaceIdx, "O");
+                }
+                curMonsterIdx = match.Index + 1;
+            } while (regex.IsMatch(imageSearch, curMonsterIdx));
+            
+            int k = 0;
+            modifiedGrid = string.Join("", monsterPrint.Replace('#', ','))
+                                 .ToLookup(c => Math.Floor((decimal)(k++ / grid.First().Count())))
+                                 .Select(e => new string(e.ToArray())).ToList();
+
+            return monsterCount;
         }
 
         private void BuildRow(Tile startingTile, ref List<Tile> row, ref List<Tile> tiles)
