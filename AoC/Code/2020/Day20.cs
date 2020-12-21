@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -455,12 +456,9 @@ Tile 3079:
                 Bottom = RightR;
                 Right = temp;
 
-                List<string> newRaw = new List<string>();
-                for (int i = 0; i < Raw.Count(); ++i)
-                {
-                    newRaw.Add(string.Join("", Raw.Select(r => r.ElementAt(i)).Reverse()));
-                }
-                Raw = newRaw;
+                List<string> raw = Raw;
+                Util.RotateGrid(true, ref raw);
+                Raw = raw;
             }
 
             public void RotateL()
@@ -472,12 +470,9 @@ Tile 3079:
                 Bottom = Left;
                 Left = temp;
 
-                List<string> newRaw = new List<string>();
-                for (int i = 0; i < Raw.Count; ++i)
-                {
-                    newRaw.Add(string.Join("", Raw.Select(r => r.ElementAt(Raw.Count - 1 - i))));
-                }
-                Raw = newRaw;
+                List<string> raw = Raw;
+                Util.RotateGrid(false, ref raw);
+                Raw = raw;
             }
 
             public void FlipV()
@@ -490,7 +485,9 @@ Tile 3079:
                 Right = RightR;
                 Left = LeftR;
 
-                Raw.Reverse();
+                List<string> raw = Raw;
+                Util.FlipGrid(false, ref raw);
+                Raw = raw;
             }
 
             public void FlipH()
@@ -502,11 +499,9 @@ Tile 3079:
 
                 Top = TopR;
                 Bottom = BottomR;
-                
-                for (int i = 0; i < Raw.Count; ++i)
-                {
-                    Raw[i] = string.Join("", Raw[i].Reverse());
-                }
+
+                List<string> raw = Raw;
+                Util.FlipGrid(true, ref raw);
             }
 
             public List<string> Prune()
@@ -601,7 +596,7 @@ Tile 3079:
                 }
             }
 
-            DebugWriteLine($"Get New Starting Tile");
+            // DebugWriteLine($"Get New Starting Tile");
             Tile startingTile = null;
             foreach (Tile tile in tiles)
             {
@@ -663,26 +658,91 @@ Tile 3079:
             List<List<Tile>> tileSet = new List<List<Tile>>();
             do
             {
-                DebugWriteLine($"Starting New Row");
+                // DebugWriteLine($"Starting New Row");
                 List<Tile> row = new List<Tile>();
                 BuildRow(startingTile, ref row, ref tiles);
                 tileSet.Add(row);
 
-                DebugWriteLine("");
-                DebugWriteLine($"Get New Starting Tile");
+                // DebugWriteLine("");
+                // DebugWriteLine($"Get New Starting Tile");
                 startingTile = GetAdjacent(row[0], 'B', tiles);
             } while (startingTile != null);
 
             List<string> actualImage = new List<string>();
             foreach (List<Tile> row in tileSet)
             {
+                List<List<string>> prunedGrids = new List<List<string>>();
                 foreach (Tile tile in row)
                 {
-                    // add prune
+                    prunedGrids.Add(tile.Prune());
+                }
+
+                for (int i = 0; i < prunedGrids.First().Count; ++i)
+                {
+                    string curRow = "";
+                    foreach (List<string> prunedGrid in prunedGrids)
+                    {
+                        curRow += prunedGrid[i];
+                    }
+                    actualImage.Add(curRow);
                 }
             }
 
-            return "";
+            string monster =
+@"                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #";
+            string[] monsterParts = monster.Split("\n\r".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(p => p.Replace(' ', '.')).ToArray();
+            int imageWidth = actualImage.First().Length;
+            int monsterWidth = monsterParts[0].Length;
+            int requiredLength = imageWidth - monsterWidth;
+            for (int i = 0; i < monsterParts.Length - 1; ++i)
+            {
+                monsterParts[i] = $"{monsterParts[i]}{new string('.', requiredLength)}";
+            }
+
+            int checkCount = 0;
+            int monsterCount = 0;
+            string imageSearch;
+            string monsterRegex;
+            string monsterPrint;
+            while (true)
+            {
+                imageSearch = string.Join("", actualImage);
+                monsterRegex = string.Join("", monsterParts);
+                MatchCollection matches = Regex.Matches(imageSearch, monsterRegex);
+                if (matches.Count > 0)
+                {
+                    monsterCount = matches.Count;
+                    monsterPrint = imageSearch.Replace('#', ',');
+                    monsterRegex = monsterRegex.Replace('#', 'O');
+                    foreach (Match match in matches)
+                    {
+                        monsterPrint = monsterPrint.Remove(match.Index, match.Length).Insert(match.Index, monsterRegex);
+                    }
+                    break;
+                }
+
+                // DebugWriteLine($"[{checkCount}] No monsters found, rotating image");
+                Util.RotateGrid(true, ref actualImage);
+                if (++checkCount % 4 == 0)
+                {
+                    // DebugWriteLine($"[{checkCount}] No monsters found, flipping image");
+                    Util.FlipGrid(true, ref actualImage);
+                }
+            }
+
+            // print out all found monsters
+            // int k = 0;
+            // List<string> monsterGrid = monsterPrint.ToLookup(c => Math.Floor((decimal)(k++ / imageWidth))).Select(e => new string(e.ToArray())).ToList();
+            // Util.PrintGrid(monsterGrid, DebugWriteLine);
+            
+            int hashCount = imageSearch.Replace(".", "").Length;
+            int monsterHashCount = monsterRegex.Replace(".", "").Length;
+
+            // Util.PrintGrid(actualImage, DebugWriteLine);
+
+            return (hashCount - (monsterHashCount * monsterCount)).ToString();
         }
 
         private void BuildRow(Tile startingTile, ref List<Tile> row, ref List<Tile> tiles)
@@ -700,11 +760,11 @@ Tile 3079:
             if (adjacentTile != null)
             {
                 adjacentTile.Match(side, side == 'R' ? tile.Right : tile.Bottom);
-                DebugWriteLine($"Match Found : Tile #{adjacentTile.ID} [Actions: {string.Join("", adjacentTile.Actions)}]");
+                // DebugWriteLine($"Match Found : Tile #{adjacentTile.ID} [Actions: {string.Join("", adjacentTile.Actions)}]");
             }
             else
             {
-                DebugWriteLine($"No Match Found");
+                // DebugWriteLine($"No Match Found");
             }
             return adjacentTile;
         }

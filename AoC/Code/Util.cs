@@ -16,6 +16,51 @@ namespace AoC
             return input.Split('\n').Select(str => str.Trim('\r'));
         }
 
+        static public void RotateGrid(bool right, ref List<string> grid)
+        {
+            List<string> newGrid = new List<string>();
+            if (right)
+            {
+                for (int i = 0; i < grid.Count(); ++i)
+                {
+                    newGrid.Add(string.Join("", grid.Select(r => r.ElementAt(i)).Reverse()));
+                }
+            }
+            else
+            {
+                int gridCount = grid.Count - 1;
+                for (int i = 0; i < grid.Count; ++i)
+                {
+                    newGrid.Add(string.Join("", grid.Select(r => r.ElementAt(gridCount - i))));
+                }
+            }
+            grid = newGrid;
+        }
+
+        static public void FlipGrid(bool horizontal, ref List<string> grid)
+        {
+            if (horizontal)
+            {
+                for (int i = 0; i < grid.Count; ++i)
+                {
+                    grid[i] = string.Join("", grid[i].Reverse());
+                }
+            }
+            else
+            {
+                grid.Reverse();
+            }
+        }
+
+        static public void PrintGrid(List<string> grid, Action<string> PrintFunc)
+        {
+            PrintFunc($"Printing grid {grid.First().Length}x{grid.Count}:");
+            foreach (string row in grid)
+            {
+                PrintFunc(row);
+            }
+        }
+
         static public string GetLogTimeStamp()
         {
             return $"|{DateTime.Now.ToString("hh:mm:ss.fff")}| ";
@@ -59,7 +104,7 @@ namespace AoC
         }
 
     }
-    
+
     public class MinMax
     {
         public int Min { get; set; }
