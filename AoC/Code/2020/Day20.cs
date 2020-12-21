@@ -509,6 +509,16 @@ Tile 3079:
                 }
             }
 
+            public List<string> Prune()
+            {
+                List<string> pruned = new List<string>();
+                for (int i = 1; i < Raw.Count - 1; ++i)
+                {
+                    pruned.Add(Raw[i][1..^1]);
+                }
+                return pruned;
+            }
+
             public override string ToString()
             {
                 return $"ID={ID} Actions={string.Join("", Actions)}";
@@ -663,8 +673,14 @@ Tile 3079:
                 startingTile = GetAdjacent(row[0], 'B', tiles);
             } while (startingTile != null);
 
-            // grid is sorted
-            // todo: go through todos and fix raw square
+            List<string> actualImage = new List<string>();
+            foreach (List<Tile> row in tileSet)
+            {
+                foreach (Tile tile in row)
+                {
+                    // add prune
+                }
+            }
 
             return "";
         }
