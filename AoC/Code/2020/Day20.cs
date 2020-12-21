@@ -446,7 +446,7 @@ Tile 3079:
                 MatchB(sourceBottom);
             }
 
-            private void RotateR()
+            public void RotateR()
             {
                 Actions.Add("R");
                 string temp = Top;
@@ -454,10 +454,16 @@ Tile 3079:
                 Left = Bottom;
                 Bottom = RightR;
                 Right = temp;
-                // todo: rotate Raw :'(
+
+                List<string> newRaw = new List<string>();
+                for (int i = 0; i < Raw.Count(); ++i)
+                {
+                    newRaw.Add(string.Join("", Raw.Select(r => r.ElementAt(i)).Reverse()));
+                }
+                Raw = newRaw;
             }
 
-            private void RotateL()
+            public void RotateL()
             {
                 Actions.Add("L");
                 string temp = TopR;
@@ -465,7 +471,13 @@ Tile 3079:
                 Right = BottomR;
                 Bottom = Left;
                 Left = temp;
-                // todo: rotate Raw :'(
+
+                List<string> newRaw = new List<string>();
+                for (int i = 0; i < Raw.Count; ++i)
+                {
+                    newRaw.Add(string.Join("", Raw.Select(r => r.ElementAt(Raw.Count - 1 - i))));
+                }
+                Raw = newRaw;
             }
 
             public void FlipV()
@@ -477,7 +489,8 @@ Tile 3079:
 
                 Right = RightR;
                 Left = LeftR;
-                // todo: flip Raw :'(
+
+                Raw.Reverse();
             }
 
             public void FlipH()
@@ -489,7 +502,11 @@ Tile 3079:
 
                 Top = TopR;
                 Bottom = BottomR;
-                // todo: flip Raw :'(
+                
+                for (int i = 0; i < Raw.Count; ++i)
+                {
+                    Raw[i] = string.Join("", Raw[i].Reverse());
+                }
             }
 
             public override string ToString()
@@ -562,7 +579,7 @@ Tile 3079:
                 else if (string.IsNullOrWhiteSpace(input))
                 {
                     string id = curId.Split(" :".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Last();
-                    tiles.Add(new Tile { ID = id, Raw = curRaw });
+                    tiles.Add(new Tile { ID = id, Raw = new List<string>(curRaw) });
                     tiles.Last().Eval(ref allSides);
 
                     curId = string.Empty;
@@ -674,6 +691,15 @@ Tile 3079:
                 DebugWriteLine($"No Match Found");
             }
             return adjacentTile;
+        }
+
+        private void PrintTile(Tile tile)
+        {
+            DebugWriteLine($"Tile: #{tile.ID}");
+            foreach (string raw in tile.Raw)
+            {
+                DebugWriteLine($"   {raw}");
+            }
         }
     }
 }
