@@ -35,9 +35,12 @@ sqjhc mxmxvkd sbzzf (contains fish)"
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
-                Output = "",
+                Output = "mxmxvkd,sqjhc,fvjkl",
                 RawInput =
-@""
+@"mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+trh fvjkl sbzzf mxmxvkd (contains dairy)
+sqjhc fvjkl (contains soy)
+sqjhc mxmxvkd sbzzf (contains fish)"
             });
             return testData;
         }
@@ -110,9 +113,81 @@ sqjhc mxmxvkd sbzzf (contains fish)"
             return sum.ToString();
         }
 
+
+        class KnownAllergen
+        {
+            public string Ingredient { get; set; }
+            public string Allergen { get; set; }
+            public override string ToString()
+            {
+                return $"{Ingredient} = {Allergen}";
+            }
+        }
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<string> ingredients = new List<string>();
+            List<string> allergens = new List<string>();
+            List<Food> foods = new List<Food>();
+            foreach (string input in inputs)
+            {
+                string[] split = input.Split("()".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                foods.Add(new Food { AllIngredients = split[0], AllAllergens = split[1] });
+                foods.Last().Parse();
+
+                ingredients.AddRange(foods.Last().Ingredients);
+                allergens.AddRange(foods.Last().Allergens);
+            }
+
+            ingredients = ingredients.Distinct().ToList();
+            allergens = allergens.Distinct().ToList();
+
+            List<string> knownBads = new List<string>();
+            Dictionary<string, List<string>> allergenToIngredients = new Dictionary<string, List<string>>();
+            foreach (string allergen in allergens)
+            {
+                IEnumerable<Food> tempFoods = foods.Where(f => f.Allergens.Contains(allergen));
+                if (tempFoods.Count() > 0)
+                {
+                    List<List<string>> possibilities = tempFoods.Select(f => f.Ingredients).Distinct().ToList();
+                    List<string> trimmed = null;
+                    foreach (List<string> curPos in possibilities)
+                    {
+                        if (trimmed == null)
+                        {
+                            trimmed = new List<string>(curPos);
+                        }
+                        else
+                        {
+                            trimmed = trimmed.Intersect(curPos).ToList();
+                        }
+                    }
+                    knownBads.AddRange(trimmed);
+                    allergenToIngredients[allergen] = trimmed;
+                }
+            }
+
+            List<KnownAllergen> knownAllergens = new List<KnownAllergen>();
+            while (true)
+            {
+                if (allergenToIngredients.Count == 0)
+                {
+                    break;
+                }
+
+                var solved = allergenToIngredients.Where(pair => pair.Value.Count == 1).ToList();
+                foreach (var pair in solved)
+                {
+                    knownAllergens.Add(new KnownAllergen { Allergen = pair.Key, Ingredient = pair.Value.First() });
+                    allergenToIngredients.Remove(pair.Key);
+                    foreach (var curPair in allergenToIngredients)
+                    {
+                        curPair.Value.Remove(knownAllergens.Last().Ingredient);
+                    }
+                }
+            }
+
+            return string.Join(',', knownAllergens.OrderBy(ka => ka.Allergen).Select(ka => ka.Ingredient));
         }
     }
 }
