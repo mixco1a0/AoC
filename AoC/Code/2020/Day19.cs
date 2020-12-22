@@ -247,7 +247,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
             public int GetMatchingLength(string input, int curLetterIndex)
             {
-                PrintFunc($"{new string('\t', curLetterIndex)}{ToString()}");
+                PrintFunc($"{new string('*', curLetterIndex)}{ToString()}");
 
                 if (Sequences.Count == 0)
                 {
@@ -261,36 +261,33 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 }
 
                 int sequenceMatch = 0;
+                int sequenceRunningTotal = 0;
                 int curLetterIndexReset = curLetterIndex;
                 foreach (List<Node> sequence in Sequences)
                 {
+                    sequenceRunningTotal = 0;
                     foreach (Node node in sequence)
                     {
                         int matchLength = node.GetMatchingLength(input, curLetterIndex);
                         if (matchLength > 0)
                         {
                             ++sequenceMatch;
+
+                            sequenceRunningTotal += matchLength;
                             curLetterIndex += matchLength;
-                            PrintFunc($"MATCHED - {input[..curLetterIndex]}");
-                            //match = TestMatch(input, curLetterIndex + 1);
+                            // PrintFunc($"MATCHED - {input[..curLetterIndex]}");
                         }
                         else
                         {
-                            PrintFunc($"FAILED - {node.ToString()}");
+                            // PrintFunc($"FAILED - {node.ToString()}");
                             // sequence is dead, try the next sequence
                             break;
                         }
                     }
                     if (sequenceMatch == sequence.Count)
                     {
-                        if (curLetterIndex == input.Length)
-                        {
-                            return curLetterIndex;
-                        }
-                        return sequenceMatch;
+                        return sequenceRunningTotal;
                     }
-
-                    // curLetterIndex = curLetterIndexReset;
                 }
 
                 return 0;
@@ -334,7 +331,6 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     {
                         ++validCount;
                     }
-                    nodes.Clear();
                     // check against rules
                     // if (rules.Where(r => r.ID == "0").First().Possibles.Contains(input))
                     // {
