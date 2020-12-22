@@ -211,15 +211,17 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             public string RawRules { get; set; }
             public string Value { get; set; }
             public List<List<string>> SubRules { get; set; }
-            public List<List<Node>> Children { get; set; }
+            public List<List<Node>> Sequences { get; set; }
+            public Action<string> PrintFunc { get; set; }
             public Node()
             {
                 SubRules = new List<List<string>>();
-                Children = new List<List<Node>>();
+                Sequences = new List<List<Node>>();
             }
 
-            public void Populate(ref List<Node> nodes)
+            public void Populate(ref List<Node> nodes, Action<string> printFunc)
             {
+                PrintFunc = printFunc;
                 string[] ruleSplit = RawRules.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 foreach (String curSplit in ruleSplit)
                 {
@@ -234,18 +236,64 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     SubRules.Add(new List<string>());
                     SubRules.Last().AddRange(ids);
 
-                    Children.Add(new List<Node>());
+                    Sequences.Add(new List<Node>());
                     foreach (string id in ids)
                     {
                         Node curNode = nodes.Where(n => n.ID == id).First();
-                        Children.Last().Add(curNode);
+                        Sequences.Last().Add(curNode);
                     }
                 }
             }
 
-            public bool TestMatch(string input)
+            public int GetMatchingLength(string input, int curLetterIndex)
             {
-                return true;
+                PrintFunc($"{new string('\t', curLetterIndex)}{ToString()}");
+
+                if (Sequences.Count == 0)
+                {
+                    bool match = input[curLetterIndex..].First() == Value.First();
+                    string pre = curLetterIndex > 0 ? input.Substring(0, curLetterIndex) : "";
+                    string post = curLetterIndex < input.Length - 1 ? input.Substring(curLetterIndex + 1) : "";
+                    string curMatching = $"{pre}[{input.ElementAt(curLetterIndex)}]{post}";
+                    string matchString = match ? "==" : "!=";
+                    PrintFunc($"TESTING - {curMatching}  {matchString}  {Value.First()}");
+                    return match ? 1 : 0;
+                }
+
+                int sequenceMatch = 0;
+                int curLetterIndexReset = curLetterIndex;
+                foreach (List<Node> sequence in Sequences)
+                {
+                    foreach (Node node in sequence)
+                    {
+                        int matchLength = node.GetMatchingLength(input, curLetterIndex);
+                        if (matchLength > 0)
+                        {
+                            ++sequenceMatch;
+                            curLetterIndex += matchLength;
+                            PrintFunc($"MATCHED - {input[..curLetterIndex]}");
+                            //match = TestMatch(input, curLetterIndex + 1);
+                        }
+                        else
+                        {
+                            PrintFunc($"FAILED - {node.ToString()}");
+                            // sequence is dead, try the next sequence
+                            break;
+                        }
+                    }
+                    if (sequenceMatch == sequence.Count)
+                    {
+                        if (curLetterIndex == input.Length)
+                        {
+                            return curLetterIndex;
+                        }
+                        return sequenceMatch;
+                    }
+
+                    // curLetterIndex = curLetterIndexReset;
+                }
+
+                return 0;
             }
 
             public override string ToString()
@@ -270,7 +318,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     foreach (Node node in nodes)
                     {
-                        node.Populate(ref nodes);
+                        node.Populate(ref nodes, DebugWriteLine);
                     }
                     // convert rules
                     // rules = rules.OrderBy(pair => int.Parse(pair.ID)).ToList();
@@ -282,7 +330,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 else
                 {
                     Node node0 = nodes.Where(n => n.ID == "0").First();
-                    if (node0.TestMatch(input))
+                    if (node0.GetMatchingLength(input, 0) == input.Length)
                     {
                         ++validCount;
                     }
