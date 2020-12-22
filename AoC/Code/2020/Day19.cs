@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -98,395 +99,486 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             return testData;
         }
 
-        class ParseRule
+        // class ParseRule
+        // {
+        //     public string ID { get; set; }
+        //     public string Rules { get; set; }
+        //     public List<string> Possibles { get; set; }
+        //     public List<string> SpecialCase { get; set; }
+
+        //     public ParseRule()
+        //     {
+        //         ID = string.Empty;
+        //         Rules = string.Empty;
+        //         Possibles = new List<string>();
+        //         SpecialCase = new List<string>();
+        //     }
+
+        //     public override string ToString()
+        //     {
+        //         return $"{ID} - {Rules}";
+        //     }
+        // }
+
+        // class IterPair
+        // {
+        //     public int Iter { get; set; }
+        //     public List<string> Options { get; set; }
+        //     public bool Done { get { return Iter >= Options.Count; } }
+        // }
+
+        // private void ExpandRule(ParseRule rule, IEnumerable<ParseRule> rules, ref HashSet<string> usedRules, ref List<string> valids)
+        // {
+        //     if (rules.Count() == 0)
+        //     {
+        //         return;
+        //     }
+
+        //     if (!usedRules.Contains(rule.ID))
+        //     {
+        //         string[] split = rule.Rules.Split('|');
+        //         string[] leftDeps = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        //         string[] rightDeps = null;
+        //         string[] allDeps = leftDeps;
+        //         if (split.Count() > 1)
+        //         {
+        //             rightDeps = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        //             allDeps = allDeps.Union(rightDeps).Distinct().ToArray();
+        //         }
+
+        //         bool hasDeps = true;
+        //         foreach (string dep in allDeps)
+        //         {
+        //             if (!usedRules.Contains(dep))
+        //             {
+        //                 int test;
+        //                 if (int.TryParse(dep, out test))
+        //                 {
+        //                     ExpandRule(rules.Where(r => r.ID == dep).First(), rules, ref usedRules, ref valids);
+        //                 }
+        //                 else
+        //                 {
+        //                     hasDeps = false;
+        //                     rule.Possibles.Add(dep);
+        //                 }
+        //             }
+        //         }
+
+        //         if (hasDeps)
+        //         {
+        //             List<List<string>> allOptions = new List<List<string>>();
+        //             for (int i = 0; i < leftDeps.Count(); ++i)
+        //             {
+        //                 allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.Possibles).First());
+        //             }
+
+        //             List<string> curOptions = allOptions[0];
+        //             allOptions.RemoveAt(0);
+        //             while (allOptions.Count > 0)
+        //             {
+        //                 curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
+        //                 allOptions.RemoveAt(0);
+        //             }
+
+        //             rule.Possibles.AddRange(curOptions);
+        //             if (rightDeps != null)
+        //             {
+        //                 allOptions.Clear();
+        //                 for (int i = 0; i < rightDeps.Count(); ++i)
+        //                 {
+        //                     allOptions.Add(rules.Where(r => r.ID == rightDeps[i]).Select(r => r.Possibles).First());
+        //                 }
+
+        //                 curOptions = allOptions[0];
+        //                 allOptions.RemoveAt(0);
+        //                 while (allOptions.Count > 0)
+        //                 {
+        //                     curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
+        //                     allOptions.RemoveAt(0);
+        //                 }
+        //                 rule.Possibles.AddRange(curOptions);
+        //             }
+        //             rule.Possibles = rule.Possibles.Distinct().ToList();
+        //         }
+
+        //         usedRules.Add(rule.ID);
+        //     }
+        // }
+
+        class Node
         {
             public string ID { get; set; }
-            public string Rules { get; set; }
-            public List<string> Possibles { get; set; }
-            public List<string> SpecialCase { get; set; }
-
-            public ParseRule()
+            public string RawRules { get; set; }
+            public string Value { get; set; }
+            public List<List<string>> SubRules { get; set; }
+            public List<List<Node>> Children { get; set; }
+            public Node()
             {
-                ID = string.Empty;
-                Rules = string.Empty;
-                Possibles = new List<string>();
-                SpecialCase = new List<string>();
+                SubRules = new List<List<string>>();
+                Children = new List<List<Node>>();
+            }
+
+            public void Populate(ref List<Node> nodes)
+            {
+                string[] ruleSplit = RawRules.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                foreach (String curSplit in ruleSplit)
+                {
+                    IEnumerable<string> ids = curSplit.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    int intTest;
+                    if (!int.TryParse(ids.ElementAt(0), out intTest))
+                    {
+                        Value = ids.ElementAt(0);
+                        continue;
+                    }
+
+                    SubRules.Add(new List<string>());
+                    SubRules.Last().AddRange(ids);
+
+                    Children.Add(new List<Node>());
+                    foreach (string id in ids)
+                    {
+                        Node curNode = nodes.Where(n => n.ID == id).First();
+                        Children.Last().Add(curNode);
+                    }
+                }
+            }
+
+            public bool TestMatch(string input)
+            {
+                return true;
             }
 
             public override string ToString()
             {
-                return $"{ID} - {Rules}";
-            }
-        }
-
-        class IterPair
-        {
-            public int Iter { get; set; }
-            public List<string> Options { get; set; }
-            public bool Done { get { return Iter >= Options.Count; } }
-        }
-
-        private void ExpandRule(ParseRule rule, IEnumerable<ParseRule> rules, ref HashSet<string> usedRules, ref List<string> valids)
-        {
-            if (rules.Count() == 0)
-            {
-                return;
-            }
-
-            if (!usedRules.Contains(rule.ID))
-            {
-                string[] split = rule.Rules.Split('|');
-                string[] leftDeps = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                string[] rightDeps = null;
-                string[] allDeps = leftDeps;
-                if (split.Count() > 1)
-                {
-                    rightDeps = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    allDeps = allDeps.Union(rightDeps).Distinct().ToArray();
-                }
-
-                bool hasDeps = true;
-                foreach (string dep in allDeps)
-                {
-                    if (!usedRules.Contains(dep))
-                    {
-                        int test;
-                        if (int.TryParse(dep, out test))
-                        {
-                            ExpandRule(rules.Where(r => r.ID == dep).First(), rules, ref usedRules, ref valids);
-                        }
-                        else
-                        {
-                            hasDeps = false;
-                            rule.Possibles.Add(dep);
-                        }
-                    }
-                }
-
-                if (hasDeps)
-                {
-                    List<List<string>> allOptions = new List<List<string>>();
-                    for (int i = 0; i < leftDeps.Count(); ++i)
-                    {
-                        allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.Possibles).First());
-                    }
-
-                    List<string> curOptions = allOptions[0];
-                    allOptions.RemoveAt(0);
-                    while (allOptions.Count > 0)
-                    {
-                        curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-                        allOptions.RemoveAt(0);
-                    }
-
-                    rule.Possibles.AddRange(curOptions);
-                    if (rightDeps != null)
-                    {
-                        allOptions.Clear();
-                        for (int i = 0; i < rightDeps.Count(); ++i)
-                        {
-                            allOptions.Add(rules.Where(r => r.ID == rightDeps[i]).Select(r => r.Possibles).First());
-                        }
-
-                        curOptions = allOptions[0];
-                        allOptions.RemoveAt(0);
-                        while (allOptions.Count > 0)
-                        {
-                            curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-                            allOptions.RemoveAt(0);
-                        }
-                        rule.Possibles.AddRange(curOptions);
-                    }
-                    rule.Possibles = rule.Possibles.Distinct().ToList();
-                }
-
-                usedRules.Add(rule.ID);
+                return $"{ID} => {RawRules}";
             }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            HashSet<string> checkedRules = new HashSet<string>();
-            List<ParseRule> rules = new List<ParseRule>();
-            List<string> valids = new List<string>();
             int validCount = 0;
+            List<Node> nodes = new List<Node>();
             foreach (string input in inputs)
             {
                 if (input.Contains(':'))
                 {
                     // add raw rules
                     string[] split = input.Split(':');
-                    rules.Add(new ParseRule { ID = split[0], Rules = split[1].Replace("\"", "") });
+                    nodes.Add(new Node { ID = split[0], RawRules = split[1].Replace("\"", "") });
                 }
                 else if (string.IsNullOrWhiteSpace(input))
                 {
-                    // convert rules
-                    rules = rules.OrderBy(pair => int.Parse(pair.ID)).ToList();
-                    foreach (ParseRule rule in rules)
+                    foreach (Node node in nodes)
                     {
-                        //ExpandRule(rule, rules, ref checkedRules, ref valids);
+                        node.Populate(ref nodes);
                     }
+                    // convert rules
+                    // rules = rules.OrderBy(pair => int.Parse(pair.ID)).ToList();
+                    // foreach (ParseRule rule in rules)
+                    // {
+                    //     //ExpandRule(rule, rules, ref checkedRules, ref valids);
+                    // }
                 }
                 else
                 {
-                    // check against rules
-                    if (rules.Where(r => r.ID == "0").First().Possibles.Contains(input))
+                    Node node0 = nodes.Where(n => n.ID == "0").First();
+                    if (node0.TestMatch(input))
                     {
                         ++validCount;
                     }
+                    nodes.Clear();
+                    // check against rules
+                    // if (rules.Where(r => r.ID == "0").First().Possibles.Contains(input))
+                    // {
+                    // }
                 }
             }
             return validCount.ToString();
+
+            // HashSet<string> checkedRules = new HashSet<string>();
+            // List<ParseRule> rules = new List<ParseRule>();
+            // List<string> valids = new List<string>();
+            // int validCount = 0;
+            // foreach (string input in inputs)
+            // {
+            //     if (input.Contains(':'))
+            //     {
+            //         // add raw rules
+            //         string[] split = input.Split(':');
+            //         rules.Add(new ParseRule { ID = split[0], Rules = split[1].Replace("\"", "") });
+            //     }
+            //     else if (string.IsNullOrWhiteSpace(input))
+            //     {
+            //         // convert rules
+            //         rules = rules.OrderBy(pair => int.Parse(pair.ID)).ToList();
+            //         foreach (ParseRule rule in rules)
+            //         {
+            //             //ExpandRule(rule, rules, ref checkedRules, ref valids);
+            //         }
+            //     }
+            //     else
+            //     {
+            //         // check against rules
+            //         if (rules.Where(r => r.ID == "0").First().Possibles.Contains(input))
+            //         {
+            //             ++validCount;
+            //         }
+            //     }
+            // }
+            // return validCount.ToString();
         }
 
-        class Cycle
-        {
-            public string ID { get; set; }
-            public int Count { get; set; }
-            public Cycle(Cycle cycle, string id)
-            {
-                ID = id;
-                if (cycle != null && cycle.ID == id)
-                {
-                    Count = cycle.Count + 1;
-                }
-                else
-                {
-                    Count = 1;
-                }
-            }
-        }
+        // class Cycle
+        // {
+        //     public string ID { get; set; }
+        //     public int Count { get; set; }
+        //     public Cycle(Cycle cycle, string id)
+        //     {
+        //         ID = id;
+        //         if (cycle != null && cycle.ID == id)
+        //         {
+        //             Count = cycle.Count + 1;
+        //         }
+        //         else
+        //         {
+        //             Count = 1;
+        //         }
+        //     }
+        // }
 
-        private void ExpandRuleP2(ParseRule rule, IEnumerable<ParseRule> rules, Cycle cycle, ref HashSet<string> usedRules, ref List<string> valids)
-        {
-            if (rules.Count() == 0)
-            {
-                return;
-            }
+        // private void ExpandRuleP2(ParseRule rule, IEnumerable<ParseRule> rules, Cycle cycle, ref HashSet<string> usedRules, ref List<string> valids)
+        // {
+        //     if (rules.Count() == 0)
+        //     {
+        //         return;
+        //     }
 
-            if (!usedRules.Contains(rule.ID))
-            {
-                string[] split = rule.Rules.Split('|');
-                string[] leftDeps = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                string[] rightDeps = null;
-                string[] allDeps = leftDeps;
-                if (split.Count() > 1)
-                {
-                    rightDeps = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    allDeps = allDeps.Union(rightDeps).Distinct().ToArray();
-                }
+        //     if (!usedRules.Contains(rule.ID))
+        //     {
+        //         string[] split = rule.Rules.Split('|');
+        //         string[] leftDeps = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        //         string[] rightDeps = null;
+        //         string[] allDeps = leftDeps;
+        //         if (split.Count() > 1)
+        //         {
+        //             rightDeps = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        //             allDeps = allDeps.Union(rightDeps).Distinct().ToArray();
+        //         }
 
-                bool hasDeps = true;
-                foreach (string dep in allDeps)
-                {
-                    if (!usedRules.Contains(dep))
-                    {
-                        int test;
-                        if (int.TryParse(dep, out test))
-                        {
-                            if (cycle != null && cycle.ID == rule.ID)
-                                continue;
+        //         bool hasDeps = true;
+        //         foreach (string dep in allDeps)
+        //         {
+        //             if (!usedRules.Contains(dep))
+        //             {
+        //                 int test;
+        //                 if (int.TryParse(dep, out test))
+        //                 {
+        //                     if (cycle != null && cycle.ID == rule.ID)
+        //                         continue;
 
-                            ExpandRuleP2(rules.Where(r => r.ID == dep).First(), rules, new Cycle(cycle, rule.ID), ref usedRules, ref valids);
-                        }
-                        else
-                        {
-                            hasDeps = false;
-                            rule.Possibles.Add(dep);
-                            rule.SpecialCase.Add(dep);
-                        }
-                    }
-                }
+        //                     ExpandRuleP2(rules.Where(r => r.ID == dep).First(), rules, new Cycle(cycle, rule.ID), ref usedRules, ref valids);
+        //                 }
+        //                 else
+        //                 {
+        //                     hasDeps = false;
+        //                     rule.Possibles.Add(dep);
+        //                     rule.SpecialCase.Add(dep);
+        //                 }
+        //             }
+        //         }
 
-                if (hasDeps)
-                {
-                    List<List<string>> allOptions = new List<List<string>>();
-                    for (int i = 0; i < leftDeps.Count(); ++i)
-                    {
-                        allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.Possibles).First());
-                    }
+        //         if (hasDeps)
+        //         {
+        //             List<List<string>> allOptions = new List<List<string>>();
+        //             for (int i = 0; i < leftDeps.Count(); ++i)
+        //             {
+        //                 allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.Possibles).First());
+        //             }
 
-                    List<string> curOptions = allOptions[0];
-                    allOptions.RemoveAt(0);
-                    while (allOptions.Count > 0)
-                    {
-                        curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-                        allOptions.RemoveAt(0);
-                    }
-                    rule.Possibles.AddRange(curOptions);
+        //             List<string> curOptions = allOptions[0];
+        //             allOptions.RemoveAt(0);
+        //             while (allOptions.Count > 0)
+        //             {
+        //                 curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
+        //                 allOptions.RemoveAt(0);
+        //             }
+        //             rule.Possibles.AddRange(curOptions);
 
 
-                    allOptions = new List<List<string>>();
-                    for (int i = 0; i < leftDeps.Count(); ++i)
-                    {
-                        allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.SpecialCase).First());
-                    }
+        //             allOptions = new List<List<string>>();
+        //             for (int i = 0; i < leftDeps.Count(); ++i)
+        //             {
+        //                 allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.SpecialCase).First());
+        //             }
 
-                    curOptions = allOptions[0];
-                    allOptions.RemoveAt(0);
-                    while (allOptions.Count > 0)
-                    {
-                        curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-                        allOptions.RemoveAt(0);
-                    }
-                    rule.SpecialCase.AddRange(curOptions);
-                    if (rightDeps != null)
-                    {
-                        bool special = rightDeps.Where(r => r == rule.ID).Count() > 0;
-                        allOptions.Clear();
-                        for (int i = 0; i < rightDeps.Count(); ++i)
-                        {
-                            if (rightDeps[i] == rule.ID)
-                            {
-                                allOptions.Add(new List<string>());
-                                allOptions.Last().Add($"|{rule.ID}|");
-                            }
-                            else
-                            {
-                                allOptions.Add(rules.Where(r => r.ID == rightDeps[i]).Select(r => r.Possibles).First());
-                            }
-                        }
+        //             curOptions = allOptions[0];
+        //             allOptions.RemoveAt(0);
+        //             while (allOptions.Count > 0)
+        //             {
+        //                 curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
+        //                 allOptions.RemoveAt(0);
+        //             }
+        //             rule.SpecialCase.AddRange(curOptions);
+        //             if (rightDeps != null)
+        //             {
+        //                 bool special = rightDeps.Where(r => r == rule.ID).Count() > 0;
+        //                 allOptions.Clear();
+        //                 for (int i = 0; i < rightDeps.Count(); ++i)
+        //                 {
+        //                     if (rightDeps[i] == rule.ID)
+        //                     {
+        //                         allOptions.Add(new List<string>());
+        //                         allOptions.Last().Add($"|{rule.ID}|");
+        //                     }
+        //                     else
+        //                     {
+        //                         allOptions.Add(rules.Where(r => r.ID == rightDeps[i]).Select(r => r.Possibles).First());
+        //                     }
+        //                 }
 
-                        if (special)
-                        {
-                            curOptions = allOptions[0];
-                            allOptions.RemoveAt(0);
-                            while (allOptions.Count > 0)
-                            {
-                                curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-                                allOptions.RemoveAt(0);
-                            }
-                            rule.SpecialCase.AddRange(curOptions);
-                        }
-                        else
-                        {
-                            curOptions = allOptions[0];
-                            allOptions.RemoveAt(0);
-                            while (allOptions.Count > 0)
-                            {
-                                curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-                                allOptions.RemoveAt(0);
-                            }
-                            rule.Possibles.AddRange(curOptions);
-                            rule.SpecialCase.AddRange(curOptions);
-                        }
-                    }
-                    rule.Possibles = rule.Possibles.Distinct().ToList();
-                    rule.SpecialCase = rule.SpecialCase.Distinct().Where(c => c.Contains("|")).ToList();
-                }
+        //                 if (special)
+        //                 {
+        //                     curOptions = allOptions[0];
+        //                     allOptions.RemoveAt(0);
+        //                     while (allOptions.Count > 0)
+        //                     {
+        //                         curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
+        //                         allOptions.RemoveAt(0);
+        //                     }
+        //                     rule.SpecialCase.AddRange(curOptions);
+        //                 }
+        //                 else
+        //                 {
+        //                     curOptions = allOptions[0];
+        //                     allOptions.RemoveAt(0);
+        //                     while (allOptions.Count > 0)
+        //                     {
+        //                         curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
+        //                         allOptions.RemoveAt(0);
+        //                     }
+        //                     rule.Possibles.AddRange(curOptions);
+        //                     rule.SpecialCase.AddRange(curOptions);
+        //                 }
+        //             }
+        //             rule.Possibles = rule.Possibles.Distinct().ToList();
+        //             rule.SpecialCase = rule.SpecialCase.Distinct().Where(c => c.Contains("|")).ToList();
+        //         }
 
-                usedRules.Add(rule.ID);
-            }
-        }
+        //         usedRules.Add(rule.ID);
+        //     }
+        // }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            HashSet<string> checkedRules = new HashSet<string>();
-            List<ParseRule> rules = new List<ParseRule>();
-            List<string> valids = new List<string>();
-            List<string> invalids = new List<string>();
-            int validCount = 0;
-            foreach (string input in inputs)
-            {
-                if (input.Contains(':'))
-                {
-                    // add raw rules
-                    string[] split = input.Split(':');
-                    rules.Add(new ParseRule { ID = split[0], Rules = split[1].Replace("\"", "") });
-                    if (rules.Last().ID == "8")
-                    {
-                        rules.Last().Rules = "42 | 42 8";
-                    }
-                    else if (rules.Last().ID == "11")
-                    {
-                        rules.Last().Rules = "42 31 | 42 11 31";
-                    }
-                }
-                else if (string.IsNullOrWhiteSpace(input))
-                {
-                    // convert rules
-                    rules = rules.OrderBy(pair => int.Parse(pair.ID)).ToList();
-                    foreach (ParseRule rule in rules)
-                    {
-                        ExpandRuleP2(rule, rules, null, ref checkedRules, ref valids);
-                    }
-                }
-                else
-                {
-                    // check against rules
-                    if (rules.Where(r => r.ID == "0").First().Possibles.Contains(input))
-                    {
-                        ++validCount;
-                    }
-                    else
-                    {
-                        invalids.Add(input);
-                    }
-                }
-            }
+            List<Node> nodes = new List<Node>();
+            return "";
 
-            List<string> rule0 = rules.Where(r => r.ID == "0").First().SpecialCase.Where(sc => sc.Contains("|")).Distinct().ToList();
-            foreach (string invalid in invalids)
-            {
-                DebugWriteLine($"Checking {invalid}...");
-                if (IsSpecialValid(invalid, rule0, rules, 0))
-                {
-                    ++validCount;
-                }
-            }
+            //     HashSet<string> checkedRules = new HashSet<string>();
+            //     List<ParseRule> rules = new List<ParseRule>();
+            //     List<string> valids = new List<string>();
+            //     List<string> invalids = new List<string>();
+            //     int validCount = 0;
+            //     foreach (string input in inputs)
+            //     {
+            //         if (input.Contains(':'))
+            //         {
+            //             // add raw rules
+            //             string[] split = input.Split(':');
+            //             rules.Add(new ParseRule { ID = split[0], Rules = split[1].Replace("\"", "") });
+            //             if (rules.Last().ID == "8")
+            //             {
+            //                 rules.Last().Rules = "42 | 42 8";
+            //             }
+            //             else if (rules.Last().ID == "11")
+            //             {
+            //                 rules.Last().Rules = "42 31 | 42 11 31";
+            //             }
+            //         }
+            //         else if (string.IsNullOrWhiteSpace(input))
+            //         {
+            //             // convert rules
+            //             rules = rules.OrderBy(pair => int.Parse(pair.ID)).ToList();
+            //             foreach (ParseRule rule in rules)
+            //             {
+            //                 ExpandRuleP2(rule, rules, null, ref checkedRules, ref valids);
+            //             }
+            //         }
+            //         else
+            //         {
+            //             // check against rules
+            //             if (rules.Where(r => r.ID == "0").First().Possibles.Contains(input))
+            //             {
+            //                 ++validCount;
+            //             }
+            //             else
+            //             {
+            //                 invalids.Add(input);
+            //             }
+            //         }
+            //     }
+
+            //     List<string> rule0 = rules.Where(r => r.ID == "0").First().SpecialCase.Where(sc => sc.Contains("|")).Distinct().ToList();
+            //     foreach (string invalid in invalids)
+            //     {
+            //         DebugWriteLine($"Checking {invalid}...");
+            //         if (IsSpecialValid(invalid, rule0, rules, 0))
+            //         {
+            //             ++validCount;
+            //         }
+            //     }
 
 
-            return validCount.ToString();
+            //     return validCount.ToString();
         }
 
-        private int GetMatchingIndex(string fullWord, List<string> matching)
-        {
-            for (int i = 0; i < fullWord.Length; ++i)
-            {
-                if (matching.Where(r => r.Length > i && r[0..i] == fullWord[0..i]).Count() <= 0)
-                {
-                    return i - 1;
-                }
-            }
-            return -1;
-        }
+        // private int GetMatchingIndex(string fullWord, List<string> matching)
+        // {
+        //     for (int i = 0; i < fullWord.Length; ++i)
+        //     {
+        //         if (matching.Where(r => r.Length > i && r[0..i] == fullWord[0..i]).Count() <= 0)
+        //         {
+        //             return i - 1;
+        //         }
+        //     }
+        //     return -1;
+        // }
 
-        private bool IsSpecialValid(string invalid, List<string> subset, List<ParseRule> rules, int cycle)
-        {
-            DebugWriteLine($"      ...[{string.Format("{0:000}", cycle)}]{invalid} against {subset.Count} possible matches");
-            int idx = GetMatchingIndex(invalid, subset);
-            if (idx < 0)
-            {
-                DebugWriteLine($"      ......[FAILED] no matching index");
-                return false;
-            }
+        // private bool IsSpecialValid(string invalid, List<string> subset, List<ParseRule> rules, int cycle)
+        // {
+        //     DebugWriteLine($"      ...[{string.Format("{0:000}", cycle)}]{invalid} against {subset.Count} possible matches");
+        //     int idx = GetMatchingIndex(invalid, subset);
+        //     if (idx < 0)
+        //     {
+        //         DebugWriteLine($"      ......[FAILED] no matching index");
+        //         return false;
+        //     }
 
-            List<string> smallSubset = subset.Where(r => r[0..idx] == invalid[0..idx]).Select(r => r[idx..]).Where(r => r[0] == '|').Distinct().ToList();
-            if (smallSubset.Count == 0)
-            {
-                DebugWriteLine($"      ......[FAILED] recursive matches");
-                return false;
-            }
+        //     List<string> smallSubset = subset.Where(r => r[0..idx] == invalid[0..idx]).Select(r => r[idx..]).Where(r => r[0] == '|').Distinct().ToList();
+        //     if (smallSubset.Count == 0)
+        //     {
+        //         DebugWriteLine($"      ......[FAILED] recursive matches");
+        //         return false;
+        //     }
 
-            string subString = invalid[idx..];
-            return IsSpecialValidRecurse(subString, smallSubset, rules, cycle);
-        }
+        //     string subString = invalid[idx..];
+        //     return IsSpecialValidRecurse(subString, smallSubset, rules, cycle);
+        // }
 
-        private bool IsSpecialValidRecurse(string invalid, List<string> subset, List<ParseRule> rules, int cycle)
-        {
-            string subsetString = subset[0];
-            int start = subsetString.IndexOf('|') + 1;
-            int end = subsetString.IndexOf('|', start);
-            string ruleIdx = subsetString.Substring(start, end - start);
+        // private bool IsSpecialValidRecurse(string invalid, List<string> subset, List<ParseRule> rules, int cycle)
+        // {
+        //     string subsetString = subset[0];
+        //     int start = subsetString.IndexOf('|') + 1;
+        //     int end = subsetString.IndexOf('|', start);
+        //     string ruleIdx = subsetString.Substring(start, end - start);
 
-            string subsetEndString = subsetString[(end + 1)..];
-            ParseRule replaceRule = rules.Where(r => r.ID == ruleIdx).First();
+        //     string subsetEndString = subsetString[(end + 1)..];
+        //     ParseRule replaceRule = rules.Where(r => r.ID == ruleIdx).First();
 
-            List<string> newSubset = subset.SelectMany(ss => replaceRule.Possibles.Select(p => $"{p}{subsetEndString}")).ToList();
-            bool check =  IsSpecialValid(invalid, newSubset, rules, cycle + 1);
+        //     List<string> newSubset = subset.SelectMany(ss => replaceRule.Possibles.Select(p => $"{p}{subsetEndString}")).ToList();
+        //     bool check =  IsSpecialValid(invalid, newSubset, rules, cycle + 1);
 
-            return false;
-        }
+        //     return false;
+        // }
     }
 }
 
