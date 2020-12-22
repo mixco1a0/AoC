@@ -247,10 +247,15 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
             public int GetMatchingLength(string input, int curLetterIndex)
             {
-                PrintFunc($"{new string('*', curLetterIndex)}{ToString()}");
+                PrintFunc($"{new string(' ', 10)}{new string('*', curLetterIndex)}{ToString()}");
 
                 if (Sequences.Count == 0)
                 {
+                    if (input.Length <= curLetterIndex)
+                    {
+                        return 0;
+                    }
+
                     bool match = input[curLetterIndex..].First() == Value.First();
                     string pre = curLetterIndex > 0 ? input.Substring(0, curLetterIndex) : "";
                     string post = curLetterIndex < input.Length - 1 ? input.Substring(curLetterIndex + 1) : "";
@@ -329,6 +334,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     Node node0 = nodes.Where(n => n.ID == "0").First();
                     if (node0.GetMatchingLength(input, 0) == input.Length)
                     {
+                        DebugWriteLine($"{input} is VALID\n\n");
                         ++validCount;
                     }
                     // check against rules
