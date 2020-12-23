@@ -99,7 +99,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
-                Output = "",
+                Output = "12",
                 RawInput =
 @"42: 9 14 | 10 1
 9: 14 27 | 1 26
@@ -133,7 +133,6 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 7: 14 5 | 1 21
 24: 14 1
 
-aaabbbbbbaaaabaababaabababbabaaabbababababaaa
 abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa
 bbabbbbaabaabba
 babbbbaabbbbbabbbbbbaabaaabaaa
@@ -384,7 +383,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     // add raw rules
                     string[] split = input.Split(':');
-                    nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Replace("\"", "") });
+                    nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Trim().Replace("\"", "") });
                 }
                 else if (string.IsNullOrWhiteSpace(input))
                 {
@@ -407,8 +406,44 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
+            int validCount = 0;
             List<Node> nodes = new List<Node>();
-            return "";
+            foreach (string input in inputs)
+            {
+                if (input.Contains(':'))
+                {
+                    // add raw rules
+                    if (input[0..2] == "8:")
+                    {
+                        nodes.Add(new Node { ID = " 8", RawRules = "42 | 42 8" });
+                    }
+                    else if (input[0..3] == "11:")
+                    {
+                        nodes.Add(new Node { ID = "11", RawRules = "42 31 | 42 11 31" });
+                    }
+                    else
+                    {
+                        string[] split = input.Split(':');
+                        nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Trim().Replace("\"", "") });
+                    }
+                }
+                else if (string.IsNullOrWhiteSpace(input))
+                {
+                    foreach (Node node in nodes)
+                    {
+                        node.Populate(ref nodes, DebugWriteLine);
+                    }
+                }
+                else
+                {
+                    Node node0 = nodes.Where(n => n.ID == " 0").First();
+                    if (node0.GetMatchingLength(input, 0, 0, "") == input.Length)
+                    {
+                        ++validCount;
+                    }
+                }
+            }
+            return validCount.ToString();
         }
     }
 }
