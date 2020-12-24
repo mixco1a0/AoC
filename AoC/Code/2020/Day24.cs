@@ -51,9 +51,28 @@ wseweeenwnesenwwwswnew"
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
-                Output = "",
+                Output = "2208",
                 RawInput =
-@""
+@"sesenwnenenewseeswwswswwnenewsewsw
+neeenesenwnwwswnenewnwwsewnenwseswesw
+seswneswswsenwwnwse
+nwnwneseeswswnenewneswwnewseswneseene
+swweswneswnenwsewnwneneseenw
+eesenwseswswnenwswnwnwsewwnwsene
+sewnenenenesenwsewnenwwwse
+wenwwweseeeweswwwnwwe
+wsweesenenewnwwnwsenewsenwwsesesenwne
+neeswseenwwswnwswswnw
+nenwswwsewswnenenewsenwsenwnesesenew
+enewnwewneswsewnwswenweswnenwsenwsw
+sweneswneswneneenwnewenewwneswswnese
+swwesenesewenwneswnwwneseswwne
+enesenwswwswneneswsenwnewswseenwsese
+wnwnesenesenenwwnenwsewesewsesesew
+nenewswnwewswnenesenwnesewesw
+eneswnwswnwsenenwnwnwwseeswneewsenese
+neswnwewnwnwseenwseesewsenwsweewe
+wseweeenwnesenwwwswnew"
             });
             return testData;
         }
@@ -145,7 +164,143 @@ wseweeenwnesenwwwswnew"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<Coords> coords = new List<Coords>();
+            foreach (string input in inputs)
+            {
+                coords.Add(FlipCoords(input));
+            }
+            // coords.ForEach(c => DebugWriteLine(c.ToString()));
+            coords = coords.OrderBy(_ => _.ToString()).ToList();
+            HashSet<KeyValuePair<int, int>> tiles = new HashSet<KeyValuePair<int, int>>();
+            foreach (Coords cur in coords)
+            {
+                KeyValuePair<int, int> key = new KeyValuePair<int, int>(cur.X, cur.Y);
+                if (tiles.Contains(key))
+                {
+                    tiles.Remove(key);
+                }
+                else
+                {
+                    tiles.Add(key);
+                }
+            }
+
+            for (int i = 1; i <= 100; ++i)
+            {
+                int count = DaySwap(ref tiles);
+                // DebugWriteLine($"Day {i}: {count}");;
+            }
+
+            return tiles.Count().ToString();
+        }
+
+        private int DaySwap(ref HashSet<KeyValuePair<int, int>> tiles)
+        {
+            HashSet<KeyValuePair<int, int>> newState = new HashSet<KeyValuePair<int, int>>();
+            HashSet<KeyValuePair<int, int>> whitesToCheck = new HashSet<KeyValuePair<int, int>>();
+            foreach (var tile in tiles)
+            {
+                int x = tile.Key;
+                int y = tile.Value;
+                // check E/W
+                int sum = 0;
+                if (tiles.Contains(new KeyValuePair<int, int>(x + 1, y)))
+                {
+                    ++sum;
+                }
+                else
+                {
+                    whitesToCheck.Add(new KeyValuePair<int, int>(x + 1, y));
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x - 1, y)))
+                {
+                    ++sum;
+                }
+                else
+                {
+                    whitesToCheck.Add(new KeyValuePair<int, int>(x - 1, y));
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x + 1, y - 1)))
+                {
+                    ++sum;
+                }
+                else
+                {
+                    whitesToCheck.Add(new KeyValuePair<int, int>(x + 1, y - 1));
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x, y - 1)))
+                {
+                    ++sum;
+                }
+                else
+                {
+                    whitesToCheck.Add(new KeyValuePair<int, int>(x, y - 1));
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x, y + 1)))
+                {
+                    ++sum;
+                }
+                else
+                {
+                    whitesToCheck.Add(new KeyValuePair<int, int>(x, y + 1));
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x - 1, y + 1)))
+                {
+                    ++sum;
+                }
+                else
+                {
+                    whitesToCheck.Add(new KeyValuePair<int, int>(x - 1, y + 1));
+                }
+
+                if (sum == 0 || sum > 2)
+                {
+                    // flips to white, dont add to the new state
+                }
+                else
+                {
+                    // stays black, add to new state
+                    newState.Add(new KeyValuePair<int, int>(x, y));
+                }
+            }
+
+            foreach (var tile in whitesToCheck)
+            {
+                int x = tile.Key;
+                int y = tile.Value;
+                int sum = 0;
+                if (tiles.Contains(new KeyValuePair<int, int>(x + 1, y)))
+                {
+                    ++sum;
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x - 1, y)))
+                {
+                    ++sum;
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x + 1, y - 1)))
+                {
+                    ++sum;
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x, y - 1)))
+                {
+                    ++sum;
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x, y + 1)))
+                {
+                    ++sum;
+                }
+                if (tiles.Contains(new KeyValuePair<int, int>(x - 1, y + 1)))
+                {
+                    ++sum;
+                }
+                if (sum == 2)
+                {
+                    newState.Add(new KeyValuePair<int, int>(x, y));
+                }
+            }
+
+            tiles = newState;
+            return tiles.Count;
         }
     }
 }
