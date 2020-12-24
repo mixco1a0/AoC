@@ -98,6 +98,47 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.Two,
+                Output = "3",
+                RawInput =
+@"42: 9 14 | 10 1
+9: 14 27 | 1 26
+10: 23 14 | 28 1
+1: a
+11: 42 31
+5: 1 14 | 15 1
+19: 14 1 | 14 14
+12: 24 14 | 19 1
+16: 15 1 | 14 14
+31: 14 17 | 1 13
+6: 14 14 | 1 14
+2: 1 24 | 14 4
+0: 8 11
+13: 14 3 | 1 12
+15: 1 | 14
+17: 14 2 | 1 7
+23: 25 1 | 22 14
+28: 16 1
+4: 1 1
+20: 14 14 | 1 15
+3: 5 14 | 16 1
+27: 1 6 | 14 18
+14: b
+21: 14 1 | 1 14
+25: 1 1 | 1 14
+22: 14 14
+8: 42
+26: 14 22 | 1 20
+18: 15 15
+7: 14 5 | 1 21
+24: 14 1
+
+bbbbbbbaaaabbbbaaabbabaaa
+abbbbabbbbaaaababbbbbbaaaababb
+bbbababbbbaaaaaaaabbababaaababaabab"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = TestPart.Two,
                 Output = "12",
                 RawInput =
 @"42: 9 14 | 10 1
@@ -150,112 +191,6 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             });
             return testData;
         }
-
-        // class ParseRule
-        // {
-        //     public string ID { get; set; }
-        //     public string Rules { get; set; }
-        //     public List<string> Possibles { get; set; }
-        //     public List<string> SpecialCase { get; set; }
-
-        //     public ParseRule()
-        //     {
-        //         ID = string.Empty;
-        //         Rules = string.Empty;
-        //         Possibles = new List<string>();
-        //         SpecialCase = new List<string>();
-        //     }
-
-        //     public override string ToString()
-        //     {
-        //         return $"{ID} - {Rules}";
-        //     }
-        // }
-
-        // class IterPair
-        // {
-        //     public int Iter { get; set; }
-        //     public List<string> Options { get; set; }
-        //     public bool Done { get { return Iter >= Options.Count; } }
-        // }
-
-        // private void ExpandRule(ParseRule rule, IEnumerable<ParseRule> rules, ref HashSet<string> usedRules, ref List<string> valids)
-        // {
-        //     if (rules.Count() == 0)
-        //     {
-        //         return;
-        //     }
-
-        //     if (!usedRules.Contains(rule.ID))
-        //     {
-        //         string[] split = rule.Rules.Split('|');
-        //         string[] leftDeps = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        //         string[] rightDeps = null;
-        //         string[] allDeps = leftDeps;
-        //         if (split.Count() > 1)
-        //         {
-        //             rightDeps = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        //             allDeps = allDeps.Union(rightDeps).Distinct().ToArray();
-        //         }
-
-        //         bool hasDeps = true;
-        //         foreach (string dep in allDeps)
-        //         {
-        //             if (!usedRules.Contains(dep))
-        //             {
-        //                 int test;
-        //                 if (int.TryParse(dep, out test))
-        //                 {
-        //                     ExpandRule(rules.Where(r => r.ID == dep).First(), rules, ref usedRules, ref valids);
-        //                 }
-        //                 else
-        //                 {
-        //                     hasDeps = false;
-        //                     rule.Possibles.Add(dep);
-        //                 }
-        //             }
-        //         }
-
-        //         if (hasDeps)
-        //         {
-        //             List<List<string>> allOptions = new List<List<string>>();
-        //             for (int i = 0; i < leftDeps.Count(); ++i)
-        //             {
-        //                 allOptions.Add(rules.Where(r => r.ID == leftDeps[i]).Select(r => r.Possibles).First());
-        //             }
-
-        //             List<string> curOptions = allOptions[0];
-        //             allOptions.RemoveAt(0);
-        //             while (allOptions.Count > 0)
-        //             {
-        //                 curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-        //                 allOptions.RemoveAt(0);
-        //             }
-
-        //             rule.Possibles.AddRange(curOptions);
-        //             if (rightDeps != null)
-        //             {
-        //                 allOptions.Clear();
-        //                 for (int i = 0; i < rightDeps.Count(); ++i)
-        //                 {
-        //                     allOptions.Add(rules.Where(r => r.ID == rightDeps[i]).Select(r => r.Possibles).First());
-        //                 }
-
-        //                 curOptions = allOptions[0];
-        //                 allOptions.RemoveAt(0);
-        //                 while (allOptions.Count > 0)
-        //                 {
-        //                     curOptions = curOptions.SelectMany(ao0 => allOptions[0].Select(ao1 => $"{ao0}{ao1}")).ToList();
-        //                     allOptions.RemoveAt(0);
-        //                 }
-        //                 rule.Possibles.AddRange(curOptions);
-        //             }
-        //             rule.Possibles = rule.Possibles.Distinct().ToList();
-        //         }
-
-        //         usedRules.Add(rule.ID);
-        //     }
-        // }
 
         class Node
         {
@@ -384,6 +319,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                                     NodeIndex prevNodeIndex = nodeInfo[prevNodeId];
                                     if (!prevNodeIndex.IsComplete())
                                     {
+                                        PrintFunc($"{prevNodeId} REDO on S#{prevNodeIndex.Next()}");
                                         forceNodeSequenceStart[prevNode.ID] = prevNodeIndex.Next();
                                         redoSequence = true;
                                     }
@@ -434,6 +370,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     foreach (Node node in nodes)
                     {
                         node.Populate(ref nodes, (s) => { });
+                        // node.Populate(ref nodes, DebugWriteLine);
                     }
                 }
                 else
@@ -476,6 +413,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     foreach (Node node in nodes)
                     {
+                        // node.Populate(ref nodes, (s) => { });
                         node.Populate(ref nodes, DebugWriteLine);
                     }
                 }
