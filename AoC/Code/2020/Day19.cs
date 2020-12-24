@@ -79,9 +79,8 @@ aaaabbb"
 7: 14 5 | 1 21
 24: 14 1
 
-bbabbbbaabaabba
-aaabbbbbbaaaabaababaabababbabaaabbababababaaa
 abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa
+bbabbbbaabaabba
 babbbbaabbbbbabbbbbbaabaaabaaa
 aaabbbbbbaaaabaababaabababbabaaabbababababaaa
 bbbbbbbaaaabbbbaaabbabaaa
@@ -300,14 +299,26 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 }
             }
 
-            public int GetMatchingLength(string input, int curLetterIndex, int depth, string prev)
+            public struct NodeIndex
+            {
+                public int Cur { get; set; }
+                public int Max { get; set; }
+                public bool IsComplete() { return Cur == Max; }
+                public int Next() { return Cur + 1; }
+                public override string ToString()
+                {
+                    return $"Cur={Cur}, Max={Max}";
+                }
+            }
+
+            public int GetMatchingLength(string input, int curLetterIndex, int depth, string prev, int sequenceStart, ref Dictionary<string, NodeIndex> nodeInfo)
             {
                 string history = $"{prev}->{ID}";
                 if (string.IsNullOrWhiteSpace(prev))
                 {
                     history = ID;
                 }
-                // PrintFunc($"{history} [{ToString()}]");
+                PrintFunc($"{history} [{ToString()}]");
 
                 if (Sequences.Count == 0)
                 {
@@ -321,24 +332,34 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     string post = curLetterIndex < input.Length - 1 ? input.Substring(curLetterIndex + 1) : "";
                     string curMatching = $"{pre}[{input.ElementAt(curLetterIndex)}]{post}";
                     string matchString = match ? "==" : "!=";
-                    // PrintFunc($"{curMatching}  {matchString}  {Value.First()}");
+                    PrintFunc($"{curMatching}  {matchString}  {Value.First()}");
                     return match ? 1 : 0;
                 }
+
+                Dictionary<string, int> forceNodeSequenceStart = new Dictionary<string, int>();
 
                 int sequenceMatch = 0;
                 int sequenceRunningTotal = 0;
                 int curLetterIndexReset = curLetterIndex;
-                int curSequence = 1;
-                foreach (List<Node> sequence in Sequences)
+                bool redoSequence = false;
+                for (int curSequence = sequenceStart; curSequence <= Sequences.Count;)
                 {
+                    List<Node> sequence = Sequences[curSequence - 1];
+                    nodeInfo[history] = new NodeIndex { Cur = curSequence, Max = Sequences.Count };
+
                     sequenceMatch = 0;
                     sequenceRunningTotal = 0;
 
-                    int curNode = 1;
-                    foreach (Node node in sequence)
+                    for (int curNode = 1; curNode <= sequence.Count; ++curNode)
                     {
+                        Node node = sequence[curNode - 1];
                         string completeHistory = $"{history}[S#{curSequence}.N#{curNode}]";
-                        int matchLength = node.GetMatchingLength(input, curLetterIndex, depth + 1, completeHistory);
+                        int startingSequence = 1;
+                        if (forceNodeSequenceStart.ContainsKey(node.ID))
+                        {
+                            startingSequence = forceNodeSequenceStart[node.ID];
+                        }
+                        int matchLength = node.GetMatchingLength(input, curLetterIndex, depth + 1, completeHistory, startingSequence, ref nodeInfo);
                         if (matchLength > 0)
                         {
                             ++sequenceMatch;
@@ -349,10 +370,27 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                         else
                         {
                             // sequence is dead, try the next sequence
-                            // PrintFunc($"{completeHistory}->{node.ID} FAILED");
+                            PrintFunc($"{completeHistory}->{node.ID} FAILED");
+
+                            // what if the previous node has a second sequence thats worth trying?
+                            // need to communicate back to the previous node to try again with 
+                            // the different sequence
+                            if (curNode > 1)
+                            {
+                                Node prevNode = sequence[curNode - 2];
+                                string prevNodeId = $"{history}[S#{curSequence}.N#{curNode - 1}]->{prevNode.ID}";
+                                if (nodeInfo.ContainsKey(prevNodeId))
+                                {
+                                    NodeIndex prevNodeIndex = nodeInfo[prevNodeId];
+                                    if (!prevNodeIndex.IsComplete())
+                                    {
+                                        forceNodeSequenceStart[prevNode.ID] = prevNodeIndex.Next();
+                                        redoSequence = true;
+                                    }
+                                }
+                            }
                             break;
                         }
-                        ++curNode;
                     }
 
                     if (sequenceMatch == sequence.Count)
@@ -360,7 +398,12 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                         return sequenceRunningTotal;
                     }
 
-                    ++curSequence;
+                    if (!redoSequence)
+                    {
+                        forceNodeSequenceStart.Clear();
+                        ++curSequence;
+                    }
+                    redoSequence = false;
                     curLetterIndex = curLetterIndexReset;
                 }
 
@@ -375,6 +418,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
+            Dictionary<string, Node.NodeIndex> nodeInfo = new Dictionary<string, Node.NodeIndex>();
             int validCount = 0;
             List<Node> nodes = new List<Node>();
             foreach (string input in inputs)
@@ -389,13 +433,13 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     foreach (Node node in nodes)
                     {
-                        node.Populate(ref nodes, DebugWriteLine);
+                        node.Populate(ref nodes, (s) => { });
                     }
                 }
                 else
                 {
                     Node node0 = nodes.Where(n => n.ID == " 0").First();
-                    if (node0.GetMatchingLength(input, 0, 0, "") == input.Length)
+                    if (node0.GetMatchingLength(input, 0, 0, "", 1, ref nodeInfo) == input.Length)
                     {
                         ++validCount;
                     }
@@ -406,6 +450,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
+            Dictionary<string, Node.NodeIndex> nodeInfo = new Dictionary<string, Node.NodeIndex>();
             int validCount = 0;
             List<Node> nodes = new List<Node>();
             foreach (string input in inputs)
@@ -437,8 +482,9 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 else
                 {
                     Node node0 = nodes.Where(n => n.ID == " 0").First();
-                    if (node0.GetMatchingLength(input, 0, 0, "") == input.Length)
+                    if (node0.GetMatchingLength(input, 0, 0, "", 1, ref nodeInfo) == input.Length)
                     {
+                        DebugWriteLine($"Valid: {input}");
                         ++validCount;
                     }
                 }
