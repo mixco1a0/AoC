@@ -25,9 +25,10 @@ namespace AoC._2020
             testData.Add(new TestDatum
             {
                 TestPart = TestPart.One,
-                Output = "",
+                Output = "14897079",
                 RawInput =
-@""
+@"5764801
+17807724"
             });
             testData.Add(new TestDatum
             {
@@ -41,7 +42,43 @@ namespace AoC._2020
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            long sn1 = long.Parse(inputs[0]);
+            int loop1 = 0;
+            long transform1 = 1;
+            while (true)
+            {
+                ++loop1;
+
+                transform1 *= 7;
+                transform1 = transform1 % 20201227;
+                if (transform1 == sn1)
+                {
+                    break;
+                }
+            }
+
+            long sn2 = long.Parse(inputs[1]);
+            // int loop2 = 0;
+            // long transform2 = 1;
+            // while (true)
+            // {
+            //     ++loop2;
+
+            //     transform2 *= 7;
+            //     transform2 = transform2 % 20201227;
+            //     if (transform2 == sn2)
+            //     {
+            //         break;
+            //     }
+            // }
+            long transformE = 1;
+            for (int i = 0; i < loop1; ++i)
+            {
+                transformE *= sn2;
+                transformE = transformE % 20201227;
+            }
+
+            return transformE.ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
