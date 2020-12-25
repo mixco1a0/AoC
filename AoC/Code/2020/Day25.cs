@@ -58,19 +58,6 @@ namespace AoC._2020
             }
 
             long sn2 = long.Parse(inputs[1]);
-            // int loop2 = 0;
-            // long transform2 = 1;
-            // while (true)
-            // {
-            //     ++loop2;
-
-            //     transform2 *= 7;
-            //     transform2 = transform2 % 20201227;
-            //     if (transform2 == sn2)
-            //     {
-            //         break;
-            //     }
-            // }
             long transformE = 1;
             for (int i = 0; i < loop1; ++i)
             {
