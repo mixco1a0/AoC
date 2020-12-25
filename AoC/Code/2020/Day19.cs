@@ -253,20 +253,20 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     history = ID;
                 }
-                PrintFunc($"{history} [{ToString()}]");
+                if (input.Length <= curLetterIndex)
+                {
+                    return 0;
+                }
 
                 if (Sequences.Count == 0)
                 {
-                    if (input.Length <= curLetterIndex)
-                    {
-                        return 0;
-                    }
 
                     bool match = input[curLetterIndex..].First() == Value.First();
                     string pre = curLetterIndex > 0 ? input.Substring(0, curLetterIndex) : "";
                     string post = curLetterIndex < input.Length - 1 ? input.Substring(curLetterIndex + 1) : "";
                     string curMatching = $"{pre}[{input.ElementAt(curLetterIndex)}]{post}";
                     string matchString = match ? "==" : "!=";
+                    PrintFunc($"{history} [{ToString()}]");
                     PrintFunc($"{curMatching}  {matchString}  {Value.First()}");
                     return match ? 1 : 0;
                 }
