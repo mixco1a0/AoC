@@ -359,7 +359,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
                                 // what if the previous node has more potential history, despite hitting
                                 // its last sequence? (it's current successful node has more sequences)
-                                if (curNode > 1 && matchLength > 0)
+                                if (curNode > 1 && matchLength >= 0)
                                 {
                                     // check for length here
                                     Node prevNode = sequence[curNode - 2];
@@ -477,8 +477,8 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     foreach (Node node in nodes)
                     {
-                        // node.Populate(ref nodes, (s) => { });
-                        node.Populate(ref nodes, GetNodeName, DebugWriteLine);
+                        node.Populate(ref nodes, GetNodeName, (s) => { });
+                        // node.Populate(ref nodes, GetNodeName, DebugWriteLine);
                     }
                     Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
                     node0.GenerateMinLength();
@@ -494,7 +494,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                         {
                             subRules = node.Value;
                         }
-                        DebugWriteLine($"Node: #{node.ID} = [MinLength={string.Format("{0, 2}", node.MinLength)}] {subRules}");
+                        // DebugWriteLine($"Node: #{node.ID} = [MinLength={string.Format("{0, 2}", node.MinLength)}] {subRules}");
                     }
                 }
                 else
@@ -502,7 +502,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
                     if (node0.GetMatchingLength(input, 0, 0, "", 1, ref sequenceInfo) == input.Length)
                     {
-                        DebugWriteLine($"Valid: {input}");
+                        // DebugWriteLine($"Valid: {input}");
                         ++validCount;
                     }
                 }
