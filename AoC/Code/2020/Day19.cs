@@ -206,13 +206,13 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 Sequences = new List<List<Node>>();
             }
 
-            public void Populate(ref List<Node> nodes, Action<string> printFunc)
+            public void Populate(ref List<Node> nodes, Func<string, string> GetNodeName, Action<string> printFunc)
             {
                 PrintFunc = printFunc;
                 string[] ruleSplit = RawRules.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 foreach (String curSplit in ruleSplit)
                 {
-                    IEnumerable<string> ids = curSplit.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    List<string> ids = curSplit.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
                     int intTest;
                     if (!int.TryParse(ids.ElementAt(0), out intTest))
                     {
@@ -220,7 +220,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                         continue;
                     }
 
-                    ids = ids.Select(i => string.Format("{0,2}", i));
+                    ids = ids.Select(i => GetNodeName(i)).ToList();
 
                     SubRules.Add(new List<string>());
                     SubRules.Last().AddRange(ids);
@@ -266,8 +266,8 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     string post = curLetterIndex < input.Length - 1 ? input.Substring(curLetterIndex + 1) : "";
                     string curMatching = $"{pre}[{input.ElementAt(curLetterIndex)}]{post}";
                     string matchString = match ? "==" : "!=";
-                    PrintFunc($"{history} [{ToString()}]");
-                    PrintFunc($"{curMatching}  {matchString}  {Value.First()}");
+                    PrintFunc($"[hist|e{matchString}] {history} [{ToString()}] --- {curMatching}");
+                    PrintFunc($"[test|end] {curMatching}  {matchString}  {Value.First()}");
                     return match ? 1 : 0;
                 }
 
@@ -305,11 +305,14 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                         else
                         {
                             // sequence is dead, try the next sequence
-                            PrintFunc($"{completeHistory}->{node.ID} FAILED");
+                            PrintFunc($"[hist|err] {completeHistory}->{node.ID} FAILED");
 
                             // what if the previous node has a second sequence thats worth trying?
                             // need to communicate back to the previous node to try again with 
                             // the different sequence
+
+                            // what if the previous node has more potential history, despite hitting
+                            // its last sequence? (it's current successful node has more sequences)
                             if (curNode > 1)
                             {
                                 Node prevNode = sequence[curNode - 2];
@@ -319,7 +322,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                                     NodeIndex prevNodeIndex = nodeInfo[prevNodeId];
                                     if (!prevNodeIndex.IsComplete())
                                     {
-                                        PrintFunc($"{prevNodeId} REDO on S#{prevNodeIndex.Next()}");
+                                        PrintFunc($"[hist|try] {prevNodeId} REDO on S#{prevNodeIndex.Next()}");
                                         forceNodeSequenceStart[prevNode.ID] = prevNodeIndex.Next();
                                         redoSequence = true;
                                     }
@@ -352,6 +355,15 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             }
         }
 
+        private string GetNodeName(string nodeId)
+        {
+            if (nodeId.Length == 1)
+            {
+                return $"0{nodeId}";
+            }
+            return nodeId;
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             Dictionary<string, Node.NodeIndex> nodeInfo = new Dictionary<string, Node.NodeIndex>();
@@ -363,19 +375,19 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     // add raw rules
                     string[] split = input.Split(':');
-                    nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Trim().Replace("\"", "") });
+                    nodes.Add(new Node { ID = GetNodeName(split[0]), RawRules = split[1].Trim().Replace("\"", "") });
                 }
                 else if (string.IsNullOrWhiteSpace(input))
                 {
                     foreach (Node node in nodes)
                     {
-                        node.Populate(ref nodes, (s) => { });
+                        node.Populate(ref nodes, GetNodeName, (s) => { });
                         // node.Populate(ref nodes, DebugWriteLine);
                     }
                 }
                 else
                 {
-                    Node node0 = nodes.Where(n => n.ID == " 0").First();
+                    Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
                     if (node0.GetMatchingLength(input, 0, 0, "", 1, ref nodeInfo) == input.Length)
                     {
                         ++validCount;
@@ -397,16 +409,16 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     // add raw rules
                     if (input[0..2] == "8:")
                     {
-                        nodes.Add(new Node { ID = " 8", RawRules = "42 | 42 8" });
+                        nodes.Add(new Node { ID = GetNodeName("8"), RawRules = "42 | 42 8" });
                     }
                     else if (input[0..3] == "11:")
                     {
-                        nodes.Add(new Node { ID = "11", RawRules = "42 31 | 42 11 31" });
+                        nodes.Add(new Node { ID = GetNodeName("11"), RawRules = "42 31 | 42 11 31" });
                     }
                     else
                     {
                         string[] split = input.Split(':');
-                        nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Trim().Replace("\"", "") });
+                        nodes.Add(new Node { ID = GetNodeName(split[0]), RawRules = split[1].Trim().Replace("\"", "") });
                     }
                 }
                 else if (string.IsNullOrWhiteSpace(input))
@@ -414,12 +426,26 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     foreach (Node node in nodes)
                     {
                         // node.Populate(ref nodes, (s) => { });
-                        node.Populate(ref nodes, DebugWriteLine);
+                        node.Populate(ref nodes, GetNodeName, DebugWriteLine);
+                    }
+                    
+                    foreach (Node node in nodes.OrderBy(n => n.ID))
+                    {
+                        string subRules = "";
+                        foreach(List<string> sub in node.SubRules)
+                        {
+                            subRules += $"{string.Format("{0,-9}", string.Join(",", sub))} | ";
+                        }
+                        if (string.IsNullOrWhiteSpace(subRules))
+                        {
+                            subRules = node.Value;
+                        }
+                        DebugWriteLine($"Node: #{node.ID} = {subRules}");
                     }
                 }
                 else
                 {
-                    Node node0 = nodes.Where(n => n.ID == " 0").First();
+                    Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
                     if (node0.GetMatchingLength(input, 0, 0, "", 1, ref nodeInfo) == input.Length)
                     {
                         DebugWriteLine($"Valid: {input}");
