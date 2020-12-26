@@ -47,8 +47,8 @@ namespace AoC
                 // run the day specified or the latest day
                 if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.Day))
                 {
-                    Day latestDay = RunDay(baseNamespace, commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]);
-                    if (latestDay == null)
+                    Day day = RunDay(baseNamespace, commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]);
+                    if (day == null)
                     {
                         LogLine($"Unable to find {baseNamespace}.{commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]}");
                     }
