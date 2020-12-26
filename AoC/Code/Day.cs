@@ -122,6 +122,7 @@ namespace AoC
             {
                 Log($"{e.Message}");
                 Log($"{e.StackTrace.Split('\r').FirstOrDefault()}");
+                Log($"{e.StackTrace}");
             }
         }
 

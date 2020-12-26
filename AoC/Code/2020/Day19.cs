@@ -199,20 +199,22 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             public string Value { get; set; }
             public List<List<string>> SubRules { get; set; }
             public List<List<Node>> Sequences { get; set; }
+            public int MinLength { get; set; }
             public Action<string> PrintFunc { get; set; }
             public Node()
             {
                 SubRules = new List<List<string>>();
                 Sequences = new List<List<Node>>();
+                MinLength = int.MaxValue;
             }
 
-            public void Populate(ref List<Node> nodes, Action<string> printFunc)
+            public void Populate(ref List<Node> nodes, Func<string, string> GetNodeName, Action<string> printFunc)
             {
                 PrintFunc = printFunc;
                 string[] ruleSplit = RawRules.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 foreach (String curSplit in ruleSplit)
                 {
-                    IEnumerable<string> ids = curSplit.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    List<string> ids = curSplit.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
                     int intTest;
                     if (!int.TryParse(ids.ElementAt(0), out intTest))
                     {
@@ -220,7 +222,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                         continue;
                     }
 
-                    ids = ids.Select(i => string.Format("{0,2}", i));
+                    ids = ids.Select(i => GetNodeName(i)).ToList();
 
                     SubRules.Add(new List<string>());
                     SubRules.Last().AddRange(ids);
@@ -234,7 +236,38 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 }
             }
 
-            public struct NodeIndex
+            public int GenerateMinLength()
+            {
+                if (MinLength == int.MaxValue)
+                {
+                    if (Sequences.Count == 0)
+                    {
+                        MinLength = 1;
+                    }
+                    else
+                    {
+                        foreach (List<Node> sequence in Sequences)
+                        {
+                            // skip recursive checks
+                            if (sequence.Where(s => s.ID == ID).Count() > 0)
+                            {
+                                continue;
+                            }
+
+                            int runningMin = 0;
+                            foreach (Node node in sequence)
+                            {
+                                runningMin += node.GenerateMinLength();
+                            }
+                            MinLength = Math.Min(runningMin, MinLength);
+                        }
+                    }
+                }
+
+                return MinLength;
+            }
+
+            public struct SequenceIndex
             {
                 public int Cur { get; set; }
                 public int Max { get; set; }
@@ -246,7 +279,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 }
             }
 
-            public int GetMatchingLength(string input, int curLetterIndex, int depth, string prev, int sequenceStart, ref Dictionary<string, NodeIndex> nodeInfo)
+            public int GetMatchingLength(string input, int curLetterIndex, int depth, string prev, int sequenceStart, ref Dictionary<string, SequenceIndex> sequenceInfo)
             {
                 string history = $"{prev}->{ID}";
                 if (string.IsNullOrWhiteSpace(prev))
@@ -255,24 +288,23 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 }
                 if (input.Length <= curLetterIndex)
                 {
-                    return 0;
+                    return -1;
                 }
 
                 if (Sequences.Count == 0)
                 {
-
                     bool match = input[curLetterIndex..].First() == Value.First();
                     string pre = curLetterIndex > 0 ? input.Substring(0, curLetterIndex) : "";
                     string post = curLetterIndex < input.Length - 1 ? input.Substring(curLetterIndex + 1) : "";
                     string curMatching = $"{pre}[{input.ElementAt(curLetterIndex)}]{post}";
                     string matchString = match ? "==" : "!=";
-                    PrintFunc($"{history} [{ToString()}]");
-                    PrintFunc($"{curMatching}  {matchString}  {Value.First()}");
+                    PrintFunc($"[hist|e{matchString}] {history} [{ToString()}] --- {curMatching}");
+                    PrintFunc($"[test|end] {curMatching}  {matchString}  {Value.First()}");
                     return match ? 1 : 0;
                 }
 
                 Dictionary<string, int> forceNodeSequenceStart = new Dictionary<string, int>();
-
+                HashSet<string> skipRecursion = new HashSet<string>();
                 int sequenceMatch = 0;
                 int sequenceRunningTotal = 0;
                 int curLetterIndexReset = curLetterIndex;
@@ -280,53 +312,76 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 for (int curSequence = sequenceStart; curSequence <= Sequences.Count;)
                 {
                     List<Node> sequence = Sequences[curSequence - 1];
-                    nodeInfo[history] = new NodeIndex { Cur = curSequence, Max = Sequences.Count };
-
-                    sequenceMatch = 0;
-                    sequenceRunningTotal = 0;
-
-                    for (int curNode = 1; curNode <= sequence.Count; ++curNode)
+                    if (!skipRecursion.Contains(ID) && sequence.Where(n => n.ID == ID).Count() > 0)
                     {
-                        Node node = sequence[curNode - 1];
-                        string completeHistory = $"{history}[S#{curSequence}.N#{curNode}]";
-                        int startingSequence = 1;
-                        if (forceNodeSequenceStart.ContainsKey(node.ID))
-                        {
-                            startingSequence = forceNodeSequenceStart[node.ID];
-                        }
-                        int matchLength = node.GetMatchingLength(input, curLetterIndex, depth + 1, completeHistory, startingSequence, ref nodeInfo);
-                        if (matchLength > 0)
-                        {
-                            ++sequenceMatch;
+                        // if the current sequence contains itself, add a new sequence in its place
+                        // with its own spot replaced with the first sequence
+                        Sequences.Insert(curSequence - 1, new List<Node>(sequence));
+                        sequence = Sequences[curSequence - 1];
+                        int idx = sequence.Select((s, i) => new { s, i }).Where(pair => pair.s.ID == ID).Select(pair => pair.i).First();
+                        sequence.RemoveAt(idx);
+                        sequence.InsertRange(idx, Sequences[curSequence - 2]);
+                    }
 
-                            sequenceRunningTotal += matchLength;
-                            curLetterIndex += matchLength;
-                        }
-                        else
-                        {
-                            // sequence is dead, try the next sequence
-                            PrintFunc($"{completeHistory}->{node.ID} FAILED");
+                    int sequenceMinLength = 0;
+                    sequence.ForEach(n => sequenceMinLength += n.MinLength);
+                    if (sequenceMinLength <= input.Length)
+                    {
+                        sequenceInfo[history] = new SequenceIndex { Cur = curSequence, Max = Sequences.Count };
+                        sequenceMatch = 0;
+                        sequenceRunningTotal = 0;
 
-                            // what if the previous node has a second sequence thats worth trying?
-                            // need to communicate back to the previous node to try again with 
-                            // the different sequence
-                            if (curNode > 1)
+                        for (int curNode = 1; curNode <= sequence.Count; ++curNode)
+                        {
+                            Node node = sequence[curNode - 1];
+                            string completeHistory = $"{history}[S#{curSequence}.N#{curNode}]";
+                            int startingSequence = 1;
+                            if (forceNodeSequenceStart.ContainsKey(node.ID))
                             {
-                                Node prevNode = sequence[curNode - 2];
-                                string prevNodeId = $"{history}[S#{curSequence}.N#{curNode - 1}]->{prevNode.ID}";
-                                if (nodeInfo.ContainsKey(prevNodeId))
+                                startingSequence = forceNodeSequenceStart[node.ID];
+                            }
+                            int matchLength = node.GetMatchingLength(input, curLetterIndex, depth + 1, completeHistory, startingSequence, ref sequenceInfo);
+                            if (matchLength > 0)
+                            {
+                                ++sequenceMatch;
+
+                                sequenceRunningTotal += matchLength;
+                                curLetterIndex += matchLength;
+                            }
+                            else
+                            {
+                                // sequence is dead, try the next sequence
+                                PrintFunc($"[hist|err] {completeHistory}->{node.ID} FAILED");
+
+                                // what if the previous node has a second sequence thats worth trying?
+                                // need to communicate back to the previous node to try again with 
+                                // the different sequence
+
+                                // what if the previous node has more potential history, despite hitting
+                                // its last sequence? (it's current successful node has more sequences)
+                                if (curNode > 1 && matchLength >= 0)
                                 {
-                                    NodeIndex prevNodeIndex = nodeInfo[prevNodeId];
-                                    if (!prevNodeIndex.IsComplete())
+                                    // check for length here
+                                    Node prevNode = sequence[curNode - 2];
+                                    string prevNodeId = $"{history}[S#{curSequence}.N#{curNode - 1}]->{prevNode.ID}";
+                                    if (sequenceInfo.ContainsKey(prevNodeId))
                                     {
-                                        PrintFunc($"{prevNodeId} REDO on S#{prevNodeIndex.Next()}");
-                                        forceNodeSequenceStart[prevNode.ID] = prevNodeIndex.Next();
-                                        redoSequence = true;
+                                        SequenceIndex prevNodeIndex = sequenceInfo[prevNodeId];
+                                        if (!prevNodeIndex.IsComplete())
+                                        {
+                                            PrintFunc($"[hist|try] {prevNodeId} REDO on S#{prevNodeIndex.Next()}");
+                                            forceNodeSequenceStart[prevNode.ID] = prevNodeIndex.Next();
+                                            redoSequence = true;
+                                        }
                                     }
                                 }
+                                break;
                             }
-                            break;
                         }
+                    }
+                    else
+                    {
+                        skipRecursion.Add(ID);
                     }
 
                     if (sequenceMatch == sequence.Count)
@@ -352,9 +407,18 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
             }
         }
 
+        private string GetNodeName(string nodeId)
+        {
+            if (nodeId.Length == 1)
+            {
+                return $"0{nodeId}";
+            }
+            return nodeId;
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            Dictionary<string, Node.NodeIndex> nodeInfo = new Dictionary<string, Node.NodeIndex>();
+            Dictionary<string, Node.SequenceIndex> sequenceInfo = new Dictionary<string, Node.SequenceIndex>();
             int validCount = 0;
             List<Node> nodes = new List<Node>();
             foreach (string input in inputs)
@@ -363,20 +427,20 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                 {
                     // add raw rules
                     string[] split = input.Split(':');
-                    nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Trim().Replace("\"", "") });
+                    nodes.Add(new Node { ID = GetNodeName(split[0]), RawRules = split[1].Trim().Replace("\"", "") });
                 }
                 else if (string.IsNullOrWhiteSpace(input))
                 {
                     foreach (Node node in nodes)
                     {
-                        node.Populate(ref nodes, (s) => { });
+                        node.Populate(ref nodes, GetNodeName, (s) => { });
                         // node.Populate(ref nodes, DebugWriteLine);
                     }
                 }
                 else
                 {
-                    Node node0 = nodes.Where(n => n.ID == " 0").First();
-                    if (node0.GetMatchingLength(input, 0, 0, "", 1, ref nodeInfo) == input.Length)
+                    Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
+                    if (node0.GetMatchingLength(input, 0, 0, "", 1, ref sequenceInfo) == input.Length)
                     {
                         ++validCount;
                     }
@@ -387,7 +451,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            Dictionary<string, Node.NodeIndex> nodeInfo = new Dictionary<string, Node.NodeIndex>();
+            Dictionary<string, Node.SequenceIndex> sequenceInfo = new Dictionary<string, Node.SequenceIndex>();
             int validCount = 0;
             List<Node> nodes = new List<Node>();
             foreach (string input in inputs)
@@ -397,32 +461,48 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"
                     // add raw rules
                     if (input[0..2] == "8:")
                     {
-                        nodes.Add(new Node { ID = " 8", RawRules = "42 | 42 8" });
+                        nodes.Add(new Node { ID = GetNodeName("8"), RawRules = "42 | 42 8" });
                     }
                     else if (input[0..3] == "11:")
                     {
-                        nodes.Add(new Node { ID = "11", RawRules = "42 31 | 42 11 31" });
+                        nodes.Add(new Node { ID = GetNodeName("11"), RawRules = "42 31 | 42 11 31" });
                     }
                     else
                     {
                         string[] split = input.Split(':');
-                        nodes.Add(new Node { ID = string.Format("{0,2}", split[0]), RawRules = split[1].Trim().Replace("\"", "") });
+                        nodes.Add(new Node { ID = GetNodeName(split[0]), RawRules = split[1].Trim().Replace("\"", "") });
                     }
                 }
                 else if (string.IsNullOrWhiteSpace(input))
                 {
                     foreach (Node node in nodes)
                     {
-                        // node.Populate(ref nodes, (s) => { });
-                        node.Populate(ref nodes, DebugWriteLine);
+                        node.Populate(ref nodes, GetNodeName, (s) => { });
+                        // node.Populate(ref nodes, GetNodeName, DebugWriteLine);
+                    }
+                    Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
+                    node0.GenerateMinLength();
+
+                    foreach (Node node in nodes.OrderBy(n => n.ID))
+                    {
+                        string subRules = "";
+                        foreach (List<string> sub in node.SubRules)
+                        {
+                            subRules += $"{string.Format("{0,-9}", string.Join(",", sub))} | ";
+                        }
+                        if (string.IsNullOrWhiteSpace(subRules))
+                        {
+                            subRules = node.Value;
+                        }
+                        // DebugWriteLine($"Node: #{node.ID} = [MinLength={string.Format("{0, 2}", node.MinLength)}] {subRules}");
                     }
                 }
                 else
                 {
-                    Node node0 = nodes.Where(n => n.ID == " 0").First();
-                    if (node0.GetMatchingLength(input, 0, 0, "", 1, ref nodeInfo) == input.Length)
+                    Node node0 = nodes.Where(n => n.ID == GetNodeName("0")).First();
+                    if (node0.GetMatchingLength(input, 0, 0, "", 1, ref sequenceInfo) == input.Length)
                     {
-                        DebugWriteLine($"Valid: {input}");
+                        // DebugWriteLine($"Valid: {input}");
                         ++validCount;
                     }
                 }
