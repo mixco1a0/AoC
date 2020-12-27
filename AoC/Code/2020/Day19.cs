@@ -13,10 +13,10 @@ namespace AoC._2020
         {
             switch (testPart)
             {
-                // case TestPart.One:
-                //     return "v1";
-                // case TestPart.Two:
-                //     return "v1";
+                case TestPart.One:
+                    return "v2";
+                case TestPart.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(testPart);
             }

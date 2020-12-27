@@ -86,7 +86,7 @@ dark violet bags contain no other bags."
 
             List<string> usedBags = new List<string>();
             List<string> curBagList = new List<string> { "shinygold" };
-            for (; ; )
+            while (true)
             {
                 int returnVal = GetPossibleBags(bagsToInput, ref usedBags, ref curBagList);
                 if (returnVal == 0)
