@@ -20,7 +20,7 @@ namespace AoC
     class Program
     {
         private long RecordCount { get { return 1000; } }
-        private long MaxPerfTimeMs { get { return 1000000; } }
+        private long MaxPerfTimeMs { get { return 300000; } }
 
         public Program(string[] args)
         {
