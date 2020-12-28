@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace AoC
 {
-    public class Stats
+    public class PerfStat
     {
         public double Min { get; set; }
         public double Max { get; set; }
         public double Avg { get; set; }
         public long Count { get; set; }
 
-        public Stats()
+        public PerfStat()
         {
             Min = double.MaxValue;
             Max = double.MinValue;
@@ -30,95 +30,92 @@ namespace AoC
         }
     }
 
-    public class Parts
+    public class PerfVersion
     {
-        public Dictionary<TestPart, Stats> StatData { get; set; }
+        public Dictionary<string, PerfStat> VersionData { get; set; }
 
-        public Parts()
+        public PerfVersion()
         {
-            StatData = new Dictionary<TestPart, Stats>();
+            VersionData = new Dictionary<string, PerfStat>();
         }
 
-        public void AddData(TestPart testPart, double elapsedMs)
+        public void AddData(string version, double elapsedMs)
         {
-            if (!StatData.ContainsKey(testPart))
+            if (version != "v0")
             {
-                StatData[testPart] = new Stats();
+                if (!VersionData.ContainsKey(version))
+                {
+                    VersionData[version] = new PerfStat();
+                }
+                VersionData[version].AddData(elapsedMs);
             }
-            StatData[testPart].AddData(elapsedMs);
         }
 
-        public Stats Get(TestPart testPart)
+        public PerfStat GetData(string version)
         {
-            if (StatData.ContainsKey(testPart))
+            if (VersionData.ContainsKey(version))
             {
-                return StatData[testPart];
+                return VersionData[version];
             }
             return null;
         }
     }
 
-    public class Versions
+    public class PerfPart
     {
-        public Dictionary<string, Parts> PartData { get; set; }
+        public Dictionary<TestPart, PerfVersion> PartData { get; set; }
 
-        public Versions()
+        public PerfPart()
         {
-            PartData = new Dictionary<string, Parts>();
+            PartData = new Dictionary<TestPart, PerfVersion>();
         }
 
-        public void AddData(AoC.Day day)
+        public void AddData(Day day)
         {
             Dictionary<TestPart, double> results = day.TimeResults;
             foreach (var pair in results)
             {
-                string version = day.GetSolutionVersion(pair.Key);
-                if (version == "v0")
+                if (!PartData.ContainsKey(pair.Key))
                 {
-                    continue;
+                    PartData[pair.Key] = new PerfVersion();
                 }
-
-                if (!PartData.ContainsKey(version))
-                {
-                    PartData[version] = new Parts();
-                }
-                PartData[version].AddData(pair.Key, pair.Value);
+                PartData[pair.Key].AddData(day.GetSolutionVersion(pair.Key), pair.Value);
             }
         }
 
-        public Stats Get(string version, TestPart testPart)
+        public PerfStat Get(TestPart testPart, string version)
         {
-            if (PartData.ContainsKey(version))
+            if (PartData.ContainsKey(testPart))
             {
-                return PartData[version].Get(testPart);
+                return PartData[testPart].GetData(version);
             }
             return null;
         }
     }
 
-    public class Days
+    public class PerfDay
     {
-        public Dictionary<string, Versions> DayData { get; set; }
+        public Dictionary<string, PerfPart> DayData { get; set; }
 
-        public Days()
+        public PerfDay()
         {
-            DayData = new Dictionary<string, Versions>();
+            DayData = new Dictionary<string, PerfPart>();
         }
 
         public void AddData(AoC.Day day)
         {
             if (!DayData.ContainsKey(day.DayName))
             {
-                DayData[day.DayName] = new Versions();
+                DayData[day.DayName] = new PerfPart();
             }
             DayData[day.DayName].AddData(day);
         }
 
-        public Stats Get(string day, string version, TestPart testPart)
+        public PerfStat Get(string day, TestPart testPart, string version)
         {
             if (DayData.ContainsKey(day))
             {
-                return DayData[day].Get(version, testPart);
+                return DayData[day].Get(testPart, version);
             }
             return null;
         }
@@ -126,27 +123,27 @@ namespace AoC
 
     public class PerfData
     {
-        public Dictionary<string, Days> YearData { get; set; }
+        public Dictionary<string, PerfDay> YearData { get; set; }
 
         public PerfData()
         {
-            YearData = new Dictionary<string, Days>();
+            YearData = new Dictionary<string, PerfDay>();
         }
 
         public void AddData(AoC.Day day)
         {
             if (!YearData.ContainsKey(day.Year))
             {
-                YearData[day.Year] = new Days();
+                YearData[day.Year] = new PerfDay();
             }
             YearData[day.Year].AddData(day);
         }
 
-        public Stats Get(string year, string day, string version, TestPart testPart)
+        public PerfStat Get(string year, string day, TestPart testPart, string version)
         {
             if (YearData.ContainsKey(year))
             {
-                return YearData[year].Get(day, version, testPart);
+                return YearData[year].Get(day, testPart, version);
             }
             return null;
         }

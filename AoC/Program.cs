@@ -265,7 +265,7 @@ namespace AoC
 
             PerfData perfData;
             string runDataFileName;
-            LoadRunData(out runDataFileName, out perfData);
+            LoadPerfData(out runDataFileName, out perfData);
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -282,7 +282,7 @@ namespace AoC
                                 continue;
                             }
 
-                            Stats stats = perfData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, testPart, day.GetSolutionVersion(testPart));
                             if (stats == null)
                             {
                                 RunPerformance(day.GetType(), testPart, 0, ref perfData);
@@ -302,26 +302,26 @@ namespace AoC
         }
 
         /// <summary>
-        /// Load the save data from previous runs
+        /// Load the previous perf data
         /// </summary>
-        /// <param name="runDataFileName"></param>
+        /// <param name="perfDataFileName"></param>
         /// <param name="perfData"></param>
-        private void LoadRunData(out string runDataFileName, out PerfData perfData)
+        private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                runDataFileName = Path.Combine(workingDir, "rundata_debugger.json");
+                perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
             }
             else
             {
-                runDataFileName = Path.Combine(workingDir, "rundata_cmd.json");
+                perfDataFileName = Path.Combine(workingDir, "perfdata_cmd.json");
             }
-            if (File.Exists(runDataFileName))
+            if (File.Exists(perfDataFileName))
             {
-                LogLine($"Loading {runDataFileName}");
+                LogLine($"Loading {perfDataFileName}");
                 LogLine("");
-                string rawJson = File.ReadAllText(runDataFileName);
+                string rawJson = File.ReadAllText(perfDataFileName);
                 perfData = JsonConvert.DeserializeObject<PerfData>(rawJson);
             }
             else
@@ -331,16 +331,16 @@ namespace AoC
         }
 
         /// <summary>
-        /// Save the current run data to a specific file
+        /// Save the current perf data to a specific file
         /// </summary>
-        /// <param name="runDataFileName"></param>
+        /// <param name="perfDataFileName"></param>
         /// <param name="perfData"></param>
-        private void SaveRunData(string runDataFileName, PerfData perfData)
+        private void SaveRunData(string perfDataFileName, PerfData perfData)
         {
-            LogLine($"Saving {runDataFileName}");
+            LogLine($"Saving {perfDataFileName}");
             LogLine("");
             string rawJson = JsonConvert.SerializeObject(perfData, Formatting.Indented);
-            using (StreamWriter sWriter = new StreamWriter(runDataFileName))
+            using (StreamWriter sWriter = new StreamWriter(perfDataFileName))
             {
                 sWriter.Write(rawJson);
             }
@@ -350,8 +350,8 @@ namespace AoC
         /// Print out all the metrics from run data
         /// </summary>
         /// <param name="baseNamespace"></param>
-        /// <param name="runData"></param>
-        private void PrintMetrics(string baseNamespace, PerfData runData)
+        /// <param name="perfData"></param>
+        private void PrintMetrics(string baseNamespace, PerfData perfData)
         {
             LogLine($"{baseNamespace} Performance Metrics");
             LogLine("");
@@ -375,7 +375,7 @@ namespace AoC
                         for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
                         {
                             string solutionVersion = day.GetSolutionVersion(testPart);
-                            Stats stats = runData.Get(day.Year, day.DayName, solutionVersion, testPart);
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, testPart, solutionVersion);
                             string logLine = $"[{day.Year}|{day.DayName}|part{(int)testPart}|{solutionVersion}]";
                             if (stats == null)
                             {
