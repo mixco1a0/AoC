@@ -13,7 +13,9 @@ namespace AoC
             Namespace,
             Day,
             SkipLatest,
-            RunPerf
+            RunPerf,
+            PerfRecordCount,
+            PerfTimeout
         }
 
         private static Dictionary<SupportedArgument, List<string>> SupportedArgs = new Dictionary<SupportedArgument, List<string>>()
@@ -37,6 +39,14 @@ namespace AoC
             {
                 SupportedArgument.RunPerf,
                 new List<string>{"rp", "runperf"}
+            },
+            {
+                SupportedArgument.PerfRecordCount,
+                new List<string>{"prc", "recordcount"}
+            },
+            {
+                SupportedArgument.PerfTimeout,
+                new List<string>{"t", "timeout"}
             }
         };
 

@@ -21,8 +21,13 @@ namespace AoC
 
     class Program
     {
-        private long RecordCount { get { return 1000; } }
-        private long MaxPerfTimeMs { get { return 3600000; } } // TODO: convert to command line arg
+        const long DefaultRecordCount = 1000;
+        long m_recordCount = DefaultRecordCount;
+        private long RecordCount { get { return m_recordCount; } }
+
+        const long DefaultMaxPerfTimeoutMs = 3600000;
+        long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
+        private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
         public Program(string[] args)
         {
@@ -37,6 +42,18 @@ namespace AoC
                 {
                     commandLineArgs.PrintHelp(LogLine);
                     return;
+                }
+
+                // get the number of records to keep for perf tests
+                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.PerfRecordCount))
+                {
+                    m_recordCount = long.Parse(commandLineArgs.Args[CommandLineArgs.SupportedArgument.PerfRecordCount]);
+                }
+
+                // get the timeout runs should adhere to
+                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.PerfTimeout))
+                {
+                    m_maxPerfTimeoutMs = long.Parse(commandLineArgs.Args[CommandLineArgs.SupportedArgument.PerfTimeout]);
                 }
 
                 // get the namespace to use
@@ -208,7 +225,7 @@ namespace AoC
 
             Timer timer = new Timer();
             timer.Start();
-            LogLine($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
+            LogLine($"Running {dayType.Namespace}.{dayType.Name}.{testPart} Performance [Requires {RecordCount - existingRecords} Runs]");
             long i = 0;
             long maxI = RecordCount - existingRecords;
             for (; i < maxI; ++i)
