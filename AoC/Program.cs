@@ -201,7 +201,7 @@ namespace AoC
         /// <param name="existingRecords"></param>
         /// <param name="runData"></param>
         /// <returns></returns>
-        private bool RunPerformance(Type dayType, TestPart testPart, long existingRecords, ref RunData runData)
+        private bool RunPerformance(Type dayType, TestPart testPart, long existingRecords, ref PerfData runData)
         {
             LogLine($"Warming up...");
             RunWarmup();
@@ -263,9 +263,9 @@ namespace AoC
             LogLine($"Running {baseNamespace} Performance");
             LogLine("");
 
-            RunData runData;
+            PerfData perfData;
             string runDataFileName;
-            LoadRunData(out runDataFileName, out runData);
+            LoadRunData(out runDataFileName, out perfData);
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -282,22 +282,22 @@ namespace AoC
                                 continue;
                             }
 
-                            Stats stats = runData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
+                            Stats stats = perfData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
                             if (stats == null)
                             {
-                                RunPerformance(day.GetType(), testPart, 0, ref runData);
+                                RunPerformance(day.GetType(), testPart, 0, ref perfData);
                             }
                             else if (stats.Count < RecordCount)
                             {
-                                RunPerformance(day.GetType(), testPart, stats.Count, ref runData);
+                                RunPerformance(day.GetType(), testPart, stats.Count, ref perfData);
                             }
                         }
                     }
                 }
             }
 
-            SaveRunData(runDataFileName, runData);
-            PrintMetrics(baseNamespace, runData);
+            SaveRunData(runDataFileName, perfData);
+            PrintMetrics(baseNamespace, perfData);
             Day.UseLogs = true;
         }
 
@@ -305,8 +305,8 @@ namespace AoC
         /// Load the save data from previous runs
         /// </summary>
         /// <param name="runDataFileName"></param>
-        /// <param name="runData"></param>
-        private void LoadRunData(out string runDataFileName, out RunData runData)
+        /// <param name="perfData"></param>
+        private void LoadRunData(out string runDataFileName, out PerfData perfData)
         {
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
@@ -322,11 +322,11 @@ namespace AoC
                 LogLine($"Loading {runDataFileName}");
                 LogLine("");
                 string rawJson = File.ReadAllText(runDataFileName);
-                runData = JsonConvert.DeserializeObject<RunData>(rawJson);
+                perfData = JsonConvert.DeserializeObject<PerfData>(rawJson);
             }
             else
             {
-                runData = new RunData();
+                perfData = new PerfData();
             }
         }
 
@@ -334,12 +334,12 @@ namespace AoC
         /// Save the current run data to a specific file
         /// </summary>
         /// <param name="runDataFileName"></param>
-        /// <param name="runData"></param>
-        private void SaveRunData(string runDataFileName, RunData runData)
+        /// <param name="perfData"></param>
+        private void SaveRunData(string runDataFileName, PerfData perfData)
         {
             LogLine($"Saving {runDataFileName}");
             LogLine("");
-            string rawJson = JsonConvert.SerializeObject(runData, Formatting.Indented);
+            string rawJson = JsonConvert.SerializeObject(perfData, Formatting.Indented);
             using (StreamWriter sWriter = new StreamWriter(runDataFileName))
             {
                 sWriter.Write(rawJson);
@@ -351,7 +351,7 @@ namespace AoC
         /// </summary>
         /// <param name="baseNamespace"></param>
         /// <param name="runData"></param>
-        private void PrintMetrics(string baseNamespace, RunData runData)
+        private void PrintMetrics(string baseNamespace, PerfData runData)
         {
             LogLine($"{baseNamespace} Performance Metrics");
             LogLine("");
