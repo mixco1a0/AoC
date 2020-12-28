@@ -124,11 +124,11 @@ namespace AoC
         }
     }
 
-    public class RunData
+    public class PerfData
     {
         public Dictionary<string, Days> YearData { get; set; }
 
-        public RunData()
+        public PerfData()
         {
             YearData = new Dictionary<string, Days>();
         }
