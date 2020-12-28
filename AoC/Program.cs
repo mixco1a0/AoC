@@ -220,12 +220,13 @@ namespace AoC
         /// <returns></returns>
         private bool RunPerformance(Type dayType, TestPart testPart, long existingRecords, ref PerfData runData)
         {
-            LogLine($"Warming up...");
+            LogLine($"Running {dayType.Namespace}.{dayType.Name}.Part{testPart} Performance [Requires {RecordCount - existingRecords} Runs]");
+            LogLine("...Warming up");
             RunWarmup();
 
             Timer timer = new Timer();
             timer.Start();
-            LogLine($"Running {dayType.Namespace}.{dayType.Name}.{testPart} Performance [Requires {RecordCount - existingRecords} Runs]");
+            
             long i = 0;
             long maxI = RecordCount - existingRecords;
             for (; i < maxI; ++i)
