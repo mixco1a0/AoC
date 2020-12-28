@@ -5,6 +5,13 @@ using System.Linq;
 
 namespace AoC
 {
+    // TODO: Rename
+    public enum TestPart
+    {
+        One = 1,
+        Two = 2
+    }
+
     abstract public class Day
     {
         public static bool UseLogs { get; set; }
@@ -62,9 +69,7 @@ namespace AoC
         public void Run()
         {
             // file input
-            string fileName = string.Format("{0}.txt", DayName);
-            string inputFile = Path.Combine(Util.WorkingDirectory, "Data", Year, fileName);
-            IEnumerable<string> rawFileRead = Util.ConvertInputToList(File.ReadAllText(inputFile));
+            IEnumerable<string> rawFileRead = GetInputFile();
 
             // run part 1
             RunAll(TestPart.One, rawFileRead);
@@ -74,6 +79,24 @@ namespace AoC
 
             // reset logging
             m_logID = DefaultLogID;
+        }
+
+        public void RunProblem(TestPart testPart)
+        {
+            // run part
+            RunAll(testPart, GetInputFile());
+
+            // reset logging
+            m_logID = DefaultLogID;
+        }
+
+        private IEnumerable<string> GetInputFile()
+        {
+            // file input
+            string fileName = string.Format("{0}.txt", DayName);
+            string inputFile = Path.Combine(Util.WorkingDirectory, "Data", Year, fileName);
+            // TODO: if the file doesn't exist, download it
+            return Util.ConvertInputToList(File.ReadAllText(inputFile));
         }
 
         private void RunAll(TestPart testPart, IEnumerable<string> problemInput)

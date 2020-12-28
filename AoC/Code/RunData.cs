@@ -73,7 +73,7 @@ namespace AoC
             foreach (var pair in results)
             {
                 string version = day.GetSolutionVersion(pair.Key);
-                if (version == "0")
+                if (version == "v0")
                 {
                     continue;
                 }

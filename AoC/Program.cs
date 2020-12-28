@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -201,7 +201,7 @@ namespace AoC
         /// <param name="existingRecords"></param>
         /// <param name="runData"></param>
         /// <returns></returns>
-        private bool RunPerformance(Type dayType, long existingRecords, ref RunData runData)
+        private bool RunPerformance(Type dayType, TestPart testPart, long existingRecords, ref RunData runData)
         {
             LogLine($"Warming up...");
             RunWarmup();
@@ -232,7 +232,7 @@ namespace AoC
                 }
 
                 Day day = (Day)handle.Unwrap();
-                day.Run();
+                day.RunProblem(testPart);
                 runData.AddData(day);
 
                 if (timer.GetElapsedMs() > MaxPerfTimeMs)
@@ -273,24 +273,23 @@ namespace AoC
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();
-                    if (day != null && day.GetSolutionVersion(TestPart.One) != "v0" && day.GetSolutionVersion(TestPart.Two) != "v0")
+                    if (day != null)
                     {
                         for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
                         {
-                            bool completed = false;
+                            if (day.GetSolutionVersion(testPart) == "v0")
+                            {
+                                continue;
+                            }
+
                             Stats stats = runData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
                             if (stats == null)
                             {
-                                completed = RunPerformance(day.GetType(), 0, ref runData);
+                                RunPerformance(day.GetType(), testPart, 0, ref runData);
                             }
                             else if (stats.Count < RecordCount)
                             {
-                                completed = RunPerformance(day.GetType(), stats.Count, ref runData);
-                            }
-
-                            if (!completed)
-                            {
-                                break;
+                                RunPerformance(day.GetType(), testPart, stats.Count, ref runData);
                             }
                         }
                     }
