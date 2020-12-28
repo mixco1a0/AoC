@@ -1,4 +1,6 @@
-﻿using System;
+using System.Threading;
+using System.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +22,7 @@ namespace AoC
     class Program
     {
         private long RecordCount { get { return 1000; } }
-        private long MaxPerfTimeMs { get { return 3600000; } }
+        private long MaxPerfTimeMs { get { return 3600000; } } // TODO: convert to command line arg
 
         public Program(string[] args)
         {
@@ -124,7 +126,7 @@ namespace AoC
         }
 
         /// <summary>
-        /// Run the latest day in the given namespace.
+        /// Run the specified day in the given namespace.
         /// </summary>
         /// <param name="baseNamespace"></param>
         /// <param name="dayName"></param>
@@ -149,7 +151,51 @@ namespace AoC
         }
 
         /// <summary>
-        /// Run performance for the specific day
+        /// Force the process to be considered the highest priority
+        /// </summary>
+        private void SetHighPriority()
+        {
+            // Uses the second Core or Processor for the Test
+            Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(2);
+
+            // Prevents "Normal" processes from interrupting Threads
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+
+            // Prevents "Normal" Threads from interrupting this thread
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
+        }
+
+        /// <summary>
+        /// Run a warmup sequence so that the cpu is ready to run tests
+        /// </summary>
+        private void RunWarmup()
+        {
+            SetHighPriority();
+
+            Func<long, int, long> Warmup = (long seed, int count) =>
+            {
+                long result = seed;
+                for (int i = 0; i < count; ++i)
+                {
+                    result ^= i ^ seed;
+                }
+                return result;
+            };
+
+            long result = 0;
+            const int count = 100000000;
+            long seed = Environment.TickCount;
+
+            Timer timer = new Timer();
+            timer.Start();
+            while (timer.GetElapsedMs() < 1500)
+            {
+                result = Warmup(seed, count);
+            }
+        }
+
+        /// <summary>
+        /// Run performance for the specified day
         /// </summary>
         /// <param name="dayType"></param>
         /// <param name="existingRecords"></param>
@@ -157,6 +203,9 @@ namespace AoC
         /// <returns></returns>
         private bool RunPerformance(Type dayType, long existingRecords, ref RunData runData)
         {
+            LogLine($"Warming up...");
+            RunWarmup();
+
             Timer timer = new Timer();
             timer.Start();
             LogLine($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
@@ -173,7 +222,7 @@ namespace AoC
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1:000.000} (s)]", (double)i / (double)(maxI) * 100.0f, (MaxPerfTimeMs-timer.GetElapsedMs())/1000));
+                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1:000.000} (s)]", (double)i / (double)(maxI) * 100.0f, (MaxPerfTimeMs - timer.GetElapsedMs()) / 1000));
                 }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
