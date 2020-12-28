@@ -173,7 +173,7 @@ namespace AoC
         private void SetHighPriority()
         {
             // Uses the second Core or Processor for the Test
-            Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(2);
+            // Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(2);
 
             // Prevents "Normal" processes from interrupting Threads
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
@@ -224,8 +224,7 @@ namespace AoC
             LogLine("...Warming up");
             RunWarmup();
 
-            Timer timer = new Timer();
-            timer.Start();
+            DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
             
             long i = 0;
             long maxI = RecordCount - existingRecords;
@@ -240,7 +239,7 @@ namespace AoC
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1:000.000} (s)]", (double)i / (double)(maxI) * 100.0f, (MaxPerfTimeMs - timer.GetElapsedMs()) / 1000));
+                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1}]", (double)i / (double)(maxI) * 100.0f, (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
                 }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -253,7 +252,7 @@ namespace AoC
                 day.RunProblem(testPart);
                 runData.AddData(day);
 
-                if (timer.GetElapsedMs() > MaxPerfTimeMs)
+                if (DateTime.Now > timeout)
                 {
                     break;
                 }
