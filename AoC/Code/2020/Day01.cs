@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +12,7 @@ namespace AoC._2020
             switch (testPart)
             {
                 case TestPart.One:
-                    return "v2";
+                    return "v3";
                 case TestPart.Two:
                     return "v2";
                 default:
@@ -49,21 +50,10 @@ namespace AoC._2020
         }
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            List<int> numList = inputs.Select(int.Parse).OrderBy(_ => _).ToList();
-            for (int i = 0; i < inputs.Count; ++i)
-            {
-                int numI = numList[i];
-                for (int j = inputs.Count - 1; j >= 0 && j > i; --j)
-                {
-                    int numJ = numList[j];
-                    if (numI + numJ == 2020)
-                    {
-                        return $"{numI * numJ}";
-                    }
-                }
-            }
-
-            return "NaN";
+            HashSet<int> numbers = inputs.Select(int.Parse).ToHashSet();
+            return numbers.Where(n => numbers.Contains(2020 - n))
+                            .Select(n => (2020 - n) * n)
+                            .First().ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -87,6 +77,102 @@ namespace AoC._2020
             }
 
             return "NaN";
+
+            /* v3, slower than v2
+            HashSet<int> numbers = inputs.Select(int.Parse).ToHashSet();
+            return numbers.SelectMany(n => numbers, (x, y) => new { x, y })
+                            .Where(pair => numbers.Contains(2020 - pair.x - pair.y))
+                            .Select(pair => (2020 - pair.x - pair.y) * pair.x * pair.y).First().ToString();
+                            */
         }
     }
 }
+
+#region versions
+/* p1.v1
+            inputs.Sort();
+            for (int i = 0; i < inputs.Count; ++i)
+            {
+                int inputI;
+                if (!int.TryParse(inputs[i], out inputI))
+                {
+                    continue;
+                }
+
+                for (int j = inputs.Count - 1; j >= 0; --j)
+                {
+                    if (i == j)
+                    {
+                        continue;
+                    }
+
+                    int inputJ;
+                    if (!int.TryParse(inputs[j], out inputJ))
+                    {
+                        continue;
+                    }
+
+                    if (inputI + inputJ == 2020)
+                    {
+                        return $"{inputI * inputJ}";
+                    }
+                }
+            }
+            return "";
+*/
+
+/* p1.v2
+            List<int> numList = inputs.Select(int.Parse).OrderBy(_ => _).ToList();
+            for (int i = 0; i < inputs.Count; ++i)
+            {
+                int numI = numList[i];
+                for (int j = inputs.Count - 1; j >= 0 && j > i; --j)
+                {
+                    int numJ = numList[j];
+                    if (numI + numJ == 2020)
+                    {
+                        return $"{numI * numJ}";
+                    }
+                }
+            }
+
+            return "NaN";
+*/
+
+/* p2.v1
+            inputs.Sort();
+            for (int i = 0; i < inputs.Count; ++i)
+            {
+                int inputI;
+                if (!int.TryParse(inputs[i], out inputI))
+                {
+                    continue;
+                }
+
+                for (int j = i + 1; j < inputs.Count; ++j)
+                {
+                    int inputJ;
+                    if (!int.TryParse(inputs[j], out inputJ))
+                    {
+                        continue;
+                    }
+
+                    for (int k = j + 1; k < inputs.Count; ++k)
+                    {
+                        int inputK;
+                        if (!int.TryParse(inputs[k], out inputK))
+                        {
+                            continue;
+                        }
+
+                        if (inputI + inputJ + inputK == 2020)
+                        {
+                            return $"{inputI * inputJ * inputK}";
+                        }
+                    }
+                }
+            }
+            return "";
+
+*/
+#endregion
