@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AoC
 {
@@ -49,6 +50,7 @@ namespace AoC
                 }
                 VersionData[version].AddData(elapsedMs);
             }
+            VersionData = VersionData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat GetData(string version)
