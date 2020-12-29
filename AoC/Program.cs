@@ -1,11 +1,11 @@
-﻿using System.Threading;
-using System.Diagnostics;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
+using System.Threading;
 
 using Newtonsoft.Json;
 
@@ -21,6 +21,8 @@ namespace AoC
 
     class Program
     {
+        int m_curProcessor = 0;
+
         const long DefaultRecordCount = 1000;
         long m_recordCount = DefaultRecordCount;
         private long RecordCount { get { return m_recordCount; } }
@@ -172,14 +174,18 @@ namespace AoC
         /// </summary>
         private void SetHighPriority()
         {
-            // Uses the second Core or Processor for the Test
-            // Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(2);
+            // use a single core
+            Process.GetCurrentProcess().ProcessorAffinity = new IntPtr((int)Math.Pow(2, m_curProcessor));
 
-            // Prevents "Normal" processes from interrupting Threads
+            // prevent process interuptions
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
 
-            // Prevents "Normal" Threads from interrupting this thread
+            // prevent thread interuptions
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
+            // cycle through the different processors
+            m_curProcessor = (m_curProcessor + 1) % Environment.ProcessorCount;
+
         }
 
         /// <summary>
