@@ -83,6 +83,7 @@ namespace AoC
                 }
                 PartData[pair.Key].AddData(day.GetSolutionVersion(pair.Key), pair.Value);
             }
+            PartData = PartData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(TestPart testPart, string version)
@@ -111,6 +112,7 @@ namespace AoC
                 DayData[day.DayName] = new PerfPart();
             }
             DayData[day.DayName].AddData(day);
+            DayData = DayData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(string day, TestPart testPart, string version)
@@ -139,6 +141,7 @@ namespace AoC
                 YearData[day.Year] = new PerfDay();
             }
             YearData[day.Year].AddData(day);
+            YearData = YearData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(string year, string day, TestPart testPart, string version)
