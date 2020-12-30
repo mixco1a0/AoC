@@ -224,9 +224,9 @@ namespace AoC
         /// <param name="existingRecords"></param>
         /// <param name="runData"></param>
         /// <returns></returns>
-        private bool RunPerformance(Type dayType, TestPart testPart, long existingRecords, ref PerfData runData)
+        private bool RunPerformance(Type dayType, Part part, long existingRecords, ref PerfData runData)
         {
-            LogLine($"Running {dayType.Namespace}.{dayType.Name}.Part{testPart} Performance [Requires {RecordCount - existingRecords} Runs]");
+            LogLine($"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
             LogLine("...Warming up");
             RunWarmup();
 
@@ -255,7 +255,7 @@ namespace AoC
                 }
 
                 Day day = (Day)handle.Unwrap();
-                day.RunProblem(testPart);
+                day.RunProblem(part);
                 runData.AddData(day);
 
                 if (DateTime.Now > timeout)
@@ -305,21 +305,21 @@ namespace AoC
                     Day day = (Day)handle.Unwrap();
                     if (day != null)
                     {
-                        for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
+                        for (Part part = Part.One; part <= Part.Two; ++part)
                         {
-                            if (day.GetSolutionVersion(testPart) == "v0")
+                            if (day.GetSolutionVersion(part) == "v0")
                             {
                                 continue;
                             }
 
-                            PerfStat stats = perfData.Get(day.Year, day.DayName, testPart, day.GetSolutionVersion(testPart));
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, part, day.GetSolutionVersion(part));
                             if (stats == null)
                             {
-                                RunPerformance(day.GetType(), testPart, 0, ref perfData);
+                                RunPerformance(day.GetType(), part, 0, ref perfData);
                             }
                             else if (stats.Count < RecordCount)
                             {
-                                RunPerformance(day.GetType(), testPart, stats.Count, ref perfData);
+                                RunPerformance(day.GetType(), part, stats.Count, ref perfData);
                             }
                         }
                     }
@@ -402,11 +402,11 @@ namespace AoC
                     Day day = (Day)handle.Unwrap();
                     if (day != null)
                     {
-                        for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
+                        for (Part part = Part.One; part <= Part.Two; ++part)
                         {
-                            string solutionVersion = day.GetSolutionVersion(testPart);
-                            PerfStat stats = perfData.Get(day.Year, day.DayName, testPart, solutionVersion);
-                            string logLine = $"[{day.Year}|{day.DayName}|part{(int)testPart}|{solutionVersion}]";
+                            string solutionVersion = day.GetSolutionVersion(part);
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, part, solutionVersion);
+                            string logLine = $"[{day.Year}|{day.DayName}|part{(int)part}|{solutionVersion}]";
                             if (stats == null)
                             {
                                 logLine = $"{logLine} No stats found";
@@ -426,12 +426,12 @@ namespace AoC
                                     maxStr = logLine;
                                 }
 
-                                if (testPart == TestPart.One)
+                                if (part == Part.One)
                                 {
                                     p1Total += stats.Avg;
                                 }
 
-                                if (testPart == TestPart.Two)
+                                if (part == Part.Two)
                                 {
                                     p2Total += stats.Avg;
                                 }

@@ -8,16 +8,16 @@ namespace AoC._2020
     class Day17 : Day
     {
         public Day17() { }
-        public override string GetSolutionVersion(TestPart testPart)
+        public override string GetSolutionVersion(Part part)
         {
-            switch (testPart)
+            switch (part)
             {
-                case TestPart.One:
+                case Part.One:
                     return "v1";
-                case TestPart.Two:
+                case Part.Two:
                     return "v1";
                 default:
-                    return base.GetSolutionVersion(testPart);
+                    return base.GetSolutionVersion(part);
             }
         }
         protected override List<TestDatum> GetTestData()
@@ -25,7 +25,7 @@ namespace AoC._2020
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "112",
                 RawInput =
 @".#.
@@ -34,7 +34,7 @@ namespace AoC._2020
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "848",
                 RawInput =
 @".#.

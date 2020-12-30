@@ -65,16 +65,16 @@ namespace AoC
 
     public class PerfPart
     {
-        public Dictionary<TestPart, PerfVersion> PartData { get; set; }
+        public Dictionary<Part, PerfVersion> PartData { get; set; }
 
         public PerfPart()
         {
-            PartData = new Dictionary<TestPart, PerfVersion>();
+            PartData = new Dictionary<Part, PerfVersion>();
         }
 
         public void AddData(Day day)
         {
-            Dictionary<TestPart, double> results = day.TimeResults;
+            Dictionary<Part, double> results = day.TimeResults;
             foreach (var pair in results)
             {
                 if (!PartData.ContainsKey(pair.Key))
@@ -86,11 +86,11 @@ namespace AoC
             PartData = PartData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        public PerfStat Get(TestPart testPart, string version)
+        public PerfStat Get(Part part, string version)
         {
-            if (PartData.ContainsKey(testPart))
+            if (PartData.ContainsKey(part))
             {
-                return PartData[testPart].GetData(version);
+                return PartData[part].GetData(version);
             }
             return null;
         }
@@ -115,11 +115,11 @@ namespace AoC
             DayData = DayData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        public PerfStat Get(string day, TestPart testPart, string version)
+        public PerfStat Get(string day, Part part, string version)
         {
             if (DayData.ContainsKey(day))
             {
-                return DayData[day].Get(testPart, version);
+                return DayData[day].Get(part, version);
             }
             return null;
         }
@@ -144,11 +144,11 @@ namespace AoC
             YearData = YearData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        public PerfStat Get(string year, string day, TestPart testPart, string version)
+        public PerfStat Get(string year, string day, Part part, string version)
         {
             if (YearData.ContainsKey(year))
             {
-                return YearData[year].Get(day, testPart, version);
+                return YearData[year].Get(day, part, version);
             }
             return null;
         }

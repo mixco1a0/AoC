@@ -6,16 +6,16 @@ namespace AoC._2020
     class Day07 : Day
     {
         public Day07() { }
-        public override string GetSolutionVersion(TestPart testPart)
+        public override string GetSolutionVersion(Part part)
         {
-            switch (testPart)
+            switch (part)
             {
-                case TestPart.One:
+                case Part.One:
                     return "v1";
-                case TestPart.Two:
+                case Part.Two:
                     return "v1";
                 default:
-                    return base.GetSolutionVersion(testPart);
+                    return base.GetSolutionVersion(part);
             }
         }
         protected override List<TestDatum> GetTestData()
@@ -23,7 +23,7 @@ namespace AoC._2020
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "4",
                 RawInput =
 @"light red bags contain 1 bright white bag, 2 muted yellow bags.
@@ -38,7 +38,7 @@ dotted black bags contain no other bags."
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "32",
                 RawInput =
 @"light red bags contain 1 bright white bag, 2 muted yellow bags.
@@ -53,7 +53,7 @@ dotted black bags contain no other bags."
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "126",
                 RawInput =
 @"shiny gold bags contain 2 dark red bags.

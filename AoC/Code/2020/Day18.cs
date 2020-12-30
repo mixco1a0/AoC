@@ -7,16 +7,16 @@ namespace AoC._2020
     class Day18 : Day
     {
         public Day18() { }
-        public override string GetSolutionVersion(TestPart testPart)
+        public override string GetSolutionVersion(Part part)
         {
-            switch (testPart)
+            switch (part)
             {
-                case TestPart.One:
+                case Part.One:
                     return "v1";
-                case TestPart.Two:
+                case Part.Two:
                     return "v1";
                 default:
-                    return base.GetSolutionVersion(testPart);
+                    return base.GetSolutionVersion(part);
             }
         }
         protected override List<TestDatum> GetTestData()
@@ -24,35 +24,35 @@ namespace AoC._2020
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "71",
                 RawInput =
 @"1 + 2 * 3 + 4 * 5 + 6"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "51",
                 RawInput =
 @"1 + (2 * 3) + (4 * (5 + 6))"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "231",
                 RawInput =
 @"1 + 2 * 3 + 4 * 5 + 6"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "51",
                 RawInput =
 @"1 + (2 * 3) + (4 * (5 + 6))"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "669060",
                 RawInput =
 @"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"

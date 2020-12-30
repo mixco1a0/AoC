@@ -13,14 +13,14 @@ namespace AoC._2015
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "609043",
                 RawInput =
 @"abcdef"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "1048970",
                 RawInput =
 @"pqrstuv"
