@@ -88,8 +88,10 @@ namespace AoC._2020
     }
 }
 
-#region versions
+#region previous versions
 /* p1.v1
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
             inputs.Sort();
             for (int i = 0; i < inputs.Count; ++i)
             {
@@ -119,9 +121,12 @@ namespace AoC._2020
                 }
             }
             return "";
+        }
 */
 
 /* p1.v2
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
             List<int> numList = inputs.Select(int.Parse).OrderBy(_ => _).ToList();
             for (int i = 0; i < inputs.Count; ++i)
             {
@@ -137,9 +142,12 @@ namespace AoC._2020
             }
 
             return "NaN";
+        }
 */
 
 /* p2.v1
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
             inputs.Sort();
             for (int i = 0; i < inputs.Count; ++i)
             {
@@ -173,6 +181,7 @@ namespace AoC._2020
                 }
             }
             return "";
+        }
 
 */
 #endregion
