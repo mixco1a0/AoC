@@ -231,7 +231,7 @@ namespace AoC
             RunWarmup();
 
             DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
-            
+
             long i = 0;
             long maxI = RecordCount - existingRecords;
             for (; i < maxI; ++i)
@@ -263,13 +263,20 @@ namespace AoC
                     break;
                 }
             }
-            if (!System.Diagnostics.Debugger.IsAttached)
+            if (System.Diagnostics.Debugger.IsAttached)
             {
-                LogSameLine(string.Format("...{0:000.0}%                                   \n\r", (double)i / (double)(maxI) * 100.0f));
+                LogLine($"...{maxI} runs completed");
             }
             else
             {
-                LogLine($"...{maxI} runs completed");
+                if (DateTime.Now > timeout)
+                {
+                    LogSameLine(string.Format("...{0:000.0}% [timed out]\n\r", (double)i / (double)(maxI) * 100.0f));
+                }
+                else
+                {
+                    LogSameLine(string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 35)));
+                }
             }
 
             return i == maxI;
