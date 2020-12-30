@@ -6,22 +6,22 @@ namespace AoC._2020
     class Day05 : Day
     {
         public Day05() { }
-        public override string GetSolutionVersion(TestPart testPart)
+        public override string GetSolutionVersion(Part part)
         {
-            switch (testPart)
+            switch (part)
             {
-                case TestPart.One:
+                case Part.One:
                     return "v1";
-                case TestPart.Two:
+                case Part.Two:
                     return "v1";
                 default:
-                    return base.GetSolutionVersion(testPart);
+                    return base.GetSolutionVersion(part);
             }
         }
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum { TestPart = TestPart.One, Output = "357", RawInput = "FBFBBFFRLR" });
+            testData.Add(new TestDatum { TestPart = Part.One, Output = "357", RawInput = "FBFBBFFRLR" });
             return testData;
         }
 

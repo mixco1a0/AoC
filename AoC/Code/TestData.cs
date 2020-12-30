@@ -2,15 +2,9 @@ using System.Collections.Generic;
 
 namespace AoC
 {
-    public enum TestPart
-    {
-        One = 1,
-        Two = 2
-    }
-
     public class TestDatum
     {
-        public TestPart TestPart { get; set; }
+        public Part TestPart { get; set; }
         public string RawInput { private get; set; }
         private IEnumerable<string> m_input = null;
         public IEnumerable<string> Input

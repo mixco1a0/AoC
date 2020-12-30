@@ -12,7 +12,7 @@ namespace AoC._2015
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "2",
                 RawInput =
 @"ugknbfddgicrmopn
@@ -23,7 +23,7 @@ dvszwmarrgswjxmb"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "2",
                 RawInput =
 @"qjhvhtzxzqqjkmpb

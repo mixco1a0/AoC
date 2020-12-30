@@ -11,7 +11,7 @@ namespace AoC._2015
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Variables = new Dictionary<string, string> { { "wire", "d" } },
                 Output = "72",
                 RawInput =
@@ -26,7 +26,7 @@ NOT y -> i"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Variables = new Dictionary<string, string> { { "wire", "e" } },
                 Output = "507",
                 RawInput =
@@ -41,7 +41,7 @@ NOT y -> i"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Variables = new Dictionary<string, string> { { "wire", "h" } },
                 Output = "65412",
                 RawInput =

@@ -11,21 +11,21 @@ namespace AoC._2015
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "4",
                 RawInput =
 @"turn on 499,499 through 500,500"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "1",
                 RawInput =
 @"turn on 0,0 through 0,0"
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "2000000",
                 RawInput =
 @"toggle 0,0 through 999,999"

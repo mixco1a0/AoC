@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
+using System.Threading;
 
 using Newtonsoft.Json;
 
@@ -19,8 +21,15 @@ namespace AoC
 
     class Program
     {
-        private long RecordCount { get { return 1000; } }
-        private long MaxPerfTimeMs { get { return 1000000; } }
+        int m_curProcessor = 0;
+
+        const long DefaultRecordCount = 1000;
+        long m_recordCount = DefaultRecordCount;
+        private long RecordCount { get { return m_recordCount; } }
+
+        const long DefaultMaxPerfTimeoutMs = 3600000;
+        long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
+        private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
         public Program(string[] args)
         {
@@ -35,6 +44,18 @@ namespace AoC
                 {
                     commandLineArgs.PrintHelp(LogLine);
                     return;
+                }
+
+                // get the number of records to keep for perf tests
+                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.PerfRecordCount))
+                {
+                    m_recordCount = long.Parse(commandLineArgs.Args[CommandLineArgs.SupportedArgument.PerfRecordCount]);
+                }
+
+                // get the timeout runs should adhere to
+                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.PerfTimeout))
+                {
+                    m_maxPerfTimeoutMs = long.Parse(commandLineArgs.Args[CommandLineArgs.SupportedArgument.PerfTimeout]);
                 }
 
                 // get the namespace to use
@@ -124,7 +145,7 @@ namespace AoC
         }
 
         /// <summary>
-        /// Run the latest day in the given namespace.
+        /// Run the specified day in the given namespace.
         /// </summary>
         /// <param name="baseNamespace"></param>
         /// <param name="dayName"></param>
@@ -149,17 +170,68 @@ namespace AoC
         }
 
         /// <summary>
-        /// Run performance for the specific day
+        /// Force the process to be considered the highest priority
+        /// </summary>
+        private void SetHighPriority()
+        {
+            // use a single core
+            Process.GetCurrentProcess().ProcessorAffinity = new IntPtr((int)Math.Pow(2, m_curProcessor));
+
+            // prevent process interuptions
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+
+            // prevent thread interuptions
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
+            // cycle through the different processors
+            m_curProcessor = (m_curProcessor + 1) % Environment.ProcessorCount;
+
+        }
+
+        /// <summary>
+        /// Run a warmup sequence so that the cpu is ready to run tests
+        /// </summary>
+        private void RunWarmup()
+        {
+            SetHighPriority();
+
+            Func<long, int, long> Warmup = (long seed, int count) =>
+            {
+                long result = seed;
+                for (int i = 0; i < count; ++i)
+                {
+                    result ^= i ^ seed;
+                }
+                return result;
+            };
+
+            long result = 0;
+            const int count = 100000000;
+            long seed = Environment.TickCount;
+
+            Timer timer = new Timer();
+            timer.Start();
+            while (timer.GetElapsedMs() < 1500)
+            {
+                result = Warmup(seed, count);
+            }
+        }
+
+        /// <summary>
+        /// Run performance for the specified day
         /// </summary>
         /// <param name="dayType"></param>
         /// <param name="existingRecords"></param>
         /// <param name="runData"></param>
         /// <returns></returns>
-        private bool RunPerformance(Type dayType, long existingRecords, ref RunData runData)
+        private bool RunPerformance(Type dayType, Part part, long existingRecords, ref PerfData runData)
         {
-            Timer timer = new Timer();
-            timer.Start();
-            LogLine($"Running {dayType.Namespace}.{dayType.Name} Performance [Requires {RecordCount - existingRecords} Runs]");
+            LogLine($"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
+            LogLine("...Warming up");
+            RunWarmup();
+
+            DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
+
             long i = 0;
             long maxI = RecordCount - existingRecords;
             for (; i < maxI; ++i)
@@ -173,7 +245,7 @@ namespace AoC
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1:000.000} (s)]", (double)i / (double)(maxI) * 100.0f, (MaxPerfTimeMs-timer.GetElapsedMs())/1000));
+                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1}]", (double)i / (double)(maxI) * 100.0f, (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
                 }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -183,21 +255,28 @@ namespace AoC
                 }
 
                 Day day = (Day)handle.Unwrap();
-                day.Run();
+                day.RunProblem(part);
                 runData.AddData(day);
 
-                if (timer.GetElapsedMs() > MaxPerfTimeMs)
+                if (DateTime.Now > timeout)
                 {
                     break;
                 }
             }
-            if (!System.Diagnostics.Debugger.IsAttached)
+            if (System.Diagnostics.Debugger.IsAttached)
             {
-                LogSameLine(string.Format("...{0:000.0}%                                   \n\r", (double)i / (double)(maxI) * 100.0f));
+                LogLine($"...{maxI} runs completed");
             }
             else
             {
-                LogLine($"...{maxI} runs completed");
+                if (DateTime.Now > timeout)
+                {
+                    LogSameLine(string.Format("...{0:000.0}% [timed out]\n\r", (double)i / (double)(maxI) * 100.0f));
+                }
+                else
+                {
+                    LogSameLine(string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 35)));
+                }
             }
 
             return i == maxI;
@@ -214,9 +293,9 @@ namespace AoC
             LogLine($"Running {baseNamespace} Performance");
             LogLine("");
 
-            RunData runData;
+            PerfData perfData;
             string runDataFileName;
-            LoadRunData(out runDataFileName, out runData);
+            LoadPerfData(out runDataFileName, out perfData);
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -224,75 +303,74 @@ namespace AoC
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();
-                    if (day != null && day.GetSolutionVersion(TestPart.One) != "v0" && day.GetSolutionVersion(TestPart.Two) != "v0")
+                    if (day != null)
                     {
-                        for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
+                        for (Part part = Part.One; part <= Part.Two; ++part)
                         {
-                            bool completed = false;
-                            Stats stats = runData.Get(day.Year, day.DayName, day.GetSolutionVersion(testPart), testPart);
+                            if (day.GetSolutionVersion(part) == "v0")
+                            {
+                                continue;
+                            }
+
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, part, day.GetSolutionVersion(part));
                             if (stats == null)
                             {
-                                completed = RunPerformance(day.GetType(), 0, ref runData);
+                                RunPerformance(day.GetType(), part, 0, ref perfData);
                             }
                             else if (stats.Count < RecordCount)
                             {
-                                completed = RunPerformance(day.GetType(), stats.Count, ref runData);
-                            }
-
-                            if (!completed)
-                            {
-                                break;
+                                RunPerformance(day.GetType(), part, stats.Count, ref perfData);
                             }
                         }
                     }
                 }
             }
 
-            SaveRunData(runDataFileName, runData);
-            PrintMetrics(baseNamespace, runData);
+            SaveRunData(runDataFileName, perfData);
+            PrintMetrics(baseNamespace, perfData);
             Day.UseLogs = true;
         }
 
         /// <summary>
-        /// Load the save data from previous runs
+        /// Load the previous perf data
         /// </summary>
-        /// <param name="runDataFileName"></param>
-        /// <param name="runData"></param>
-        private void LoadRunData(out string runDataFileName, out RunData runData)
+        /// <param name="perfDataFileName"></param>
+        /// <param name="perfData"></param>
+        private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                runDataFileName = Path.Combine(workingDir, "rundata_debugger.json");
+                perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
             }
             else
             {
-                runDataFileName = Path.Combine(workingDir, "rundata_cmd.json");
+                perfDataFileName = Path.Combine(workingDir, "perfdata_cmd.json");
             }
-            if (File.Exists(runDataFileName))
+            if (File.Exists(perfDataFileName))
             {
-                LogLine($"Loading {runDataFileName}");
+                LogLine($"Loading {perfDataFileName}");
                 LogLine("");
-                string rawJson = File.ReadAllText(runDataFileName);
-                runData = JsonConvert.DeserializeObject<RunData>(rawJson);
+                string rawJson = File.ReadAllText(perfDataFileName);
+                perfData = JsonConvert.DeserializeObject<PerfData>(rawJson);
             }
             else
             {
-                runData = new RunData();
+                perfData = new PerfData();
             }
         }
 
         /// <summary>
-        /// Save the current run data to a specific file
+        /// Save the current perf data to a specific file
         /// </summary>
-        /// <param name="runDataFileName"></param>
-        /// <param name="runData"></param>
-        private void SaveRunData(string runDataFileName, RunData runData)
+        /// <param name="perfDataFileName"></param>
+        /// <param name="perfData"></param>
+        private void SaveRunData(string perfDataFileName, PerfData perfData)
         {
-            LogLine($"Saving {runDataFileName}");
+            LogLine($"Saving {perfDataFileName}");
             LogLine("");
-            string rawJson = JsonConvert.SerializeObject(runData, Formatting.Indented);
-            using (StreamWriter sWriter = new StreamWriter(runDataFileName))
+            string rawJson = JsonConvert.SerializeObject(perfData, Formatting.Indented);
+            using (StreamWriter sWriter = new StreamWriter(perfDataFileName))
             {
                 sWriter.Write(rawJson);
             }
@@ -302,8 +380,8 @@ namespace AoC
         /// Print out all the metrics from run data
         /// </summary>
         /// <param name="baseNamespace"></param>
-        /// <param name="runData"></param>
-        private void PrintMetrics(string baseNamespace, RunData runData)
+        /// <param name="perfData"></param>
+        private void PrintMetrics(string baseNamespace, PerfData perfData)
         {
             LogLine($"{baseNamespace} Performance Metrics");
             LogLine("");
@@ -324,11 +402,11 @@ namespace AoC
                     Day day = (Day)handle.Unwrap();
                     if (day != null)
                     {
-                        for (TestPart testPart = TestPart.One; testPart <= TestPart.Two; ++testPart)
+                        for (Part part = Part.One; part <= Part.Two; ++part)
                         {
-                            string solutionVersion = day.GetSolutionVersion(testPart);
-                            Stats stats = runData.Get(day.Year, day.DayName, solutionVersion, testPart);
-                            string logLine = $"[{day.Year}|{day.DayName}|part{(int)testPart}|{solutionVersion}]";
+                            string solutionVersion = day.GetSolutionVersion(part);
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, part, solutionVersion);
+                            string logLine = $"[{day.Year}|{day.DayName}|part{(int)part}|{solutionVersion}]";
                             if (stats == null)
                             {
                                 logLine = $"{logLine} No stats found";
@@ -348,12 +426,12 @@ namespace AoC
                                     maxStr = logLine;
                                 }
 
-                                if (testPart == TestPart.One)
+                                if (part == Part.One)
                                 {
                                     p1Total += stats.Avg;
                                 }
 
-                                if (testPart == TestPart.Two)
+                                if (part == Part.Two)
                                 {
                                     p2Total += stats.Avg;
                                 }

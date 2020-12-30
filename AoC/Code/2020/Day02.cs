@@ -7,16 +7,16 @@ namespace AoC._2020
     class Day02 : Day
     {
         public Day02() { }
-        public override string GetSolutionVersion(TestPart testPart)
+        public override string GetSolutionVersion(Part part)
         {
-            switch (testPart)
+            switch (part)
             {
-                case TestPart.One:
+                case Part.One:
                     return "v2";
-                case TestPart.Two:
+                case Part.Two:
                     return "v2";
                 default:
-                    return base.GetSolutionVersion(testPart);
+                    return base.GetSolutionVersion(part);
             }
         }
         protected override List<TestDatum> GetTestData()
@@ -24,7 +24,7 @@ namespace AoC._2020
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.One,
+                TestPart = Part.One,
                 Output = "2",
                 RawInput =
 @"1-3 a: abcde
@@ -33,7 +33,7 @@ namespace AoC._2020
             });
             testData.Add(new TestDatum
             {
-                TestPart = TestPart.Two,
+                TestPart = Part.Two,
                 Output = "1",
                 RawInput =
 @"1-3 a: abcde
@@ -106,3 +106,94 @@ namespace AoC._2020
         }
     }
 }
+
+#region previous versions
+/* p1.v1
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
+            int validPasswords = 0;
+            foreach(string input in inputs)
+            {
+                string[] split = input.Split("-: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                if (split.Length != 4)
+                {
+                    continue;
+                }
+
+                int min;
+                if (!int.TryParse(split[0], out min))
+                {
+                    continue;
+                }
+
+                int max;
+                if (!int.TryParse(split[1], out max))
+                {
+                    continue;
+                }
+
+                string removedLetters = split[3].Replace(split[2], "");
+                int diff = split[3].Length - removedLetters.Length;
+                if (diff >= min && diff <= max)
+                {
+                    ++validPasswords;
+                    //Debug($"Valid password found: {input} [{split[2]} was found {diff} times]");
+                }
+            }
+
+            return validPasswords.ToString();
+        }
+*/
+
+/* p2.v1
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
+            int validPasswords = 0;
+            foreach(string input in inputs)
+            {
+                string[] split = input.Split("-: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                if (split.Length != 4)
+                {
+                    continue;
+                }
+
+                int idx1;
+                if (!int.TryParse(split[0], out idx1))
+                {
+                    continue;
+                }
+                --idx1;
+
+                int idx2;
+                if (!int.TryParse(split[1], out idx2))
+                {
+                    continue;
+                }
+                --idx2;
+
+                if (split[2].Length > 1)
+                {
+                    continue;
+                }
+
+                char letter = split[2][0];
+                string password = split[3];
+
+                char loc1 = password.ElementAtOrDefault(idx1);
+                char loc2 = password.ElementAtOrDefault(idx2);
+                if (loc1 == letter && loc2 != letter)
+                {
+                    ++validPasswords;
+                    //Debug($"Valid password found: {input} [{letter} was found at index {idx1+1}]");
+                }
+                else if (loc1 != letter && loc2 == letter)
+                {
+                    ++validPasswords;
+                    //Debug($"Valid password found: {input} [{letter} was found at index {idx2+1}]");
+                }
+            }
+
+            return validPasswords.ToString();
+        }
+*/
+#endregion
