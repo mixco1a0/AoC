@@ -25,9 +25,13 @@ namespace AoC._2015
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "15",
                 RawInput =
-@""
+@"''
+'abc'
+'aaa\'aaa'
+'\x27'
+'\\'"
             });
             testData.Add(new TestDatum
             {
@@ -41,7 +45,27 @@ namespace AoC._2015
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int total = 0;
+            int mem = 0;
+            foreach (string input in inputs)
+            {
+                string actual = input.Replace('\'', '"');
+                total += actual.Length;
+                string[] splits = actual.Replace("\\\\", "|").Split('\\');
+                foreach (string split in splits)
+                {
+                    if (split.StartsWith('x'))
+                    {
+                        mem += split.Length - 2;
+                    }
+                    else
+                    {
+                        mem += split.Length;
+                    }
+                }
+                mem -= 2; // the first and last quote
+            }
+            return (total - mem).ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
