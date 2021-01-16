@@ -36,9 +36,13 @@ namespace AoC._2015
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "25",
                 RawInput =
-@""
+@"''
+'abc'
+'aaa\'aaa'
+'\x27'
+'\\'"
             });
             return testData;
         }
@@ -70,7 +74,16 @@ namespace AoC._2015
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int total = 0;
+            int mem = 0;
+            foreach (string input in inputs)
+            {
+                string actual = input.Replace('\'', '"');
+                total += actual.Length;
+                actual = actual.Replace("\\\\", "||||").Replace("\"", "\\\\\"").Replace("\\x", "\\\\x");
+                mem += actual.Length;
+            }
+            return (mem - total).ToString();
         }
     }
 }
