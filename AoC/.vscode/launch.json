@@ -11,7 +11,7 @@
             "preLaunchTask": "build debug",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/bin/Debug/net5.0/AoC.dll",
-            "args": ["-d", "day08", "-n", "2015"],
+            "args": ["-n", "2015"],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
