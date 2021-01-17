@@ -6,7 +6,18 @@ namespace AoC._2015
     class Day05 : Day
     {
         public Day05() { }
-
+        public override string GetSolutionVersion(Part part)
+        {
+            switch (part)
+            {
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
+                default:
+                    return base.GetSolutionVersion(part);
+            }
+        }
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
