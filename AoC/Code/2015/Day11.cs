@@ -37,13 +37,6 @@ namespace AoC._2015
                 RawInput =
 @"ghijklmn"
             });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
@@ -129,9 +122,8 @@ namespace AoC._2015
             return false;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string GetNextPassword(string password)
         {
-            string password = inputs.First();
             do
             {
                 password = Increment(password);
@@ -140,9 +132,14 @@ namespace AoC._2015
             return password;
         }
 
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        {
+            return GetNextPassword(inputs.First());
+        }
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            return GetNextPassword(GetNextPassword(inputs.First()));
         }
     }
 }
