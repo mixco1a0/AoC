@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AoC._2015
 {
@@ -25,9 +27,23 @@ namespace AoC._2015
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "6",
                 RawInput =
-@""
+@"[1,2,3]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Output = "3",
+                RawInput =
+@"[[[3]]]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Output = "0",
+                RawInput =
+@"{}"
             });
             testData.Add(new TestDatum
             {
@@ -39,9 +55,30 @@ namespace AoC._2015
             return testData;
         }
 
+        private int Count(JContainer container)
+        {
+            int count = 0;
+            if (container != null)
+            {
+                for (JToken token = container.First; token != null; token = token.Next)
+                {
+                    if (token.HasValues)
+                    {
+                        count += Count(token as JContainer);
+                    }
+                    else if (token.Type == JTokenType.Integer)
+                    {
+                        count += token.Value<int>();
+                    }
+                }
+            }
+            return count;
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            dynamic json = JsonConvert.DeserializeObject(inputs.First());
+            return Count(json).ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
