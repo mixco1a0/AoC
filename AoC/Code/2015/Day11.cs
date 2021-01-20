@@ -13,7 +13,6 @@ namespace AoC._2015
             switch (part)
             {
                 case Part.One:
-                    return "v1";
                 case Part.Two:
                     return "v1";
                 default:
@@ -40,6 +39,27 @@ namespace AoC._2015
             return testData;
         }
 
+        private string RemoveInvalid(string password)
+        {
+            int curIndex = 0;
+            StringBuilder newPassword = new StringBuilder();
+            foreach(char p in password)
+            {
+                ++curIndex;
+                if (p == 'i' || p == 'l' || p == 'o')
+                {
+                    newPassword.Append((char)(p + 1));
+                    break;
+                }
+                else
+                {
+                    newPassword.Append(p);
+                }
+            }
+            newPassword.Append(new string('a', password.Length - curIndex));
+            return newPassword.ToString();
+        }
+
         private string Increment(string password)
         {
             StringBuilder newPassword = new StringBuilder(password);
@@ -63,12 +83,7 @@ namespace AoC._2015
             {
                 newPassword[password.Length - 1] = (char)(password.Last() + 1);
             }
-            return newPassword.ToString();
-        }
-
-        private bool HasInvalid(string password)
-        {
-            return password.Contains('i') || password.Contains('o') || password.Contains('l');
+            return RemoveInvalid(newPassword.ToString());
         }
 
         private bool HasStraight(string password)
@@ -128,7 +143,7 @@ namespace AoC._2015
             {
                 password = Increment(password);
                 // DebugWriteLine($"Checking {password}");
-            } while (HasInvalid(password) || !HasStraight(password) || !HasDoubles(password));
+            } while (!HasStraight(password) || !HasDoubles(password));
             return password;
         }
 
