@@ -48,23 +48,55 @@ namespace AoC._2015
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "4",
                 RawInput =
-@""
+"[1,{\"c\":\"red\",\"b\":2},3]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "0",
+                RawInput =
+"{\"d\":\"red\",\"e\":[1,2,3,4],\"f\":5}"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "6",
+                RawInput =
+@"[1,2,3]"
             });
             return testData;
         }
 
-        private int Count(JContainer container)
+        private bool HasInvalid(JContainer container, string invalidToken)
+        {
+            for (JToken token = container.First; token != null; token = token.Next)
+            {
+                if (token.HasValues && token.Type == JTokenType.Property)
+                {
+                    for (JToken value = token.First; value != null; value = value.Next)
+                    {
+                        if (value.Type == JTokenType.String && invalidToken == value.Value<string>())
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private int Count(JContainer container, string invalidToken)
         {
             int count = 0;
-            if (container != null)
+            if (container != null && (invalidToken == null || !HasInvalid(container, invalidToken)))
             {
                 for (JToken token = container.First; token != null; token = token.Next)
                 {
                     if (token.HasValues)
                     {
-                        count += Count(token as JContainer);
+                        count += Count(token as JContainer, invalidToken);
                     }
                     else if (token.Type == JTokenType.Integer)
                     {
@@ -78,12 +110,13 @@ namespace AoC._2015
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             dynamic json = JsonConvert.DeserializeObject(inputs.First());
-            return Count(json).ToString();
+            return Count(json, null).ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            dynamic json = JsonConvert.DeserializeObject(inputs.First());
+            return Count(json, "red").ToString();
         }
     }
 }
