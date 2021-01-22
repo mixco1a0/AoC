@@ -40,18 +40,10 @@ David would gain 46 happiness units by sitting next to Alice.
 David would lose 7 happiness units by sitting next to Bob.
 David would gain 41 happiness units by sitting next to Carol."
             });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
         private record Units(string Name, int Happiness);
-        private record Pair(string Name1, int Happiness, string Name2);
 
         private int ArrangeSeats(Dictionary<string, List<Units>> people, string person, List<string> peopleSitting, int tab)
         {
@@ -106,8 +98,6 @@ David would gain 41 happiness units by sitting next to Carol."
                 }
                 people[split[0]].Add(new Units(split.Last(), (split[2] == "gain" ? 1 : -1) * int.Parse(split[3])));
             }
-            List<Pair> pairs = new List<Pair>();
-
             int max = int.MinValue;
             foreach (var pair in people)
             {
@@ -119,7 +109,39 @@ David would gain 41 happiness units by sitting next to Carol."
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            Dictionary<string, List<Units>> people = new Dictionary<string, List<Units>>();
+            foreach (string input in inputs)
+            {
+                string[] split = input.Split(" .".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                if (!people.Keys.Contains(split[0]))
+                {
+                    people[split[0]] = new List<Units>();
+                }
+                people[split[0]].Add(new Units(split.Last(), (split[2] == "gain" ? 1 : -1) * int.Parse(split[3])));
+            }
+
+            string me = "Me";
+            foreach (string person in people.Keys)
+            {
+                people[person].Add(new Units(me, 0));
+            }
+            people[me] = new List<Units>();
+            foreach (string person in people.Keys)
+            {
+                if (person == me)
+                {
+                    continue;
+                }
+                people[me].Add(new Units(person, 0));
+            }
+
+            int max = int.MinValue;
+            foreach (var pair in people)
+            {
+                int h = ArrangeSeats(people, pair.Key, new List<string>(), 0);
+                max = Math.Max(max, h);
+            }
+            return max.ToString();
         }
     }
 }
