@@ -35,9 +35,11 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Variables = new Dictionary<string, string> { { nameof(sTimes), "1000" } },
+                Output = "689",
                 RawInput =
-@""
+@"Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.
+Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
             });
             return testData;
         }
@@ -49,6 +51,7 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
             public int Burst { get; set; }
             public int Cooldown { get; set; }
             public int Distance { get; set; }
+            public int Score { get; set; }
 
             private int m_timeTillSwap;
             private enum State
@@ -68,6 +71,7 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
                 reindeer.Burst = values[1];
                 reindeer.Cooldown = values[2];
 
+                reindeer.Score = 0;
                 reindeer.Distance = 0;
                 reindeer.m_timeTillSwap = reindeer.Burst;
                 reindeer.m_state = State.Flying;
@@ -125,7 +129,26 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int times = sTimes;
+            if (variables != null && variables.ContainsKey(nameof(sTimes)))
+            {
+                times = int.Parse(variables[nameof(sTimes)]);
+            }
+
+            List<Reindeer> allReindeer = inputs.Select(Reindeer.Parse).ToList();
+            for (int i = 0; i < times; ++i)
+            {
+                foreach (Reindeer reindeer in allReindeer)
+                {
+                    reindeer.Update(1);
+                }
+                int maxDistance = allReindeer.Max(r => r.Distance);
+                foreach (Reindeer reindeer in allReindeer.Where(r => r.Distance == maxDistance))
+                {
+                    ++reindeer.Score;
+                }
+            }
+            return allReindeer.Max(r => r.Score).ToString();
         }
     }
 }
