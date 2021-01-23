@@ -33,9 +33,10 @@ Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "57600000",
                 RawInput =
-@""
+@"Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
+Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"
             });
             return testData;
         }
@@ -89,20 +90,34 @@ Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"
             return true;
         }
 
-        private int Score(List<Ingredient> ingredients, List<int> counts)
+        private int Score(List<Ingredient> ingredients, List<int> counts, bool countCalories)
         {
-            int capacityScore = 0, durabilityScore = 0, flavorScore = 0, textureScore = 0;
+            int capacityScore = 0, durabilityScore = 0, flavorScore = 0, textureScore = 0, calorieScore = 0;
             for (int i = 0; i < ingredients.Count; ++i)
             {
                 capacityScore += ingredients[i].Capacity * counts[i];
                 durabilityScore += ingredients[i].Durability * counts[i];
                 flavorScore += ingredients[i].Flavor * counts[i];
                 textureScore += ingredients[i].Texture * counts[i];
+                calorieScore += ingredients[i].Calories * counts[i];
             }
-            return (capacityScore > 0 ? capacityScore : 0) *
-                   (durabilityScore > 0 ? durabilityScore : 0) *
-                   (flavorScore > 0 ? flavorScore : 0) *
-                   (textureScore > 0 ? textureScore : 0);
+            int score =  (capacityScore > 0 ? capacityScore : 0) *
+                         (durabilityScore > 0 ? durabilityScore : 0) *
+                         (flavorScore > 0 ? flavorScore : 0) *
+                         (textureScore > 0 ? textureScore : 0);
+
+            if (countCalories)
+            {
+                if (calorieScore == 500)
+                {
+                    return score;
+                }
+                return 0;
+            }
+            else
+            {
+                return score;
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -121,7 +136,7 @@ Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"
                 {
                     break;
                 }
-                score = Math.Max(score, Score(allIngredients, allCounts));
+                score = Math.Max(score, Score(allIngredients, allCounts, false));
             }
 
             return score.ToString();
@@ -129,7 +144,24 @@ Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<Ingredient> allIngredients = inputs.Select(Ingredient.Parse).ToList();
+            List<int> allCounts = new List<int>();
+            for (int i = 0; i < allIngredients.Count; ++i)
+            {
+                allCounts.Add(i == allIngredients.Count - 1 ? 100 : 0);
+            }
+
+            long score = int.MinValue;
+            while (true)
+            {
+                if (!Increment(ref allCounts))
+                {
+                    break;
+                }
+                score = Math.Max(score, Score(allIngredients, allCounts, true));
+            }
+
+            return score.ToString();
         }
     }
 }
