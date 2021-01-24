@@ -39,9 +39,14 @@ namespace AoC._2015
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Variables = new Dictionary<string, string> { { nameof(sLiters), "25" } },
+                Output = "3",
                 RawInput =
-@""
+@"20
+15
+10
+5
+5"
             });
             return testData;
         }
@@ -56,11 +61,13 @@ namespace AoC._2015
             return total;
         }
 
-        private int TryNext(int result, List<int> inputs)
+        private int TryNext(int result, List<int> inputs, out int uniqueMin)
         {
+            uniqueMin = 0;
             int total = 0;
             int count = 0;
             List<bool> bools = inputs.Select(_ => false).ToList();
+            Dictionary<int, int> solutionCount = new Dictionary<int, int>();
             if (inputs.Count > 0)
             {
                 for (int i = 0; i < inputs.Count; ++i)
@@ -79,7 +86,16 @@ namespace AoC._2015
                     else if (total == result)
                     {
                         bools[i] = true;
-                        DebugWriteLine($"VALID: {string.Join(',', bools.Select((b, i) => new { b = b, i = i }).Where(pair => pair.b).Select(pair => $"{inputs[pair.i]}[#{pair.i}]"))}");
+                        int used = bools.Where(b => b).Count();
+                        if (!solutionCount.ContainsKey(used))
+                        {
+                            solutionCount[used] = 1;
+                        }
+                        else
+                        {
+                            ++solutionCount[used];
+                        }
+                        // DebugWriteLine($"VALID: {string.Join(',', bools.Select((b, i) => new { b = b, i = i }).Where(pair => pair.b).Select(pair => $"{inputs[pair.i]}[#{pair.i}]"))}");
                         bools[i] = false;
                         total -= inputs[i];
                         ++count;
@@ -98,6 +114,8 @@ namespace AoC._2015
                         }
                         if (i < 0)
                         {
+                            int minKey = solutionCount.Keys.Min();
+                            uniqueMin = solutionCount[minKey];
                             return count;
                         }
                         bools[i] = false;
@@ -122,12 +140,21 @@ namespace AoC._2015
                 liters = int.Parse(variables[nameof(sLiters)]);
             }
 
-            return TryNext(liters, inputs.Select(int.Parse).OrderByDescending(_ => _).ToList()).ToString();
+            int dummy;
+            return TryNext(liters, inputs.Select(int.Parse).OrderByDescending(_ => _).ToList(), out dummy).ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int liters = sLiters;
+            if (variables != null && variables.ContainsKey(nameof(sLiters)))
+            {
+                liters = int.Parse(variables[nameof(sLiters)]);
+            }
+
+            int uniqueMin;
+            TryNext(liters, inputs.Select(int.Parse).OrderByDescending(_ => _).ToList(), out uniqueMin);
+            return uniqueMin.ToString();
         }
     }
 }
