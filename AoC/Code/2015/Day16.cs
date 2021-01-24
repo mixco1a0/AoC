@@ -66,7 +66,19 @@ namespace AoC._2015
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<Sue> sues = inputs.Select(Sue.Parse).ToList();
+            return sues.Where(s =>
+                                   (!s.Attributes.ContainsKey("children") || (s.Attributes.ContainsKey("children") && s.Attributes["children"] == "3")) &&
+                                   (!s.Attributes.ContainsKey("cats") || (s.Attributes.ContainsKey("cats") && int.Parse(s.Attributes["cats"]) > 7)) &&
+                                   (!s.Attributes.ContainsKey("samoyeds") || (s.Attributes.ContainsKey("samoyeds") && s.Attributes["samoyeds"] == "2")) &&
+                                   (!s.Attributes.ContainsKey("pomeranians") || (s.Attributes.ContainsKey("pomeranians") && int.Parse(s.Attributes["pomeranians"]) < 3)) &&
+                                   (!s.Attributes.ContainsKey("akitas") || (s.Attributes.ContainsKey("akitas") && s.Attributes["akitas"] == "0")) &&
+                                   (!s.Attributes.ContainsKey("vizslas") || (s.Attributes.ContainsKey("vizslas") && s.Attributes["vizslas"] == "0")) &&
+                                   (!s.Attributes.ContainsKey("goldfish") || (s.Attributes.ContainsKey("goldfish") && int.Parse(s.Attributes["goldfish"]) < 5)) &&
+                                   (!s.Attributes.ContainsKey("trees") || (s.Attributes.ContainsKey("trees") && int.Parse(s.Attributes["trees"]) > 3)) &&
+                                   (!s.Attributes.ContainsKey("cars") || (s.Attributes.ContainsKey("cars") && s.Attributes["cars"] == "2")) &&
+                                   (!s.Attributes.ContainsKey("perfumes") || (s.Attributes.ContainsKey("perfumes") && s.Attributes["perfumes"] == "1"))
+            ).First().Number.ToString();
         }
     }
 }
