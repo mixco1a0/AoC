@@ -22,13 +22,6 @@ namespace AoC._2015
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
