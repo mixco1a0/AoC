@@ -24,13 +24,6 @@ namespace AoC._2015
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
-                TestPart = Part.One,
-                Output = "",
-                RawInput =
-@""
-            });
-            testData.Add(new TestDatum
-            {
                 TestPart = Part.Two,
                 Output = "",
                 RawInput =
@@ -39,9 +32,36 @@ namespace AoC._2015
             return testData;
         }
 
+        private record Sue(int Number, Dictionary<string, string> Attributes)
+        {
+            static public Sue Parse(string input)
+            {
+                string[] split = input.Split(" :,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                int[] values = split.Where(s => { int v; return int.TryParse(s, out v); }).Select(int.Parse).ToArray();
+                Sue sue = new Sue(values[0], new Dictionary<string, string>());
+                for (int i = 0; i < split.Length - 1; i += 2)
+                {
+                    sue.Attributes[split[i]] = split[i + 1];
+                }
+                return sue;
+            }
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            List<Sue> sues = inputs.Select(Sue.Parse).ToList();
+            return sues.Where(s =>
+                                   (!s.Attributes.ContainsKey("children") || (s.Attributes.ContainsKey("children") && s.Attributes["children"] == "3")) &&
+                                   (!s.Attributes.ContainsKey("cats") || (s.Attributes.ContainsKey("cats") && s.Attributes["cats"] == "7")) &&
+                                   (!s.Attributes.ContainsKey("samoyeds") || (s.Attributes.ContainsKey("samoyeds") && s.Attributes["samoyeds"] == "2")) &&
+                                   (!s.Attributes.ContainsKey("pomeranians") || (s.Attributes.ContainsKey("pomeranians") && s.Attributes["pomeranians"] == "3")) &&
+                                   (!s.Attributes.ContainsKey("akitas") || (s.Attributes.ContainsKey("akitas") && s.Attributes["akitas"] == "0")) &&
+                                   (!s.Attributes.ContainsKey("vizslas") || (s.Attributes.ContainsKey("vizslas") && s.Attributes["vizslas"] == "0")) &&
+                                   (!s.Attributes.ContainsKey("goldfish") || (s.Attributes.ContainsKey("goldfish") && s.Attributes["goldfish"] == "5")) &&
+                                   (!s.Attributes.ContainsKey("trees") || (s.Attributes.ContainsKey("trees") && s.Attributes["trees"] == "3")) &&
+                                   (!s.Attributes.ContainsKey("cars") || (s.Attributes.ContainsKey("cars") && s.Attributes["cars"] == "2")) &&
+                                   (!s.Attributes.ContainsKey("perfumes") || (s.Attributes.ContainsKey("perfumes") && s.Attributes["perfumes"] == "1"))
+            ).First().Number.ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
