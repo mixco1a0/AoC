@@ -13,6 +13,7 @@ namespace AoC
             Namespace,
             Day,
             SkipLatest,
+            ShowPerf,
             RunPerf,
             PerfRecordCount,
             PerfTimeout
@@ -35,6 +36,10 @@ namespace AoC
             {
                 SupportedArgument.SkipLatest,
                 new List<string>{"sl", "skiplatest"}
+            },
+            {
+                SupportedArgument.ShowPerf,
+                new List<string>{"sp", "showperf"}
             },
             {
                 SupportedArgument.RunPerf,
