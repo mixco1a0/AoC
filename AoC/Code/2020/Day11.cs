@@ -12,7 +12,7 @@ namespace AoC._2020
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
                     return "v1";
                 default:
@@ -59,38 +59,12 @@ L.LLLLL.LL"
 
         private char GetLocationState(int x, int y, List<List<char>> seats)
         {
-            int emptyCount = 0;
-            int fullCount = 0;
-            for (int i = x - 1; i <= x + 1; ++i)
+            if (seats[x][y] == '.')
             {
-                if (i < 0 || i >= seats.Count)
-                {
-                    continue;
-                }
-
-                for (int j = y - 1; j <= y + 1; ++j)
-                {
-                    if (i == x && j == y)
-                    {
-                        continue;
-                    }
-
-                    if (j < 0 || j >= seats[x].Count)
-                    {
-                        continue;
-                    }
-
-                    if (seats[i][j] == '#')
-                    {
-                        ++fullCount;
-                    }
-
-                    if (seats[i][j] == 'L')
-                    {
-                        ++emptyCount;
-                    }
-                }
+                return '.';
             }
+
+            int fullCount = Util.ProcessIndexBorder(x, y, seats, '#');
 
             switch (seats[x][y])
             {
@@ -103,50 +77,21 @@ L.LLLLL.LL"
             return '!';
         }
 
-        private bool ProcessSeats(ref List<List<char>> seats, Func<int, int, List<List<char>>, char> GetLocationStateFunc)
-        {
-            List<List<char>> newSeats = new List<List<char>>();
-            foreach (List<char> row in seats)
-            {
-                newSeats.Add(new List<char>(row));
-            }
-            for (int x = 0; x < seats.Count; ++x)
-            {
-                for (int y = 0; y < seats[x].Count; ++y)
-                {
-                    if (seats[x][y] == '.')
-                    {
-                        continue;
-                    }
-
-                    newSeats[x][y] = GetLocationStateFunc(x, y, seats);
-                }
-            }
-
-            for (int x = 0; x < seats.Count; ++x)
-            {
-                for (int y = 0; y < seats[x].Count; ++y)
-                {
-                    if (seats[x][y] != newSeats[x][y])
-                    {
-                        seats = newSeats;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<List<char>> seats = inputs.Select(a => a.ToCharArray().ToList()).ToList();
-            while (ProcessSeats(ref seats, GetLocationState)) ;
+            while (Util.ProcessGrid(ref seats, GetLocationState)) ;
             return string.Join("", seats.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
         }
 
 
         private char GetLocationStateStringent(int x, int y, List<List<char>> seats)
         {
+            if (seats[x][y] == '.')
+            {
+                return '.';
+            }
+
             int fullCount = 0;
             HashSet<string> checkedLocations = new HashSet<string>();
             for (int i = x - 1; i <= x + 1; ++i)
@@ -241,7 +186,7 @@ L.LLLLL.LL"
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<List<char>> seats = inputs.Select(a => a.ToCharArray().ToList()).ToList();
-            while (ProcessSeats(ref seats, GetLocationStateStringent)) ;
+            while (Util.ProcessGrid(ref seats, GetLocationStateStringent)) ;
             return string.Join("", seats.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
         }
     }

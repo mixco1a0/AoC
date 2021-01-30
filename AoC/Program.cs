@@ -91,8 +91,13 @@ namespace AoC
                     }
                 }
 
+                // show performance
+                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.ShowPerf))
+                {
+                    ShowPerformance(baseNamespace);
+                }
                 // run performance tests
-                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.RunPerf))
+                else if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.RunPerf))
                 {
                     RunPerformance(baseNamespace);
                 }
@@ -327,6 +332,24 @@ namespace AoC
             }
 
             SaveRunData(runDataFileName, perfData);
+            PrintMetrics(baseNamespace, perfData);
+            Day.UseLogs = true;
+        }
+
+        /// <summary>
+        /// Print performance for a specific namespace
+        /// </summary>
+        /// <param name="baseNamespace"></param>
+        private void ShowPerformance(string baseNamespace)
+        {
+            Day.UseLogs = false;
+
+            LogLine($"Showing {baseNamespace} Performance");
+            LogLine("");
+
+            PerfData perfData;
+            string runDataFileName;
+            LoadPerfData(out runDataFileName, out perfData);
             PrintMetrics(baseNamespace, perfData);
             Day.UseLogs = true;
         }
