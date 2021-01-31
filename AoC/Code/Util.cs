@@ -61,6 +61,14 @@ namespace AoC
                 PrintFunc(row);
             }
         }
+        static public void PrintGrid(List<List<char>> grid, Action<string> PrintFunc)
+        {
+            PrintFunc($"Printing grid {grid.First().Count}x{grid.Count}:");
+            foreach (string row in grid.Select(l => string.Join("", l)))
+            {
+                PrintFunc(row);
+            }
+        }
 
         static public bool ProcessGrid(ref List<List<char>> grid, Func<int, int, List<List<char>>, char> ProcessIndexFunc)
         {
