@@ -39,9 +39,15 @@ namespace AoC._2015
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Variables = new Dictionary<string, string> { { nameof(sSteps), "5" } },
+                Output = "17",
                 RawInput =
-@""
+@"##.#.#
+...##.
+#....#
+..#...
+#.#..#
+####.#"
             });
             return testData;
         }
@@ -74,12 +80,59 @@ namespace AoC._2015
             {
                 Util.ProcessGrid(ref lights, GetLocationState);
             }
-            return string.Join("", lights.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
+            return string.Join("", lights.Select(c => string.Join("", c))).Replace(".", "").Count().ToString();
+        }
+
+        private char GetLocationStateCornersOn(int x, int y, List<List<char>> lights)
+        {
+            if (x == 0 && (y == 0 || y == lights.Count - 1))
+            {
+                return '#';
+            }
+            else if (y == 0 && (x == 0 || x == lights.First().Count - 1))
+            {
+                return '#';
+            }
+            else if (x == lights.First().Count - 1 && y == lights.Count - 1)
+            {
+                return '#';
+            }
+
+            int onCount = Util.ProcessIndexBorder(x, y, lights, '#');
+
+            switch (lights[x][y])
+            {
+                case '.':
+                    return onCount == 3 ? '#' : '.';
+                case '#':
+                    return onCount == 2 || onCount == 3 ? '#' : '.';
+            }
+
+            return '!';
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int steps = sSteps;
+            if (variables != null && variables.ContainsKey(nameof(sSteps)))
+            {
+                steps = int.Parse(variables[nameof(sSteps)]);
+            }
+
+            List<List<char>> lights = inputs.Select(a => a.ToCharArray().ToList()).ToList();
+            lights[0][0] = '#';
+            lights[0][lights[0].Count - 1] = '#';
+            lights[lights.Count - 1][0] = '#';
+            lights[lights.Count - 1][lights[0].Count - 1] = '#';
+
+            // Util.PrintGrid(lights, DebugWriteLine);
+            for (int i = 0; i < steps; ++i)
+            {
+                Util.ProcessGrid(ref lights, GetLocationStateCornersOn);
+                // DebugWriteLine($"After {i + 1} step");
+                // Util.PrintGrid(lights, DebugWriteLine);
+            }
+            return string.Join("", lights.Select(c => string.Join("", c))).Replace(".", "").Count().ToString();
         }
     }
 }
