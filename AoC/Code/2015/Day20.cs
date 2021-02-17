@@ -22,13 +22,6 @@ namespace AoC._2015
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
@@ -85,9 +78,39 @@ namespace AoC._2015
             }
         }
 
+        private long Sum2(long end)
+        {
+            long sum = 0;
+            for (long i = 1; i <= end; ++i)
+            {
+                if (end % i == 0 && end / i <= 50)
+                {
+                    sum += 11 * i;
+                }
+            }
+            return sum;
+        }
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            long lhn = inputs.Select(long.Parse).First();
+            long house  = 776160;
+            long max = 0, sum = 0;
+            while (true)
+            {
+                long now = Sum2(house);
+                if (now > max)
+                {
+                    DebugWriteLine($"{house} -> {now}");
+                    max = now;
+                }
+                sum = now;
+                if (sum >= lhn)
+                {
+                    return house.ToString();
+                }
+                ++house;
+            }
         }
     }
 }
