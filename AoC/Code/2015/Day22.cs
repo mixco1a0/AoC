@@ -11,8 +11,8 @@ namespace AoC._2015
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
                 // case Part.Two:
                 //     return "v1";
                 default:
@@ -22,13 +22,6 @@ namespace AoC._2015
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
@@ -88,9 +81,15 @@ namespace AoC._2015
             public Dictionary<int, int> Effects { get; set; }
         }
 
-        bool RunCombatSimulation(Boss boss, Player player, int turnCount, int spentMana, ref int minMana)
+        bool RunCombatSimulation(bool hardMode, Boss boss, Player player, int turnCount, int spentMana, ref int minMana)
         {
             string curTab = new string('-', turnCount * 2);
+
+            if (hardMode && turnCount % 2 == 0)
+            {
+                player.HP -= 1;
+            }
+
             if (player.HP <= 0)
             {
                 DebugWriteLine($"{curTab}Player is dead!");
@@ -163,7 +162,7 @@ namespace AoC._2015
                         Boss nextBoss = new Boss(boss);
                         nextBoss.HP -= spell.Damage;
 
-                        RunCombatSimulation(nextBoss, nextPlayer, turnCount + 1, spentMana + spell.Cost, ref minMana);
+                        RunCombatSimulation(hardMode, nextBoss, nextPlayer, turnCount + 1, spentMana + spell.Cost, ref minMana);
                     }
                 }
 
@@ -178,7 +177,7 @@ namespace AoC._2015
             // reset armor
             player.Armor = 0;
 
-            return RunCombatSimulation(boss, player, turnCount + 1, spentMana, ref minMana);
+            return RunCombatSimulation(hardMode, boss, player, turnCount + 1, spentMana, ref minMana);
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -188,14 +187,21 @@ namespace AoC._2015
             Boss boss = new Boss(bossVals[0], bossVals[1]);
             Player player = new Player(50, 500, 0, new Dictionary<int, int>());
             UseLogs = false;
-            RunCombatSimulation(boss, player, 0, 0, ref minMana);
+            RunCombatSimulation(false, boss, player, 0, 0, ref minMana);
             UseLogs = true;
             return minMana.ToString();
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int minMana = int.MaxValue;
+            List<int> bossVals = inputs.Select(i => int.Parse(i.Split(" :".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Last())).ToList();
+            Boss boss = new Boss(bossVals[0], bossVals[1]);
+            Player player = new Player(50, 500, 0, new Dictionary<int, int>());
+            UseLogs = false;
+            RunCombatSimulation(true, boss, player, 0, 0, ref minMana);
+            UseLogs = true;
+            return minMana.ToString();
         }
     }
 }
