@@ -13,8 +13,8 @@ namespace AoC._2015
             {
                 case Part.One:
                     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
