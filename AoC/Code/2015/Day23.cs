@@ -33,13 +33,6 @@ jio a, +2
 tpl a
 inc a"
             });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.Two,
-                Output = "",
-                RawInput =
-@""
-            });
             return testData;
         }
 
@@ -205,7 +198,57 @@ inc a"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            string returnRegister = "b";
+            if (variables != null && variables.ContainsKey(nameof(returnRegister)))
+            {
+                returnRegister = variables[nameof(returnRegister)];
+            }
+
+            List<InstructionSet> instructions = ParseInstructions(inputs);
+            int curInstruction = 0;
+            uint regA = 1, regB = 0;
+            while (curInstruction < instructions.Count)
+            {
+                bool jump = false;
+                InstructionSet curSet = instructions[curInstruction];
+                switch (curSet.Instruction)
+                {
+                    case Instruction.Half:
+                    case Instruction.Triple:
+                    case Instruction.Increment:
+                        Perform(curSet.Instruction, curSet.Register, curSet.Offset, ref regA, ref regB);
+                        ++curInstruction;
+                        break;
+                    case Instruction.Jump:
+                        jump = true;
+                        break;
+                    case Instruction.JumpIfEven:
+                        jump = IsEven(regA, regB, curSet.Register);
+                        if (!jump)
+                        {
+                            ++curInstruction;
+                        }
+                        break;
+                    case Instruction.JumpIfOne:
+                        jump = IsOne(regA, regB, curSet.Register);
+                        if (!jump)
+                        {
+                            ++curInstruction;
+                        }
+                        break;
+                }
+
+                if (jump)
+                {
+                    curInstruction += curSet.Offset;
+                }
+            }
+
+            if (returnRegister == "a")
+            {
+                return regA.ToString();
+            }
+            return regB.ToString();
         }
     }
 }
