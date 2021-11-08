@@ -22,7 +22,12 @@ namespace AoC
 
         public double GetElapsedMs()
         {
-            return m_stopwatch.Elapsed.TotalMilliseconds;
+            if (m_stopwatch != null)
+            {
+                return m_stopwatch.Elapsed.TotalMilliseconds;
+            }
+            
+            return 0;
         }
 
         public string Print()
