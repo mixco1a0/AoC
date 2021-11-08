@@ -106,7 +106,11 @@ namespace AoC
             // run tests if there any
             foreach (TestDatum datum in partSpecificTestData)
             {
-                TimedRun(RunType.Testing, part, datum.Input.ToList(), datum.Output, datum.Variables);
+                // make sure the test has an output, and isn't just the default empty test set
+                if (!string.IsNullOrEmpty(datum.Output))
+                {
+                    TimedRun(RunType.Testing, part, datum.Input.ToList(), datum.Output, datum.Variables);
+                }
             }
 
             TimeResults[part] = TimedRun(RunType.Problem, part, problemInput.ToList(), "", null);
