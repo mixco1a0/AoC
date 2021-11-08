@@ -61,6 +61,7 @@ namespace AoC
                 PrintFunc(row);
             }
         }
+
         static public void PrintGrid(List<List<char>> grid, Action<string> PrintFunc)
         {
             PrintFunc($"Printing grid {grid.First().Count}x{grid.Count}:");
@@ -303,5 +304,55 @@ namespace AoC
         public bool GT_LTE(int val) { return Min < val && val <= Max; }
         public bool GTE_LT(int val) { return Min <= val && val < Max; }
         public bool GT_LT(int val) { return Min < val && val < Max; }
+        public MinMax Flip()
+        {
+            return new MinMax(Max, Min);
+        }
+    }
+
+    public record Point(int X, int Y);
+
+    public class Segment
+    {
+        public Point A { get; set; }
+        public Point B { get; set; }
+
+        public Segment(Point a, Point b)
+        {
+            A = a;
+            B = b;
+        }
+
+        public Segment Flip()
+        {
+            return new Segment(B, A);
+        }
+
+        public Point GetIntersection(Segment other)
+        {
+            // if this is X oriented, other is Y oriented
+            if (A.X == B.X && other.A.Y == other.B.Y)
+            {
+                MinMax yRange = new MinMax(A.Y, B.Y);
+                MinMax xRange = new MinMax(other.A.X, other.B.X);
+                if ((yRange.GTE_LTE(other.A.Y) || yRange.Flip().GTE_LTE(other.A.Y)) &&
+                    (xRange.GTE_LTE(A.X) || xRange.Flip().GTE_LTE(A.X)))
+                {
+                    return new Point(A.X, other.A.Y);
+                }
+            }
+            // if this is Y oriented, other is X oriented
+            else if (A.Y == B.Y && other.A.X == other.B.X)
+            {
+                MinMax xRange = new MinMax(A.X, B.X);
+                MinMax yRange = new MinMax(other.A.Y, other.B.Y);
+                if ((xRange.GTE_LTE(other.A.X) || xRange.Flip().GTE_LTE(other.A.X)) &&
+                    (yRange.GTE_LTE(A.Y) || yRange.Flip().GTE_LTE(A.Y)))
+                {
+                    return new Point(other.A.X, A.Y);
+                }
+            }
+            return null;
+        }
     }
 }
