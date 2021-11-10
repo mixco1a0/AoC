@@ -1,4 +1,3 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -112,8 +111,10 @@ namespace AoC._2016
             return (Math.Abs(coordX) + Math.Abs(coordY)).ToString();
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables) => SharedSolution(inputs, variables, false);
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false);
 
-        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables) => SharedSolution(inputs, variables, true);
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true);
     }
 }
