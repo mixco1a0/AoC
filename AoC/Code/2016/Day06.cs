@@ -48,9 +48,24 @@ enarar"
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "advent",
                 RawInput =
-@""
+@"eedadn
+drvtee
+eandsr
+raavrd
+atevrs
+tsrnev
+sdttsa
+rasrtv
+nssdts
+ntnada
+svetve
+tesnvt
+vntsnd
+vrdear
+dvrsen
+enarar"
             });
             return testData;
         }
@@ -94,7 +109,39 @@ enarar"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int width = inputs.First().Length;
+            Dictionary<int, int[]> counts = new Dictionary<int, int[]>();
+            for (int i = 0; i < width; ++i)
+            {
+                counts[i] = new int[26];
+                for (int j = 0; j < 26; ++j)
+                {
+                    counts[i][j] = 0;
+                }
+            }
+            foreach (string input in inputs)
+            {
+                for (int i = 0; i < input.Length; ++i)
+                {
+                    ++counts[i][input[i] - 'a'];
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            foreach (KeyValuePair<int, int[]> pair in counts)
+            {
+                char val = ' ';
+                int min = int.MaxValue;
+                for (int i = 0; i < pair.Value.Length; ++i)
+                {
+                    if (pair.Value[i] < min && pair.Value[i] > 0)
+                    {
+                        min = pair.Value[i];
+                        val = (char)(i + 'a');
+                    }
+                }
+                sb.Append(val);
+            }
+            return sb.ToString();
         }
     }
 }
