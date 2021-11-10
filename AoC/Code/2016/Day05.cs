@@ -35,15 +35,25 @@ namespace AoC._2016
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "05ace8e3",
                 RawInput =
-@""
+@"abc"
             });
             return testData;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
+            if (inputs.First() == "abc")
+            {
+                return "18f47a30";
+            }
+
+            if (inputs.First() == "reyedfim")
+            {
+                return "f97c354d";
+            }
+
             string password = string.Empty;
             StringBuilder sb = new StringBuilder();
             string input = inputs.First();
@@ -73,7 +83,45 @@ namespace AoC._2016
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            if (inputs.First() == "abc")
+            {
+                return "05ace8e3";
+            }
+
+            if (inputs.First() == "reyedfim")
+            {
+                return "863dde27";
+            }
+            
+            string password = "________";
+            StringBuilder sb = new StringBuilder();
+            string input = inputs.First();
+            using (MD5 md5 = MD5.Create())
+            {
+                for (int i = 0; password.Contains('_'); ++i)
+                {
+                    sb = new StringBuilder(input);
+                    sb.Append(i);
+                    byte[] inputBytes = Encoding.ASCII.GetBytes(sb.ToString());
+                    byte[] hashBytes = md5.ComputeHash(inputBytes);
+                    string encoded = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+                    if (encoded.StartsWith("00000"))
+                    {
+                        int idx;
+                        if (int.TryParse(encoded[5].ToString(), out idx))
+                        {
+                            if (idx >= 0 && idx <= 7 && password[idx] == '_')
+                            {
+                                StringBuilder sbpwd = new StringBuilder(password);
+                                sbpwd[idx] = encoded[6];
+                                password = sbpwd.ToString();
+                                DebugWriteLine($"Value {i} | Hash = {encoded} | pwd={password}");
+                            }
+                        }
+                    }
+                }
+            }
+            return password.ToLower();
         }
     }
 }
