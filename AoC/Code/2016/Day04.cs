@@ -99,32 +99,35 @@ totally-real-room-200[decoy]"
             }
         };
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool nameShift)
         {
+            List<Room> validRooms = new List<Room>();
             List<Room> allRooms = inputs.Select(Room.Parse).ToList();
             long sectorIdSum = 0;
             foreach (Room room in allRooms)
             {
                 if (room.IsValid())
                 {
-                    sectorIdSum += room.SectorID;
+                    if (nameShift)
+                    {
+                        if (room.ShiftName().Contains("north"))
+                        {
+                            return room.SectorID.ToString();
+                        }
+                    }
+                    else
+                    {
+                        sectorIdSum += room.SectorID;
+                    }
                 }
             }
             return sectorIdSum.ToString();
         }
 
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false);
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            List<Room> validRooms = new List<Room>();
-            List<Room> allRooms = inputs.Select(Room.Parse).ToList();
-            foreach (Room room in allRooms)
-            {
-                if (room.IsValid() && room.ShiftName().Contains("north"))
-                {
-                    return room.SectorID.ToString();
-                }
-            }
-            return "";
-        }
+            => SharedSolution(inputs, variables, true);
     }
 }
