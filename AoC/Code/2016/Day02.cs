@@ -46,17 +46,16 @@ UUUUD"
             return testData;
         }
 
-        static string[] numberPad1 = { "123", "456", "789" };
-
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Point start)
         {
-            MinMax range = new MinMax(0, 2);
+            MinMax range = new MinMax(0, numPad.First().Length - 1);
             StringBuilder code = new StringBuilder();
-            int x = 1, y = 1;
+            int x = start.X, y = start.Y;
             foreach (string input in inputs)
             {
                 foreach (char c in input)
                 {
+                    Point old = new Point(x, y);
                     switch (c)
                     {
                         case 'U':
@@ -72,49 +71,25 @@ UUUUD"
                             x = Math.Min(range.Max, x + 1);
                             break;
                     }
+                    if (numPad[y][x] == ' ')
+                    {
+                        x = old.X;
+                        y = old.Y;
+                    }
                 }
-                code.Append(numberPad1[y][x]);
+                code.Append(numPad[y][x]);
             }
             return code.ToString();
         }
+
+        static string[] numberPad1 = { "123", "456", "789" };
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, numberPad1, new Point(1, 1));
 
         static string[] numberPad2 = { "  1  ", " 234 ", "56789", " ABC ", "  D  " };
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            MinMax range = new MinMax(0, 4);
-            StringBuilder code = new StringBuilder();
-            int x = 0, y = 2;
-            foreach (string input in inputs)
-            {
-                foreach (char c in input)
-                {
-                    int oldX = x;
-                    int oldY = y;
-                    switch (c)
-                    {
-                        case 'U':
-                            y = Math.Max(range.Min, y - 1);
-                            break;
-                        case 'D':
-                            y = Math.Min(range.Max, y + 1);
-                            break;
-                        case 'L':
-                            x = Math.Max(range.Min, x - 1);
-                            break;
-                        case 'R':
-                            x = Math.Min(range.Max, x + 1);
-                            break;
-                    }
-                    if (numberPad2[y][x] == ' ')
-                    {
-                        x = oldX;
-                        y = oldY;
-                    }
-                }
-                code.Append(numberPad2[y][x]);
-            }
-            return code.ToString();
-        }
+            => SharedSolution(inputs, variables, numberPad2, new Point(0, 2));
     }
 }
