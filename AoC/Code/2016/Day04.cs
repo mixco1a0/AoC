@@ -12,10 +12,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -43,14 +43,14 @@ totally-real-room-200[decoy]"
             return testData;
         }
 
-        private record Room(string Name, long SectorID, string Checksum)
+        private record Room(string Name, string RawName, long SectorID, string Checksum)
         {
             static public Room Parse(string input)
             {
                 string[] split = input.Split("-[],".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 StringBuilder sb = new StringBuilder();
                 split.SkipLast(2).ToList().ForEach(s => sb.Append(s));
-                return new Room(sb.ToString(), long.Parse(split.TakeLast(2).First()), split.Last());
+                return new Room(sb.ToString(), input.Split("0123456789".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).First(), long.Parse(split.TakeLast(2).First()), split.Last());
             }
 
             private struct SortHelper
@@ -62,7 +62,7 @@ totally-real-room-200[decoy]"
             public bool IsValid()
             {
                 SortHelper[] sorter = new SortHelper[26];
-                foreach(char c in Name)
+                foreach (char c in Name)
                 {
                     int index = c - 'a';
                     sorter[c - 'a'].c = c;
@@ -78,13 +78,32 @@ totally-real-room-200[decoy]"
                 }
                 return true;
             }
+
+            public string ShiftName()
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (char c in RawName)
+                {
+                    if (c == '-')
+                    {
+                        sb.Append(' ');
+                    }
+                    else
+                    {
+                        long newC = c - 'a';
+                        newC += SectorID;
+                        sb.Append((char)(newC % 26 + 'a'));
+                    }
+                }
+                return sb.ToString();
+            }
         };
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<Room> allRooms = inputs.Select(Room.Parse).ToList();
             long sectorIdSum = 0;
-            foreach(Room room in allRooms)
+            foreach (Room room in allRooms)
             {
                 if (room.IsValid())
                 {
@@ -96,6 +115,15 @@ totally-real-room-200[decoy]"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
+            List<Room> validRooms = new List<Room>();
+            List<Room> allRooms = inputs.Select(Room.Parse).ToList();
+            foreach (Room room in allRooms)
+            {
+                if (room.IsValid() && room.ShiftName().Contains("north"))
+                {
+                    return room.SectorID.ToString();
+                }
+            }
             return "";
         }
     }
