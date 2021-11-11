@@ -25,9 +25,13 @@ namespace AoC._2016
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "3",
                 RawInput =
-@""
+@"abba[mnop]qrst
+qrst[mnop]abba
+abcd[bddb]xyyx
+aaaa[qwer]tyui
+ioxxoj[asdfgh]zxcvbn"
             });
             testData.Add(new TestDatum
             {
@@ -39,9 +43,45 @@ namespace AoC._2016
             return testData;
         }
 
+        private bool ContainsMirroredPair(string input)
+        {
+            for (int i = 0; i < input.Length - 3; ++i)
+            {
+                if (input[i] == input[i+3] && input[i+1] == input[i+2] && input[i] != input[i+1])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int tlsSupportCount = 0;
+            foreach (string input in inputs)
+            {
+                bool supportsTLS = false;
+                string[] split = input.Replace("[", "[|").Split("[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                foreach (string s in split)
+                {
+                    if (s.First() == '|' && ContainsMirroredPair(s[1..]))
+                    {
+                        supportsTLS = false;
+                        break;
+                    }
+
+                    if (ContainsMirroredPair(s))
+                    {
+                        supportsTLS = true;
+                    }
+                }
+
+                if (supportsTLS)
+                {
+                    ++tlsSupportCount;
+                }
+            }
+            return tlsSupportCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
