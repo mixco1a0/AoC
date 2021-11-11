@@ -11,10 +11,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -36,48 +36,83 @@ ioxxoj[asdfgh]zxcvbn"
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "4",
                 RawInput =
-@""
+@"aba[bab]xyz
+xyx[xyx]xyx
+aaa[kek]eke
+zazbz[bzb]cdb
+xyx[xyxy]xyx"
             });
             return testData;
         }
 
-        private bool ContainsMirroredPair(string input)
+        private List<string> GetABBA(string input)
         {
+            List<string> found = new List<string>();
             for (int i = 0; i < input.Length - 3; ++i)
             {
-                if (input[i] == input[i+3] && input[i+1] == input[i+2] && input[i] != input[i+1])
+                if (input[i] == input[i + 3] && input[i + 1] == input[i + 2] && input[i] != input[i + 1])
                 {
-                    return true;
+                    found.Add(input[i..(i+2)]);
                 }
             }
-            return false;
+            return found;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private List<string> GetABA(string input)
+        {
+            List<string> found = new List<string>();
+            for (int i = 0; i < input.Length - 2; ++i)
+            {
+                if (input[i] == input[i + 2] && input[i] != input[i + 1])
+                {
+                    found.Add(input[i..(i+2)]);
+                }
+            }
+            return found;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, Func<string, List<string>> patternFunc, bool checkSupernet)
         {
             int tlsSupportCount = 0;
             foreach (string input in inputs)
             {
-                bool supportsTLS = false;
+                List<string> patterns = new List<string>();
+                List<string> revPatterns = new List<string>();
                 string[] split = input.Replace("[", "[|").Split("[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 foreach (string s in split)
                 {
-                    if (s.First() == '|' && ContainsMirroredPair(s[1..]))
+                    bool supernetSeq = s.First() == '|';
+                    List<string> curPatterns = patternFunc(s);
+                    if (!supernetSeq && curPatterns.Count > 0)
                     {
-                        supportsTLS = false;
-                        break;
+                        patterns.AddRange(curPatterns);
                     }
-
-                    if (ContainsMirroredPair(s))
+                    else if (supernetSeq && curPatterns.Count > 0)
                     {
-                        supportsTLS = true;
+                        curPatterns.ForEach(rp => revPatterns.Add($"{rp[1]}{rp[0]}"));
                     }
                 }
 
-                if (supportsTLS)
+                if (patterns.Count > 0)
                 {
+                    if (checkSupernet)
+                    {
+                        if (revPatterns.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        if (patterns.Intersect(revPatterns).Count() == 0)
+                        {
+                            continue;
+                        }
+                    }
+                    else if (revPatterns.Count != 0)
+                    {
+                        continue;
+                    }
                     ++tlsSupportCount;
                 }
             }
@@ -85,9 +120,9 @@ ioxxoj[asdfgh]zxcvbn"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, GetABBA, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, GetABA, true);
     }
 }
