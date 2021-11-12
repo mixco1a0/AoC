@@ -55,18 +55,28 @@ namespace AoC
 
         static public void PrintGrid(List<string> grid, Action<string> PrintFunc)
         {
+            StringBuilder sb = new StringBuilder();
             PrintFunc($"Printing grid {grid.First().Length}x{grid.Count}:");
+            int idx = 0;
             foreach (string row in grid)
             {
-                PrintFunc(row);
+                sb.Clear();
+                sb.Append($"{idx++,4}| ");
+                sb.Append(row);
+                PrintFunc(sb.ToString());
             }
         }
 
         static public void PrintGrid(List<List<char>> grid, Action<string> PrintFunc)
         {
+            StringBuilder sb = new StringBuilder();
             PrintFunc($"Printing grid {grid.First().Count}x{grid.Count}:");
+            int idx = 0;
             foreach (string row in grid.Select(l => string.Join("", l)))
             {
+                sb.Clear();
+                sb.Append($"{idx++,4}| ");
+                sb.Append(row);
                 PrintFunc(row);
             }
         }
