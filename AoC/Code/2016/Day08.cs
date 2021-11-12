@@ -12,10 +12,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -132,16 +132,94 @@ rotate column x=1 by 1"
             StringBuilder sb = new StringBuilder();
             sb.Append(val[count..]);
             sb.Append(val[0..count]);
-            grid = grid.Select((g, i) => $"{g[..col]}{sb[i]}{g[(col+1)..]}").ToArray();
+            grid = grid.Select((g, i) => $"{g[..col]}{sb[i]}{g[(col + 1)..]}").ToArray();
         }
-        
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        static List<KeyValuePair<char, string[]>> LetterConversion = new List<KeyValuePair<char, string[]>>()
+        {
+            new KeyValuePair<char,string[]>('A', new string[] {
+                ".##..",
+                "#..#.",
+                "#..#.",
+                "####.",
+                "#..#.",
+                "#..#."}),
+            new KeyValuePair<char,string[]>('E', new string[] {
+                "####.",
+                "#....",
+                "###..",
+                "#....",
+                "#....",
+                "####."}),
+            new KeyValuePair<char,string[]>('G', new string[] {
+                ".##..",
+                "#..#.",
+                "#....",
+                "#.##.",
+                "#..#.",
+                ".###."}),
+            new KeyValuePair<char,string[]>('H', new string[] {
+                "#..#.",
+                "#..#.",
+                "####.",
+                "#..#.",
+                "#..#.",
+                "#..#."}),
+            new KeyValuePair<char,string[]>('O', new string[] {
+                ".##..",
+                "#..#.",
+                "#..#.",
+                "#..#.",
+                "#..#.",
+                ".##.."}),
+            new KeyValuePair<char,string[]>('P', new string[] {
+                "###..",
+                "#..#.",
+                "#..#.",
+                "###..",
+                "#....",
+                "#...."}),
+            new KeyValuePair<char,string[]>('R', new string[] {
+                "###..",
+                "#..#.",
+                "#..#.",
+                "###..",
+                "#.#..",
+                "#..#."}),
+            new KeyValuePair<char,string[]>('Y', new string[] {
+                "#...#",
+                "#...#",
+                ".#.#.",
+                "..#..",
+                "..#..",
+                "..#.."})
+        };
+
+        private string ConvertToLetters(string[] grid)
+        {
+            const int len = 5;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < grid[0].Length; i += len)
+            {
+                string cur = string.Join("", grid.Select(g => g[i..(i+len)]));
+                foreach (var pair in LetterConversion)
+                {
+                    if (cur == string.Join("", pair.Value))
+                    {
+                        sb.Append(pair.Key);
+                        break;
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool readLetters)
         {
             int gridW, gridH;
             string[] grid = InitGrid(variables, out gridW, out gridH);
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
-            Util.PrintGrid(grid.ToList(), DebugWriteLine);
+            //Util.PrintGrid(grid.ToList(), DebugWriteLine);
             foreach (Instruction instruction in instructions)
             {
                 switch (instruction.Type)
@@ -156,15 +234,22 @@ rotate column x=1 by 1"
                         PerformCol(ref grid, instruction.Val1, -instruction.Val2);
                         break;
                 }
-                Util.PrintGrid(grid.ToList(), DebugWriteLine);
+                //Util.PrintGrid(grid.ToList(), DebugWriteLine);
             }
-            return string.Join("", grid).Replace(PixelOff.ToString(), "").Length.ToString();
+            if (readLetters)
+            {
+                return ConvertToLetters(grid);
+            }
+            else
+            {
+                return string.Join("", grid).Replace(PixelOff.ToString(), "").Length.ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
