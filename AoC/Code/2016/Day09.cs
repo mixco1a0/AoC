@@ -68,9 +68,30 @@ namespace AoC._2016
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "9",
                 RawInput =
-@""
+@"(3x3)XYZ"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "20",
+                RawInput =
+@"X(8x2)(3x3)ABCY"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "241920",
+                RawInput =
+@"(27x12)(20x12)(13x14)(7x10)(1x12)A"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "445",
+                RawInput =
+@"(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN"
             });
             return testData;
         }
@@ -84,41 +105,64 @@ namespace AoC._2016
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private long FullDecompressString(ref int start, int openP, int closeP, string compressedString)
+        {
+            long decompressedLength = 0;
+            SequenceCompression sc = SequenceCompression.Parse(compressedString.Substring(openP, closeP - openP));
+            string sequence = compressedString.Substring(closeP, sc.CharacterCount);
+            if (sequence.IndexOf('(') > 0)
+            {
+
+            }
+            decompressedLength += (sc.RepititionCount * sc.CharacterCount);
+            start = closeP + sc.CharacterCount;
+            return decompressedLength;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool fullDecompress)
         {
             string compressedString = inputs.First();
-            StringBuilder sb = new StringBuilder();
-            for (int start = 0; start < compressedString.Length;)
+            long decompressedLength = 0;
+            while (!string.IsNullOrWhiteSpace(compressedString))
             {
-                int openP = compressedString.IndexOf('(', start);
+                int openP = compressedString.IndexOf('(');
                 if (openP == -1)
                 {
-                    sb.Append(compressedString.Substring(start));
+                    decompressedLength += compressedString.Length;
+                    compressedString = string.Empty;
                     break;
                 }
                 else
                 {
-                    if (start < openP)
-                    {
-                        sb.Append(compressedString.Substring(start, openP - start));
-                    }
+                    decompressedLength += openP;
+
                     int closeP = compressedString.IndexOf(')', openP) + 1;
                     SequenceCompression sc = SequenceCompression.Parse(compressedString.Substring(openP, closeP - openP));
                     string sequence = compressedString.Substring(closeP, sc.CharacterCount);
-                    for (int rep = 0; rep < sc.RepititionCount; ++rep)
+                    compressedString = compressedString.Remove(0, closeP + sc.CharacterCount);
+                    if (fullDecompress)
                     {
-                        sb.Append(sequence);
+                        StringBuilder sb = new StringBuilder();
+                        for (int rep = 0; rep < sc.RepititionCount; ++rep)
+                        {
+                            sb.Append(sequence);
+                        }
+                        sb.Append(compressedString);
+                        compressedString = sb.ToString();
                     }
-                    start = closeP + sc.CharacterCount;
+                    else
+                    {
+                        decompressedLength += (sc.RepititionCount * sc.CharacterCount);
+                    }
                 }
             }
-            return sb.ToString().Length.ToString();
+            return decompressedLength.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
