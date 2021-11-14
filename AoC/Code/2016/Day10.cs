@@ -11,10 +11,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -90,7 +90,7 @@ value 2 goes to bot 2"
             public List<int> Chips { get; set; }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useOutputs)
         {
             int chipOne = 17;
             int chipTwo = 61;
@@ -116,7 +116,7 @@ value 2 goes to bot 2"
                 }
                 bots[values[1]].Assign(values[0]);
 
-                if (bots[values[1]].IsComparing(chipOne, chipTwo))
+                if (bots[values[1]].IsComparing(chipOne, chipTwo) && !useOutputs)
                 {
                     return values[1].ToString();
                 }
@@ -187,29 +187,31 @@ value 2 goes to bot 2"
                 }
 
                 giver.Give(ref low, ref high);
-                if (checkLow)
+                if (checkLow && !useOutputs)
                 {
                     if (low.IsComparing(chipOne, chipTwo))
                     {
                         return lowId.ToString();
                     }
                 }
-                if (checkHigh)
+                if (checkHigh && !useOutputs)
                 {
                     if (high.IsComparing(chipOne, chipTwo))
                     {
                         return highId.ToString();
                     }
                 }
+
+                instructions.RemoveAt(0);
             }
 
-            return "";
+            return (outputs[0].Chips.First() * outputs[1].Chips.First() * outputs[2].Chips.First()).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
