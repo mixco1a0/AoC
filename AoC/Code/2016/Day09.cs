@@ -12,10 +12,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -105,18 +105,71 @@ namespace AoC._2016
             }
         }
 
-        private long FullDecompressString(ref int start, int openP, int closeP, string compressedString)
+        public class NestedSequence
         {
-            long decompressedLength = 0;
-            SequenceCompression sc = SequenceCompression.Parse(compressedString.Substring(openP, closeP - openP));
-            string sequence = compressedString.Substring(closeP, sc.CharacterCount);
-            if (sequence.IndexOf('(') > 0)
+            public NestedSequence(SequenceCompression sequenceCompression, string sequence)
             {
+                Sequence = sequence;
+                CharacterCount = sequenceCompression.CharacterCount;
+                RepititionCount = sequenceCompression.RepititionCount;
+                Children = new List<NestedSequence>();
 
+                int start = 0;
+                int openP = sequence.IndexOf('(');
+                while (openP >= 0)
+                {
+                    int closeP = sequence.IndexOf(')', openP) + 1;
+                    SequenceCompression sc = SequenceCompression.Parse(sequence.Substring(openP, closeP - openP));
+                    string childSequence = sequence.Substring(closeP, sc.CharacterCount);
+                    Children.Add(new NestedSequence(sc, childSequence));
+                    start = closeP + sc.CharacterCount;
+                    openP = sequence.IndexOf('(', start);
+                }
             }
-            decompressedLength += (sc.RepititionCount * sc.CharacterCount);
-            start = closeP + sc.CharacterCount;
-            return decompressedLength;
+
+            public string Sequence { get; set; }
+
+            public string RawSequence
+            {
+                get
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append('(');
+                    sb.Append(CharacterCount);
+                    sb.Append('x');
+                    sb.Append(RepititionCount);
+                    sb.Append(')');
+                    sb.Append(Sequence);
+                    return sb.ToString();
+                }
+                private set
+                {
+                    value = string.Empty;
+                }
+            }
+
+            long CharacterCount;
+
+            long RepititionCount { get; set; }
+
+            List<NestedSequence> Children { get; set; }
+
+            public long GetLength()
+            {
+                long childSum = 0;
+                if (Children.Count > 0)
+                {
+                    foreach (NestedSequence child in Children)
+                    {
+                        childSum += child.GetLength();
+                    }
+                }
+                else
+                {
+                    return RepititionCount * CharacterCount;
+                }
+                return RepititionCount * childSum;
+            }
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool fullDecompress)
@@ -142,13 +195,8 @@ namespace AoC._2016
                     compressedString = compressedString.Remove(0, closeP + sc.CharacterCount);
                     if (fullDecompress)
                     {
-                        StringBuilder sb = new StringBuilder();
-                        for (int rep = 0; rep < sc.RepititionCount; ++rep)
-                        {
-                            sb.Append(sequence);
-                        }
-                        sb.Append(compressedString);
-                        compressedString = sb.ToString();
+                        NestedSequence nested = new NestedSequence(sc, sequence);
+                        decompressedLength += nested.GetLength();
                     }
                     else
                     {
