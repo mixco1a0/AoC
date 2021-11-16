@@ -259,12 +259,17 @@ The fourth floor contains nothing relevant."
             sb.Append(elevator.Current);
             foreach (Floor floor in floors)
             {
+                IEnumerable<string> shared = floor.Generators.Intersect(floor.Microchips);
+                IEnumerable<string> gOnly = floor.Generators.Except(floor.Microchips);
+                IEnumerable<string> mOnly = floor.Microchips.Except(floor.Generators);
                 sb.Append("|");
                 sb.Append(floor.ID);
+                sb.Append("|S.");
+                sb.Append(shared.Count());
                 sb.Append("|G.");
-                sb.Append(string.Join(',', floor.Generators));
+                sb.Append(gOnly.Count());
                 sb.Append("|M.");
-                sb.Append(string.Join(',', floor.Microchips));
+                sb.Append(mOnly.Count());
             }
             string cycleState = sb.ToString();
             if (cycles.ContainsKey(cycleState))
