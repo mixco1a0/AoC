@@ -190,8 +190,27 @@ The fourth floor contains nothing relevant."
             }
 
             private record Possibility(string Name, bool IsGenerator);
-            public void GetAllPossibleAttempts(Floor floor, ref List<Elevator> attempts)
+
+            public void GetAllPossibleAttempts(Floor[] floors, Floor floor, ref List<Elevator> attempts)
             {
+                // determine the optimal strategy
+                int targetFloor = 0;
+                for (int i = floors.Count() - 1; i >= 0; --i)
+                {
+                    if (!floors[i].Ignore)
+                    {
+                        targetFloor = i;
+                    }
+                }
+
+                // if bottom floor is not cleared
+                //      1 down, 2 up, 1 up, 2 down
+                // else
+                //      2 up, 1 up, 1 down, 2 down
+
+                int floorDown = Current - 1;
+                int floorUp = Current + 1;
+
                 IEnumerable<Possibility> allPossibilities = floor.Generators.Select(g => new Possibility(g, true)).Union(floor.Microchips.Select(m => new Possibility(m, false)));
                 foreach (Possibility first in allPossibilities)
                 {
@@ -199,22 +218,30 @@ The fourth floor contains nothing relevant."
                     singleMove.First = first.Name;
                     singleMove.IsFirstGenerator = first.IsGenerator;
 
-                    foreach (Possibility second in allPossibilities)
+                    if (floorDown <= targetFloor)
                     {
-                        if (first == second)
-                        {
-                            continue;
-                        }
-
-                        Elevator doubleMove = new Elevator(singleMove);
-                        doubleMove.Second = second.Name;
-                        doubleMove.IsSecondGenerator = second.IsGenerator;
-
-                        attempts.Add(new Elevator(doubleMove) { Target = Current + 1 });
+                        attempts.Add(new Elevator(singleMove) { Target = floorDown });
                     }
 
-                    attempts.Add(new Elevator(singleMove) { Target = Current + 1 });
-                    attempts.Add(new Elevator(singleMove) { Target = Current - 1 });
+                    foreach (Possibility second in allPossibilities)
+                    {
+                        if (first == second)
+                        {
+                            continue;
+                        }
+
+                        Elevator doubleMove = new Elevator(singleMove);
+                        doubleMove.Second = second.Name;
+                        doubleMove.IsSecondGenerator = second.IsGenerator;
+
+                        attempts.Add(new Elevator(doubleMove) { Target = floorUp });
+                    }
+
+                    attempts.Add(new Elevator(singleMove) { Target = floorUp });
+                    if (floorDown > targetFloor)
+                    {
+                        attempts.Add(new Elevator(singleMove) { Target = floorDown });
+                    }
 
                     foreach (Possibility second in allPossibilities)
                     {
@@ -227,7 +254,7 @@ The fourth floor contains nothing relevant."
                         doubleMove.Second = second.Name;
                         doubleMove.IsSecondGenerator = second.IsGenerator;
 
-                        attempts.Add(new Elevator(doubleMove) { Target = Current - 1 });
+                        attempts.Add(new Elevator(doubleMove) { Target = floorDown });
                     }
                 }
             }
@@ -308,7 +335,7 @@ The fourth floor contains nothing relevant."
 
             // get a list of all possible elevator rides, try them out
             List<Elevator> attempts = new List<Elevator>();
-            elevator.GetAllPossibleAttempts(curFloor, ref attempts);
+            elevator.GetAllPossibleAttempts(floors, curFloor, ref attempts);
             int attemptCount = 1;
             foreach (Elevator attempt in attempts)
             {
@@ -324,10 +351,15 @@ The fourth floor contains nothing relevant."
             return minStepCount;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] additionalItems)
         {
             HashSet<string> pairIds = new HashSet<string>();
             Floor[] floors = ParseFloors(inputs, ref pairIds);
+            foreach (string item in additionalItems)
+            {
+                floors[0].Generators.Add(item);
+                floors[0].Microchips.Add(item);
+            }
             Elevator elevator = new Elevator();
             int minStepCount = int.MaxValue;
             SimulateRun(pairIds, floors.ToList().ToArray(), elevator, new Dictionary<string, int>(), 0, ref minStepCount);
@@ -335,9 +367,9 @@ The fourth floor contains nothing relevant."
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new string[] { });
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new string[] { "elerium", "dilithium" });
     }
 }
