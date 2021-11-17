@@ -1,11 +1,10 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2016
 {
-    // TODO: convert from strings to bits
     class Day11 : Day
     {
         public Day11() { }
@@ -14,9 +13,9 @@ namespace AoC._2016
             switch (part)
             {
                 case Part.One:
-                    return "v2";
+                    return "v3";
                 case Part.Two:
-                    return "v2";
+                    return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -129,31 +128,31 @@ The fourth floor contains nothing relevant."
                 Current = -1;
                 Target = 0;
                 First = "";
-                IsFirstGenerator = false;
+                FirstIsGenerator = false;
                 Second = "";
-                IsSecondGenerator = false;
+                SecondIsGenerator = false;
             }
             public Elevator(Elevator other)
             {
                 Current = other.Current;
                 Target = other.Target;
                 First = other.First;
-                IsFirstGenerator = other.IsFirstGenerator;
+                FirstIsGenerator = other.FirstIsGenerator;
                 Second = other.Second;
-                IsSecondGenerator = other.IsSecondGenerator;
+                SecondIsGenerator = other.SecondIsGenerator;
             }
             public int Current { get; set; }
             public int Target { get; set; }
             public string First { get; set; }
-            public bool IsFirstGenerator { get; set; }
+            public bool FirstIsGenerator { get; set; }
             public string Second { get; set; }
-            public bool IsSecondGenerator { get; set; }
+            public bool SecondIsGenerator { get; set; }
 
             public void Arrive(ref Floor[] floors)
             {
                 if (!string.IsNullOrWhiteSpace(First))
                 {
-                    if (IsFirstGenerator)
+                    if (FirstIsGenerator)
                     {
                         floors[Current].Generators.Remove(First);
                         floors[Target].Generators.Add(First);
@@ -167,7 +166,7 @@ The fourth floor contains nothing relevant."
 
                 if (!string.IsNullOrWhiteSpace(Second))
                 {
-                    if (IsSecondGenerator)
+                    if (SecondIsGenerator)
                     {
                         floors[Current].Generators.Remove(Second);
                         floors[Target].Generators.Add(Second);
@@ -185,25 +184,10 @@ The fourth floor contains nothing relevant."
                 Target = -1;
             }
 
-            private record Possibility(string Name, bool IsGenerator);
+            private record Possibility(string Name, bool IsGenerator) { }
 
             public void GetAllPossibleAttempts(Floor[] floors, Floor floor, ref List<Elevator> attempts)
             {
-                // determine the optimal strategy
-                int targetFloor = 0;
-                for (int i = floors.Count() - 1; i >= 0; --i)
-                {
-                    if (!floors[i].Ignore)
-                    {
-                        targetFloor = i;
-                    }
-                }
-
-                // if bottom floor is not cleared
-                //      1 down, 2 up, 1 up, 2 down
-                // else
-                //      2 up, 1 up, 1 down, 2 down
-
                 int floorDown = Current - 1;
                 int floorUp = Current + 1;
 
@@ -223,139 +207,169 @@ The fourth floor contains nothing relevant."
                 {
                     Elevator singleMove = new Elevator(this);
                     singleMove.First = first.Name;
-                    singleMove.IsFirstGenerator = first.IsGenerator;
+                    singleMove.FirstIsGenerator = first.IsGenerator;
 
-                    if (floorDown <= targetFloor)
+                    if (floorUp < floors.Count())
+                    {
+                        foreach (Possibility second in allPossibilities)
+                        {
+                            if (first == second)
+                            {
+                                continue;
+                            }
+
+                            Elevator doubleMove = new Elevator(singleMove);
+                            doubleMove.Second = second.Name;
+                            doubleMove.SecondIsGenerator = second.IsGenerator;
+
+                            attempts.Add(new Elevator(doubleMove) { Target = floorUp });
+                        }
+                        attempts.Add(new Elevator(singleMove) { Target = floorUp });
+                    }
+
+                    if (floorDown >= 0)
                     {
                         attempts.Add(new Elevator(singleMove) { Target = floorDown });
-                    }
-
-                    foreach (Possibility second in allPossibilities)
-                    {
-                        if (first == second)
+                        foreach (Possibility second in allPossibilities)
                         {
-                            continue;
+                            if (first == second)
+                            {
+                                continue;
+                            }
+
+                            Elevator doubleMove = new Elevator(singleMove);
+                            doubleMove.Second = second.Name;
+                            doubleMove.SecondIsGenerator = second.IsGenerator;
+
+                            attempts.Add(new Elevator(doubleMove) { Target = floorDown });
                         }
-
-                        Elevator doubleMove = new Elevator(singleMove);
-                        doubleMove.Second = second.Name;
-                        doubleMove.IsSecondGenerator = second.IsGenerator;
-
-                        attempts.Add(new Elevator(doubleMove) { Target = floorUp });
-                    }
-
-                    attempts.Add(new Elevator(singleMove) { Target = floorUp });
-                    if (floorDown > targetFloor)
-                    {
-                        attempts.Add(new Elevator(singleMove) { Target = floorDown });
-                    }
-
-                    foreach (Possibility second in allPossibilities)
-                    {
-                        if (first == second)
-                        {
-                            continue;
-                        }
-
-                        Elevator doubleMove = new Elevator(singleMove);
-                        doubleMove.Second = second.Name;
-                        doubleMove.IsSecondGenerator = second.IsGenerator;
-
-                        attempts.Add(new Elevator(doubleMove) { Target = floorDown });
                     }
                 }
             }
         }
 
-        private int SimulateRun(Floor[] floors, Elevator elevator, Dictionary<string, int> cycles, int stepCount, ref int minStepCount)
+        private record BuildingState(Floor[] Floors, Elevator Elevator, int Steps, string ID)
         {
-            // prevent extended sequences
-            if (stepCount >= minStepCount || elevator.Target >= floors.Count() || elevator.Target < 0 || floors[elevator.Target].Ignore)
+            public void Print(Action<string> PrintFunc)
             {
-                return int.MaxValue;
-            }
-
-            // arrive and check for win condition
-            elevator.Arrive(ref floors);
-            bool complete = true;
-            for (int i = 0; complete && i < floors.Count() - 1; ++i)
-            {
-                complete &= (floors[i].Generators.Count == 0 && floors[i].Microchips.Count == 0);
-            }
-            if (complete)
-            {
-                return stepCount;
-            }
-
-            // cycle detection
-            StringBuilder sb = new StringBuilder();
-            sb.Append("E.");
-            sb.Append(elevator.Current);
-            foreach (Floor floor in floors)
-            {
-                IEnumerable<string> shared = floor.Generators.Intersect(floor.Microchips);
-                IEnumerable<string> gOnly = floor.Generators.Except(floor.Microchips);
-                IEnumerable<string> mOnly = floor.Microchips.Except(floor.Generators);
-                sb.Append("|");
-                sb.Append(floor.ID);
-                sb.Append("|S.");
-                sb.Append(shared.Count());
-                sb.Append("|G.");
-                sb.Append(gOnly.Count());
-                sb.Append("|M.");
-                sb.Append(mOnly.Count());
-            }
-            string cycleState = sb.ToString();
-            if (cycles.ContainsKey(cycleState))
-            {
-                if (cycles[cycleState] <= stepCount)
+                StringBuilder sb = new StringBuilder();
+                List<string> ids = new List<string>();
+                Floors.ToList().ForEach(f => ids.AddRange(f.Generators.Union(f.Microchips)));
+                HashSet<string> pairedIds = ids.ToHashSet();
+                PrintFunc($"[{ID}] @ {Steps}");
+                foreach (Floor floor in Floors.Reverse())
                 {
-                    return int.MaxValue;
-                }
-            }
-            cycles[cycleState] = stepCount;
-
-            // prevent backtracking to previous floors
-            bool ignore = true;
-            for (int i = 0; ignore && i < floors.Count(); ++i)
-            {
-                ignore = floors[i].CheckIgnore();
-                if (ignore)
-                {
-                    floors[i].Ignore = true;
-                }
-            }
-
-            Floor curFloor = floors[elevator.Current];
-
-            // check for fail conditions
-            if (curFloor.Generators.Count > 0)
-            {
-                foreach (string m in curFloor.Microchips)
-                {
-                    if (!curFloor.Generators.Contains(m))
+                    sb.AppendFormat("F{0} {1}", floor.ID + 1, Elevator.Current == floor.ID ? "E  " : ".  ");
+                    foreach (string pid in pairedIds)
                     {
-                        return int.MaxValue;
+                        sb.AppendFormat("{0}{1}", floor.Generators.Contains(pid) ? $"{pid.First()}G " : ".  ", floor.Microchips.Contains(pid) ? $"{pid.First()}M " : ".  ");
+                    }
+                    PrintFunc(sb.ToString());
+                    sb.Clear();
+                }
+                PrintFunc("");
+            }
+        }
+
+        private int SimulateRun(Dictionary<string, int> cycles, ref Queue<BuildingState> next)
+        {
+            while (next.Count > 0)
+            {
+                BuildingState bs = next.Dequeue();
+                Floor[] floors = bs.Floors;
+                Elevator elevator = bs.Elevator;
+                int stepCount = bs.Steps;
+                string id = bs.ID;
+
+                // prevent extended sequences
+                if (elevator.Target >= floors.Count() || elevator.Target < 0 || floors[elevator.Target].Ignore)
+                {
+                    continue;
+                }
+
+                // arrive and check for win condition
+                elevator.Arrive(ref floors);
+                bool complete = true;
+                for (int i = 0; complete && i < floors.Count() - 1; ++i)
+                {
+                    complete &= (floors[i].Generators.Count == 0 && floors[i].Microchips.Count == 0);
+                }
+                if (complete)
+                {
+                    bs.Print(DebugWriteLine);
+                    return stepCount;
+                }
+
+                // cycle detection
+                StringBuilder sb = new StringBuilder();
+                sb.Append("E.");
+                sb.Append(elevator.Current);
+                foreach (Floor floor in floors)
+                {
+                    IEnumerable<string> shared = floor.Generators.Intersect(floor.Microchips);
+                    IEnumerable<string> gOnly = floor.Generators.Except(floor.Microchips);
+                    IEnumerable<string> mOnly = floor.Microchips.Except(floor.Generators);
+                    sb.Append("|");
+                    sb.Append(floor.ID);
+                    sb.Append("|S.");
+                    sb.Append(shared.Count());
+                    sb.Append("|G.");
+                    sb.Append(gOnly.Count());
+                    sb.Append("|M.");
+                    sb.Append(mOnly.Count());
+                }
+                string cycleState = sb.ToString();
+                if (cycles.ContainsKey(cycleState))
+                {
+                    if (cycles[cycleState] <= stepCount)
+                    {
+                        continue;
                     }
                 }
-            }
+                cycles[cycleState] = stepCount;
 
-            // get a list of all possible elevator rides, try them out
-            List<Elevator> attempts = new List<Elevator>();
-            elevator.GetAllPossibleAttempts(floors, curFloor, ref attempts);
-            int attemptCount = 1;
-            foreach (Elevator attempt in attempts)
-            {
-                int simulatedRun = SimulateRun(floors.Select(f => new Floor(f)).ToArray(), attempt, cycles, stepCount + 1, ref minStepCount);
-                if (simulatedRun < minStepCount)
+                // prevent backtracking to previous floors
+                bool ignore = true;
+                for (int i = 0; ignore && i < floors.Count(); ++i)
                 {
-                    DebugWriteLine($"New Best {simulatedRun}!!!");
+                    ignore = floors[i].CheckIgnore();
+                    if (ignore)
+                    {
+                        floors[i].Ignore = true;
+                    }
                 }
-                minStepCount = Math.Min(simulatedRun, minStepCount);
-                ++attemptCount;
+
+                Floor curFloor = floors[elevator.Current];
+
+                // check for fail conditions
+                if (curFloor.Generators.Count > 0)
+                {
+                    bool skip = false;
+                    foreach (string m in curFloor.Microchips)
+                    {
+                        if (!skip && !curFloor.Generators.Contains(m))
+                        {
+                            skip = true;
+                            break;
+                        }
+                    }
+                    if (skip)
+                    {
+                        continue;
+                    }
+                }
+
+                // get a list of all possible elevator rides, try them out
+                List<Elevator> attempts = new List<Elevator>();
+                elevator.GetAllPossibleAttempts(floors, curFloor, ref attempts);
+                int attemptCount = 0;
+                foreach (Elevator attempt in attempts)
+                {
+                    next.Enqueue(new BuildingState(floors.Select(f => new Floor(f)).ToArray(), attempt, stepCount + 1, $"{id}.{attemptCount++}"));
+                }
             }
 
-            return minStepCount;
+            return int.MaxValue;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] additionalItems)
@@ -367,8 +381,9 @@ The fourth floor contains nothing relevant."
                 floors[0].Microchips.Add(item[..3].ToUpper());
             }
             Elevator elevator = new Elevator();
-            int minStepCount = int.MaxValue;
-            SimulateRun(floors.ToList().ToArray(), elevator, new Dictionary<string, int>(), 0, ref minStepCount);
+            Queue<BuildingState> remainingStates = new Queue<BuildingState>();
+            remainingStates.Enqueue(new BuildingState(floors.Select(f => new Floor(f)).ToArray(), new Elevator(elevator), 0, "0"));
+            int minStepCount = SimulateRun(new Dictionary<string, int>(), ref remainingStates);
             return minStepCount.ToString();
         }
 
