@@ -110,10 +110,9 @@ dec a"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, Dictionary<char, int> registers)
         {
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
-            Dictionary<char, int> registers = new Dictionary<char, int>();
             for (int i = 0; i < instructions.Count && i >= 0;)
             {
                 Instruction cur = instructions[i];
@@ -155,9 +154,9 @@ dec a"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new Dictionary<char, int>());
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new Dictionary<char, int>() {{'c', 1}});
     }
 }
