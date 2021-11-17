@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace AoC._2016
 {
+    // TODO: convert from strings to bits
     class Day11 : Day
     {
         public Day11() { }
@@ -12,10 +13,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v2";
+                case Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -43,40 +44,6 @@ The fourth floor contains nothing relevant."
             return testData;
         }
 
-        private class Floor
-        {
-            public Floor(int id)
-            {
-                ID = id;
-                Generators = new List<string>();
-                Microchips = new List<string>();
-                Ignore = false;
-            }
-
-            public Floor(Floor other)
-            {
-                ID = other.ID;
-                Generators = new List<string>(other.Generators);
-                Microchips = new List<string>(other.Microchips);
-                Ignore = other.Ignore;
-            }
-
-            public int ID { get; set; }
-            public List<string> Generators { get; set; }
-            public List<string> Microchips { get; set; }
-            public bool Ignore { get; set; }
-
-            public bool CheckIgnore()
-            {
-                return Microchips.Count == 0 && Generators.Count == 0;
-            }
-
-            public override string ToString()
-            {
-                return $"[{ID}] G={string.Join(',', Generators)} | C={string.Join(',', Microchips)}";
-            }
-        }
-
         private static string[] IgnoreWords =
         {
             "the",
@@ -90,7 +57,41 @@ The fourth floor contains nothing relevant."
             "generator"
         };
 
-        private Floor[] ParseFloors(List<string> inputs, ref HashSet<string> pairIds)
+        private class Floor
+        {
+            public Floor(int id)
+            {
+                ID = id;
+                Generators = new HashSet<string>();
+                Microchips = new HashSet<string>();
+                Ignore = false;
+            }
+
+            public Floor(Floor other)
+            {
+                ID = other.ID;
+                Generators = new HashSet<string>(other.Generators);
+                Microchips = new HashSet<string>(other.Microchips);
+                Ignore = other.Ignore;
+            }
+
+            public int ID { get; set; }
+            public HashSet<string> Generators { get; set; }
+            public HashSet<string> Microchips { get; set; }
+            public bool Ignore { get; set; }
+
+            public bool CheckIgnore()
+            {
+                return Microchips.Count == 0 && Generators.Count == 0;
+            }
+
+            public override string ToString()
+            {
+                return $"[{ID}] G={string.Join(',', Generators)} | C={string.Join(',', Microchips)}";
+            }
+        }
+
+        private Floor[] ParseFloors(List<string> inputs)
         {
             Floor[] floors = new Floor[inputs.Count];
             int i = 0;
@@ -110,12 +111,10 @@ The fourth floor contains nothing relevant."
                     if (idx >= 0)
                     {
                         floors[i].Microchips.Add(s[..3].ToUpper());
-                        pairIds.Add(floors[i].Microchips.Last());
                     }
                     else
                     {
                         floors[i].Generators.Add(s[..3].ToUpper());
-                        pairIds.Add(floors[i].Generators.Last());
                     }
                 }
                 ++i;
@@ -180,9 +179,6 @@ The fourth floor contains nothing relevant."
                     }
                 }
 
-                floors[Target].Generators.Sort();
-                floors[Target].Microchips.Sort();
-
                 First = string.Empty;
                 Second = string.Empty;
                 Current = Target;
@@ -211,7 +207,18 @@ The fourth floor contains nothing relevant."
                 int floorDown = Current - 1;
                 int floorUp = Current + 1;
 
+                // only check one pair of matching generator to microchip
+                List<Possibility> pairedPossibilities = new List<Possibility>();
+                List<string> shared = floor.Generators.Intersect(floor.Microchips).ToList();
+                shared.Sort();
+                if (shared.Count() > 0)
+                {
+                    pairedPossibilities.Add(new Possibility(shared.First(), true));
+                    pairedPossibilities.Add(new Possibility(shared.First(), false));
+                }
+
                 IEnumerable<Possibility> allPossibilities = floor.Generators.Select(g => new Possibility(g, true)).Union(floor.Microchips.Select(m => new Possibility(m, false)));
+                allPossibilities = allPossibilities.Where(p => !shared.Contains(p.Name)).Union(pairedPossibilities);
                 foreach (Possibility first in allPossibilities)
                 {
                     Elevator singleMove = new Elevator(this);
@@ -260,7 +267,7 @@ The fourth floor contains nothing relevant."
             }
         }
 
-        private int SimulateRun(HashSet<string> pairIds, Floor[] floors, Elevator elevator, Dictionary<string, int> cycles, int stepCount, ref int minStepCount)
+        private int SimulateRun(Floor[] floors, Elevator elevator, Dictionary<string, int> cycles, int stepCount, ref int minStepCount)
         {
             // prevent extended sequences
             if (stepCount >= minStepCount || elevator.Target >= floors.Count() || elevator.Target < 0 || floors[elevator.Target].Ignore)
@@ -339,7 +346,7 @@ The fourth floor contains nothing relevant."
             int attemptCount = 1;
             foreach (Elevator attempt in attempts)
             {
-                int simulatedRun = SimulateRun(pairIds, floors.Select(f => new Floor(f)).ToArray(), attempt, cycles, stepCount + 1, ref minStepCount);
+                int simulatedRun = SimulateRun(floors.Select(f => new Floor(f)).ToArray(), attempt, cycles, stepCount + 1, ref minStepCount);
                 if (simulatedRun < minStepCount)
                 {
                     DebugWriteLine($"New Best {simulatedRun}!!!");
@@ -353,16 +360,15 @@ The fourth floor contains nothing relevant."
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] additionalItems)
         {
-            HashSet<string> pairIds = new HashSet<string>();
-            Floor[] floors = ParseFloors(inputs, ref pairIds);
+            Floor[] floors = ParseFloors(inputs);
             foreach (string item in additionalItems)
             {
-                floors[0].Generators.Add(item);
-                floors[0].Microchips.Add(item);
+                floors[0].Generators.Add(item[..3].ToUpper());
+                floors[0].Microchips.Add(item[..3].ToUpper());
             }
             Elevator elevator = new Elevator();
             int minStepCount = int.MaxValue;
-            SimulateRun(pairIds, floors.ToList().ToArray(), elevator, new Dictionary<string, int>(), 0, ref minStepCount);
+            SimulateRun(floors.ToList().ToArray(), elevator, new Dictionary<string, int>(), 0, ref minStepCount);
             return minStepCount.ToString();
         }
 
