@@ -102,7 +102,51 @@ namespace AoC._2016
             return uint.MaxValue;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private uint MaxWalk(Queue<PointWalk> points, uint distance, uint magicNumber)
+        {
+            HashSet<ulong> visited = new HashSet<ulong>();
+            uint walkingPoints = 0;
+            while (points.Count > 0)
+            {
+                PointWalk pointWalk = points.Dequeue();
+                Point point = pointWalk.Point;
+                if (!IsOpen((uint)point.X, (uint)point.Y, magicNumber))
+                {
+                    continue;
+                }
+
+                if (visited.Contains(GetId(point.X, point.Y)))
+                {
+                    continue;
+                }
+                visited.Add(GetId(point.X, point.Y));
+
+                if (pointWalk.Distance <= distance)
+                {
+                    ++walkingPoints;
+                }
+                else
+                {
+                    continue;
+                }
+
+                // add new points
+                points.Enqueue(new PointWalk(new Point(point.X + 1, point.Y), pointWalk.Distance + 1));
+                points.Enqueue(new PointWalk(new Point(point.X, point.Y + 1), pointWalk.Distance + 1));
+                if (point.X > 0)
+                {
+                    points.Enqueue(new PointWalk(new Point(point.X - 1, point.Y), pointWalk.Distance + 1));
+                }
+                if (point.Y > 0)
+                {
+                    points.Enqueue(new PointWalk(new Point(point.X, point.Y - 1), pointWalk.Distance + 1));
+                }
+
+            }
+            return walkingPoints;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findMaxLocations)
         {
             int targetX = 31, targetY = 39;
             if (variables != null && variables.ContainsKey(nameof(targetX)))
@@ -117,13 +161,17 @@ namespace AoC._2016
             uint magicNumber = uint.Parse(inputs.First());
             Queue<PointWalk> points = new Queue<PointWalk>();
             points.Enqueue(new PointWalk(new Point(1, 1), 0));
+            if (findMaxLocations)
+            {
+                return MaxWalk(points, 50, magicNumber).ToString();
+            }
             return WalkPath(points, new Point(targetX, targetY), magicNumber).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
