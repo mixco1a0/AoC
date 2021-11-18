@@ -12,10 +12,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -59,18 +59,19 @@ namespace AoC._2016
             return bits % 2 == 0;
         }
 
-        private record PointWalk(Point Point, uint Distance){}
+        private record PointWalk(Point Point, uint Distance) { }
 
-        private uint WalkPath(Queue<PointWalk> points, Point target, uint magicNumber)
+        private uint WalkPath(Queue<PointWalk> points, Point target, uint magicNumber, int maxDistance)
         {
             HashSet<ulong> visited = new HashSet<ulong>();
+            uint walkingPoints = 0;
             while (points.Count > 0)
             {
                 PointWalk pointWalk = points.Dequeue();
                 Point point = pointWalk.Point;
 
                 // check if this is the target
-                if (point.X == target.X && point.Y == target.Y)
+                if (maxDistance <= 0 && point.X == target.X && point.Y == target.Y)
                 {
                     return pointWalk.Distance;
                 }
@@ -86,48 +87,16 @@ namespace AoC._2016
                 }
                 visited.Add(GetId(point.X, point.Y));
 
-                // add new points
-                points.Enqueue(new PointWalk(new Point(point.X + 1, point.Y), pointWalk.Distance + 1));
-                points.Enqueue(new PointWalk(new Point(point.X, point.Y + 1), pointWalk.Distance + 1));
-                if (point.X > 0)
+                if (maxDistance > 0)
                 {
-                    points.Enqueue(new PointWalk(new Point(point.X - 1, point.Y), pointWalk.Distance + 1));
-                }
-                if (point.Y > 0)
-                {
-                    points.Enqueue(new PointWalk(new Point(point.X, point.Y - 1), pointWalk.Distance + 1));
-                }
-
-            }
-            return uint.MaxValue;
-        }
-
-        private uint MaxWalk(Queue<PointWalk> points, uint distance, uint magicNumber)
-        {
-            HashSet<ulong> visited = new HashSet<ulong>();
-            uint walkingPoints = 0;
-            while (points.Count > 0)
-            {
-                PointWalk pointWalk = points.Dequeue();
-                Point point = pointWalk.Point;
-                if (!IsOpen((uint)point.X, (uint)point.Y, magicNumber))
-                {
-                    continue;
-                }
-
-                if (visited.Contains(GetId(point.X, point.Y)))
-                {
-                    continue;
-                }
-                visited.Add(GetId(point.X, point.Y));
-
-                if (pointWalk.Distance <= distance)
-                {
-                    ++walkingPoints;
-                }
-                else
-                {
-                    continue;
+                    if (pointWalk.Distance <= maxDistance)
+                    {
+                        ++walkingPoints;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
                 // add new points
@@ -161,11 +130,7 @@ namespace AoC._2016
             uint magicNumber = uint.Parse(inputs.First());
             Queue<PointWalk> points = new Queue<PointWalk>();
             points.Enqueue(new PointWalk(new Point(1, 1), 0));
-            if (findMaxLocations)
-            {
-                return MaxWalk(points, 50, magicNumber).ToString();
-            }
-            return WalkPath(points, new Point(targetX, targetY), magicNumber).ToString();
+            return WalkPath(points, new Point(targetX, targetY), magicNumber, findMaxLocations ? 50 : 0).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
