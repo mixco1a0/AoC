@@ -394,3 +394,401 @@ The fourth floor contains nothing relevant."
             => SharedSolution(inputs, variables, new string[] { "elerium", "dilithium" });
     }
 }
+
+/*
+
+TODO: still need some optimization in generating next steps, too slow
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace AoC._2016
+{
+    class Day11 : Day
+    {
+        public Day11() { }
+        public override string GetSolutionVersion(Part part)
+        {
+            switch (part)
+            {
+                case Part.One:
+                    return "v3";
+                case Part.Two:
+                    return "v3";
+                default:
+                    return base.GetSolutionVersion(part);
+            }
+        }
+        protected override List<TestDatum> GetTestData()
+        {
+            List<TestDatum> testData = new List<TestDatum>();
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Output = "11",
+                RawInput =
+@"The first floor contains a hydrogen-compatible microchip and a lithium-compatible microchip.
+The second floor contains a hydrogen generator.
+The third floor contains a lithium generator.
+The fourth floor contains nothing relevant."
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "",
+                RawInput =
+@""
+            });
+            return testData;
+        }
+
+        private static string[] IgnoreWords =
+        {
+            "the",
+            "floor",
+            "contains",
+            "a",
+            "and",
+            "nothing",
+            "relevant",
+            "microchip",
+            "generator"
+        };
+
+        private void SetItem(ref ushort floor, bool isChip, uint bit)
+        {
+            uint mask = (uint)Math.Pow(2, bit);
+            if (!isChip)
+            {
+                mask = mask << 8;
+            }
+            floor = (ushort)(floor | mask);
+        }
+
+        static private bool IsFloorStateValid(ulong floorData)
+        {
+            bool valid = true;
+            byte[] split = BitConverter.GetBytes(floorData);
+            for (int i = 0; valid && i + 1 < split.Length; i += 2)
+            {
+                byte microchips = split[i];
+                if (microchips == 0)
+                {
+                    continue;
+                }
+
+                byte generators = split[i + 1];
+                if (generators == 0)
+                {
+                    continue;
+                }
+
+                for (int bit = 0; valid && bit < 8; ++bit)
+                {
+                    byte mask = (byte)(1 << bit);
+                    if ((microchips & mask) != 0)
+                    {
+                        valid &= (((microchips & mask) & generators) != 0 || ((microchips & mask) | ~generators) == 0);
+                    }
+                }
+            }
+            return valid;
+        }
+
+        private ulong ParseFloors(List<string> inputs, string[] additionalItems)
+        {
+            int curFloor = 0;
+            ushort[] floors = new ushort[inputs.Count];
+            Dictionary<string, uint> ids = new Dictionary<string, uint>();
+            foreach (string input in inputs)
+            {
+                string[] split = input.Trim('.').Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (string s in split.Skip(2))
+                {
+                    string clean = s.Trim(",.".ToCharArray());
+                    if (IgnoreWords.Contains(clean))
+                    {
+                        continue;
+                    }
+
+                    string id = s[..3];
+                    if (!ids.ContainsKey(id))
+                    {
+                        ids[id] = (uint)ids.Count;
+                    }
+
+                    int idx = clean.IndexOf('-');
+                    if (idx >= 0)
+                    {
+                        SetItem(ref floors[curFloor], true, ids[id]);
+                    }
+                    else
+                    {
+                        SetItem(ref floors[curFloor], false, ids[id]);
+                    }
+                }
+
+                if (curFloor == 0)
+                {
+                    foreach (string s in additionalItems)
+                    {
+                        string id = s[..3];
+                        ids[id] = (uint)ids.Count;
+                        SetItem(ref floors[curFloor], true, ids[id]);
+                        SetItem(ref floors[curFloor], false, ids[id]);
+                    }
+                }
+                ++curFloor;
+            }
+
+            return (ulong)floors[3] << 48 | (ulong)floors[2] << 32 | (ulong)floors[1] << 16 | (ulong)floors[0];
+        }
+
+        static private void MoveItem(ref ulong currentFloorState, int bit, uint elevator, bool moveUp)
+        {
+            // clear source bit
+            int sourceBit = (int)(16 * elevator + bit);
+            currentFloorState &= ~((ulong)((long)1 << sourceBit));
+
+            //set target bit
+            uint targetElevator = elevator + (uint)(moveUp ? 1 : -1);
+            int targetBit = (int)(16 * targetElevator + bit);
+            currentFloorState |= (ulong)((long)1 << targetBit);
+        }
+
+        private record FloorState(ulong Data, uint Elevator, uint Steps, string History)
+        {
+            public List<FloorState> GetAllPossibleNextStates()
+            {
+                List<FloorState> nextStates = new List<FloorState>();
+                int elevatorBitShift = (int)(16 * Elevator);
+                ushort currentFloor = (ushort)(Data >> elevatorBitShift);
+                int curHistoryIdx = 0;
+
+                // only check one pair of matching microchip to generator
+                byte microchips = (byte)currentFloor;
+                byte generators = (byte)(currentFloor >> 8);
+                byte matchingPairs = (byte)(microchips & generators);
+                ushort matchingBits = (ushort)((ushort)(matchingPairs << 8) | (ushort)matchingPairs);
+                bool foundMatch = false;
+
+                for (int bit1 = 0; bit1 < 16; ++bit1)
+                {
+                    ushort mask1 = (ushort)(1 << bit1);
+                    if ((mask1 & currentFloor) == 0)
+                    {
+                        continue;
+                    }
+
+                    if ((mask1 & matchingBits) != 0)
+                    {
+                        if (foundMatch)
+                        {
+                            continue;
+                        }
+                        foundMatch = true;
+                    }
+
+                    // go up
+                    if (Elevator < 3)
+                    {
+                        ulong oneItemMovedFloorState = Data;
+                        MoveItem(ref oneItemMovedFloorState, bit1, Elevator, true);
+
+                        for (int bit2 = bit1 + 1; bit2 < 16; ++bit2)
+                        {
+                            if (bit1 == bit2)
+                            {
+                                continue;
+                            }
+
+                            ulong twoItemMovedFloorState = oneItemMovedFloorState;
+                            ushort mask2 = (ushort)(1 << bit2);
+                            if ((mask2 & currentFloor) == 0)
+                            {
+                                continue;
+                            }
+
+                            MoveItem(ref twoItemMovedFloorState, bit2, Elevator, true);
+
+                            // move 2 item2 up
+                            if (IsFloorStateValid(twoItemMovedFloorState))
+                            {
+                                nextStates.Add(new FloorState(twoItemMovedFloorState, Elevator + 1, Steps + 1, $"{History}.{curHistoryIdx++}"));
+                            }
+                        }
+
+                        // move 1 item up
+                        if (IsFloorStateValid(oneItemMovedFloorState))
+                        {
+                            nextStates.Add(new FloorState(oneItemMovedFloorState, Elevator + 1, Steps + 1, $"{History}.{curHistoryIdx++}"));
+                        }
+                    }
+
+                    // go down
+                    if (Elevator > 0)
+                    {
+                        // ignore floors that are already empty
+                        {
+                            int floorDownBitShift = (int)(16 * (Elevator - 1));
+                            ushort floorDown = (ushort)(Data >> elevatorBitShift);
+                            if (floorDown == 0)
+                            {
+                                continue;
+                            }
+                        }
+
+                        ulong oneItemMovedFloorState = Data;
+                        MoveItem(ref oneItemMovedFloorState, bit1, Elevator, false);
+
+                        for (int bit2 = bit1 + 1; bit2 < 16; ++bit2)
+                        {
+                            if (bit1 == bit2)
+                            {
+                                continue;
+                            }
+
+                            ulong twoItemMovedFloorState = oneItemMovedFloorState;
+                            ushort mask2 = (ushort)(1 << bit2);
+                            if ((mask2 & currentFloor) == 0)
+                            {
+                                continue;
+                            }
+
+                            MoveItem(ref twoItemMovedFloorState, bit2, Elevator, false);
+
+                            // move 2 item2 up
+                            if (IsFloorStateValid(twoItemMovedFloorState))
+                            {
+                                nextStates.Add(new FloorState(twoItemMovedFloorState, Elevator - 1, Steps + 1, $"{History}.{curHistoryIdx++}"));
+                            }
+                        }
+
+                        // move 1 item up
+                        if (IsFloorStateValid(oneItemMovedFloorState))
+                        {
+                            nextStates.Add(new FloorState(oneItemMovedFloorState, Elevator - 1, Steps + 1, $"{History}.{curHistoryIdx++}"));
+                        }
+                    }
+
+                }
+                return nextStates;
+            }
+
+            public ulong GetCycleState()
+            {
+                Func<byte, byte> CountBits = (b) =>
+                {
+                    byte bits = 0;
+                    for (byte i = 0, bit = 1; i < 8; ++i, bit = (byte)(bit << 1))
+                    {
+                        bits += (byte)((b & bit) == 0 ? 0 : 1);
+                    }
+                    return bits;
+                };
+                ulong cycle = Elevator << 4;
+                byte[] split = BitConverter.GetBytes(Data);
+                for (int i = 0; i + 1 < 8; i += 2)
+                {
+                    cycle |= ((byte)(split[i] & split[i + 1]));
+                    cycle = cycle << 4;
+                    cycle |= ((byte)(split[i] & ~split[i + 1]));
+                    cycle = cycle << 4;
+                    cycle |= ((byte)(~split[i] & split[i + 1]));
+                    cycle = cycle << 4;
+                }
+                return cycle;
+            }
+
+            public void Print(Action<string> PrintFunc)
+            {
+                StringBuilder sb = new StringBuilder();
+                PrintFunc($"{Steps} @ {History}");
+                for (int i = 3; i >= 0; --i)
+                {
+                    sb.AppendFormat("F{0} {1}", i + 1, Elevator == i ? "E  " : ".  ");
+
+                    ushort curFloor = (ushort)(Data >> (i * 16));
+                    byte curG = (byte)((curFloor >> 8) & 0xff);
+                    byte curM = (byte)(curFloor & 0xff);
+                    for (int j = 0; j < 8; ++j)
+                    {
+                        byte mask = (byte)(1 << j);
+                        sb.AppendFormat("{0}{1}", (curG & mask) != 0 ? $"{j}G " : ".  ", (curM & mask) != 0 ? $"{j}M " : ".  ");
+                    }
+                    PrintFunc(sb.ToString());
+                    sb.Clear();
+                }
+                PrintFunc("");
+            }
+        }
+
+        private void DebugPrintFloors(FloorState fs)
+        {
+            fs.Print(DebugWriteLine);
+        }
+
+        private uint SimulateRun(ulong initialFloorState)
+        {
+            Queue<FloorState> remainingStates = new Queue<FloorState>();
+            remainingStates.Enqueue(new FloorState(initialFloorState, 0, 0, "0"));
+
+            Dictionary<int, uint> visited = new Dictionary<int, uint>();
+            Dictionary<ulong, uint> cycles = new Dictionary<ulong, uint>();
+            uint curSteps = 0;
+            while (remainingStates.Count > 0)
+            {
+                FloorState curState = remainingStates.Dequeue();
+                if (curState.Steps > curSteps)
+                {
+                    curSteps = curState.Steps;
+                    DebugWriteLine($"@ {curState.Steps} steps");
+                }
+
+                // check win condition
+                if ((curState.Data << 16) == 0)
+                {
+                    return curState.Steps;
+                }
+                //curState.Print(DebugWriteLine);
+
+                visited[curState.GetHashCode()] = curState.Steps;
+                cycles[curState.GetCycleState()] = curState.Steps;
+
+                // get list of next possibles
+                foreach (FloorState nextState in curState.GetAllPossibleNextStates())
+                {
+                    if (visited.ContainsKey(nextState.GetHashCode()) && visited[nextState.GetHashCode()] <= nextState.Steps)
+                    {
+                        continue;
+                    }
+
+                    ulong cycleState = nextState.GetCycleState();
+                    if (cycles.ContainsKey(cycleState) && cycles[cycleState] <= nextState.Steps)
+                    {
+                        continue;
+                    }
+                    remainingStates.Enqueue(nextState);
+                }
+            }
+
+            return uint.MaxValue;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] additionalItems)
+        {
+            ulong initialFloorState = ParseFloors(inputs, additionalItems);
+            uint minStepCount = SimulateRun(initialFloorState);
+            return minStepCount.ToString();
+        }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, new string[] { });
+
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, new string[] { "elerium", "dilithium" });
+    }
+}
+*/
