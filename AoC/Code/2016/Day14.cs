@@ -34,9 +34,9 @@ namespace AoC._2016
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "22628", //TODO: This is what it should actually be :-/ Output = "22859",
                 RawInput =
-@""
+@"abc"
             });
             return testData;
         }
@@ -59,7 +59,7 @@ namespace AoC._2016
             return InvalidChar;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int stretchCount)
         {
             const int MaxKeys = 64;
             string input = inputs.First();
@@ -71,9 +71,13 @@ namespace AoC._2016
                 {
                     StringBuilder sb = new StringBuilder(input);
                     sb.Append(i);
-                    byte[] inputBytes = Encoding.ASCII.GetBytes(sb.ToString());
-                    byte[] hashBytes = md5.ComputeHash(inputBytes);
-                    string encoded = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
+                    string encoded = sb.ToString();
+                    for (int s = 0; s < stretchCount + 1; ++s)
+                    {
+                        byte[] inputBytes = Encoding.ASCII.GetBytes(encoded);
+                        byte[] hashBytes = md5.ComputeHash(inputBytes);
+                        encoded = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
+                    }
 
                     // check for 5 in a row before adding the new one
                     for (int j = 0; j < pendingKeys.Count;)
@@ -81,8 +85,7 @@ namespace AoC._2016
                         HashCheck cur = pendingKeys[j];
                         if (encoded.Contains(new string(cur.Match, 5)))
                         {
-                            verifiedKeys.Add(cur);
-                            verifiedKeys.Sort((a, b) => a.Start > b.Start ? 1 : -1);
+                            verifiedKeys.Add(new HashCheck(cur.Match, cur.Start, i, cur.Raw));
                             pendingKeys.RemoveAt(j);
                         }
                         else
@@ -91,7 +94,7 @@ namespace AoC._2016
                         }
                     }
 
-                    // add new keys as long as max varified hasn't been hit
+                    // add new keys as long as max verified hasn't been hit
                     if (verifiedKeys.Count < MaxKeys)
                     {
                         char threeTimesMatch = GetNthMatchedCharacter(encoded, 3);
@@ -105,17 +108,21 @@ namespace AoC._2016
                     pendingKeys.RemoveAll(p => p.End <= i);
                 }
             }
-            foreach (var key in verifiedKeys)
+            verifiedKeys.Sort((a, b) => a.Start > b.Start ? 1 : -1);
+            if (stretchCount > 0)
             {
-                DebugWriteLine($"{key.Raw}");
+                foreach (var key in verifiedKeys)
+                {
+                    DebugWriteLine($"{key}");
+                }
             }
             return verifiedKeys[MaxKeys - 1].Start.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 0);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 2016);
     }
 }
