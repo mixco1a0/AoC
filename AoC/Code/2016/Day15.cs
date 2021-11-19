@@ -13,8 +13,8 @@ namespace AoC._2016
             {
                 case Part.One:
                     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -54,9 +54,14 @@ Disc #2 has 2 positions; at time=0, it is at position 1."
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, Disk extraDisk)
         {
             Disk[] disks = inputs.Select(Disk.Parse).ToArray();
+            if (extraDisk != null)
+            {
+                disks = disks.Append(extraDisk).ToArray();
+            }
+
             int time = 0;
             while (true)
             {
@@ -75,9 +80,9 @@ Disc #2 has 2 positions; at time=0, it is at position 1."
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, null);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new Disk(inputs.Count + 1, 0, 11));
     }
 }
