@@ -60,9 +60,8 @@ namespace AoC._2016
             return sb.ToString();
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int diskLength)
         {
-            int diskLength = 272;
             if (variables != null && variables.ContainsKey(nameof(diskLength)))
             {
                 diskLength = int.Parse(variables[nameof(diskLength)]);
@@ -84,9 +83,9 @@ namespace AoC._2016
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 272);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 35651584);
     }
 }
