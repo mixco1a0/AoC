@@ -320,7 +320,36 @@ namespace AoC
         }
     }
 
-    public record Point(int X, int Y);
+    public record Point(int X, int Y) { }
+
+    public class Coords
+    {
+        public Coords()
+        {
+            X = 0;
+            Y = 0;
+        }
+
+        public Coords(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public static Coords operator +(Coords a, Coords b)
+        {
+            return new Coords(a.X + b.X, a.Y + b.Y);
+        }
+
+        public Coords(Coords other)
+        {
+            X = other.X;
+            Y = other.Y;
+        }
+
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
 
     public class Segment
     {
