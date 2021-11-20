@@ -48,9 +48,23 @@ namespace AoC._2016
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "370",
                 RawInput =
-@""
+@"ihgpwlah"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "492",
+                RawInput =
+@"kglvqrro"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "830",
+                RawInput =
+@"ulqzkmiv"
             });
             return testData;
         }
@@ -84,16 +98,25 @@ namespace AoC._2016
 
         private record WalkStatus(string Path, Coords Coords) { }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findLongestPath)
         {
             Queue<WalkStatus> pendingWalks = new Queue<WalkStatus>();
             pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Coords(0, 0)));
+            int longestPath = 0;
             while (pendingWalks.Count > 0)
             {
                 WalkStatus ws = pendingWalks.Dequeue();
                 if (ws.Coords.X == 3 && ws.Coords.Y == 3)
                 {
-                    return ws.Path.Substring(inputs.First().Length);
+                    if (findLongestPath)
+                    {
+                        longestPath = Math.Max(longestPath, ws.Path.Length);
+                        continue;
+                    }
+                    else
+                    {
+                        return ws.Path.Substring(inputs.First().Length);
+                    }
                 }
 
                 DoorStatus ds = DoorStatus.Parse(ws.Path);
@@ -102,7 +125,7 @@ namespace AoC._2016
                     if (ds.Status[i])
                     {
                         Coords newCoords = ws.Coords + DoorStatus.Directions[i];
-                        if (newCoords.X >=0 && newCoords.X <= 3 && newCoords.Y >= 0 && newCoords.Y <= 3)
+                        if (newCoords.X >= 0 && newCoords.X <= 3 && newCoords.Y >= 0 && newCoords.Y <= 3)
                         {
                             pendingWalks.Enqueue(new WalkStatus($"{ws.Path}{DoorStatus.Letters[i]}", newCoords));
                         }
@@ -110,13 +133,13 @@ namespace AoC._2016
                 }
             }
 
-            return "";
+            return (longestPath - inputs.First().Length).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
