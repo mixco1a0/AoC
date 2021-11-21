@@ -24,6 +24,7 @@
 			"                    return base.GetSolutionVersion(part);",
 			"            }",
 			"        }",
+			"",
 			"        protected override List<TestDatum> GetTestData()",
 			"        {",
 			"            List<TestDatum> testData = new List<TestDatum>();",
