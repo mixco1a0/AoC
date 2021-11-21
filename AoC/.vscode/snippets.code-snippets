@@ -12,6 +12,7 @@
 			"    class $TM_FILENAME_BASE : Day",
 			"    {",
 			"        public $TM_FILENAME_BASE() { }",
+			"",
 			"        public override string GetSolutionVersion(Part part)",
 			"        {",
 			"            switch (part)",
