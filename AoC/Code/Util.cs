@@ -20,7 +20,7 @@ namespace AoC
         static public void GetVariable(string variableName, int defaultValue, Dictionary<string, string> variables, out int value)
         {
             value = defaultValue;
-            if (variables.ContainsKey(variableName))
+            if (variables != null && variables.ContainsKey(variableName))
             {
                 value = int.Parse(variables[variableName]);
             }
