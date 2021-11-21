@@ -12,10 +12,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -55,16 +55,13 @@ namespace AoC._2016
 
         public char GetTile(string prevRow, int pos)
         {
-            char l = Safe, c = Safe, r = Safe;
+            char l = Safe, r = Safe;
 
             // left
             if (pos != 0)
             {
                 l = prevRow[pos - 1];
             }
-
-            // center
-            c = prevRow[pos];
 
             //right
             if (pos < prevRow.Length - 1)
@@ -79,15 +76,15 @@ namespace AoC._2016
             return Safe;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int defaultRowCount)
         {
             int rowCount;
-            Util.GetVariable(nameof(rowCount), 40, variables, out rowCount);
+            Util.GetVariable(nameof(rowCount), defaultRowCount, variables, out rowCount);
             string prevRow = inputs.First();
             StringBuilder allTiles = new StringBuilder();
             for (int r = 0; r < rowCount; ++r)
             {
-                DebugWriteLine($"Row {r,2} - {prevRow}");
+                //DebugWriteLine($"Row {r,2} - {prevRow}");
                 allTiles.AppendLine(prevRow);
                 StringBuilder sb = new StringBuilder();
                 for (int c = 0; c < prevRow.Length; ++c)
@@ -100,9 +97,9 @@ namespace AoC._2016
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 40);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 400000);
     }
 }
