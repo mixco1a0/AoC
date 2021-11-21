@@ -27,9 +27,9 @@ namespace AoC._2016
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "3",
                 RawInput =
-@""
+@"5"
             });
             testData.Add(new TestDatum
             {
@@ -43,7 +43,18 @@ namespace AoC._2016
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return "";
+            int elfCount = int.Parse(inputs.First());
+            List<int> elves = Enumerable.Range(1, elfCount).ToList();
+            while (elves.Count > 1)
+            {
+                bool removeFront = elves.Count % 2 != 0;
+                elves = elves.Select((e, i) => new {e, i}).Where(p => p.i % 2 == 0).Select(p => p.e).ToList();
+                if (elves.Count > 1 && removeFront)
+                {
+                    elves.RemoveAt(0);
+                }
+            }
+            return elves.First().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
