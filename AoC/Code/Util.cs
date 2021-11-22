@@ -38,7 +38,7 @@ namespace AoC
         static public void GetVariable(string variableName, string defaultValue, Dictionary<string, string> variables, out string value)
         {
             value = defaultValue;
-            if (variables.ContainsKey(variableName))
+            if (variables != null && variables.ContainsKey(variableName))
             {
                 value = variables[variableName];
             }
