@@ -13,10 +13,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -43,9 +43,17 @@ rotate based on position of letter d"
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Variables = new Dictionary<string, string>() { { "unscrambledPassword", "decab" } },
+                Output = "abcde",
                 RawInput =
-@""
+@"swap position 4 with position 0
+swap letter d with letter b
+reverse positions 0 through 4
+rotate left 1 step
+move position 1 to position 4
+move position 3 to position 0
+rotate based on position of letter b
+rotate based on position of letter d"
             });
             return testData;
         }
@@ -123,13 +131,37 @@ rotate based on position of letter d"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string Rotate(bool right, int rot, string curPassword)
+        {
+            StringBuilder sb = new StringBuilder();
+            if (right)
+            {
+                string sub1 = curPassword.Substring(curPassword.Length - rot, rot);
+                string sub2 = curPassword.Substring(0, curPassword.Length - rot);
+                sb.Append(sub1);
+                sb.Append(sub2);
+            }
+            else
+            {
+                string sub1 = curPassword.Substring(0, rot);
+                string sub2 = curPassword.Substring(rot);
+                sb.Append(sub2);
+                sb.Append(sub1);
+            }
+            return sb.ToString();
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string defaultPassword, bool reverse)
         {
             string unscrambledPassword;
-            Util.GetVariable(nameof(unscrambledPassword), "abcdefgh", variables, out unscrambledPassword);
+            Util.GetVariable(nameof(unscrambledPassword), defaultPassword, variables, out unscrambledPassword);
             StringBuilder sb = new StringBuilder(unscrambledPassword);
 
             IEnumerable<Instruction> instructions = inputs.Select(Instruction.Parse);
+            if (reverse)
+            {
+                instructions = instructions.Reverse();
+            }
             foreach (Instruction instruction in instructions)
             {
                 string curPassword = sb.ToString();
@@ -153,33 +185,60 @@ rotate based on position of letter d"
                         break;
                     case Operation.RotateLeft:
                         {
-                            int rot = instruction.PosOne % curPassword.Length;
-                            string sub1 = curPassword.Substring(0, rot);
-                            string sub2 = curPassword.Substring(rot);
-                            sb.Clear();
-                            sb.Append(sub2);
-                            sb.Append(sub1);
+                            if (reverse)
+                            {
+                                sb.Clear();
+                                sb.Append(Rotate(true, instruction.PosOne % curPassword.Length, curPassword));
+                            }
+                            else
+                            {
+                                sb.Clear();
+                                sb.Append(Rotate(false, instruction.PosOne % curPassword.Length, curPassword));
+                            }
                         }
                         break;
                     case Operation.RotateRight:
                         {
-                            int rot = instruction.PosOne % curPassword.Length;
-                            string sub1 = curPassword.Substring(curPassword.Length - rot, rot);
-                            string sub2 = curPassword.Substring(0, curPassword.Length - rot);
-                            sb.Clear();
-                            sb.Append(sub1);
-                            sb.Append(sub2);
+                            if (reverse)
+                            {
+                                sb.Clear();
+                                sb.Append(Rotate(false, instruction.PosOne % curPassword.Length, curPassword));
+                            }
+                            else
+                            {
+                                sb.Clear();
+                                sb.Append(Rotate(true, instruction.PosOne % curPassword.Length, curPassword));
+                            }
                         }
                         break;
                     case Operation.RotateRightLetter:
                         {
-                            int p1 = curPassword.IndexOf(instruction.LetterOne);
-                            int rot = (p1 + 1 + (p1 >= 4 ? 1 : 0)) % curPassword.Length;
-                            string sub1 = curPassword.Substring(curPassword.Length - rot, rot);
-                            string sub2 = curPassword.Substring(0, curPassword.Length - rot);
-                            sb.Clear();
-                            sb.Append(sub1);
-                            sb.Append(sub2);
+                            if (reverse)
+                            {
+                                string prePassword = curPassword;
+                                for (int i = 0; i < curPassword.Length; ++i)
+                                {
+                                    sb.Clear();
+                                    sb.Append(Rotate(false, 1, curPassword));
+                                    curPassword = sb.ToString();
+
+                                    int p1 = curPassword.IndexOf(instruction.LetterOne);
+                                    int rot = (p1 + 1 + (p1 >= 4 ? 1 : 0)) % curPassword.Length;
+                                    string shift = Rotate(true, rot, curPassword);
+
+                                    if (shift == prePassword)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                int p1 = curPassword.IndexOf(instruction.LetterOne);
+                                int rot = (p1 + 1 + (p1 >= 4 ? 1 : 0)) % curPassword.Length;
+                                sb.Clear();
+                                sb.Append(Rotate(true, rot, curPassword));
+                            }
                         }
                         break;
                     case Operation.Reverse:
@@ -199,9 +258,16 @@ rotate based on position of letter d"
                         break;
                     case Operation.Move:
                         {
-                            char move = sb[instruction.PosOne];
-                            sb.Remove(instruction.PosOne, 1);
-                            sb.Insert(instruction.PosTwo, move);
+                            int p1 = instruction.PosOne;
+                            int p2 = instruction.PosTwo;
+                            if (reverse)
+                            {
+                                p1 = instruction.PosTwo;
+                                p2 = instruction.PosOne;
+                            }
+                            char move = sb[p1];
+                            sb.Remove(p1, 1);
+                            sb.Insert(p2, move);
                         }
                         break;
                 }
@@ -211,9 +277,9 @@ rotate based on position of letter d"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, "abcdefgh", false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, "fbgdceah", true);
     }
 }
