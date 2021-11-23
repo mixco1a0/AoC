@@ -350,6 +350,9 @@ namespace AoC
 
     public class Coords
     {
+        public int X { get; set; }
+        public int Y { get; set; }
+
         public Coords()
         {
             X = 0;
@@ -373,8 +376,10 @@ namespace AoC
             Y = other.Y;
         }
 
-        public int X { get; set; }
-        public int Y { get; set; }
+        public override string ToString()
+        {
+            return $"({X},{Y})";
+        }
     }
 
     public class Segment
