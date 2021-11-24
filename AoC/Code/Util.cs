@@ -380,6 +380,21 @@ namespace AoC
         {
             return $"({X},{Y})";
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Coords)
+            {
+                Coords other = obj as Coords;
+                return X == other.X && Y == other.Y;
+            }
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     public class Segment
