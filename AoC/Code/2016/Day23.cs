@@ -12,10 +12,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -209,6 +209,6 @@ dec a"
             => SharedSolution(inputs, variables, new Dictionary<char, int>() { { 'a', 7 } });
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, new Dictionary<char, int>());
+            => SharedSolution(inputs, variables, new Dictionary<char, int>() { { 'a', 12 } });
     }
 }
