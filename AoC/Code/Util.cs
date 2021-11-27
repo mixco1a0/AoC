@@ -94,17 +94,16 @@ namespace AoC
             }
         }
 
-        static public void PrintGrid(List<List<char>> grid, Action<string> PrintFunc)
+        static public void PrintGrid(char[][] grid, Action<string> PrintFunc)
         {
             StringBuilder sb = new StringBuilder();
-            PrintFunc($"Printing grid {grid.First().Count}x{grid.Count}:");
-            int idx = 0;
-            foreach (string row in grid.Select(l => string.Join("", l)))
+            PrintFunc($"Printing grid {grid[0].Length}x{grid.Length}:");
+            for (int i = 0; i < grid.Length; ++i)
             {
                 sb.Clear();
-                sb.Append($"{idx++,4}| ");
-                sb.Append(row);
-                PrintFunc(row);
+                sb.Append($"{i,4}| ");
+                sb.Append(string.Join(string.Empty, grid[i]));
+                PrintFunc(sb.ToString());
             }
         }
 
@@ -348,7 +347,7 @@ namespace AoC
 
     public record Point(int X, int Y) { }
 
-    public class Coords
+    public class Coords : IEquatable<Coords>
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -376,6 +375,16 @@ namespace AoC
             Y = other.Y;
         }
 
+        public bool Equals(Coords other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return X.Equals(other.X) && Y.Equals(other.Y);
+        }
+
         public override string ToString()
         {
             return $"({X},{Y})";
@@ -383,17 +392,23 @@ namespace AoC
 
         public override bool Equals(object obj)
         {
-            if (obj is Coords)
+            if (obj == null)
             {
-                Coords other = obj as Coords;
-                return X == other.X && Y == other.Y;
+                return false;
             }
-            return base.Equals(obj);
+
+            Coords objAsCoords = obj as Coords;
+            if (objAsCoords == null)
+            {
+                return false;
+            }
+            
+            return Equals(objAsCoords);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return X.GetHashCode() + Y.GetHashCode();
         }
     }
 
