@@ -120,11 +120,18 @@ namespace AoC._2016
             return fromTargetTo;
         }
 
-        private int FindShortestPath(int[][] toAllTargets, int totalTargets, int prevTarget, string usedTargets, int pathLength)
+        private int FindShortestPath(int[][] toAllTargets, int totalTargets, int prevTarget, string usedTargets, int pathLength, bool returnHome)
         {
             if (usedTargets.Length == totalTargets)
             {
-                return pathLength;
+                if (returnHome)
+                {
+                    return pathLength + toAllTargets[prevTarget][0];
+                }
+                else
+                {
+                    return pathLength;
+                }
             }
 
             int shortestPath = int.MaxValue;
@@ -135,15 +142,15 @@ namespace AoC._2016
                 {
                     continue;
                 }
-                
+
                 int newLength = pathLength + toAllTargets[prevTarget][curTarget];
-                shortestPath = Math.Min(shortestPath, FindShortestPath(toAllTargets, totalTargets, curTarget, usedTargets + curTarget.ToString(), newLength));
+                shortestPath = Math.Min(shortestPath, FindShortestPath(toAllTargets, totalTargets, curTarget, usedTargets + curTarget.ToString(), newLength, returnHome));
             }
-            
+
             return shortestPath;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool returnHome)
         {
             Coords max = new Coords(inputs[0].Length, inputs.Count);
             char[][] grid = new char[inputs.Count][];
@@ -165,13 +172,13 @@ namespace AoC._2016
             {
                 toAllTargets[int.Parse($"{target}")] = GeneratePaths(grid, max, target, allTargets.Length);
             }
-            return FindShortestPath(toAllTargets, allTargets.Length, 0, "0", 0).ToString();
+            return FindShortestPath(toAllTargets, allTargets.Length, 0, "0", 0, returnHome).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
