@@ -63,7 +63,7 @@ namespace AoC._2015
             Toggle
         }
 
-        private record Instruction(InstructionType InstructionType, int xMin, int xMax, int yMin, int yMax)
+        private record Instruction(InstructionType Type, int xMin, int xMax, int yMin, int yMax)
         {
             public static Instruction Parse(string input)
             {
@@ -107,7 +107,7 @@ namespace AoC._2015
                 {
                     for (int y = instruction.yMin; y <= instruction.yMax; ++y)
                     {
-                        switch (instruction.InstructionType)
+                        switch (instruction.Type)
                         {
                             case InstructionType.On:
                                 grid[x, y] = Math.Min(grid[x, y] + 1, max);
