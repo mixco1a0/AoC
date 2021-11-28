@@ -408,7 +408,7 @@ namespace AoC
 
         public override int GetHashCode()
         {
-            return X.GetHashCode() + Y.GetHashCode();
+            return X.GetHashCode() ^ Y.GetHashCode();
         }
     }
 
