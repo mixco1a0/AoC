@@ -402,7 +402,7 @@ namespace AoC
             {
                 return false;
             }
-            
+
             return Equals(objAsCoords);
         }
 
