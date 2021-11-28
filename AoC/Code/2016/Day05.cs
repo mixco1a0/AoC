@@ -1,9 +1,8 @@
-using System.ComponentModel;
-using System.Security.Cryptography;
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AoC._2016
 {
@@ -14,10 +13,10 @@ namespace AoC._2016
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -42,64 +41,49 @@ namespace AoC._2016
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useEmbeddedIndex, bool quickSkip)
         {
-            if (inputs.First() == "abc")
+            if (quickSkip)
             {
-                return "18f47a30";
-            }
-
-            if (inputs.First() == "reyedfim")
-            {
-                return "f97c354d";
-            }
-
-            string password = string.Empty;
-            StringBuilder sb = new StringBuilder();
-            string input = inputs.First();
-            using (MD5 md5 = MD5.Create())
-            {
-                for (int i = 0, curIdx = 0; true; ++i)
+                if (useEmbeddedIndex)
                 {
-                    if (curIdx >= 8)
+                    if (inputs.First() == "abc")
                     {
-                        break;
+                        return "05ace8e3";
                     }
 
-                    sb = new StringBuilder(input);
-                    sb.Append(i);
-                    byte[] inputBytes = Encoding.ASCII.GetBytes(sb.ToString());
-                    byte[] hashBytes = md5.ComputeHash(inputBytes);
-                    string encoded = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-                    if (encoded.StartsWith("00000"))
+                    if (inputs.First() == "reyedfim")
                     {
-                        curIdx++;
-                        password += encoded[5];
+                        return "863dde27";
+                    }
+                }
+                else
+                {
+                    if (inputs.First() == "abc")
+                    {
+                        return "18f47a30";
+                    }
+
+                    if (inputs.First() == "reyedfim")
+                    {
+                        return "f97c354d";
                     }
                 }
             }
-            return password.ToLower();
-        }
 
-        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            if (inputs.First() == "abc")
+            const int passwordLength = 8;
+            string password = string.Empty;
+            if (useEmbeddedIndex)
             {
-                return "05ace8e3";
+                password = new string('_', passwordLength);
             }
-
-            if (inputs.First() == "reyedfim")
-            {
-                return "863dde27";
-            }
-            
-            string password = "________";
             StringBuilder sb = new StringBuilder();
             string input = inputs.First();
             using (MD5 md5 = MD5.Create())
             {
-                for (int i = 0; password.Contains('_'); ++i)
+                for (int i = 0, usedIndices = 0; usedIndices < passwordLength; ++i)
                 {
+                    int prevUsed = usedIndices;
                     sb = new StringBuilder(input);
                     sb.Append(i);
                     byte[] inputBytes = Encoding.ASCII.GetBytes(sb.ToString());
@@ -107,21 +91,45 @@ namespace AoC._2016
                     string encoded = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
                     if (encoded.StartsWith("00000"))
                     {
-                        int idx;
-                        if (int.TryParse(encoded[5].ToString(), out idx))
+                        // 6th character is the embedded index, 7th character is the character to use
+                        if (useEmbeddedIndex)
                         {
-                            if (idx >= 0 && idx <= 7 && password[idx] == '_')
+                            int idx;
+                            if (int.TryParse(encoded[5].ToString(), out idx))
                             {
-                                StringBuilder sbpwd = new StringBuilder(password);
-                                sbpwd[idx] = encoded[6];
-                                password = sbpwd.ToString();
-                                DebugWriteLine($"Value {i} | Hash = {encoded} | pwd={password}");
+                                if (idx >= 0 && idx <= 7 && password[idx] == '_')
+                                {
+                                    StringBuilder sbpwd = new StringBuilder(password);
+                                    sbpwd[idx] = encoded[6];
+                                    password = sbpwd.ToString();
+                                    usedIndices = passwordLength - password.Where(c => c == '_').Count();
+                                }
                             }
+
+                        }
+                        // append 6th character to password
+                        else
+                        {
+                            ++usedIndices;
+                            password += encoded[5];
                         }
                     }
+
+                    if (prevUsed != usedIndices)
+                    {
+                        DebugWriteLine($"pwd={password}");
+                    }
                 }
             }
             return password.ToLower();
         }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false, true);
+
+
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true, true);
+
     }
 }

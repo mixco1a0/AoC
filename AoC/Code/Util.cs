@@ -17,6 +17,33 @@ namespace AoC
             return input.Split('\n').Select(str => str.Trim('\r'));
         }
 
+        static public void GetVariable(string variableName, int defaultValue, Dictionary<string, string> variables, out int value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = int.Parse(variables[variableName]);
+            }
+        }
+
+        static public void GetVariable(string variableName, long defaultValue, Dictionary<string, string> variables, out long value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = int.Parse(variables[variableName]);
+            }
+        }
+
+        static public void GetVariable(string variableName, string defaultValue, Dictionary<string, string> variables, out string value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = variables[variableName];
+            }
+        }
+
         static public void RotateGrid(bool right, ref List<string> grid)
         {
             List<string> newGrid = new List<string>();
@@ -55,19 +82,28 @@ namespace AoC
 
         static public void PrintGrid(List<string> grid, Action<string> PrintFunc)
         {
+            StringBuilder sb = new StringBuilder();
             PrintFunc($"Printing grid {grid.First().Length}x{grid.Count}:");
+            int idx = 0;
             foreach (string row in grid)
             {
-                PrintFunc(row);
+                sb.Clear();
+                sb.Append($"{idx++,4}| ");
+                sb.Append(row);
+                PrintFunc(sb.ToString());
             }
         }
 
-        static public void PrintGrid(List<List<char>> grid, Action<string> PrintFunc)
+        static public void PrintGrid(char[][] grid, Action<string> PrintFunc)
         {
-            PrintFunc($"Printing grid {grid.First().Count}x{grid.Count}:");
-            foreach (string row in grid.Select(l => string.Join("", l)))
+            StringBuilder sb = new StringBuilder();
+            PrintFunc($"Printing grid {grid[0].Length}x{grid.Length}:");
+            for (int i = 0; i < grid.Length; ++i)
             {
-                PrintFunc(row);
+                sb.Clear();
+                sb.Append($"{i,4}| ");
+                sb.Append(string.Join(string.Empty, grid[i]));
+                PrintFunc(sb.ToString());
             }
         }
 
@@ -210,7 +246,6 @@ namespace AoC
             }
         }
 
-
         static public int ProcessIndexBorder(List<int> index, Dictionary<string, char> grid, char match)
         {
             int borderMatch = 0;
@@ -310,7 +345,72 @@ namespace AoC
         }
     }
 
-    public record Point(int X, int Y);
+    public record Point(int X, int Y) { }
+
+    public class Coords : IEquatable<Coords>
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public Coords()
+        {
+            X = 0;
+            Y = 0;
+        }
+
+        public Coords(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public static Coords operator +(Coords a, Coords b)
+        {
+            return new Coords(a.X + b.X, a.Y + b.Y);
+        }
+
+        public Coords(Coords other)
+        {
+            X = other.X;
+            Y = other.Y;
+        }
+
+        public bool Equals(Coords other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return X.Equals(other.X) && Y.Equals(other.Y);
+        }
+
+        public override string ToString()
+        {
+            return $"({X},{Y})";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            Coords objAsCoords = obj as Coords;
+            if (objAsCoords == null)
+            {
+                return false;
+            }
+            
+            return Equals(objAsCoords);
+        }
+
+        public override int GetHashCode()
+        {
+            return X.GetHashCode() + Y.GetHashCode();
+        }
+    }
 
     public class Segment
     {

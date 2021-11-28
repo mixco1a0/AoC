@@ -1,4 +1,3 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,8 +53,12 @@ namespace AoC._2016
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool segmentCheck)
         {
+            // used for segment checks
+            List<Segment> visited = new List<Segment>();
+            Point prev = new Point(0, 0);
+
             int coordX = 0, coordY = 0, curDirection = 0;
             string[] input = inputs[0].Split(" ,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             foreach (string i in input)
@@ -79,61 +82,39 @@ namespace AoC._2016
                     case 3:
                         coordX -= int.Parse(i[1..]);
                         break;
+                }
+
+                if (segmentCheck)
+                {
+                    Segment cur = new Segment(prev, new Point(coordX, coordY));
+                    //DebugWriteLine($"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
+                    Point intersection = null;
+                    // check for intersection
+                    foreach (Segment visit in visited.Take(visited.Count - 1))
+                    {
+                        intersection = cur.GetIntersection(visit);
+                        if (intersection != null)
+                        {
+                            break;
+                        }
+                    }
+                    if (intersection != null)
+                    {
+                        coordX = intersection.X;
+                        coordY = intersection.Y;
+                        break;
+                    }
+                    visited.Add(cur);
+                    prev = cur.B;
                 }
             }
             return (Math.Abs(coordX) + Math.Abs(coordY)).ToString();
         }
 
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false);
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            int coordX = 0, coordY = 0, curDirection = 0;
-            string[] input = inputs[0].Split(" ,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            List<Segment> visited = new List<Segment>();
-            Point prev = new Point(0, 0);
-            foreach (string i in input)
-            {
-                curDirection += (i[0] == 'R' ? 1 : -1);
-                if (curDirection < 0)
-                {
-                    curDirection += 4;
-                }
-                switch (curDirection % 4)
-                {
-                    case 0:
-                        coordY += int.Parse(i[1..]);
-                        break;
-                    case 1:
-                        coordX += int.Parse(i[1..]);
-                        break;
-                    case 2:
-                        coordY -= int.Parse(i[1..]);
-                        break;
-                    case 3:
-                        coordX -= int.Parse(i[1..]);
-                        break;
-                }
-                Segment cur = new Segment(prev, new Point(coordX, coordY));
-                //DebugWriteLine($"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
-                Point intersection = null;
-                // check for intersection
-                foreach (Segment visit in visited.Take(visited.Count - 1))
-                {
-                    intersection = cur.GetIntersection(visit);
-                    if (intersection != null)
-                    {
-                        break;
-                    }
-                }
-                if (intersection != null)
-                {
-                    coordX = intersection.X;
-                    coordY = intersection.Y;
-                    break;
-                }
-                visited.Add(cur);
-                prev = cur.B;
-            }
-            return (Math.Abs(coordX) + Math.Abs(coordY)).ToString();
-        }
+            => SharedSolution(inputs, variables, true);
     }
 }
