@@ -7,6 +7,7 @@ namespace AoC._2015
     class Day09 : Day
     {
         public Day09() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
@@ -19,6 +20,7 @@ namespace AoC._2015
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -43,9 +45,9 @@ Dublin to Belfast = 141"
             return testData;
         }
 
-        public record Distance (string A, string B, int Dist);
+        public record Distance(string A, string B, int Dist) { }
 
-        public record ToInfo(string Destination, int Distance);
+        public record ToInfo(string Destination, int Distance) { }
 
         private int FindPath(Dictionary<string, List<ToInfo>> map, bool findMin)
         {
@@ -82,7 +84,7 @@ Dublin to Belfast = 141"
             return dist + FindPathRecurse(map, nextCity, visitableCities.Where(c => c != nextCity).ToList(), findMin);
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findMin)
         {
             Dictionary<string, List<ToInfo>> map = new Dictionary<string, List<ToInfo>>();
             List<Distance> distances = new List<Distance>();
@@ -105,33 +107,13 @@ Dublin to Belfast = 141"
                 }
                 map[cityB].Add(new ToInfo(cityA, distance));
             }
-            return FindPath(map, true).ToString();
+            return FindPath(map, findMin).ToString();
         }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            Dictionary<string, List<ToInfo>> map = new Dictionary<string, List<ToInfo>>();
-            List<Distance> distances = new List<Distance>();
-            foreach (string input in inputs)
-            {
-                string[] splits = input.Split(" =".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                string cityA = splits[0];
-                string cityB = splits[2];
-                int distance = int.Parse(splits[3]);
-
-                if (!map.ContainsKey(cityA))
-                {
-                    map[cityA] = new List<ToInfo>();
-                }
-                map[cityA].Add(new ToInfo(cityB, distance));
-
-                if (!map.ContainsKey(cityB))
-                {
-                    map[cityB] = new List<ToInfo>();
-                }
-                map[cityB].Add(new ToInfo(cityA, distance));
-            }
-            return FindPath(map, false).ToString();
-        }
+            => SharedSolution(inputs, variables, false);
     }
 }
