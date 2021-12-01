@@ -31,6 +31,8 @@ namespace AoC
         long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
         private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
+        private CommandLineArgs Args { get; set; }
+
         public Program(string[] args)
         {
             try
@@ -38,47 +40,47 @@ namespace AoC
                 Day.UseLogs = true;
 
                 // parse command args
-                CommandLineArgs commandLineArgs = ParseCommandLineArgs(args);
+                Args = ParseCommandLineArgs(args);
 
-                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.Help))
+                if (Args.HasArg(CommandLineArgs.SupportedArgument.Help))
                 {
-                    commandLineArgs.PrintHelp(LogLine);
+                    Args.PrintHelp(LogLine);
                     return;
                 }
 
                 // get the number of records to keep for perf tests
-                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.PerfRecordCount))
+                if (Args.HasArgValue(CommandLineArgs.SupportedArgument.PerfRecordCount))
                 {
-                    m_recordCount = long.Parse(commandLineArgs.Args[CommandLineArgs.SupportedArgument.PerfRecordCount]);
+                    m_recordCount = long.Parse(Args.Args[CommandLineArgs.SupportedArgument.PerfRecordCount]);
                 }
 
                 // get the timeout runs should adhere to
-                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.PerfTimeout))
+                if (Args.HasArgValue(CommandLineArgs.SupportedArgument.PerfTimeout))
                 {
-                    m_maxPerfTimeoutMs = long.Parse(commandLineArgs.Args[CommandLineArgs.SupportedArgument.PerfTimeout]);
+                    m_maxPerfTimeoutMs = long.Parse(Args.Args[CommandLineArgs.SupportedArgument.PerfTimeout]);
                 }
 
                 // get the namespace to use
                 string baseNamespace = nameof(AoC._2020);
-                if (commandLineArgs.HasArgValue(CommandLineArgs.SupportedArgument.Namespace))
+                if (Args.HasArgValue(CommandLineArgs.SupportedArgument.Namespace))
                 {
-                    baseNamespace = commandLineArgs.Args[CommandLineArgs.SupportedArgument.Namespace];
+                    baseNamespace = Args.Args[CommandLineArgs.SupportedArgument.Namespace];
                 }
 
                 // run the day specified or the latest day
-                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.Day))
+                if (Args.HasArg(CommandLineArgs.SupportedArgument.Day))
                 {
-                    Day day = RunDay(baseNamespace, commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]);
+                    Day day = RunDay(baseNamespace, Args.Args[CommandLineArgs.SupportedArgument.Day]);
                     if (day == null)
                     {
-                        LogLine($"Unable to find {baseNamespace}.{commandLineArgs.Args[CommandLineArgs.SupportedArgument.Day]}");
+                        LogLine($"Unable to find {baseNamespace}.{Args.Args[CommandLineArgs.SupportedArgument.Day]}");
                     }
                     else
                     {
                         LogLine("");
                     }
                 }
-                else if (!commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.SkipLatest))
+                else if (!Args.HasArg(CommandLineArgs.SupportedArgument.SkipLatest))
                 {
                     Day latestDay = RunLatestDay(baseNamespace);
                     if (latestDay == null)
@@ -92,12 +94,12 @@ namespace AoC
                 }
 
                 // show performance
-                if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.ShowPerf))
+                if (Args.HasArg(CommandLineArgs.SupportedArgument.ShowPerf))
                 {
                     ShowPerformance(baseNamespace);
                 }
                 // run performance tests
-                else if (commandLineArgs.HasArg(CommandLineArgs.SupportedArgument.RunPerf))
+                else if (Args.HasArg(CommandLineArgs.SupportedArgument.RunPerf))
                 {
                     RunPerformance(baseNamespace);
                 }
@@ -157,6 +159,13 @@ namespace AoC
         /// <returns></returns>
         private Day RunDay(string baseNamespace, string dayName)
         {
+            if (Args.HasArg(CommandLineArgs.SupportedArgument.RunWarmup))
+            {
+                LogLine("...Warming up");
+                LogLine("");
+                RunWarmup();
+            }
+
             LogLine($"Running {baseNamespace}.{dayName} Advent of Code");
             LogLine("");
 
