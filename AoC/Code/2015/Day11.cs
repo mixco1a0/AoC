@@ -8,6 +8,7 @@ namespace AoC._2015
     class Day11 : Day
     {
         public Day11() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
@@ -19,6 +20,7 @@ namespace AoC._2015
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -43,7 +45,7 @@ namespace AoC._2015
         {
             int curIndex = 0;
             StringBuilder newPassword = new StringBuilder();
-            foreach(char p in password)
+            foreach (char p in password)
             {
                 ++curIndex;
                 if (p == 'i' || p == 'l' || p == 'o')
@@ -142,19 +144,24 @@ namespace AoC._2015
             do
             {
                 password = Increment(password);
-                // DebugWriteLine($"Checking {password}");
-            } while (!HasStraight(password) || !HasDoubles(password));
+            } while (!HasDoubles(password) || !HasStraight(password));
+            return password;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int cycles)
+        {
+            string password = inputs.First();
+            for (int i = 0; i < cycles; ++i)
+            {
+                password = GetNextPassword(password);
+            }
             return password;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            return GetNextPassword(inputs.First());
-        }
+            => SharedSolution(inputs, variables, 1);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            return GetNextPassword(GetNextPassword(inputs.First()));
-        }
+            => SharedSolution(inputs, variables, 2);
     }
 }
