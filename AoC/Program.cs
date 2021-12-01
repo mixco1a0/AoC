@@ -60,8 +60,9 @@ namespace AoC
                     m_maxPerfTimeoutMs = long.Parse(Args.Args[CommandLineArgs.SupportedArgument.PerfTimeout]);
                 }
 
+                // TODO: programatically find the latest year to use
                 // get the namespace to use
-                string baseNamespace = nameof(AoC._2020);
+                string baseNamespace = nameof(AoC._2021);
                 if (Args.HasArgValue(CommandLineArgs.SupportedArgument.Namespace))
                 {
                     baseNamespace = Args.Args[CommandLineArgs.SupportedArgument.Namespace];
