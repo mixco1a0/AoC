@@ -27,9 +27,18 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "7",
                 RawInput =
-@""
+@"199
+200
+208
+210
+200
+207
+240
+269
+260
+263"
             });
             testData.Add(new TestDatum
             {
@@ -43,7 +52,16 @@ namespace AoC._2021
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            int[] depths = inputs.Select(int.Parse).ToArray();
+            int increases = 0;
+            for (int i = 1; i < depths.Count(); ++i)
+            {
+                if (depths[i] > depths[i-1])
+                {
+                    ++increases;
+                }
+            }
+            return increases.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
