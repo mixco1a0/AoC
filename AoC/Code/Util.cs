@@ -402,13 +402,13 @@ namespace AoC
             {
                 return false;
             }
-            
+
             return Equals(objAsCoords);
         }
 
         public override int GetHashCode()
         {
-            return X.GetHashCode() + Y.GetHashCode();
+            return X.GetHashCode() ^ Y.GetHashCode();
         }
     }
 

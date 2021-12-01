@@ -12,6 +12,7 @@ namespace AoC
             Help,
             Namespace,
             Day,
+            RunWarmup,
             SkipLatest,
             ShowPerf,
             RunPerf,
@@ -32,6 +33,10 @@ namespace AoC
             {
                 SupportedArgument.Day,
                 new List<string>{"d", "day"}
+            },
+            {
+                SupportedArgument.RunWarmup,
+                new List<string>{"rw", "runwarmup"}
             },
             {
                 SupportedArgument.SkipLatest,

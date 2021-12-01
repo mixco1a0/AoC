@@ -6,27 +6,28 @@ namespace AoC._2015
 {
     class Day10 : Day
     {
-        private static int sTimes = 40;
         public Day10() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Variables = new Dictionary<string, string> { { nameof(sTimes), "5" } },
+                Variables = new Dictionary<string, string> { { "times", "5" } },
                 Output = "6",
                 RawInput =
 @"1"
@@ -39,7 +40,7 @@ namespace AoC._2015
             StringBuilder processed = new StringBuilder();
             char cur = input[0];
             int count = 1;
-            char[] restOfInput = input[1..].ToCharArray();
+            char[] restOfInput = input.Skip(1).ToArray();
             foreach (char c in restOfInput)
             {
                 if (c == cur)
@@ -48,46 +49,35 @@ namespace AoC._2015
                 }
                 else
                 {
-                    processed.Append($"{count}{cur}");
+                    processed.Append(count);
+                    processed.Append(cur);
                     cur = c;
                     count = 1;
                 }
             }
-            processed.Append($"{count}{cur}");
-            // DebugWriteLine($"Before:{input} - After:{processed}");
+            processed.Append(count);
+            processed.Append(cur);
             return processed.ToString();
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int defaultTimes)
         {
-            int times = 40;
-            if (variables != null && variables.ContainsKey(nameof(sTimes)))
-            {
-                times = int.Parse(variables[nameof(sTimes)]);
-            }
+            int times;
+            Util.GetVariable(nameof(times), defaultTimes, variables, out times);
+
             string input = inputs.First();
             for (int i = 0; i < times; ++i)
             {
                 input = Process(input);
-                DebugWriteLine($"{i} complete [{input.Length}]");
+                //DebugWriteLine($"{i} complete [{input.Length}]");
             }
             return input.Length.ToString();
         }
 
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, 40);
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            int times = 50;
-            if (variables != null && variables.ContainsKey(nameof(sTimes)))
-            {
-                times = int.Parse(variables[nameof(sTimes)]);
-            }
-            string input = inputs.First();
-            for (int i = 0; i < times; ++i)
-            {
-                input = Process(input);
-                DebugWriteLine($"{i} complete [{input.Length}]");
-            }
-            return input.Length.ToString();
-        }
+            => SharedSolution(inputs, variables, 50);
     }
 }

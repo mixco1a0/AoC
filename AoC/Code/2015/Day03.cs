@@ -6,18 +6,20 @@ namespace AoC._2015
     class Day03 : Day
     {
         public Day03() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -66,108 +68,48 @@ namespace AoC._2015
             return testData;
         }
 
-        private struct Coords
-        {
-            public int X { get; set; }
-            public int Y { get; set; }
+        private const char L = '<';
+        private const char R = '>';
+        private const char U = '^';
+        private const char D = 'v';
 
-            public bool Equals(Coords coords)
-            {
-                return X == coords.X && Y == coords.Y;
-            }
-        }
-
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private Dictionary<char, Coords> Movements = new Dictionary<char, Coords>()
         {
-            Coords cur = new Coords { X = 0, Y = 0 };
-            List<Coords> allCoords = new List<Coords>();
-            allCoords.Add(cur);
-            foreach (char c in string.Join(' ', inputs))
-            {
-                switch (c)
-                {
-                    case '>':
-                        ++cur.X;
-                        break;
-                    case '<':
-                        --cur.X;
-                        break;
-                    case '^':
-                        ++cur.Y;
-                        break;
-                    case 'v':
-                        --cur.Y;
-                        break;
-                }
-                allCoords.Add(cur);
-            }
-            return allCoords.Distinct().Count().ToString();
-        }
+            {L, new Coords(-1, 0)},
+            {R, new Coords(1, 0)},
+            {U, new Coords(0, 1)},
+            {D, new Coords(0, -1)},
+        };
 
-        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool usingRobotSanta)
         {
-            Coords curSanta = new Coords { X = 0, Y = 0 };
-            Coords curRobot = new Coords { X = 0, Y = 0 };
-            List<Coords> allCoords = new List<Coords>();
-            allCoords.Add(curSanta);
             bool santaMove = true;
+            Coords santaCoords = new Coords();
+            Coords robotCoords = new Coords();
+
+            HashSet<Coords> visitedCoords = new HashSet<Coords>();
+            visitedCoords.Add(santaCoords);
             foreach (char c in string.Join(' ', inputs))
             {
-                switch (c)
+                if (santaMove || !usingRobotSanta)
                 {
-                    case '>':
-                        if (santaMove)
-                        {
-                            ++curSanta.X;
-                        }
-                        else
-                        {
-                            ++curRobot.X;
-                        }
-                        break;
-                    case '<':
-                        if (santaMove)
-                        {
-                            --curSanta.X;
-                        }
-                        else
-                        {
-                            --curRobot.X;
-                        }
-                        break;
-                    case '^':
-                        if (santaMove)
-                        {
-                            ++curSanta.Y;
-                        }
-                        else
-                        {
-                            ++curRobot.Y;
-                        }
-                        break;
-                    case 'v':
-                        if (santaMove)
-                        {
-                            --curSanta.Y;
-                        }
-                        else
-                        {
-                            --curRobot.Y;
-                        }
-                        break;
-                }
-
-                if (santaMove)
-                {
-                    allCoords.Add(curSanta);
+                    santaCoords += Movements[c];
+                    visitedCoords.Add(santaCoords);
                 }
                 else
                 {
-                    allCoords.Add(curRobot);
+                    robotCoords += Movements[c];
+                    visitedCoords.Add(robotCoords);
                 }
                 santaMove = !santaMove;
             }
-            return allCoords.Distinct().Count().ToString();
+            return visitedCoords.Count().ToString();
         }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false);
+
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true);
     }
 }

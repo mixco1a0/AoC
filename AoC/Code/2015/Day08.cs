@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace AoC._2015
 {
     class Day08 : Day
     {
         public Day08() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
@@ -19,6 +18,7 @@ namespace AoC._2015
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -47,7 +47,7 @@ namespace AoC._2015
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool expand)
         {
             int total = 0;
             int mem = 0;
@@ -55,35 +55,40 @@ namespace AoC._2015
             {
                 string actual = input.Replace('\'', '"');
                 total += actual.Length;
-                string[] splits = actual.Replace("\\\\", "|").Split('\\');
-                foreach (string split in splits)
+                if (expand)
                 {
-                    if (split.StartsWith('x'))
-                    {
-                        mem += split.Length - 2;
-                    }
-                    else
-                    {
-                        mem += split.Length;
-                    }
+                    actual = actual.Replace("\\\\", "||||").Replace("\"", "\\\\\"").Replace("\\x", "\\\\x");
+                    mem += actual.Length;
                 }
-                mem -= 2; // the first and last quote
+                else
+                {
+                    string[] splits = actual.Replace("\\\\", "|").Split('\\');
+                    foreach (string split in splits)
+                    {
+                        if (split.StartsWith('x'))
+                        {
+                            mem += split.Length - 2;
+                        }
+                        else
+                        {
+                            mem += split.Length;
+                        }
+                    }
+                    mem -= 2; // the first and last quote
+                }
+            }
+            
+            if (expand)
+            {
+                return (mem - total).ToString();
             }
             return (total - mem).ToString();
         }
 
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false);
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            int total = 0;
-            int mem = 0;
-            foreach (string input in inputs)
-            {
-                string actual = input.Replace('\'', '"');
-                total += actual.Length;
-                actual = actual.Replace("\\\\", "||||").Replace("\"", "\\\\\"").Replace("\\x", "\\\\x");
-                mem += actual.Length;
-            }
-            return (mem - total).ToString();
-        }
+            => SharedSolution(inputs, variables, true);
     }
 }

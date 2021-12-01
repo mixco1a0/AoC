@@ -6,18 +6,20 @@ namespace AoC._2015
     class Day07 : Day
     {
         public Day07() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -69,116 +71,142 @@ NOT y -> i"
             return testData;
         }
 
-        public class Instruction
+        private const char InvalidSignal = '_';
+
+        private class Instruction
         {
             public enum InstructionType
             {
+                Invalid,
+                Set,
                 And,
-                AndRef,
                 Or,
-                OrRef,
                 LShift,
                 RShift,
                 Not,
-                Set,
-                SetRef
+                SetRef,
+                AndRef,
+                OrRef,
             }
 
             public InstructionType Type { get; private set; }
-            public string Source { get; private set; }
-            public string Source2 { get; private set; }
+            public string Signal1 { get; private set; }
+            public string Signal2 { get; private set; }
+            public int Value { get; private set; }
             public string Destination { get; private set; }
             public bool Complete { get; private set; }
 
-            public Instruction(string instruction)
+            public Instruction()
             {
-                Source2 = "";
-                List<string> split = instruction.Split(" ").ToList();
-                if (instruction.Contains("AND"))
+                Type = InstructionType.Invalid;
+                Signal1 = string.Empty;
+                Signal2 = string.Empty;
+                Value = 0;
+                Destination = string.Empty;
+                Complete = false;
+            }
+
+            public Instruction(Instruction other)
+            {
+                Type = other.Type;
+                Signal1 = other.Signal1;
+                Signal2 = other.Signal2;
+                Value = other.Value;
+                Destination = other.Destination;
+                Complete = false;
+            }
+
+            public static Instruction Parse(string input)
+            {
+                Instruction instruction = new Instruction();
+                instruction.Signal2 = string.Empty;
+                string[] split = input.Split(" ").ToArray();
+                int[] intVals = split.Where(s => { int i; return int.TryParse(s, out i); }).Select(int.Parse).ToArray();
+                instruction.Value = intVals.FirstOrDefault();
+                if (input.Contains("AND"))
                 {
-                    int test;
-                    if (int.TryParse(split[0], out test) || int.TryParse(split[2], out test))
+                    if (intVals.Count() > 0)
                     {
-                        Type = InstructionType.And;
+                        instruction.Type = InstructionType.And;
                     }
                     else
                     {
-                        Type = InstructionType.AndRef;
+                        instruction.Type = InstructionType.AndRef;
                     }
                 }
-                else if (instruction.Contains("OR"))
+                else if (input.Contains("OR"))
                 {
-                    int test;
-                    if (int.TryParse(split[0], out test) || int.TryParse(split[2], out test))
+                    if (intVals.Count() > 0)
                     {
-                        Type = InstructionType.Or;
+                        instruction.Type = InstructionType.Or;
                     }
                     else
                     {
-                        Type = InstructionType.OrRef;
+                        instruction.Type = InstructionType.OrRef;
                     }
                 }
-                else if (instruction.Contains("LSHIFT"))
+                else if (input.Contains("LSHIFT"))
                 {
-                    Type = InstructionType.LShift;
+                    instruction.Type = InstructionType.LShift;
                 }
-                else if (instruction.Contains("RSHIFT"))
+                else if (input.Contains("RSHIFT"))
                 {
-                    Type = InstructionType.RShift;
+                    instruction.Type = InstructionType.RShift;
                 }
-                else if (instruction.Contains("NOT"))
+                else if (input.Contains("NOT"))
                 {
-                    Type = InstructionType.Not;
+                    instruction.Type = InstructionType.Not;
                 }
                 else
                 {
-                    int test;
-                    if (int.TryParse(split[0], out test))
+                    if (intVals.Count() > 0)
                     {
-                        Type = InstructionType.Set;
+                        instruction.Type = InstructionType.Set;
                     }
                     else
                     {
-                        Type = InstructionType.SetRef;
+                        instruction.Type = InstructionType.SetRef;
                     }
                 }
 
-                switch (Type)
+                switch (instruction.Type)
                 {
                     case InstructionType.AndRef:
                     case InstructionType.OrRef:
                     case InstructionType.LShift:
                     case InstructionType.RShift:
-                        Source = split[0];
-                        Source2 = split[2];
-                        Destination = split[4];
+                        instruction.Signal1 = split[0];
+                        instruction.Signal2 = split[2];
+                        instruction.Destination = split[4];
                         break;
                     case InstructionType.And:
                     case InstructionType.Or:
                         int test;
                         if (int.TryParse(split[0], out test))
                         {
-                            Source = split[2];
-                            Source2 = split[0];
-                            Destination = split[4];
+                            instruction.Signal1 = split[2];
+                            instruction.Signal2 = split[0];
+                            instruction.Destination = split[4];
                         }
                         else
                         {
-                            Source = split[0];
-                            Source2 = split[2];
-                            Destination = split[4];
+                            instruction.Signal1 = split[0];
+                            instruction.Signal2 = split[2];
+                            instruction.Destination = split[4];
                         }
                         break;
                     case InstructionType.Not:
-                        Source = split[1];
-                        Destination = split[3];
+                        instruction.Signal1 = split[1];
+                        instruction.Destination = split[3];
                         break;
                     case InstructionType.Set:
                     case InstructionType.SetRef:
-                        Source = split[0];
-                        Destination = split[2];
+                        instruction.Signal1 = split[0];
+                        instruction.Destination = split[2];
                         break;
                 }
+
+                return instruction;
             }
 
             public bool CanExecute(Dictionary<string, int> signals)
@@ -187,7 +215,7 @@ NOT y -> i"
                 {
                     case InstructionType.AndRef:
                     case InstructionType.OrRef:
-                        if (signals.ContainsKey(Source) && signals.ContainsKey(Source2))
+                        if (signals.ContainsKey(Signal1) && signals.ContainsKey(Signal2))
                         {
                             return !Complete;
                         }
@@ -198,7 +226,7 @@ NOT y -> i"
                     case InstructionType.RShift:
                     case InstructionType.Not:
                     case InstructionType.SetRef:
-                        if (signals.ContainsKey(Source))
+                        if (signals.ContainsKey(Signal1))
                         {
                             return !Complete;
                         }
@@ -214,32 +242,32 @@ NOT y -> i"
                 switch (Type)
                 {
                     case InstructionType.And:
-                        signals[Destination] = signals[Source] & int.Parse(Source2);
+                        signals[Destination] = signals[Signal1] & Value;
                         break;
                     case InstructionType.AndRef:
-                        signals[Destination] = signals[Source] & signals[Source2];
+                        signals[Destination] = signals[Signal1] & signals[Signal2];
                         break;
                     case InstructionType.Or:
-                        signals[Destination] = signals[Source] | int.Parse(Source2);
+                        signals[Destination] = signals[Signal1] | Value;
                         break;
                     case InstructionType.OrRef:
-                        signals[Destination] = signals[Source] | signals[Source2];
+                        signals[Destination] = signals[Signal1] | signals[Signal2];
                         break;
                     case InstructionType.LShift:
-                        signals[Destination] = signals[Source] << int.Parse(Source2);
+                        signals[Destination] = signals[Signal1] << Value;
                         break;
                     case InstructionType.RShift:
-                        signals[Destination] = signals[Source] >> int.Parse(Source2);
+                        signals[Destination] = signals[Signal1] >> Value;
                         break;
                     case InstructionType.Not:
-                        signals[Destination] = ~signals[Source];
+                        signals[Destination] = ~signals[Signal1];
                         break;
                     case InstructionType.Set:
-                        signals[Destination] = int.Parse(Source);
+                        signals[Destination] = Value;
                         Complete = true;
                         break;
                     case InstructionType.SetRef:
-                        signals[Destination] = signals[Source];
+                        signals[Destination] = signals[Signal1];
                         Complete = true;
                         break;
                 }
@@ -257,12 +285,12 @@ NOT y -> i"
                     case InstructionType.OrRef:
                     case InstructionType.LShift:
                     case InstructionType.RShift:
-                        return $"{Source} {Type} {Source2} -> {Destination}";
+                        return $"{Signal1} {Type} {Signal2} -> {Destination}";
                     case InstructionType.Not:
-                        return $"{Type} {Source} -> {Destination}";
+                        return $"{Type} {Signal1} -> {Destination}";
                     case InstructionType.Set:
                     case InstructionType.SetRef:
-                        return $"{Source} -> {Destination}";
+                        return $"{Signal1} -> {Destination}";
                 }
                 return base.ToString();
             }
@@ -271,46 +299,48 @@ NOT y -> i"
         private Dictionary<string, int> RunToCompletion(List<Instruction> instructions)
         {
             Dictionary<string, int> signals = new Dictionary<string, int>();
-            while (instructions.Where(ins => !ins.Complete).Count() > 0)
+            Queue<Instruction> pending = new Queue<Instruction>(instructions);
+            while (pending.Count() > 0)
             {
-                List<Instruction> curInstructions = instructions.Where(ins => ins.CanExecute(signals)).ToList();
-                foreach (Instruction instruction in curInstructions)
+                Instruction cur = pending.Dequeue();
+                if (cur.CanExecute(signals))
                 {
-                    instruction.Execute(ref signals);
+                    cur.Execute(ref signals);
+                }
+                else
+                {
+                    pending.Enqueue(cur);
                 }
             }
 
             return signals;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, char signalReset)
         {
-            string wire = "a";
-            if (variables != null && variables.ContainsKey(nameof(wire)))
+            string wire;
+            Util.GetVariable(nameof(wire), "a", variables, out wire);
+
+            List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
+            instructions.Sort((a, b) => a.Type != b.Type ? (a.Type > b.Type ? 1 : -1) : (a.Destination.CompareTo(b.Destination)));
+            Dictionary<string, int> signals = RunToCompletion(instructions);
+
+            if (signalReset != InvalidSignal)
             {
-                wire = variables[nameof(wire)];
+                string prevSignal = signals[wire].ToString();
+                string signalResetString = $"{signalReset}";
+                instructions = instructions.Where(i => i.Destination != signalResetString).Select(i => new Instruction(i)).ToList();
+                instructions.Insert(0, Instruction.Parse($"{prevSignal} -> {signalReset}"));
+                signals = RunToCompletion(instructions);
             }
 
-            List<Instruction> instructions = inputs.Select(input => new Instruction(input)).ToList();
-            Dictionary<string, int> signals = RunToCompletion(instructions);
             return signals[wire].ToString();
         }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, InvalidSignal);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            string wire = "a";
-            if (variables != null && variables.ContainsKey(nameof(wire)))
-            {
-                wire = variables[nameof(wire)];
-            }
-
-            List<Instruction> instructions = inputs.Select(input => new Instruction(input)).ToList();
-            Dictionary<string, int> signals = RunToCompletion(instructions);
-            string bValue = signals[wire].ToString();
-            instructions = inputs.Select(input => new Instruction(input)).Where(ins => ins.Destination != "b").ToList();
-            instructions.Add(new Instruction($"{bValue} -> b"));
-            signals = RunToCompletion(instructions);
-            return signals[wire].ToString();
-        }
+            => SharedSolution(inputs, variables, 'b');
     }
 }

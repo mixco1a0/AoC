@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,18 +7,20 @@ namespace AoC._2015
     class Day06 : Day
     {
         public Day06() { }
+
         public override string GetSolutionVersion(Part part)
         {
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -27,6 +30,13 @@ namespace AoC._2015
                 Output = "4",
                 RawInput =
 @"turn on 499,499 through 500,500"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Output = "1000000",
+                RawInput =
+@"toggle 0,0 through 999,999"
             });
             testData.Add(new TestDatum
             {
@@ -45,35 +55,68 @@ namespace AoC._2015
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private enum InstructionType
         {
-            bool[,] array = new bool[1000, 1000];
-            for (int i = 0; i < 1000; ++i)
+            Invalid,
+            On,
+            Off,
+            Toggle
+        }
+
+        private record Instruction(InstructionType Type, int xMin, int xMax, int yMin, int yMax)
+        {
+            public static Instruction Parse(string input)
             {
-                for (int j = 0; j < 1000; ++j)
+                string[] split = input.Split(" ,g".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries).ToArray();
+
+                InstructionType type = InstructionType.Invalid;
+                switch (split[1][1])
                 {
-                    array[i, j] = false;
+                    case 'n':
+                        type = InstructionType.On;
+                        break;
+                    case 'f':
+                        type = InstructionType.Off;
+                        break;
+                    case 'e':
+                        type = InstructionType.Toggle;
+                        break;
+                }
+
+                int[] intVals = split.Where(s => { int i; return int.TryParse(s, out i); }).Select(int.Parse).ToArray();
+                return new Instruction(type, intVals[0], intVals[2], intVals[1], intVals[3]);
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int min, int max, Func<int, int> toggleFunc)
+        {
+            const int gridSize = 1000;
+            int[,] grid = new int[gridSize, gridSize];
+            for (int i = 0; i < gridSize; ++i)
+            {
+                for (int j = 0; j < gridSize; ++j)
+                {
+                    grid[i, j] = min;
                 }
             }
 
-            List<string> instructions = inputs.Select(str => str.Replace("turn ", "").Replace("through ", "")).ToList();
-            foreach (string instruction in instructions)
+            Instruction[] instructions = inputs.Select(Instruction.Parse).ToArray();
+            foreach (Instruction instruction in instructions)
             {
-                List<int> splits = instruction.Split(new char[] { ' ', ',' }).Skip(1).Select(int.Parse).ToList();
-                for (int i = splits[0]; i <= splits[2]; ++i)
+                for (int x = instruction.xMin; x <= instruction.xMax; ++x)
                 {
-                    for (int j = splits[1]; j <= splits[3]; ++j)
+                    for (int y = instruction.yMin; y <= instruction.yMax; ++y)
                     {
-                        switch (instruction[0..2])
+                        switch (instruction.Type)
                         {
-                            case "on":
-                                array[i, j] = true;
+                            case InstructionType.On:
+                                grid[x, y] = Math.Min(grid[x, y] + 1, max);
                                 break;
-                            case "of":
-                                array[i, j] = false;
+                            case InstructionType.Off:
+                                grid[x, y] = Math.Max(grid[x, y] - 1, min);
                                 break;
-                            case "to":
-                                array[i, j] = !array[i, j];
+                            case InstructionType.Toggle:
+                                grid[x, y] = toggleFunc(grid[x, y]);
                                 break;
                             default:
                                 break;
@@ -83,67 +126,21 @@ namespace AoC._2015
             }
 
             int count = 0;
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < gridSize; ++i)
             {
-                for (int j = 0; j < 1000; ++j)
+                for (int j = 0; j < gridSize; ++j)
                 {
-                    count += (array[i, j] ? 1 : 0);
+                    count += grid[i, j];
                 }
             }
 
             return count.ToString();
         }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, 0, 1, (int val) => (val + 1) % 2);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            int[,] array = new int[1000, 1000];
-            for (int i = 0; i < 1000; ++i)
-            {
-                for (int j = 0; j < 1000; ++j)
-                {
-                    array[i, j] = 0;
-                }
-            }
-
-            List<string> instructions = inputs.Select(str => str.Replace("turn ", "").Replace("through ", "")).ToList();
-            foreach (string instruction in instructions)
-            {
-                List<int> splits = instruction.Split(new char[] { ' ', ',' }).Skip(1).Select(int.Parse).ToList();
-                for (int i = splits[0]; i <= splits[2]; ++i)
-                {
-                    for (int j = splits[1]; j <= splits[3]; ++j)
-                    {
-                        switch (instruction[0..2])
-                        {
-                            case "on":
-                                ++array[i, j];
-                                break;
-                            case "of":
-                                if (array[i, j] > 0)
-                                {
-                                    --array[i, j];
-                                }
-                                break;
-                            case "to":
-                                array[i, j] += 2;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-
-            int count = 0;
-            for (int i = 0; i < 1000; ++i)
-            {
-                for (int j = 0; j < 1000; ++j)
-                {
-                    count += array[i, j];
-                }
-            }
-
-            return count.ToString();
-        }
+            => SharedSolution(inputs, variables, 0, int.MaxValue, (int val) => val + 2);
     }
 }
