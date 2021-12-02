@@ -39,9 +39,14 @@ forward 2"
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "900",
                 RawInput =
-@""
+@"forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2"
             });
             return testData;
         }
@@ -55,16 +60,20 @@ forward 2"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useZ)
         {
             Instruction[] instructions = inputs.Select(Instruction.Parse).ToArray();
-            int x = 0, y = 0;
+            int x = 0, y = 0, z = 0;
             foreach (Instruction i in instructions)
             {
                 switch (i.Direction)
                 {
                     case 'f':
                         x += i.Position;
+                        if (useZ)
+                        {
+                            z += y * i.Position;
+                        }
                         break;
                     case 'd':
                         y += i.Position;
@@ -74,13 +83,17 @@ forward 2"
                         break;
                 }
             }
+            if (useZ)
+            {
+                return (x * z).ToString();
+            }
             return (x * y).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
