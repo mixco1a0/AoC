@@ -27,9 +27,14 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "150",
                 RawInput =
-@""
+@"forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2"
             });
             testData.Add(new TestDatum
             {
@@ -41,9 +46,35 @@ namespace AoC._2021
             return testData;
         }
 
+        private record Instruction(char Direction, int Position)
+        {
+            public static Instruction Parse(string input)
+            {
+                string[] split = input.Split(' ');
+                return new Instruction(split[0][0], int.Parse(split[1]));
+            }
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            Instruction[] instructions = inputs.Select(Instruction.Parse).ToArray();
+            int x = 0, y = 0;
+            foreach (Instruction i in instructions)
+            {
+                switch (i.Direction)
+                {
+                    case 'f':
+                        x += i.Position;
+                        break;
+                    case 'd':
+                        y += i.Position;
+                        break;
+                    case 'u':
+                        y -= i.Position;
+                        break;
+                }
+            }
+            return (x * y).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
