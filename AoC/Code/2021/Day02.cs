@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,10 +11,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -60,34 +59,34 @@ forward 2"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useZ)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useAim)
         {
             Instruction[] instructions = inputs.Select(Instruction.Parse).ToArray();
-            int x = 0, y = 0, z = 0;
+            int horizontal = 0, depthOrAim = 0, depth = 0;
             foreach (Instruction i in instructions)
             {
                 switch (i.Direction)
                 {
                     case 'f':
-                        x += i.Position;
-                        if (useZ)
+                        horizontal += i.Position;
+                        if (useAim)
                         {
-                            z += y * i.Position;
+                            depth += depthOrAim * i.Position;
                         }
                         break;
                     case 'd':
-                        y += i.Position;
+                        depthOrAim += i.Position;
                         break;
                     case 'u':
-                        y -= i.Position;
+                        depthOrAim -= i.Position;
                         break;
                 }
             }
-            if (useZ)
+            if (useAim)
             {
-                return (x * z).ToString();
+                return (horizontal * depth).ToString();
             }
-            return (x * y).ToString();
+            return (horizontal * depthOrAim).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
