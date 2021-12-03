@@ -13,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -66,110 +66,84 @@ namespace AoC._2021
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useLifeSupportRating)
         {
-            int[] zeroes = new int[inputs.First().Length];
-            int[] ones = new int[inputs.First().Length];
-            if (useLifeSupportRating)
+            IEnumerable<string> filteredInputs = inputs;
+            StringBuilder mostCommon = new StringBuilder();
+            StringBuilder leastCommon = new StringBuilder();
+            int maxIdx = inputs[0].Length;
+            for (int curIdx = 0; curIdx < maxIdx; ++curIdx)
             {
-                StringBuilder mostCommon = new StringBuilder();
-                StringBuilder leastCommon = new StringBuilder();
-                for (int a = 0; a < inputs.First().Length; ++a)
+                int zeroesCount = 0;
+                int onesCount = 0;
+                if (mostCommon.Length < maxIdx)
                 {
-                    int zero = 0;
-                    int one = 0;
-                    IEnumerable<string> remaining;
-                    if (mostCommon.Length < inputs.First().Length)
+                    if (useLifeSupportRating)
                     {
-                        remaining = inputs.Where(input => input.StartsWith(mostCommon.ToString()));
-                        if (remaining.Count() > 1)
-                        {
-                            foreach (string input in remaining)
-                            {
-                                zero += (input[a] == '0' ? 1 : 0);
-                                one += (input[a] == '1' ? 1 : 0);
-                            }
-
-                            if (zero > one)
-                            {
-                                mostCommon.Append(0);
-                            }
-                            else if (one >= zero)
-                            {
-                                mostCommon.Append(1);
-                            }
-                        }
-                        else
-                        {
-                            string temp = remaining.First();
-                            mostCommon.Clear();
-                            mostCommon.Append(temp);
-                        }
+                        filteredInputs = inputs.Where(i => i.StartsWith(mostCommon.ToString()));
                     }
-
-                    if (leastCommon.Length < inputs.First().Length)
+                    if (filteredInputs.Count() > 1)
                     {
-                        remaining = inputs.Where(input => input.StartsWith(leastCommon.ToString()));
-                        if (remaining.Count() > 1)
+                        foreach (string input in filteredInputs)
                         {
-                            zero = 0;
-                            one = 0;
-                            foreach (string input in remaining)
-                            {
-                                zero += (input[a] == '0' ? 1 : 0);
-                                one += (input[a] == '1' ? 1 : 0);
-                            }
-
-                            if (zero == one)
-                            {
-                                leastCommon.Append(0);
-                            }
-                            else if (zero > one)
-                            {
-                                leastCommon.Append(1);
-                            }
-                            else if (one > zero)
-                            {
-                                leastCommon.Append(0);
-                            }
+                            zeroesCount += (input[curIdx] == '0' ? 1 : 0);
+                            onesCount += (input[curIdx] == '1' ? 1 : 0);
                         }
-                        else
+
+                        if (zeroesCount > onesCount)
                         {
-                            string temp = remaining.First();
-                            leastCommon.Clear();
-                            leastCommon.Append(temp);
+                            mostCommon.Append(0);
                         }
-                    }
-                }
-
-                return (Convert.ToInt32(mostCommon.ToString(), 2) * Convert.ToInt32(leastCommon.ToString(), 2)).ToString();
-            }
-            else
-            {
-                foreach (string input in inputs)
-                {
-                    for (int i = input.Length - 1; i >= 0; --i)
-                    {
-                        zeroes[i] += (input[i] == '0' ? 1 : 0);
-                        ones[i] += (input[i] == '1' ? 1 : 0);
-                    }
-                }
-
-                StringBuilder gamma = new StringBuilder();
-                StringBuilder epsilon = new StringBuilder();
-                for (int i = 0; i < inputs.First().Length; ++i)
-                {
-                    if (zeroes[i] > ones[i])
-                    {
-                        gamma.Append(0);
-                        epsilon.Append(1);
+                        else if (onesCount >= zeroesCount)
+                        {
+                            mostCommon.Append(1);
+                        }
                     }
                     else
                     {
-                        gamma.Append(1);
-                        epsilon.Append(0);
+                        string temp = filteredInputs.First();
+                        mostCommon.Clear();
+                        mostCommon.Append(temp);
                     }
                 }
-                return (Convert.ToInt32(gamma.ToString(), 2) * Convert.ToInt32(epsilon.ToString(), 2)).ToString();
+
+                if (leastCommon.Length < maxIdx)
+                {
+                    if (useLifeSupportRating)
+                    {
+                        filteredInputs = inputs.Where(i => i.StartsWith(leastCommon.ToString()));
+                    }
+                    if (filteredInputs.Count() > 1)
+                    {
+                        zeroesCount = 0;
+                        onesCount = 0;
+                        foreach (string input in filteredInputs)
+                        {
+                            zeroesCount += (input[curIdx] == '0' ? 1 : 0);
+                            onesCount += (input[curIdx] == '1' ? 1 : 0);
+                        }
+
+                        if (zeroesCount == onesCount)
+                        {
+                            leastCommon.Append(0);
+                        }
+                        else if (zeroesCount > onesCount)
+                        {
+                            leastCommon.Append(1);
+                        }
+                        else if (onesCount > zeroesCount)
+                        {
+                            leastCommon.Append(0);
+                        }
+                    }
+                    else
+                    {
+                        string temp = filteredInputs.First();
+                        leastCommon.Clear();
+                        leastCommon.Append(temp);
+                    }
+                }
             }
+
+            return (Convert.ToInt32(mostCommon.ToString(), 2) * Convert.ToInt32(leastCommon.ToString(), 2)).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
