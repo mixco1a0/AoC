@@ -12,10 +12,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -81,10 +81,10 @@ namespace AoC._2021
 
         private class BingoBoard
         {
-            int[,] Numbers { get; set; }
-            bool[,] Called { get; set; }
-            int Size { get; set; }
-            int LastCall { get; set; }
+            private int[,] Numbers { get; set; }
+            private bool[,] Called { get; set; }
+            private int Size { get; set; }
+            private int LastCall { get; set; }
             public bool Completed { get; set; }
 
             public BingoBoard(List<string> rawBoard)
@@ -108,6 +108,11 @@ namespace AoC._2021
 
             public void Call(int call)
             {
+                if (Completed)
+                {
+                    return;
+                }
+
                 LastCall = call;
 
                 int x = -1, y = -1;
@@ -128,20 +133,20 @@ namespace AoC._2021
                     return;
                 }
 
-                bool cur = true;
-                for (int i = 0; cur && i < Size; ++i)
+                bool completed = true;
+                for (int i = 0; completed && i < Size; ++i)
                 {
-                    cur &= Called[i, y];
+                    completed &= Called[i, y];
                 }
-                if (!cur)
+                if (!completed)
                 {
-                    cur = true;
-                    for (int j = 0; cur && j < Size; ++j)
+                    completed = true;
+                    for (int j = 0; completed && j < Size; ++j)
                     {
-                        cur &= Called[x, j];
+                        completed &= Called[x, j];
                     }
                 }
-                Completed = cur;
+                Completed = completed;
             }
 
             public int GetScore()
