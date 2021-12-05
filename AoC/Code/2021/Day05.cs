@@ -27,9 +27,18 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "5",
                 RawInput =
-@""
+@"0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2"
             });
             testData.Add(new TestDatum
             {
@@ -41,9 +50,60 @@ namespace AoC._2021
             return testData;
         }
 
+        private class Segment
+        {
+            public Coords A { get; set; }
+            public Coords B { get; set; }
+
+            public static Segment Parse(string input)
+            {
+                int[] vals = input.Split(", ->".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+                Coords a = new Coords(vals[0], vals[1]);
+                Coords b = new Coords(vals[2], vals[3]);
+                return new Segment() { A = a, B = b };
+            }
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            Segment[] segments = inputs.Select(Segment.Parse).Where(s => s.A.X == s.B.X || s.A.Y == s.B.Y).ToArray();
+            Dictionary<Coords, int> overlaps = new Dictionary<Coords, int>();
+            Coords negativeY = new Coords(0, -1);
+            Coords negativeX = new Coords(-1, 0);
+            foreach (Segment segment in segments)
+            {
+                if (segment.A.X == segment.B.X)
+                {
+                    Coords start = segment.A.Y > segment.B.Y ? segment.A : segment.B;
+                    Coords end = segment.A.Y > segment.B.Y ? segment.B : segment.A;
+                    Coords cur = start;
+                    for (int y = start.Y; y >= end.Y; --y)
+                    {
+                        if (!overlaps.ContainsKey(cur))
+                        {
+                            overlaps[cur] = 0;
+                        }
+                        ++overlaps[cur];
+                        cur += negativeY;
+                    }
+                }
+                else
+                {
+                    Coords start = segment.A.X > segment.B.X ? segment.A : segment.B;
+                    Coords end = segment.A.X > segment.B.X ? segment.B : segment.A;
+                    Coords cur = start;
+                    for (int x = start.X; x >= end.X; --x)
+                    {
+                        if (!overlaps.ContainsKey(cur))
+                        {
+                            overlaps[cur] = 0;
+                        }
+                        ++overlaps[cur];
+                        cur += negativeX;
+                    }
+                }
+            }
+            return overlaps.Where(p => p.Value >= 2).Count().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
