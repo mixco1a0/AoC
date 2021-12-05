@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2021
 {
@@ -12,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v2";
+                case Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -73,66 +74,87 @@ namespace AoC._2021
             }
         }
 
+        private enum Direction
+        {
+            NegativeX,
+            NegativeY,
+            DiagonalUp,
+            DiagonalDown,
+        }
+
+        private Dictionary<Direction, Coords> Movement = new Dictionary<Direction, Coords>()
+        {
+            { Direction.NegativeX, new Coords(-1, 0) },
+            { Direction.NegativeY, new Coords(0, -1) },
+            { Direction.DiagonalUp, new Coords(-1, -1) },
+            { Direction.DiagonalDown, new Coords(-1, 1) },
+        };
+
+        private void PrintGrid(Dictionary<Coords, int> grid)
+        {
+            HashSet<Coords> coords = grid.Keys.ToHashSet();
+            int maxX = coords.Select(c => c.X).Max();
+            int maxY = coords.Select(c => c.Y).Max();
+            for (int y = 0; y <= maxY; ++y)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat("{0,3} | ", y);
+                for (int x = 0; x <= maxX; ++x)
+                {
+                    Coords cur = new Coords(x, y);
+                    if (grid.ContainsKey(cur))
+                    {
+                        sb.Append($"{grid[cur],1}");
+                    }
+                    else
+                    {
+                        sb.Append($".");
+                    }
+                }
+                DebugWriteLine(sb.ToString());
+                sb.Clear();
+            }
+            DebugWriteLine(string.Empty);
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkDiagonals)
         {
-            Segment[] segments = inputs.Select(Segment.Parse).ToArray();
             Dictionary<Coords, int> overlaps = new Dictionary<Coords, int>();
-            Coords negativeY = new Coords(0, -1);
-            Coords negativeX = new Coords(-1, 0);
-            Coords negativeDL = new Coords(-1, -1);
-            Coords negativeDR = new Coords(-1, 1);
+            Action<int, Direction, Coords> CheckCoords = (count, dir, start) =>
+            {
+                for (int i = 0; i <= count; ++i)
+                {
+                    if (!overlaps.ContainsKey(start))
+                    {
+                        overlaps[start] = 0;
+                    }
+                    ++overlaps[start];
+                    start += Movement[dir];
+                }
+            };
+
+            Segment[] segments = inputs.Select(Segment.Parse).ToArray();
             foreach (Segment segment in segments)
             {
                 if (segment.A.X == segment.B.X)
                 {
-                    Coords start = segment.A.Y > segment.B.Y ? segment.A : segment.B;
-                    Coords end = segment.A.Y > segment.B.Y ? segment.B : segment.A;
-                    Coords cur = start;
-                    for (int y = start.Y; y >= end.Y; --y)
-                    {
-                        if (!overlaps.ContainsKey(cur))
-                        {
-                            overlaps[cur] = 0;
-                        }
-                        ++overlaps[cur];
-                        cur += negativeY;
-                    }
+                    CheckCoords(Math.Abs(segment.A.Y - segment.B.Y), Direction.NegativeY, segment.A.Y > segment.B.Y ? segment.A : segment.B);
                 }
                 else if (segment.A.Y == segment.B.Y)
                 {
-                    Coords start = segment.A.X > segment.B.X ? segment.A : segment.B;
-                    Coords end = segment.A.X > segment.B.X ? segment.B : segment.A;
-                    Coords cur = start;
-                    for (int x = start.X; x >= end.X; --x)
-                    {
-                        if (!overlaps.ContainsKey(cur))
-                        {
-                            overlaps[cur] = 0;
-                        }
-                        ++overlaps[cur];
-                        cur += negativeX;
-                    }
+                    CheckCoords(Math.Abs(segment.A.X - segment.B.X), Direction.NegativeX, segment.A.X > segment.B.X ? segment.A : segment.B);
                 }
                 else if (checkDiagonals)
                 {
                     Coords start = segment.A.X > segment.B.X ? segment.A : segment.B;
-                    Coords end = segment.A.X > segment.B.X ? segment.B : segment.A;
-                    Coords cur = start;
-                    for (int x = start.X; x >= end.X; --x)
+                    Coords end = start.Equals(segment.A) ? segment.B : segment.A;
+                    if (end.Y < start.Y)
                     {
-                        if (!overlaps.ContainsKey(cur))
-                        {
-                            overlaps[cur] = 0;
-                        }
-                        ++overlaps[cur];
-                        if (end.Y < start.Y)
-                        {
-                            cur += negativeDL;
-                        }
-                        else
-                        {
-                            cur += negativeDR;
-                        }
+                        CheckCoords(Math.Abs(segment.A.X - segment.B.X), Direction.DiagonalUp, start);
+                    }
+                    else
+                    {
+                        CheckCoords(Math.Abs(segment.A.X - segment.B.X), Direction.DiagonalDown, start);
                     }
                 }
             }
