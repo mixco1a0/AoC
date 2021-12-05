@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2021
 {
@@ -13,9 +14,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -81,8 +82,11 @@ namespace AoC._2021
 
         private class BingoBoard
         {
-            private int[,] Numbers { get; set; }
-            private bool[,] Called { get; set; }
+            private int Row { get { return 0b11111; } }
+            private int Col { get { return 0b00001_00001_00001_00001_00001; } }
+
+            private Dictionary<int, Coords> Numbers { get; set; }
+            private int CallState { get; set; }
             private int Size { get; set; }
             private int LastCall { get; set; }
             public bool Completed { get; set; }
@@ -92,17 +96,53 @@ namespace AoC._2021
                 Size = rawBoard.Count();
                 LastCall = -1;
                 Completed = false;
+                CallState = 0;
 
-                Numbers = new int[Size, Size];
-                Called = new bool[Size, Size];
+                Numbers = new Dictionary<int, Coords>();
                 for (int i = 0; i < Size; ++i)
                 {
                     int[] row = rawBoard[i].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
                     for (int j = 0; j < Size; ++j)
                     {
-                        Numbers[i, j] = row[j];
-                        Called[i, j] = false;
+                        Numbers.Add(row[j], new Coords(j, i));
                     }
+                }
+            }
+
+            public void Print(Action<string> PrintFunc)
+            {
+                int[,] numbers = new int[Size, Size];
+                for (int i = 0; i < Size; ++i)
+                {
+                    for (int j = 0; j < Size; ++j)
+                    {
+                        numbers[i, j] = -1;
+                    }
+                }
+                foreach (KeyValuePair<int, Coords> pair in Numbers)
+                {
+                    numbers[pair.Value.X, pair.Value.Y] = pair.Key;
+                }
+
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < Size; ++i)
+                {
+                    for (int j = 0; j < Size; ++j)
+                    {
+                        int binaryShifted = 1 << (i * Size + (Size - j - 1));
+                        if ((CallState & binaryShifted) == binaryShifted)
+                        {
+                            sb.Append("-- ");
+                        }
+                        else
+                        {
+
+                            sb.Append($"{numbers[j, i],2} ");
+                        }
+                    }
+                    PrintFunc(sb.ToString());
+                    sb.Clear();
                 }
             }
 
@@ -114,55 +154,21 @@ namespace AoC._2021
                 }
 
                 LastCall = call;
-
-                int x = -1, y = -1;
-                for (int i = 0; x == -1 && i < Size; ++i)
+                if (Numbers.ContainsKey(call))
                 {
-                    for (int j = 0; y == -1 && j < Size; ++j)
-                    {
-                        if (Numbers[i, j] == call)
-                        {
-                            Called[i, j] = true;
-                            x = i;
-                            y = j;
-                        }
-                    }
+                    Coords coords = Numbers[call];
+                    int binaryShifted = 1 << (coords.Y * Size + (Size - coords.X - 1));
+                    CallState |= binaryShifted;
+                    int rowCheck = Row << coords.Y * Size;
+                    int colCheck = Col << (Size - coords.X - 1);
+                    Completed = (rowCheck & CallState) == rowCheck || (colCheck & CallState) == colCheck;
+                    Numbers.Remove(call);
                 }
-                if (x == -1 && y == -1)
-                {
-                    return;
-                }
-
-                bool completed = true;
-                for (int i = 0; completed && i < Size; ++i)
-                {
-                    completed &= Called[i, y];
-                }
-                if (!completed)
-                {
-                    completed = true;
-                    for (int j = 0; completed && j < Size; ++j)
-                    {
-                        completed &= Called[x, j];
-                    }
-                }
-                Completed = completed;
             }
 
             public int GetScore()
             {
-                int score = 0;
-                for (int i = 0; i < Size; ++i)
-                {
-                    for (int j = 0; j < Size; ++j)
-                    {
-                        if (!Called[i, j])
-                        {
-                            score += Numbers[i, j];
-                        }
-                    }
-                }
-                return score * LastCall;
+                return Numbers.Keys.Sum() * LastCall;
             }
         }
 
