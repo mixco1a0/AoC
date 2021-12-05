@@ -43,9 +43,18 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "12",
                 RawInput =
-@""
+@"0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2"
             });
             return testData;
         }
@@ -64,12 +73,14 @@ namespace AoC._2021
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkDiagonals)
         {
-            Segment[] segments = inputs.Select(Segment.Parse).Where(s => s.A.X == s.B.X || s.A.Y == s.B.Y).ToArray();
+            Segment[] segments = inputs.Select(Segment.Parse).ToArray();
             Dictionary<Coords, int> overlaps = new Dictionary<Coords, int>();
             Coords negativeY = new Coords(0, -1);
             Coords negativeX = new Coords(-1, 0);
+            Coords negativeDL = new Coords(-1, -1);
+            Coords negativeDR = new Coords(-1, 1);
             foreach (Segment segment in segments)
             {
                 if (segment.A.X == segment.B.X)
@@ -87,7 +98,7 @@ namespace AoC._2021
                         cur += negativeY;
                     }
                 }
-                else
+                else if (segment.A.Y == segment.B.Y)
                 {
                     Coords start = segment.A.X > segment.B.X ? segment.A : segment.B;
                     Coords end = segment.A.X > segment.B.X ? segment.B : segment.A;
@@ -102,14 +113,36 @@ namespace AoC._2021
                         cur += negativeX;
                     }
                 }
+                else if (checkDiagonals)
+                {
+                    Coords start = segment.A.X > segment.B.X ? segment.A : segment.B;
+                    Coords end = segment.A.X > segment.B.X ? segment.B : segment.A;
+                    Coords cur = start;
+                    for (int x = start.X; x >= end.X; --x)
+                    {
+                        if (!overlaps.ContainsKey(cur))
+                        {
+                            overlaps[cur] = 0;
+                        }
+                        ++overlaps[cur];
+                        if (end.Y < start.Y)
+                        {
+                            cur += negativeDL;
+                        }
+                        else
+                        {
+                            cur += negativeDR;
+                        }
+                    }
+                }
             }
             return overlaps.Where(p => p.Value >= 2).Count().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
