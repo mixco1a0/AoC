@@ -27,9 +27,9 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "5934",
                 RawInput =
-@""
+@"3,4,3,1,2"
             });
             testData.Add(new TestDatum
             {
@@ -41,15 +41,33 @@ namespace AoC._2021
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int days)
         {
-            return string.Empty;
+            List<int> fish = inputs.First().Split(',').Select(int.Parse).ToList();
+            for (int i = 0; i < days; ++i)
+            {
+                int newFish = 0;
+                for (int f = 0; f < fish.Count; ++f)
+                {
+                    --fish[f];
+                    if (fish[f] < 0)
+                    {
+                        fish[f] = 6;
+                        ++newFish;
+                    }
+                }
+                if (newFish > 0)
+                {
+                    fish.AddRange(Enumerable.Repeat(8, newFish));
+                }
+            }
+            return fish.Count.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 80);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 0);
     }
 }
