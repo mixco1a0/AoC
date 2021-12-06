@@ -13,9 +13,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -44,43 +44,30 @@ namespace AoC._2021
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int days)
         {
             List<long> fishUncrompressed = inputs.First().Split(',').Select(long.Parse).ToList();
-            Dictionary<long, long> fishCounts = new Dictionary<long, long>();
+            long[] fish = Enumerable.Repeat((long)0, 9).ToArray();
             foreach (long f in fishUncrompressed)
             {
-                if (!fishCounts.ContainsKey(f))
-                {
-                    fishCounts[f] = 0;
-                }
-                ++fishCounts[f];
+                ++fish[f];
             }
-
-            Action<Dictionary<long, long>, long, long> UpdateCounts = (dictionary, key, value) =>
-            {
-                if (!dictionary.ContainsKey(key))
-                {
-                    dictionary[key] = 0;
-                }
-                dictionary[key] += value;
-            };
             for (long i = 0; i < days; ++i)
             {
+                long[] nextFish = Enumerable.Repeat((long)0, 9).ToArray();
                 Dictionary<long, long> nextState = new Dictionary<long, long>();
-                foreach (KeyValuePair<long, long> pair in fishCounts)
+                for (int f = 0; f < 9; ++f)
                 {
-                    long nextKey = pair.Key - 1;
-                    if (pair.Key - 1 < 0)
+                    if (f - 1 < 0)
                     {
-                        UpdateCounts(nextState, 8, pair.Value);
-                        UpdateCounts(nextState, 6, pair.Value);
+                        nextFish[6] += fish[f];
+                        nextFish[8] += fish[f];
                     }
                     else
                     {
-                        UpdateCounts(nextState, nextKey, pair.Value);
+                        nextFish[f - 1] += fish[f];
                     }
                 }
-                fishCounts = nextState;
+                fish = nextFish;
             }
-            return fishCounts.Select(p => p.Value).Sum().ToString();
+            return fish.Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
