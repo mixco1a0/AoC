@@ -31,7 +31,7 @@ namespace AoC
             value = defaultValue;
             if (variables != null && variables.ContainsKey(variableName))
             {
-                value = int.Parse(variables[variableName]);
+                value = long.Parse(variables[variableName]);
             }
         }
 
