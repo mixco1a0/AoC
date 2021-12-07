@@ -34,31 +34,52 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "168",
                 RawInput =
-@""
+@"16,1,2,0,4,2,7,1,2,14"
             });
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private long GetFuelCost(long togo, long depth)
         {
-            List<int> positions = inputs.First().Split(',').Select(int.Parse).ToList();
-            double avg = positions.Average();
-            int low = (int)avg;
-            int high = (int)avg + 1;
-            int min = positions.Min();
-            int max = positions.Max();
-            int bestFuel = int.MaxValue;
-            while (low > min && high < max)
+            if (togo == 0)
             {
-                int curFuel = 0;
-                positions.ForEach(p => curFuel += Math.Abs(low - p));
-                bestFuel = Math.Min(curFuel, bestFuel);
+                return 0;
+            }
+            if (togo <= 1)
+            {
+                return depth;
+            }
+            return depth + GetFuelCost(togo - 1, depth + 1);
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool advancedFuel)
+        {
+            List<long> positions = inputs.First().Split(',').Select(long.Parse).ToList();
+            double avg = positions.Average();
+            long low = (long)avg;
+            long high = (long)avg + 1;
+            long min = positions.Min();
+            long max = positions.Max();
+            long bestFuel = long.MaxValue;
+            Func<long, long, long> basic = (val1, val2) => Math.Abs(val1 - val2);
+            Func<long, long, long> advanced = (val1, val2) => GetFuelCost(Math.Abs(val1 - val2), 1);
+            while (low >= min || high <= max)
+            {
+                long curFuel = 0;
+                if (low >= min)
+                {
+                    positions.ForEach(p => curFuel += advancedFuel ? advanced(low, p) : basic(low, p));
+                    bestFuel = Math.Min(curFuel, bestFuel);
+                }
 
                 curFuel = 0;
-                positions.ForEach(p => curFuel += Math.Abs(high - p));
-                bestFuel = Math.Min(curFuel, bestFuel);
+                if (high <= max)
+                {
+                    positions.ForEach(p => curFuel += advancedFuel ? advanced(high, p) : basic(high, p));
+                    bestFuel = Math.Min(curFuel, bestFuel);
+                }
 
                 --low;
                 ++high;
@@ -67,9 +88,9 @@ namespace AoC._2021
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
