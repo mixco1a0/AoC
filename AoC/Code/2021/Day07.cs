@@ -13,9 +13,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v3";
+                    return "v4";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -62,12 +62,28 @@ namespace AoC._2021
                 return sumCache[diff];
             };
             int curFuel = 0;
+            Queue<int> prevLow = new Queue<int>();
+            Queue<int> prevHigh = new Queue<int>();
             while (low >= min || high <= max)
             {
                 if (low >= min)
                 {
                     curFuel = 0;
                     positions.ForEach(p => curFuel += (advancedFuel ? advanced(low, p) : basic(low, p)));
+                    if (prevLow.Count > 3)
+                    {
+                        bool minFound = true;
+                        for (int i = 0; i < 3; ++i)
+                        {
+                            minFound &= prevLow.ElementAt(i + 1) > prevLow.ElementAt(i);
+                        }
+                        if (minFound)
+                        {
+                            low = min;
+                        }
+                        prevLow.Dequeue();
+                    }
+                    prevLow.Enqueue(curFuel);
                     bestFuel = Math.Min(curFuel, bestFuel);
                     --low;
                 }
@@ -76,6 +92,20 @@ namespace AoC._2021
                 {
                     curFuel = 0;
                     positions.ForEach(p => curFuel += (advancedFuel ? advanced(high, p) : basic(high, p)));
+                    if (prevHigh.Count > 3)
+                    {
+                        bool maxFound = true;
+                        for (int i = 0; i < 3; ++i)
+                        {
+                            maxFound &= prevHigh.ElementAt(i + 1) > prevHigh.ElementAt(i);
+                        }
+                        if (maxFound)
+                        {
+                            high = max;
+                        }
+                        prevHigh.Dequeue();
+                    }
+                    prevHigh.Enqueue(curFuel);
                     bestFuel = Math.Min(curFuel, bestFuel);
                     ++high;
                 }
