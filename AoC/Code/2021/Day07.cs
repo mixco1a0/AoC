@@ -13,9 +13,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Part.One:
-                    return "v2";
+                    return "v1";
                 case Part.Two:
-                    return "v2";
+                    return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -46,30 +46,40 @@ namespace AoC._2021
             List<int> positions = inputs.First().Split(',').Select(int.Parse).ToList();
             double avg = positions.Average();
             int low = (int)avg;
-            int high = (int)avg + 1;
+            int high = low + 1;
             int min = positions.Min();
             int max = positions.Max();
             int bestFuel = int.MaxValue;
             Func<int, int, int> basic = (val1, val2) => Math.Abs(val1 - val2);
-            Func<int, int, int> advanced = (val1, val2) => Enumerable.Range(1, Math.Abs(val1 - val2)).Sum();
+            Dictionary<int, int> sumCache = new Dictionary<int, int>();
+            Func<int, int, int> advanced = (val1, val2) =>
+            {
+                int diff = Math.Abs(val1 - val2);
+                if (!sumCache.ContainsKey(diff))
+                {
+                    sumCache[diff] = Enumerable.Range(1, diff).Sum();
+                }
+                return sumCache[diff];
+            };
+            int curFuel = 0;
             while (low >= min || high <= max)
             {
-                int curFuel = 0;
                 if (low >= min)
                 {
-                    positions.ForEach(p => curFuel += advancedFuel ? advanced(low, p) : basic(low, p));
+                    curFuel = 0;
+                    positions.ForEach(p => curFuel += (advancedFuel ? advanced(low, p) : basic(low, p)));
                     bestFuel = Math.Min(curFuel, bestFuel);
+                    --low;
                 }
 
-                curFuel = 0;
                 if (high <= max)
                 {
-                    positions.ForEach(p => curFuel += advancedFuel ? advanced(high, p) : basic(high, p));
+                    curFuel = 0;
+                    positions.ForEach(p => curFuel += (advancedFuel ? advanced(high, p) : basic(high, p)));
                     bestFuel = Math.Min(curFuel, bestFuel);
+                    ++high;
                 }
 
-                --low;
-                ++high;
             }
             return bestFuel.ToString();
         }
