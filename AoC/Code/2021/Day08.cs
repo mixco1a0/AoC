@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2021
 {
@@ -12,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v2";
+                case Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -66,128 +67,57 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
             return testData;
         }
 
-        private Dictionary<int, string> Digits = new Dictionary<int, string>()
-        {
-            {0, "abcefg"},
-            {1, "cf"},
-            {2, "acdeg"},
-            {3, "acdfg"},
-            {4, "bcdf"},
-            {5, "abdfg"},
-            {6, "abdefg"},
-            {7, "acf"},
-            {8, "abcdefg"},
-            {9, "abcdfg"},
-        };
-
         private class Signal
         {
             public List<string> Patterns { get; set; }
             public List<string> Output { get; set; }
 
+            public int Decode()
+            {
+                string[] translator = new string[10];
+                translator[1] = Patterns.Single(p => p.Length == 2);
+                translator[4] = Patterns.Single(p => p.Length == 4);
+                translator[7] = Patterns.Single(p => p.Length == 3);
+                translator[8] = Patterns.Single(p => p.Length == 7);
+                translator[9] = Patterns.Single(p => p.Length == 6 && p.Except(translator[7]).Except(translator[4]).Count() == 1);
+                translator[0] = Patterns.Single(p => p.Length == 6 && p != translator[9] && p.Except(translator[7]).Count() == 3);
+                translator[6] = Patterns.Single(p => p.Length == 6 && p != translator[9] && p.Except(translator[7]).Count() == 4);
+                translator[5] = Patterns.Single(p => p.Length == 5 && translator[6].Except(p).Count() == 1);
+                translator[3] = Patterns.Single(p => p.Length == 5 && p != translator[5] && translator[9].Except(p).Count() == 1);
+                translator[2] = Patterns.Single(p => p.Length == 5 && p != translator[5] && p != translator[3]);
+                for (int i = 0; i < translator.Length; ++i)
+                {
+                    translator[i] = string.Concat(translator[i].OrderBy(c => c));
+                }
+
+                StringBuilder code = new StringBuilder();
+                foreach (string output in Output)
+                {
+                    code.Append(translator.Select((translated, idx) => new { translated = translated, idx = idx }).Single(p => p.translated == output).idx);
+                }
+                return int.Parse(code.ToString());
+            }
+
             public static Signal Parse(string input)
             {
                 Signal signal = new Signal();
                 string[] split = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                signal.Patterns = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-                signal.Output = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                signal.Patterns = split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).OrderBy(s => s.Length).ToList();
+                signal.Output = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => string.Concat(s.OrderBy(c => c))).ToList();
                 return signal;
             }
-        }
-
-        private int Solve(Signal signal, List<int> uniqueValues, List<int> uniqueDigits)
-        {
-            var test = Digits.Values.GroupBy(k => k.Length).Select(g => g).OrderBy(g => g.Count()).ToList();
-            const string all = "abcdefg";
-            Dictionary<char, string> translation = new Dictionary<char, string>();
-            for (char i = 'a'; i <= 'g'; ++i)
-            {
-                translation[i] = all;
-            }
-            //signal.Patterns.OrderBy(p => D)
-            foreach (string pattern in signal.Patterns.Where(p => uniqueValues.Contains(p.Length)))
-            {
-                IEnumerable<char> toRemove = all.ToCharArray().Where(c => !pattern.Contains(c));
-                string potentialDigits = Digits.Values.Where(v => v.Length == pattern.Length).First();
-                foreach (char d in potentialDigits)
-                {
-                    foreach (char tr in toRemove)
-                    {
-                        translation[d] = translation[d].Replace($"{tr}", string.Empty);
-                    }
-                }
-                toRemove = all.ToCharArray().Where(c => pattern.Contains(c));
-                foreach (char d in all.Where(a => !potentialDigits.Contains(a)))
-                {
-                    foreach (char tr in toRemove)
-                    {
-                        translation[d] = translation[d].Replace($"{tr}", string.Empty);
-                    }
-                }
-            }
-            Dictionary<char, string> backup = new Dictionary<char, string>(translation);
-            Dictionary<char, string> working = new Dictionary<char, string>(translation);
-            foreach (string pattern in signal.Patterns.Where(p => !uniqueValues.Contains(p.Length)))
-            {
-                IEnumerable<string> potentialDigits = Digits.Values.Where(v => v.Length == pattern.Length);
-                foreach (string potentialDigit in potentialDigits)
-                {
-                    IEnumerable<char> toRemove = all.ToCharArray().Where(c => !pattern.Contains(c));
-                    foreach (char d in potentialDigit)
-                    {
-                        foreach (char tr in toRemove)
-                        {
-                            working[d] = working[d].Replace($"{tr}", string.Empty);
-                        }
-                    }
-                    toRemove = all.ToCharArray().Where(c => pattern.Contains(c));
-                    foreach (char d in all.Where(a => !potentialDigit.Contains(a)))
-                    {
-                        foreach (char tr in toRemove)
-                        {
-                            working[d] = working[d].Replace($"{tr}", string.Empty);
-                        }
-                    }
-
-                    if (working.Values.Any(v => v.Length == 0))
-                    {
-                        working = new Dictionary<char, string>(backup);
-                    }
-                    else
-                    {
-                        backup = new Dictionary<char, string>(working);
-                        break;
-                    }
-                }
-            }
-
-            string finalCode = string.Empty;
-            Dictionary<char, char> finalTranslate = new Dictionary<char, char>();
-            foreach (var pair in working)
-            {
-                finalTranslate[pair.Value[0]] = pair.Key;
-            }
-            foreach (string digit in signal.Output.Select(o => string.Concat(o.OrderBy(c => c))))
-            {
-                string converted = string.Concat(string.Join(string.Empty, digit.Select(d => finalTranslate[d])).OrderBy(c => c));
-                int cur = Digits.Where(p => p.Value == converted).Select(p => p.Key).First();
-                finalCode += $"{cur}";
-            }
-
-            return int.Parse(finalCode);
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool decode)
         {
             List<Signal> signals = inputs.Select(Signal.Parse).ToList();
-            List<int> uniqueValues = Digits.Values.GroupBy(k => k.Length).Where(g => g.Count() == 1).Select(g => g.Key).ToList();
-            List<int> uniqueDigits = Digits.Where(p => uniqueValues.Contains(p.Value.Length)).Select(p => p.Key).ToList();
+            HashSet<int> uniqueValues = new HashSet<int>() { 2, 4, 3, 7 };
             int sum = 0;
             foreach (Signal signal in signals)
             {
                 if (decode)
                 {
-                    sum += Solve(signal, uniqueValues, uniqueDigits);
+                    sum += signal.Decode();
                 }
                 else
                 {
