@@ -427,6 +427,9 @@ namespace AoC
             string maxStr = "";
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;
+            List<string> logs = new List<string>();
+            logs.Add(string.Empty);
+            logs.Add(string.Empty);
             foreach (string key in days.Keys)
             {
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[key].FullName);
@@ -471,18 +474,31 @@ namespace AoC
 
                                 logLine += string.Format(" Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={3:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
                             }
-                            LogLine(logLine);
+                            logs.Add(logLine);
                             maxStringLength = Math.Max(maxStringLength, logLine.Length);
                         }
-                        LogLine(new string('#', maxStringLength));
+                        logs.Add(string.Empty);
                     }
                 }
             }
 
+            string separator = new string('#', maxStringLength);
+            foreach (string log in logs)
+            {
+                if (string.IsNullOrEmpty(log))
+                {
+                    LogLine(separator);
+                }
+                else
+                {
+                    LogLine(log);
+                }
+            }
+
             double totals = p1Total + p2Total;
-            LogLine($"[{baseNamespace[^4..]}|total|part1|--] Avg={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
-            LogLine($"[{baseNamespace[^4..]}|total|part2|--] Avg={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
-            LogLine($"[{baseNamespace[^4..]}|total|-all-|--] Avg={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
+            LogLine($"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
+            LogLine($"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
+            LogLine($"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
             LogLine(new string('#', maxStringLength));
 
             if (totals > 0)
