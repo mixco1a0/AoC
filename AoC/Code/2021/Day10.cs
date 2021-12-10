@@ -27,9 +27,18 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "",
+                Output = "26397",
                 RawInput =
-@""
+@"[({(<(())[]>[[{[]{<()<>>
+[(()[<>])]({[<{<<[]>>(
+{([(<{}[<>[]}>{[]{[(<()>
+(((({<>}<{<{<>}{[]{[]{}
+[[<[([]))<([[{}[[()]]]
+[{[{({}]{}}([{[{{{}}([]
+{<[[]]>}<{[{[{[]{()[[[]
+[<(<(<(<{}))><([]([]()
+<{([([[(<>()){}]>(<<{{
+<{([{{}}[<[[[<>{}]]]>[]]"
             });
             testData.Add(new TestDatum
             {
@@ -43,7 +52,47 @@ namespace AoC._2021
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            string allOpen = "([{<";
+            Dictionary<char,char> openToClose = new Dictionary<char, char>{{'(',')'}, {'[',']'}, {'{','}'}, {'<','>'}};
+            long score = 0;
+            foreach (string input in inputs)
+            {
+                Stack<char> opened = new Stack<char>();
+                foreach (char i in input)
+                {
+                    if (allOpen.Contains(i))
+                    {
+                        opened.Push(i);
+                    }
+                    else
+                    {
+                        if (opened.Count == 0 || i != openToClose[opened.Peek()])
+                        {
+                            switch (i)
+                            {
+                                case ')':
+                                    score += 3;
+                                    break;
+                                case ']':
+                                    score += 57;
+                                    break;
+                                case '}':
+                                    score += 1197;
+                                    break;
+                                case '>':
+                                    score += 25137;
+                                    break;
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            opened.Pop();
+                        }
+                    }
+                }
+            }
+            return score.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
