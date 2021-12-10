@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,10 +11,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v2";
+                case Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -59,10 +58,22 @@ namespace AoC._2021
             return testData;
         }
 
+        Dictionary<char, char> OpenToClose = new Dictionary<char, char> { { '(', ')' }, { '[', ']' }, { '{', '}' }, { '<', '>' } };
+        Dictionary<char, long> Points = new Dictionary<char, long>()
+        {
+            { ')', 3 },
+            { ']', 57 },
+            { '}', 1197 },
+            { '>', 25137 },
+            { '(', 1 },
+            { '[', 2 },
+            { '{', 3 },
+            { '<', 4 },
+        };
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool scoreCorrupt)
         {
-            string allOpen = "([{<";
-            Dictionary<char, char> openToClose = new Dictionary<char, char> { { '(', ')' }, { '[', ']' }, { '{', '}' }, { '<', '>' } };
+            string allOpen = string.Join(string.Empty, OpenToClose.Keys);
             long score = 0;
             List<long> scores = new List<long>();
             foreach (string input in inputs)
@@ -76,23 +87,9 @@ namespace AoC._2021
                     }
                     else
                     {
-                        if (opened.Count == 0 || i != openToClose[opened.Peek()])
+                        if (opened.Count == 0 || i != OpenToClose[opened.Peek()])
                         {
-                            switch (i)
-                            {
-                                case ')':
-                                    score += 3;
-                                    break;
-                                case ']':
-                                    score += 57;
-                                    break;
-                                case '}':
-                                    score += 1197;
-                                    break;
-                                case '>':
-                                    score += 25137;
-                                    break;
-                            }
+                            score += Points[i];
                             opened.Clear();
                             break;
                         }
@@ -102,6 +99,7 @@ namespace AoC._2021
                         }
                     }
                 }
+
                 // not corrupt
                 if (!scoreCorrupt && opened.Count > 0)
                 {
@@ -110,25 +108,12 @@ namespace AoC._2021
                     foreach (char c in completion)
                     {
                         completionScore *= 5;
-                        switch (c)
-                        {
-                            case '(':
-                                completionScore += 1;
-                                break;
-                            case '[':
-                                completionScore += 2;
-                                break;
-                            case '{':
-                                completionScore += 3;
-                                break;
-                            case '<':
-                                completionScore += 4;
-                                break;
-                        }
+                        completionScore += Points[c];
                     }
                     scores.Add(completionScore);
                 }
             }
+            
             if (scoreCorrupt)
             {
                 return score.ToString();
