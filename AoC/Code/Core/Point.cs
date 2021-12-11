@@ -1,4 +1,3 @@
-using System.Numerics;
 using System;
 
 namespace AoC.Core
@@ -6,8 +5,8 @@ namespace AoC.Core
     public class Point<T> : Pair<T, T>
         where T : IComparable
     {
-        public T X { get => First; set => First = value; }
-        public T Y { get => Last; set => Last = value; }
+        public T X { get => m_first; set => m_first = value; }
+        public T Y { get => m_last; set => m_last = value; }
         public bool SortByX { get { return m_sortByFirst; } set { m_sortByFirst = value; } }
 
         public Point() : base() { }

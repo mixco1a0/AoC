@@ -8,9 +8,9 @@ namespace AoC.Core
     {
         protected bool m_sortByFirst;
         protected TFirst m_first;
-        public TFirst First { get { return m_first; } set { m_first = value; } }
+        public TFirst First { get => m_first; set => m_first = value; }
         protected TLast m_last;
-        public TLast Last { get { return m_last; } set { m_last = value; } }
+        public TLast Last { get => m_last; set => m_last = value; }
 
         #region Constructors
         public Pair()
