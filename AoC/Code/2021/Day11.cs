@@ -1,7 +1,6 @@
-using System.Text;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2021
 {
@@ -13,10 +12,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -76,11 +75,6 @@ namespace AoC._2021
             });
             return testData;
         }
-
-        // private int Flash(ref int[,] grid, int maxX, int maxY, int x, int y)
-        // {
-
-        // }
 
         private List<Core.Point> Surrounding = new List<Core.Point>
         {
@@ -181,7 +175,6 @@ namespace AoC._2021
                 }
                 ++y;
             }
-            //PrintGrid(grid, maxX, maxY);
 
             int flashCount = 0;
             for (int i = 1; i <= steps; ++i)
@@ -192,7 +185,6 @@ namespace AoC._2021
                     return i.ToString();
                 }
                 flashCount += curFlashCount;
-                //PrintGrid(grid, maxX, maxY);
             }
             return flashCount.ToString();
         }
