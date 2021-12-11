@@ -61,9 +61,18 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "195",
                 RawInput =
-@""
+@"5483143223
+2745854711
+5264556173
+6141336146
+6357385478
+4167524645
+2176841721
+6882881134
+4846848554
+5283751526"
             });
             return testData;
         }
@@ -150,10 +159,14 @@ namespace AoC._2021
             return flashCount;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findSync)
         {
             int steps;
             Util.GetVariable(nameof(steps), 100, variables, out steps);
+            if (findSync)
+            {
+                steps = int.MaxValue;
+            }
 
             int maxX = inputs.First().Length;
             int maxY = inputs.Count;
@@ -171,18 +184,23 @@ namespace AoC._2021
             //PrintGrid(grid, maxX, maxY);
 
             int flashCount = 0;
-            for (int i = 0; i < steps; ++i)
+            for (int i = 1; i <= steps; ++i)
             {
-                flashCount += Step(ref grid, maxX, maxY);
+                int curFlashCount = Step(ref grid, maxX, maxY);
+                if (findSync && curFlashCount == maxX * maxY)
+                {
+                    return i.ToString();
+                }
+                flashCount += curFlashCount;
                 //PrintGrid(grid, maxX, maxY);
             }
             return flashCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
