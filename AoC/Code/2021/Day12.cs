@@ -80,9 +80,55 @@ start-RW"
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "36",
                 RawInput =
-@""
+@"start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "103",
+                RawInput =
+@"dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.Two,
+                Output = "3509",
+                RawInput =
+@"fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW"
             });
             return testData;
         }
@@ -133,6 +179,7 @@ start-RW"
             public HashSet<string> SmallCaves { get; set; }
             public List<string> Nodes { get; set; }
             public string Last { get => Nodes.Last(); }
+            public bool VisitedSmallCallTwice { get; private set; }
 
             public Path(Node node)
             {
@@ -141,13 +188,14 @@ start-RW"
                 Nodes = new List<string>();
                 bool firstIsStart = node.First == Start;
                 Nodes.Add(firstIsStart ? node.First : node.Last);
-                Visit(node, !firstIsStart);
+                Visit(node, !firstIsStart, false /*shouldn't matter since its the start*/ );
             }
 
             public Path(Path other)
             {
                 SmallCaves = new HashSet<string>(other.SmallCaves);
                 Nodes = new List<string>(other.Nodes);
+                VisitedSmallCallTwice = other.VisitedSmallCallTwice;
             }
 
             public void Print(Action<string> printFunc)
@@ -155,14 +203,25 @@ start-RW"
                 printFunc(ToString());
             }
 
-            public bool Visit(Node node, bool visitFirst)
+            public bool Visit(Node node, bool visitFirst, bool visitSmallCaveTwiceOnce)
             {
                 string toVisit = (visitFirst ? node.First : node.Last);
                 if (char.IsLower(toVisit[0]))
                 {
                     if (SmallCaves.Contains(toVisit))
                     {
-                        return false;
+                        if (visitSmallCaveTwiceOnce)
+                        {
+                            if (VisitedSmallCallTwice)
+                            {
+                                return false;
+                            }
+                            VisitedSmallCallTwice = true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                     SmallCaves.Add(toVisit);
                 }
@@ -176,7 +235,7 @@ start-RW"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool visitSmallCaveTwiceOnce)
         {
             Node[] nodes = inputs.Select(Node.Parse).ToArray();
 
@@ -200,7 +259,7 @@ start-RW"
                 foreach (Node node in nodes.Where(n => !n.IsStart && n.First == cur.Last))
                 {
                     Path next = new Path(cur);
-                    if (next.Visit(node, false))
+                    if (next.Visit(node, false, visitSmallCaveTwiceOnce))
                     {
                         paths.Enqueue(next);
                     }
@@ -208,7 +267,7 @@ start-RW"
                 foreach (Node node in nodes.Where(n => !n.IsStart && n.Last == cur.Last))
                 {
                     Path next = new Path(cur);
-                    if (next.Visit(node, true))
+                    if (next.Visit(node, true, visitSmallCaveTwiceOnce))
                     {
                         paths.Enqueue(next);
                     }
@@ -218,9 +277,9 @@ start-RW"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
