@@ -244,6 +244,9 @@ namespace AoC
             LogLine($"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
             LogLine("...Warming up");
             RunWarmup();
+            ObjectHandle warmupHandle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
+            Day warmupDay = (Day)warmupHandle.Unwrap();
+            warmupDay.RunProblem(part);
 
             DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
 
