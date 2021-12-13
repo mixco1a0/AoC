@@ -13,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -163,7 +163,8 @@ fold along x=5"
             }
             if (!oneFold)
             {
-                Print(points);
+                // TODO: 2016.Day08 -> combine to form letter guide
+                //Print(points);
             }
             return points.Count().ToString();
         }
