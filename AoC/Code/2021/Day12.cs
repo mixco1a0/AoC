@@ -13,9 +13,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -133,147 +133,164 @@ start-RW"
             return testData;
         }
 
-        private const string Start = "[START]";
-        private const string End = "[END]";
-
-        private class Node : Core.Pair<string, string>
+        private class Cave
         {
-            public bool IsStart { get; set; }
-            public bool IsEnd { get; set; }
+            public int ID { get; private set; }
+            public string Name { get; private set; }
+            public List<Cave> Connections { get; private set; }
 
-            public Node() : base() { }
-            public Node(string first, string last) : base(first, last) { }
-            public Node(Node other) : base(other) { }
-
-            public static Node Parse(string input)
+            public Cave(int id, string name)
             {
-                string[] split = input.Split('-');
-                Node node = new Node(split[0], split[1]);
-                if (split[0] == "start")
-                {
-                    node.First = Start;
-                    node.IsStart = true;
-                }
-                else if (split[1] == "start")
-                {
-                    node.Last = Start;
-                    node.IsStart = true;
-                }
-
-                if (split[1] == "end")
-                {
-                    node.Last = End;
-                    node.IsEnd = true;
-                }
-                else if (split[0] == "end")
-                {
-                    node.First = End;
-                    node.IsEnd = true;
-                }
-                return node;
-            }
-        }
-
-        private class Path
-        {
-            public HashSet<string> SmallCaves { get; set; }
-            public List<string> Nodes { get; set; }
-            public string Last { get => Nodes.Last(); }
-            public bool VisitedSmallCallTwice { get; private set; }
-
-            public Path(Node node)
-            {
-                SmallCaves = new HashSet<string>();
-
-                Nodes = new List<string>();
-                bool firstIsStart = node.First == Start;
-                Nodes.Add(firstIsStart ? node.First : node.Last);
-                Visit(node, !firstIsStart, false /*shouldn't matter since its the start*/ );
-            }
-
-            public Path(Path other)
-            {
-                SmallCaves = new HashSet<string>(other.SmallCaves);
-                Nodes = new List<string>(other.Nodes);
-                VisitedSmallCallTwice = other.VisitedSmallCallTwice;
-            }
-
-            public void Print(Action<string> printFunc)
-            {
-                printFunc(ToString());
-            }
-
-            public bool Visit(Node node, bool visitFirst, bool visitSmallCaveTwiceOnce)
-            {
-                string toVisit = (visitFirst ? node.First : node.Last);
-                if (char.IsLower(toVisit[0]))
-                {
-                    if (SmallCaves.Contains(toVisit))
-                    {
-                        if (visitSmallCaveTwiceOnce)
-                        {
-                            if (VisitedSmallCallTwice)
-                            {
-                                return false;
-                            }
-                            VisitedSmallCallTwice = true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    SmallCaves.Add(toVisit);
-                }
-                Nodes.Add(toVisit);
-                return true;
+                ID = id;
+                Name = name;
+                Connections = new List<Cave>();
             }
 
             public override string ToString()
             {
-                return $"Path => {string.Join(",", Nodes)}";
+                return $"[{ID,3}] {Name} -> {string.Join(',', Connections.Select(c => c.Name))}";
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool visitSmallCaveTwiceOnce)
+        private class CaveSystem
         {
-            Node[] nodes = inputs.Select(Node.Parse).ToArray();
+            public Cave Start { get; set; }
+            public Cave End { get; set; }
 
-            Queue<Path> paths = new Queue<Path>();
-            foreach (Node node in nodes.Where(n => n.IsStart))
+            public List<Cave> Caves { get; private set; }
+            private Dictionary<string, int> CaveIds { get; set; }
+
+            public bool Extended { get; private set; }
+            private int m_smallCaveId;
+            private int m_largeCaveId;
+
+            public CaveSystem(bool extended)
             {
-                Path start = new Path(node);
-                paths.Enqueue(start);
+                Start = null;
+                End = null;
+                Caves = new List<Cave>();
+                CaveIds = new Dictionary<string, int>();
+                Extended = extended;
+                m_smallCaveId = -1;
+                m_largeCaveId = 1;
             }
 
-            List<Path> completedPaths = new List<Path>();
-            while (paths.Count > 0)
+            public void AddConnectedCaves(string[] names)
             {
-                Path cur = paths.Dequeue();
-                if (cur.Last == End)
+                const int StartId = 0;
+                const int EndId = int.MaxValue;
+
+                Cave first = null, second = null;
+                for (int i = 0; i <= 1; ++i)
                 {
-                    completedPaths.Add(cur);
-                    //cur.Print(DebugWriteLine);
-                    continue;
-                }
-                foreach (Node node in nodes.Where(n => !n.IsStart && n.First == cur.Last))
-                {
-                    Path next = new Path(cur);
-                    if (next.Visit(node, false, visitSmallCaveTwiceOnce))
+                    if (!CaveIds.ContainsKey(names[i]))
                     {
-                        paths.Enqueue(next);
+                        if (names[i] == "start")
+                        {
+                            CaveIds[names[i]] = StartId;
+                        }
+                        else if (names[i] == "end")
+                        {
+                            CaveIds[names[i]] = EndId;
+                        }
+                        else if (char.IsUpper(names[i][0]))
+                        {
+                            CaveIds[names[i]] = m_largeCaveId++;
+                        }
+                        else
+                        {
+                            CaveIds[names[i]] = m_smallCaveId--;
+                        }
+                        Caves.Add(new Cave(CaveIds[names[i]], names[i]));
+                    }
+
+                    if (i == 0)
+                    {
+                        first = Caves.Single(c => c.ID == CaveIds[names[i]]);
+                    }
+                    else
+                    {
+                        second = Caves.Single(c => c.ID == CaveIds[names[i]]);
                     }
                 }
-                foreach (Node node in nodes.Where(n => !n.IsStart && n.Last == cur.Last))
+
+                first.Connections.Add(second);
+                second.Connections.Add(first);
+
+                if (first.ID == StartId)
                 {
-                    Path next = new Path(cur);
-                    if (next.Visit(node, true, visitSmallCaveTwiceOnce))
-                    {
-                        paths.Enqueue(next);
-                    }
+                    Start = first;
+                }
+                else if (first.ID == EndId)
+                {
+                    End = first;
+                }
+
+                if (second.ID == StartId)
+                {
+                    Start = second;
+                }
+                else if (second.ID == EndId)
+                {
+                    End = second;
                 }
             }
-            return completedPaths.Count().ToString();
+
+            public void Traverse(ref int pathCount)
+            {
+                Stack<int> visited = new Stack<int>();
+                TraverseInternal(Start, ref visited, ref pathCount);
+            }
+
+            private void TraverseInternal(Cave cave, ref Stack<int> visited, ref int pathCount)
+            {
+                if (cave.ID == End.ID)
+                {
+                    ++pathCount;
+                    return;
+                }
+
+                if (cave.ID < 0)
+                {
+                    if (Extended)
+                    {
+                        IEnumerable<IGrouping<int, int>> groups = visited.Where(v => v < 0).GroupBy(v => v);
+                        if (groups.Any(g => g.Count() > 1) && groups.Any(g => g.Key == cave.ID))
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (visited.Any(id => id == cave.ID))
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                visited.Push(cave.ID);
+                foreach (Cave connection in cave.Connections)
+                {
+                    TraverseInternal(connection, ref visited, ref pathCount);
+                }
+                visited.Pop();
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool extended)
+        {
+            int pathCount = 0;
+            CaveSystem caveSystem = new CaveSystem(extended);
+            foreach (string input in inputs)
+            {
+                string[] split = input.Split('-', StringSplitOptions.RemoveEmptyEntries).ToArray();
+                caveSystem.AddConnectedCaves(split);
+            }
+            caveSystem.Caves.ForEach(c => c.Connections.Remove(caveSystem.Start));
+            caveSystem.End.Connections.Clear();
+            caveSystem.Traverse(ref pathCount);
+            return pathCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
