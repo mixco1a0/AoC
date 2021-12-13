@@ -1,3 +1,4 @@
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,26 +126,52 @@ fold along x=5"
             return folded.Distinct().ToArray();
         }
 
-        // private void Print(Point[] points)
-        // {
-        //     int maxX = 
-        // }
+        private void Print(Point[] points)
+        {
+            int maxX = points.Select(p => p.X).Max();
+            int maxY = points.Select(p => p.Y).Max();
+            for (int y = 0; y <= maxY; ++y)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat("{0,3} | ", y);
+                for (int x = 0; x <= maxX; ++x)
+                {
+                    if (points.Any(p => p.X == x && p.Y == y))
+                    {
+                        sb.Append('#');
+                    }
+                    else
+                    {
+                        sb.Append('.');
+                    }
+                }
+                DebugWriteLine(sb.ToString());
+            }
+        }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int reps)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool oneFold)
         {
             Point[] points = inputs.Select(Point.Parse).Where(p => p != null).ToArray();
             Instruction[] instructions = inputs.Where(i => i.Contains("fold")).Select(Instruction.Parse).ToArray();
-            for (int i = 0; i < reps; ++i)
+            foreach (Instruction instruction in instructions)
             {
-                points = Fold(instructions[i], points);
+                points = Fold(instruction, points);
+                if (oneFold)
+                {
+                    break;
+                }
+            }
+            if (!oneFold)
+            {
+                Print(points);
             }
             return points.Count().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 1);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 0);
+            => SharedSolution(inputs, variables, false);
     }
 }
