@@ -1,7 +1,7 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2021
 {
@@ -126,27 +126,28 @@ fold along x=5"
             return folded.Distinct().ToArray();
         }
 
-        private void Print(Point[] points)
+        private string[] GetGlyph(Point[] points)
         {
-            int maxX = points.Select(p => p.X).Max();
-            int maxY = points.Select(p => p.Y).Max();
+            List<string> glyph = new List<string>();
+            int maxX = points.Max(p => p.X);
+            int maxY = points.Max(p => p.Y);
             for (int y = 0; y <= maxY; ++y)
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendFormat("{0,3} | ", y);
                 for (int x = 0; x <= maxX; ++x)
                 {
                     if (points.Any(p => p.X == x && p.Y == y))
                     {
-                        sb.Append('#');
+                        sb.Append(Core.IGlyph.On);
                     }
                     else
                     {
-                        sb.Append('.');
+                        sb.Append(Core.IGlyph.Off);
                     }
                 }
-                DebugWriteLine(sb.ToString());
+                glyph.Add(sb.ToString());
             }
+            return glyph.ToArray();
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool oneFold)
@@ -161,12 +162,12 @@ fold along x=5"
                     break;
                 }
             }
-            if (!oneFold)
+            if (oneFold)
             {
-                // TODO: 2016.Day08 -> combine to form letter guide
-                //Print(points);
+                return points.Count().ToString();
             }
-            return points.Count().ToString();
+            string[] glyph = GetGlyph(points);
+            return Core.GlyphConverter.Process(glyph, Core.GlyphConverter.Size._5x6);
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
