@@ -1,4 +1,3 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +12,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v2";
+                case Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -28,7 +27,6 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                //Variables = new Dictionary<string, string>() { { "steps", "5" } },
                 Output = "1588",
                 RawInput =
 @"NNCB
@@ -77,116 +75,77 @@ CN -> C"
             return testData;
         }
 
-        private record PolymerPair(string End, Dictionary<char, long> LetterCounts) { }
+        private record Rule(int PairId, int[] NextPairIds, int SoloId) { }
 
-        private PolymerPair GetPolymerGeneration(Dictionary<string, char> insertionRules, string start)
-        {
-            string polymer = start;
-            for (int i = 0; i < 10; ++i)
-            {
-                StringBuilder sb = new StringBuilder();
-                for (int j = 0; j < polymer.Length - 1; ++j)
-                {
-                    sb.Append(polymer[j]);
-                    sb.Append(insertionRules[polymer.Substring(j, 2)]);
-                }
-                sb.Append(polymer.Last());
-                polymer = sb.ToString();
-            }
-            return new PolymerPair(polymer, polymer.GroupBy(c => c).ToDictionary(g => g.Key, g => (long)g.Count()));
-        }
-
-        private void RunGeneration(string start, int generationsLeft, Dictionary<string, PolymerPair> generationData, ref Dictionary<char, long> elementCounts)
-        {
-            if (generationsLeft == 0)
-            {
-                return;
-            }
-
-            for (int i = 0; i < start.Length - 1; ++i)
-            {
-                string cur = start.Substring(i, 2);
-                PolymerPair curPair = generationData[cur];
-                foreach (KeyValuePair<char, long> c2l in curPair.LetterCounts)
-                {
-                    elementCounts[c2l.Key] += c2l.Value;
-                }
-                elementCounts[cur[0]] -= 1;
-                RunGeneration(curPair.End, generationsLeft - 1, generationData, ref elementCounts);
-            }
-        }
-
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int generationCount)
+        private void GenerateIds(List<string> inputs, out Rule[] rules, out long[] pairs, out long[] solos)
         {
             string polymer = inputs.First();
-            Dictionary<string, char> insertionRules = new Dictionary<string, char>();
+            Dictionary<char, int> soloIds = new Dictionary<char, int>();
+            Dictionary<string, Core.Pair<char, int>> pairIds = new Dictionary<string, Core.Pair<char, int>>();
+            int curSoloId = 0, curPairId = 0;
             foreach (string input in inputs.Skip(2))
             {
                 string[] split = input.Split(" ->".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                insertionRules[split[0]] = split[1][0];
+
+                char soloChar = split[1][0];
+                if (!soloIds.ContainsKey(soloChar))
+                {
+                    soloIds[soloChar] = curSoloId++;
+                }
+
+                string pairString = split[0];
+                pairIds[pairString] = new Core.Pair<char, int>(soloChar, curPairId++);
             }
 
-            Dictionary<string, string[]> insertionPairs = new Dictionary<string, string[]>();
-            foreach (KeyValuePair<string, char> rule in insertionRules)
+            solos = new long[soloIds.Count];
+            foreach (char c in polymer)
             {
-                insertionPairs[rule.Key] = new string[] { $"{rule.Key.First()}{rule.Value}", $"{rule.Value}{rule.Key.Last()}" };
+                int soloId = soloIds[c];
+                solos[soloId]++;
             }
 
-            Dictionary<char, long> elementAdjustments = new Dictionary<char, long>();
-
-            Dictionary<string, long> currentGen = new Dictionary<string, long>();
-            foreach (KeyValuePair<string, string[]> pair in insertionPairs)
+            rules = new Rule[pairIds.Keys.Count];
+            foreach (var pair in pairIds)
             {
-                currentGen[pair.Key] = 0;
+                int soloId = soloIds[pair.Value.First];
+                int pairId = pair.Value.Last;
+
+                int nextPairId1 = pairIds[$"{pair.Key.First()}{pair.Value.First}"].Last;
+                int nextPairId2 = pairIds[$"{pair.Value.First}{pair.Key.Last()}"].Last;
+                rules[pair.Value.Last] = new Rule(pairId, new int[2] { nextPairId1, nextPairId2 }, soloId);
             }
 
+            pairs = new long[rules.Length];
             for (int i = 0; i < polymer.Length - 1; ++i)
             {
-                string cur = polymer.Substring(i, 2);
-                currentGen[cur]++;
-                if (!elementAdjustments.ContainsKey(cur.Last()))
-                {
-                    elementAdjustments[cur.Last()] = 0;
-                }
-                elementAdjustments[cur.Last()] += 1;
+                string pairString = polymer.Substring(i, 2);
+                pairs[pairIds[pairString].Last]++;
             }
+        }
 
-            for (int i = 0; i < generationCount; ++i)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxGen)
+        {
+            Rule[] rules;
+            long[] pairs;
+            long[] solos;
+            GenerateIds(inputs, out rules, out pairs, out solos);
+            for (long curGen = 0; curGen < maxGen; ++curGen)
             {
-                Dictionary<string, long> nextGen = new Dictionary<string, long>();
-                foreach (KeyValuePair<string, long> pair in currentGen)
+                long[] pairCopies = new long[pairs.Length];
+                for (long pairId = 0; pairId < pairs.Length; ++pairId)
                 {
-                    string[] toAdd = insertionPairs[pair.Key];
-                    if (!nextGen.ContainsKey(toAdd[0]))
+                    if (pairs[pairId] == 0)
                     {
-                        nextGen[toAdd[0]] = 0;
+                        continue;
                     }
-                    nextGen[toAdd[0]] += pair.Value;
-                    if (!nextGen.ContainsKey(toAdd[1]))
-                    {
-                        nextGen[toAdd[1]] = 0;
-                    }
-                    nextGen[toAdd[1]] += pair.Value;
-                    if (!elementAdjustments.ContainsKey(toAdd[1].First()))
-                    {
-                        elementAdjustments[toAdd[1].First()] = 0;
-                    }
-                    elementAdjustments[toAdd[1].First()] += pair.Value;
-                }
-                currentGen = nextGen;
-            }
 
-            Dictionary<char, long> finalCounts = elementAdjustments.ToDictionary(pair => pair.Key, pair => pair.Value * -1L);
-            foreach (KeyValuePair<string, long> pair in currentGen)
-            {
-                foreach (char c in pair.Key)
-                {
-                    finalCounts[c] += pair.Value;
+                    pairCopies[rules[pairId].NextPairIds[0]] += pairs[pairId];
+                    pairCopies[rules[pairId].NextPairIds[1]] += pairs[pairId];
+                    solos[rules[pairId].SoloId] += pairs[pairId];
                 }
+                pairs = pairCopies;
             }
-
-            // RunGeneration(polymer, generationCount, generationData, ref elementCounts);
-            return (elementAdjustments.Values.Max() - elementAdjustments.Values.Min()).ToString();
+            return (solos.Max() - solos.Min()).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
