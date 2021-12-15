@@ -189,8 +189,11 @@ namespace AoC
         /// </summary>
         private void SetHighPriority()
         {
-            // use a single core
-            Process.GetCurrentProcess().ProcessorAffinity = new IntPtr((int)Math.Pow(2, m_curProcessor));
+            if (OperatingSystem.IsWindows())
+            {
+                // use a single core
+                Process.GetCurrentProcess().ProcessorAffinity = new IntPtr((int)Math.Pow(2, m_curProcessor));
+            }
 
             // prevent process interuptions
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
@@ -200,7 +203,6 @@ namespace AoC
 
             // cycle through the different processors
             m_curProcessor = (m_curProcessor + 1) % Environment.ProcessorCount;
-
         }
 
         /// <summary>
