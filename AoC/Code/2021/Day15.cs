@@ -13,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -50,15 +50,6 @@ namespace AoC._2021
 1293138521
 2311944581"
             });
-//             testData.Add(new TestDatum
-//             {
-//                 TestPart = Part.Two,
-//                 Output = "7",
-//                 RawInput =
-// @"123
-// 456
-// 789"
-//             });
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
@@ -142,7 +133,6 @@ namespace AoC._2021
                         nodes[x, y] = GetAdjustedNode(source, x, y);
                     }
                 }
-                //PrintNodes(nodes, maxX, maxY);
             }
 
             // reset first state
