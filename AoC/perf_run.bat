@@ -1,1 +1,1 @@
-bin\Debug\net5.0\AoC.exe -sl -n 2021 -rp -prc 100 -t 3600000
+bin\Debug\net6.0\AoC.exe -sl -n 2021 -rp -prc 100 -t 3600000
