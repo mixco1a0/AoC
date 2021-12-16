@@ -1,3 +1,4 @@
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +50,15 @@ namespace AoC._2021
 1293138521
 2311944581"
             });
+//             testData.Add(new TestDatum
+//             {
+//                 TestPart = Part.Two,
+//                 Output = "7",
+//                 RawInput =
+// @"123
+// 456
+// 789"
+//             });
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
@@ -91,10 +101,15 @@ namespace AoC._2021
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private void Populate(ref Node[,] nodes, Core.Point start, Core.Point end)
         {
-            int maxX = inputs.First().Length;
-            int maxY = inputs.Count;
+
+        }
+
+        private Node[,] GetNodes(List<string> inputs, bool enlargen, out int maxX, out int maxY)
+        {
+            maxX = inputs.First().Length;
+            maxY = inputs.Count;
             Node[,] nodes = new Node[maxX, maxY];
             for (int x = 0; x < maxX; ++x)
             {
@@ -103,10 +118,57 @@ namespace AoC._2021
                     nodes[x, y] = new Node(inputs[y][x] - '0');
                 }
             }
+
+            if (enlargen)
+            {
+                Node[,] source = nodes;
+                int sourceMaxX = maxX;
+                int sourceMaxY = maxY;
+                maxX *= 5;
+                maxY *= 5;
+                nodes = new Node[maxX, maxY];
+
+                Func<Node[,], int, int, Node> GetAdjustedNode = (source, curX, curY) =>
+                {
+                    int adjustment = curX / sourceMaxX + curY / sourceMaxX;
+                    long weight = (source[curX % sourceMaxX, curY % sourceMaxY].Weight - 1 + adjustment) % 9 + 1;
+                    return new Node(weight);
+                };
+
+                for (int x = 0; x < maxX; ++x)
+                {
+                    for (int y = 0; y < maxY; ++y)
+                    {
+                        nodes[x, y] = GetAdjustedNode(source, x, y);
+                    }
+                }
+                //PrintNodes(nodes, maxX, maxY);
+            }
+
+            // reset first state
             nodes[0, 0].Path = 0;
             nodes[0, 0].Weight = 0;
             nodes[0, 0].Prev = new Core.Point(0, 0);
+            return nodes;
+        }
 
+        private void PrintNodes(Node[,] nodes, int maxX, int maxY)
+        {
+            for (int y = 0; y < maxY; ++y)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append($"{y,3} | ");
+                for (int x = 0; x < maxX; ++x)
+                {
+                    sb.Append($"{nodes[x, y].Weight,1}");
+                }
+                DebugWriteLine(sb.ToString());
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool enlargen)
+        {
+            Node[,] nodes = GetNodes(inputs, enlargen, out int maxX, out int maxY);
             Core.Point end = new Core.Point(maxX - 1, maxY - 1);
 
             PriorityQueue<Core.Point, long> gridWalker = new PriorityQueue<Core.Point, long>();
@@ -160,9 +222,9 @@ namespace AoC._2021
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
