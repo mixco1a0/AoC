@@ -45,13 +45,13 @@ namespace AoC._2021
             //                 RawInput =
             // @"[[6,[5,[4,[3,2]]]],1]"
             //             });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Output = "0",
-                RawInput =
-@"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
-            });
+            //             testData.Add(new TestDatum
+            //             {
+            //                 TestPart = Part.One,
+            //                 Output = "0",
+            //                 RawInput =
+            // @"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
+            //             });
             // ^ only for testing logic
             testData.Add(new TestDatum
             {
@@ -123,6 +123,9 @@ namespace AoC._2021
 
         private class Number
         {
+            //debug
+            public static Number Top { get; set; }
+
             public enum EType
             {
                 Blank,
@@ -274,7 +277,8 @@ namespace AoC._2021
                         Values[1] = Values[0] + child.Values[1];
                         Values[0] = 0;
                         Type = EType.AllValues;
-                        Parent.RecurseAddRight(this, child.Values[0]);
+                        AddToFirstRight(Nested[0], child.Values[0]);
+                        AddToLeftChild(child.Values[1]);
                         Nested[0] = null;
                     }
                     else if (Type == EType.FirstValue)
@@ -282,15 +286,16 @@ namespace AoC._2021
                         Values[0] += child.Values[0];
                         Values[1] = 0;
                         Type = EType.AllValues;
-                        Parent.RecurseAddLeft(this, child.Values[1]);
+                        AddToFirstLeft(Nested[0], child.Values[1]);
+                        AddToRightChild(child.Values[1]);
                         Nested[0] = null;
                     }
                     else if (Type == EType.AllNested)
                     {
                         Values[0] = 0;
+                        AddToFirstLeft(Nested[1], child.Values[1]);
+                        AddToLeftChild(child.Values[1]);
                         Type = EType.FirstValue;
-                        Parent.RecurseAddLeft(this, child.Values[0]);
-                        RecurseAddRight(this, child.Values[1]);
                         Nested[0] = Nested[1];
                         Nested[1] = null;
                     }
@@ -298,104 +303,113 @@ namespace AoC._2021
                 else if (child == Nested[1])
                 {
                     Values[0] = 0;
-                    RecurseAddLeft(this, child.Values[0]);
-                    Parent.RecurseAddRight(this, child.Values[1]);
+                    AddToFirstRight(Nested[0], child.Values[0]);
+                    AddToRightChild(child.Values[1]);
                     Type = EType.FirstNested;
                     Nested[1] = null;
                 }
             }
 
-            private bool RecurseAddLeft(Number source, int value)
+            private void AddToLeftChild(int value)
             {
-                bool complete = false;
-                switch (Type)
+                Number curChild = this;
+                Number curParent = Parent;
+                while (curParent != null)
                 {
-                    case EType.AllNested:
-                        if (Nested[1] != source)
-                        {
-                            complete = Nested[1].RecurseAddRight(source, value);
-                        }
-                        if (!complete && Nested[0] != source)
-                        {
-                            complete = Nested[0].RecurseAddLeft(source, value);
-                        }
+                    if (curParent.Type == EType.AllNested && curParent.Nested[0] != curChild)
+                    {
+                        AddToFirstRight(curParent.Nested[0], value);
                         break;
-                    case EType.AllValues:
-                        Values[1] += value;
-                        return true;
-                    case EType.FirstNested:
-                        Values[0] += value;
-                        return true;
-                    case EType.FirstValue:
-                        if (Nested[0] != source)
-                        {
-                            // flipping this goes from
-                            /*
-|01:42:01.517|  [2021|day18|testing|part1|v0] 	Before = [[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]
-|01:42:02.712|  [2021|day18|testing|part1|v0] 	After = [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
-|01:42:06.142|  [2021|day18|testing|part1|v0] 	After = [[3,[2,[8,2]]],[9,[5,[7,0]]]]
-
-                            */
-                            // to this
-                            /*
-|01:42:49.441|  [2021|day18|testing|part1|v0] 	Before = [[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]
-|01:42:50.334|  [2021|day18|testing|part1|v0] 	After = [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
-|01:43:00.060|  [2021|day18|testing|part1|v0] 	After = [[3,[4,[8,0]]],[9,[5,[7,0]]]]
-
-                            */
-                            complete = Nested[0].RecurseAddRight(source, value);
-                        }
+                    }
+                    else if (curParent.Type == EType.FirstValue)
+                    {
+                        AddToFirstRight(curParent.Nested[0], value);
                         break;
+                    }
+
+                    curChild = curParent;
+                    curParent = curChild.Parent;
                 }
-                if (!complete && Parent != null)
-                {
-                    return Parent.RecurseAddLeft(this, value);
-                }
-                return complete;
             }
 
-            private bool RecurseAddRight(Number source, int value)
+            private void AddToRightChild(int value)
             {
-                bool complete = false;
-                switch (Type)
+                Number curChild = this;
+                Number curParent = Parent;
+                while (curParent != null)
+                {
+                    if (curParent.Type == EType.AllNested && curParent.Nested[1] != curChild)
+                    {
+                        AddToFirstLeft(curParent.Nested[1], value);
+                        break;
+                    }
+                    else if (curParent.Type == EType.FirstNested)
+                    {
+                        AddToFirstLeft(curParent.Nested[0], value);
+                        break;
+                    }
+
+                    curChild = curParent;
+                    curParent = curChild.Parent;
+                }
+            }
+
+            private static void AddToFirstLeft(Number source, int value)
+            {
+                Action<Number, int> AddToLeft = (num, val) =>
+                {
+                    while (num.Type == EType.AllNested || num.Type == EType.FirstValue)
+                    {
+                        num = num.Nested[num.Type == EType.AllNested ? 1 : 0];
+                    }
+                    num.Values[num.Type == EType.AllValues ? 1 : 0] += value;
+                };
+
+                switch (source.Type)
                 {
                     case EType.AllNested:
-                        if (Nested[0] != source)
-                        {
-                            complete = Nested[0].RecurseAddLeft(source, value);
-                        }
-                        if (!complete && Nested[1] != source)
-                        {
-                            complete = Nested[1].RecurseAddRight(source, value);
-                        }
-                        break;
-                    case EType.AllValues:
-                        Values[0] += value;
-                        return true;
                     case EType.FirstNested:
-                        if (Nested[0] != source)
-                        {
-                            complete = Nested[0].RecurseAddRight(source, value);
-                        }
+                        AddToFirstLeft(source.Nested[0], value);
                         break;
                     case EType.FirstValue:
-                        Values[0] += value;
-                        return true;
+                    case EType.AllValues:
+                        source.Values[0] += value;
+                        break;
                 }
-                if (!complete && Parent != null)
+            }
+
+            private static void AddToFirstRight(Number source, int value)
+            {
+                Action<Number, int> AddToRight = (num, val) =>
                 {
-                    return Parent.RecurseAddRight(this, value);
+                    while (num.Type == EType.AllNested || num.Type == EType.FirstValue)
+                    {
+                        num = num.Nested[num.Type == EType.AllNested ? 1 : 0];
+                    }
+                    num.Values[num.Type == EType.AllValues ? 1 : 0] += value;
+                };
+
+                switch (source.Type)
+                {
+                    case EType.AllNested:
+                        AddToFirstRight(source.Nested[1], value);
+                        break;
+                    case EType.FirstValue:
+                        AddToFirstRight(source.Nested[0], value);
+                        break;
+                    case EType.AllValues:
+                        source.Values[1] += value;
+                        break;
+                    case EType.FirstNested:
+                        source.Values[0] += value;
+                        break;
                 }
-                return complete;
             }
 
             private void Split()
             {
 
             }
-
-            //debug
-            public static Number Top { get; set; }
 
             public override string ToString()
             {
@@ -422,8 +436,6 @@ namespace AoC._2021
                 return $"[{first},{second}]";
             }
         }
-
-
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
