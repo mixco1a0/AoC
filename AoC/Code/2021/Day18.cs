@@ -56,9 +56,9 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "143",
+                Output = "0",
                 RawInput =
-@"[[1,2],[[3,4],5]]"
+@"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
             });
             testData.Add(new TestDatum
             {
@@ -245,7 +245,6 @@ namespace AoC._2021
             {
                 if (Values.Any(v => v >= 10))
                 {
-                    // split!!!!
                     Split();
                     return true;
                 }
@@ -266,6 +265,48 @@ namespace AoC._2021
                     return Nested[1].ReduceInternal();
                 }
                 return didReduce;
+            }
+
+            private void Split()
+            {
+                Func<int, Number> SplitValue = (value) =>
+                {
+                    int val1 = value / 2;
+                    int val2 = value - val1;
+                    Number num = new Number(this);
+                    num.Values[0] = val1;
+                    num.Values[1] = val2;
+                    num.Type = EType.AllValues;
+                    return num;
+                };
+
+                if (Values[0] > 10)
+                {
+                    if (Type == EType.FirstNested)
+                    {
+                        Nested[1] = SplitValue(Values[0]);
+                        Type = EType.AllNested;
+                    }
+                    else if (Type == EType.FirstValue)
+                    {
+                        Nested[1] = Nested[0];
+                        Nested[0] = SplitValue(Values[0]);
+                        Type = EType.AllNested;
+                    }
+                    else if (Type == EType.AllValues)
+                    {
+                        Nested[0] = SplitValue(Values[0]);
+                        Values[0] = Values[1];
+                        Values[1] = -1;
+                        Type = EType.FirstNested;
+                    }
+                }
+                else if (Values[1] > 10)
+                {
+                    Nested[0] = SplitValue(Values[1]);
+                    Values[1] = -1;
+                    Type = EType.FirstValue;
+                }
             }
 
             private void ExplodeChild(Number child)
@@ -404,11 +445,6 @@ namespace AoC._2021
                         source.Values[0] += value;
                         break;
                 }
-            }
-
-            private void Split()
-            {
-
             }
 
             public override string ToString()
