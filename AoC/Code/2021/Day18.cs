@@ -609,6 +609,22 @@ namespace AoC._2021
             }
 
 
+            public int Magnitude()
+            {
+                switch (Type)
+                {
+                    case EType.AllValues:
+                        return 3 * Values[0] + 2 * Values[1];
+                    case EType.FirstValue:
+                        return 3 * Values[0] + 2 * Nested[0].Magnitude();
+                    case EType.FirstNested:
+                        return 3 * Nested[0].Magnitude() + 2 * Values[0];
+                    case EType.AllNested:
+                        return 3 * Nested[0].Magnitude() + 2 * Nested[1].Magnitude();
+                }
+                return 0;
+            }
+
             public override string ToString()
             {
                 string first = string.Empty, second = string.Empty;
@@ -652,16 +668,15 @@ namespace AoC._2021
             Queue<Number> pendingAdd = new Queue<Number>(numbers);
             while (pendingAdd.Count > 0)
             {
-                DebugWriteLine($" + {pendingAdd.Peek().ToString()}");
                 finalSum += pendingAdd.Dequeue();
-                DebugWriteLine($"{finalSum.ToString()}");
             }
 
             if (validationTest == 2)
             {
                 return finalSum.ToString();
             }
-            return "";
+
+            return finalSum.Magnitude().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
