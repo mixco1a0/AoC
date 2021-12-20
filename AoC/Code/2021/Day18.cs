@@ -24,42 +24,51 @@ namespace AoC._2021
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
-            //             testData.Add(new TestDatum
-            //             {
-            //                 TestPart = Part.One,
-            //                 Output = "0",
-            //                 RawInput =
-            // @"[[[[[9,8],1],2],3],4]"
-            //             });
-            //             testData.Add(new TestDatum
-            //             {
-            //                 TestPart = Part.One,
-            //                 Output = "0",
-            //                 RawInput =
-            // @"[7,[6,[5,[4,[3,2]]]]]"
-            //             });
-            //             testData.Add(new TestDatum
-            //             {
-            //                 TestPart = Part.One,
-            //                 Output = "0",
-            //                 RawInput =
-            // @"[[6,[5,[4,[3,2]]]],1]"
-            //             });
-            //             testData.Add(new TestDatum
-            //             {
-            //                 TestPart = Part.One,
-            //                 Output = "0",
-            //                 RawInput =
-            // @"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
-            //             });
-            // ^ only for testing logic
+
+            // These are solely for parsing and reducing validation
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
-                Output = "0",
+                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                Output = "[[[[0,9],2],3],4]",
+                RawInput =
+@"[[[[[9,8],1],2],3],4]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                Output = "[7,[6,[5,[7,0]]]]",
+                RawInput =
+@"[7,[6,[5,[4,[3,2]]]]]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                Output = "[[6,[5,[7,0]]],3]",
+                RawInput =
+@"[[6,[5,[4,[3,2]]]],1]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                Output = "[[3,[2,[8,0]]],[9,[5,[7,0]]]]",
+                RawInput =
+@"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                Output = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
                 RawInput =
 @"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
             });
+
+
+            // These are the real tests
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
@@ -241,7 +250,7 @@ namespace AoC._2021
                 while (ReduceInternal()) ;
             }
 
-            public bool ReduceInternal()
+            private bool ReduceInternal()
             {
                 if (Values.Any(v => v >= 10))
                 {
@@ -285,12 +294,14 @@ namespace AoC._2021
                     if (Type == EType.FirstNested)
                     {
                         Nested[1] = SplitValue(Values[0]);
+                        Values[0] = -1;
                         Type = EType.AllNested;
                     }
                     else if (Type == EType.FirstValue)
                     {
                         Nested[1] = Nested[0];
                         Nested[0] = SplitValue(Values[0]);
+                        Values[0] = -1;
                         Type = EType.AllNested;
                     }
                     else if (Type == EType.AllValues)
@@ -318,8 +329,7 @@ namespace AoC._2021
                         Values[1] = Values[0] + child.Values[1];
                         Values[0] = 0;
                         Type = EType.AllValues;
-                        AddToFirstRight(Nested[0], child.Values[0]);
-                        AddToLeftChild(child.Values[1]);
+                        AddToLeftChild(child.Values[0]);
                         Nested[0] = null;
                     }
                     else if (Type == EType.FirstValue)
@@ -327,7 +337,6 @@ namespace AoC._2021
                         Values[0] += child.Values[0];
                         Values[1] = 0;
                         Type = EType.AllValues;
-                        AddToFirstLeft(Nested[0], child.Values[1]);
                         AddToRightChild(child.Values[1]);
                         Nested[0] = null;
                     }
@@ -364,7 +373,7 @@ namespace AoC._2021
                     }
                     else if (curParent.Type == EType.FirstValue)
                     {
-                        AddToFirstRight(curParent.Nested[0], value);
+                        AddToFirstLeft(curParent, value);
                         break;
                     }
 
@@ -386,7 +395,7 @@ namespace AoC._2021
                     }
                     else if (curParent.Type == EType.FirstNested)
                     {
-                        AddToFirstLeft(curParent.Nested[0], value);
+                        AddToFirstRight(curParent, value);
                         break;
                     }
 
@@ -477,12 +486,18 @@ namespace AoC._2021
         {
             Number[] numbers = inputs.Select(Number.Parse).ToArray();
             Number.Top = numbers[0];
-            DebugWriteLine($"Before = {Number.Top.ToString()}");
-            while (Number.Top.ReduceInternal())
+
+            // parsing and reducing validation
+            int validationTest;
+            Util.GetVariable(nameof(validationTest), 0, variables, out validationTest);
+            if (validationTest == 1)
             {
-                DebugWriteLine($"After = {Number.Top.ToString()}");
+                numbers[0].Reduce();
+                return numbers[0].ToString();
             }
-            return string.Empty;
+
+            
+            return Number.Top.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
