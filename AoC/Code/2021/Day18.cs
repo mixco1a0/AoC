@@ -25,50 +25,172 @@ namespace AoC._2021
         {
             List<TestDatum> testData = new List<TestDatum>();
 
-            // These are solely for parsing and reducing validation
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
-                Output = "[[[[0,9],2],3],4]",
-                RawInput =
-@"[[[[[9,8],1],2],3],4]"
-            });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
-                Output = "[7,[6,[5,[7,0]]]]",
-                RawInput =
-@"[7,[6,[5,[4,[3,2]]]]]"
-            });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
-                Output = "[[6,[5,[7,0]]],3]",
-                RawInput =
-@"[[6,[5,[4,[3,2]]]],1]"
-            });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
-                Output = "[[3,[2,[8,0]]],[9,[5,[7,0]]]]",
-                RawInput =
-@"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
-            });
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
-                Output = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
-                RawInput =
-@"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
-            });
+            /*
+                        // These are solely for parsing and reducing validation
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                            Output = "[[[[0,9],2],3],4]",
+                            RawInput =
+            @"[[[[[9,8],1],2],3],4]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                            Output = "[7,[6,[5,[7,0]]]]",
+                            RawInput =
+            @"[7,[6,[5,[4,[3,2]]]]]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                            Output = "[[6,[5,[7,0]]],3]",
+                            RawInput =
+            @"[[6,[5,[4,[3,2]]]],1]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                            Output = "[[3,[2,[8,0]]],[9,[5,[7,0]]]]",
+                            RawInput =
+            @"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "1" } },
+                            Output = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
+                            RawInput =
+            @"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
+                        });
+            */
 
+            // These are solely for addition validation
+            /*
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                            Output = "[[[[1,1],[2,2]],[3,3]],[4,4]]",
+                            RawInput =
+            @"[1,1]
+            [2,2]
+            [3,3]
+            [4,4]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                            Output = "[[[[3,0],[5,3]],[4,4]],[5,5]]",
+                            RawInput =
+            @"[1,1]
+            [2,2]
+            [3,3]
+            [4,4]
+            [5,5]"
+                        });
+            */
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                Output = "[[[[5,0],[7,4]],[5,5]],[6,6]]",
+                RawInput =
+@"[1,1]
+[2,2]
+[3,3]
+[4,4]
+[5,5]
+[6,6]"
+            });
+            //             testData.Add(new TestDatum
+            //             {
+            //                 TestPart = Part.One,
+            //                 Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+            //                 Output = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
+            //                 RawInput =
+            // @"[[[[4,3],4],4],[7,[[8,4],9]]]
+            // [1,1]"
+            //             });
+            //             testData.Add(new TestDatum
+            //             {
+            //                 TestPart = Part.One,
+            //                 Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+            //                 Output = "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]",
+            //                 RawInput =
+            // @"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+            // [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"
+            //             });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                Output = "[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]",
+                RawInput =
+@"[[[[7,0],[7,7]],[[7,7],[7,8]]],[[[7,7],[8,8]],[[7,7],[8,7]]]]
+[7,[5,[[3,8],[1,4]]]]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                Output = "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]",
+                RawInput =
+@"[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]
+[[2,[2,2]],[8,[8,1]]]
+[2,9]
+[1,[[[9,3],9],[[9,0],[0,7]]]]
+[[[5,[7,4]],7],1]
+[[[[4,2],2],6],[8,7]]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                Output = "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]",
+                RawInput =
+@"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
+[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
+[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
+[7,[5,[[3,8],[1,4]]]]
+[[2,[2,2]],[8,[8,1]]]
+[2,9]
+[1,[[[9,3],9],[[9,0],[0,7]]]]
+[[[5,[7,4]],7],1]
+[[[[4,2],2],6],[8,7]]"
+            });
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                Output = "[[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]]",
+                RawInput =
+@"[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]"
+            });
 
             // These are the real tests
+            testData.Add(new TestDatum
+            {
+                TestPart = Part.One,
+                Output = "143",
+                RawInput =
+@"[[1,2],[[3,4],5]]"
+            });
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
@@ -132,7 +254,6 @@ namespace AoC._2021
 
         private class Number
         {
-            //debug
             public static Number Top { get; set; }
 
             public enum EType
@@ -150,7 +271,7 @@ namespace AoC._2021
             public Number[] Nested { get; set; }
             private int Level { get => Parent != null ? Parent.Level + 1 : 0; }
 
-            private Number()
+            public Number()
             {
                 Parent = null;
                 Type = EType.Blank;
@@ -164,6 +285,29 @@ namespace AoC._2021
                 Type = EType.Blank;
                 Values = new int[2] { -1, -1 };
                 Nested = new Number[2];
+            }
+
+            public static Number operator +(Number num1, Number num2)
+            {
+                if (num1.Type == EType.Blank)
+                {
+                    return num2;
+                }
+
+                if (num2.Type == EType.Blank)
+                {
+                    return num1;
+                }
+
+                Number sum = new Number();
+                sum.Type = EType.AllNested;
+                sum.Nested[0] = num1;
+                sum.Nested[0].Parent = sum;
+                sum.Nested[1] = num2;
+                sum.Nested[1].Parent = sum;
+                Top = sum;
+                sum.Reduce();
+                return sum;
             }
 
             public static Number Parse(string input)
@@ -235,46 +379,84 @@ namespace AoC._2021
                 return input.Length;
             }
 
-            public Number Add(Number a, Number b)
-            {
-                Number num = new Number();
-                num.Nested[0] = a;
-                num.Nested[1] = b;
-                num.Type = EType.AllNested;
-                num.Reduce();
-                return num;
-            }
-
             public void Reduce()
             {
-                while (ReduceInternal()) ;
+                while (DidExplode() || DidSplit()) ;
             }
 
-            private bool ReduceInternal()
+            private bool DidExplode()
             {
-                if (Values.Any(v => v >= 10))
-                {
-                    Split();
-                    return true;
-                }
-
                 if (Type == EType.AllValues)
                 {
                     if (Level >= 4)
                     {
+                        string before = ToString();
                         Parent.ExplodeChild(this);
+                        if (Top != null) Console.WriteLine("Explode => {0} | {1}", before, Top.ToString());
                         return true;
                     }
                     return false;
                 }
 
-                bool didReduce = Nested[0].ReduceInternal();
-                if (!didReduce && Type == EType.AllNested)
+                bool didExplode = Nested[0].DidExplode();
+                if (!didExplode && Type == EType.AllNested)
                 {
-                    return Nested[1].ReduceInternal();
+                    return Nested[1].DidExplode();
                 }
-                return didReduce;
+                return didExplode;
             }
+
+            private bool DidSplit()
+            {
+                if (Values.Any(v => v >= 10))
+                {
+                    string before = ToString();
+                    Split();
+                    if (Top != null) Console.WriteLine("Split => {0} | {1}", before, Top.ToString());
+                    return true;
+                }
+
+                bool didSplit = false;
+                if (Type == EType.FirstValue || Type == EType.FirstNested || Type == EType.AllNested)
+                {
+                    didSplit = Nested[0].DidSplit();
+                    if (!didSplit && Type == EType.AllNested)
+                    {
+                        return Nested[1].DidSplit();
+                    }
+                }
+                return didSplit;
+            }
+
+            /*
+                        private bool ReduceInternal()
+                        {
+                            if (Values.Any(v => v >= 10))
+                            {
+                                Split();
+                                if (Top != null) Console.WriteLine("Split => {0}", Top.ToString());
+                                return true;
+                            }
+
+                            if (Type == EType.AllValues)
+                            {
+                                if (Level >= 4)
+                                {
+                                    Parent.ExplodeChild(this);
+                                    if (Top != null) Console.WriteLine("Explode => {0}", Top.ToString());
+                                    return true;
+                                }
+                                return false;
+                            }
+
+                            bool didReduce = Nested[0].ReduceInternal();
+                            if (!didReduce && Type == EType.AllNested)
+                            {
+                                return Nested[1].ReduceInternal();
+                            }
+                            return didReduce;
+                        }
+            */
 
             private void Split()
             {
@@ -289,7 +471,7 @@ namespace AoC._2021
                     return num;
                 };
 
-                if (Values[0] > 10)
+                if (Values[0] >= 10)
                 {
                     if (Type == EType.FirstNested)
                     {
@@ -312,7 +494,7 @@ namespace AoC._2021
                         Type = EType.FirstNested;
                     }
                 }
-                else if (Values[1] > 10)
+                else if (Values[1] >= 10)
                 {
                     Nested[0] = SplitValue(Values[1]);
                     Values[1] = -1;
@@ -344,7 +526,7 @@ namespace AoC._2021
                     {
                         Values[0] = 0;
                         AddToFirstLeft(Nested[1], child.Values[1]);
-                        AddToLeftChild(child.Values[1]);
+                        AddToLeftChild(child.Values[0]);
                         Type = EType.FirstValue;
                         Nested[0] = Nested[1];
                         Nested[1] = null;
@@ -485,7 +667,6 @@ namespace AoC._2021
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
             Number[] numbers = inputs.Select(Number.Parse).ToArray();
-            Number.Top = numbers[0];
 
             // parsing and reducing validation
             int validationTest;
@@ -496,8 +677,20 @@ namespace AoC._2021
                 return numbers[0].ToString();
             }
 
-            
-            return Number.Top.ToString();
+            Number finalSum = new Number();
+            Queue<Number> pendingAdd = new Queue<Number>(numbers);
+            while (pendingAdd.Count > 0)
+            {
+                DebugWriteLine($" + {pendingAdd.Peek().ToString()}");
+                finalSum += pendingAdd.Dequeue();
+                DebugWriteLine($"{finalSum.ToString()}");
+            }
+
+            if (validationTest == 2)
+            {
+                return finalSum.ToString();
+            }
+            return "";
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
