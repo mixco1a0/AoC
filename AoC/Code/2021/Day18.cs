@@ -245,9 +245,18 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "3993",
                 RawInput =
-@""
+@"[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]"
             });
             return testData;
         }
@@ -651,7 +660,7 @@ namespace AoC._2021
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool totalSum)
         {
             Number[] numbers = inputs.Select(Number.Parse).ToArray();
 
@@ -664,25 +673,46 @@ namespace AoC._2021
                 return numbers[0].ToString();
             }
 
-            Number finalSum = new Number();
-            Queue<Number> pendingAdd = new Queue<Number>(numbers);
-            while (pendingAdd.Count > 0)
+            if (totalSum)
             {
-                finalSum += pendingAdd.Dequeue();
+                Number finalSum = new Number();
+                Queue<Number> pendingAdd = new Queue<Number>(numbers);
+                while (pendingAdd.Count > 0)
+                {
+                    finalSum += pendingAdd.Dequeue();
+                }
+
+                if (validationTest == 2)
+                {
+                    return finalSum.ToString();
+                }
+
+                return finalSum.Magnitude().ToString();
             }
 
-            if (validationTest == 2)
+            int maxMagnitude = int.MinValue;
+            for (int i = 0; i < numbers.Length; ++i)
             {
-                return finalSum.ToString();
+                for (int j = i + 1; j < numbers.Length; ++j)
+                {
+                    numbers[i] = Number.Parse(inputs[i]);
+                    numbers[j] = Number.Parse(inputs[j]);
+                    Number sum = numbers[i] + numbers[j];
+                    maxMagnitude = Math.Max(maxMagnitude, sum.Magnitude());
+                    numbers[i] = Number.Parse(inputs[i]);
+                    numbers[j] = Number.Parse(inputs[j]);
+                    sum = numbers[j] + numbers[i];
+                    maxMagnitude = Math.Max(maxMagnitude, sum.Magnitude());
+                }
             }
-
-            return finalSum.Magnitude().ToString();
+            // 4696 - wrong, too low
+            return maxMagnitude.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
