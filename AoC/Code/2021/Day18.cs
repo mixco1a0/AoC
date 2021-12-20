@@ -94,38 +94,37 @@ namespace AoC._2021
             [4,4]
             [5,5]"
                         });
-            */
-            testData.Add(new TestDatum
-            {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
-                Output = "[[[[5,0],[7,4]],[5,5]],[6,6]]",
-                RawInput =
-@"[1,1]
-[2,2]
-[3,3]
-[4,4]
-[5,5]
-[6,6]"
-            });
-            //             testData.Add(new TestDatum
-            //             {
-            //                 TestPart = Part.One,
-            //                 Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
-            //                 Output = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
-            //                 RawInput =
-            // @"[[[[4,3],4],4],[7,[[8,4],9]]]
-            // [1,1]"
-            //             });
-            //             testData.Add(new TestDatum
-            //             {
-            //                 TestPart = Part.One,
-            //                 Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
-            //                 Output = "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]",
-            //                 RawInput =
-            // @"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
-            // [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"
-            //             });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                            Output = "[[[[5,0],[7,4]],[5,5]],[6,6]]",
+                            RawInput =
+            @"[1,1]
+            [2,2]
+            [3,3]
+            [4,4]
+            [5,5]
+            [6,6]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                            Output = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
+                            RawInput =
+            @"[[[[4,3],4],4],[7,[[8,4],9]]]
+            [1,1]"
+                        });
+                        testData.Add(new TestDatum
+                        {
+                            TestPart = Part.One,
+                            Variables = new Dictionary<string, string>() { { "validationTest", "2" } },
+                            Output = "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]",
+                            RawInput =
+            @"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+            [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"
+                        });
             testData.Add(new TestDatum
             {
                 TestPart = Part.One,
@@ -182,6 +181,7 @@ namespace AoC._2021
 [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
 [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]"
             });
+            */
 
             // These are the real tests
             testData.Add(new TestDatum
@@ -254,8 +254,6 @@ namespace AoC._2021
 
         private class Number
         {
-            public static Number Top { get; set; }
-
             public enum EType
             {
                 Blank,
@@ -305,7 +303,6 @@ namespace AoC._2021
                 sum.Nested[0].Parent = sum;
                 sum.Nested[1] = num2;
                 sum.Nested[1].Parent = sum;
-                Top = sum;
                 sum.Reduce();
                 return sum;
             }
@@ -390,9 +387,7 @@ namespace AoC._2021
                 {
                     if (Level >= 4)
                     {
-                        string before = ToString();
                         Parent.ExplodeChild(this);
-                        if (Top != null) Console.WriteLine("Explode => {0} | {1}", before, Top.ToString());
                         return true;
                     }
                     return false;
@@ -408,55 +403,30 @@ namespace AoC._2021
 
             private bool DidSplit()
             {
+                if (Type == EType.FirstNested || Type == EType.AllNested)
+                {
+                    if (Nested[0].DidSplit())
+                    {
+                        return true;
+                    }
+                }
+
                 if (Values.Any(v => v >= 10))
                 {
-                    string before = ToString();
                     Split();
-                    if (Top != null) Console.WriteLine("Split => {0} | {1}", before, Top.ToString());
                     return true;
                 }
 
-                bool didSplit = false;
-                if (Type == EType.FirstValue || Type == EType.FirstNested || Type == EType.AllNested)
+                if (Type == EType.FirstValue)
                 {
-                    didSplit = Nested[0].DidSplit();
-                    if (!didSplit && Type == EType.AllNested)
-                    {
-                        return Nested[1].DidSplit();
-                    }
+                    return Nested[0].DidSplit();
                 }
-                return didSplit;
+                else if (Type == EType.AllNested)
+                {
+                    return Nested[1].DidSplit();
+                }
+                return false;
             }
-
-            /*
-                        private bool ReduceInternal()
-                        {
-                            if (Values.Any(v => v >= 10))
-                            {
-                                Split();
-                                if (Top != null) Console.WriteLine("Split => {0}", Top.ToString());
-                                return true;
-                            }
-
-                            if (Type == EType.AllValues)
-                            {
-                                if (Level >= 4)
-                                {
-                                    Parent.ExplodeChild(this);
-                                    if (Top != null) Console.WriteLine("Explode => {0}", Top.ToString());
-                                    return true;
-                                }
-                                return false;
-                            }
-
-                            bool didReduce = Nested[0].ReduceInternal();
-                            if (!didReduce && Type == EType.AllNested)
-                            {
-                                return Nested[1].ReduceInternal();
-                            }
-                            return didReduce;
-                        }
-            */
 
             private void Split()
             {
@@ -637,6 +607,7 @@ namespace AoC._2021
                         break;
                 }
             }
+
 
             public override string ToString()
             {
