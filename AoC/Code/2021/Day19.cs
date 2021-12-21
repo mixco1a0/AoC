@@ -95,6 +95,110 @@ namespace AoC._2021
             return testData;
         }
 
+        private enum RotationIndex : int
+        {
+            Start = 0,
+            // no initial rotation
+            // rotate around Z axis
+            PosXPosYPosZ = Start,
+            PosYNegXPosZ,
+            NegXNegYPosZ,
+            NegYPosXPosZ,
+            // rotate X axis 90d
+            // rotate around Z axis
+            PosXNegZPosY,
+            NegZNegXPosY,
+            NegXPosZPosY,
+            PosZPosXPosY,
+            // rotate X axis 180d
+            // rotate around Z axis
+            PosXNegYNegZ,
+            NegYNegXNegZ,
+            NegXPosYNegZ,
+            PosYPosXNegZ,
+            // rotate X axis 270d
+            // rotate around Z axis
+            PosXPosZNegY,
+            PosZNegXNegY,
+            NegXNegZNegY,
+            NegZPosXNegY,
+            // rotate Y axis 270d
+            // rotate around Z axis
+            NegZPosYPosX,
+            PosYPosZPosX,
+            PosZNegYPosX,
+            NegYNegZPosX,
+            // rotate Y axis 90d
+            // rotate around Z axis
+            PosZPosYNegX,
+            PosYNegZNegX,
+            NegZNegYNegX,
+            NegYPosZNegX,
+            End = NegYPosZNegX
+        }
+
+        private Vector3 ToRotationIndex(Vector3 v, RotationIndex targetRotation)
+        {
+            switch (targetRotation)
+            {
+                // Z = positive Z axis
+                case RotationIndex.PosXPosYPosZ:
+                    break;
+                case RotationIndex.PosYNegXPosZ:
+                    return new Vector3(v.Y, -v.X, v.Z);
+                case RotationIndex.NegXNegYPosZ:
+                    return new Vector3(-v.X, -v.Y, v.Z);
+                case RotationIndex.NegYPosXPosZ:
+                    return new Vector3(-v.Y, v.X, v.Z);
+                // Z = positive Y axis
+                case RotationIndex.PosXNegZPosY:
+                    return new Vector3(v.X, -v.Z, v.Y);
+                case RotationIndex.NegZNegXPosY:
+                    return new Vector3(-v.Z, -v.X, v.Y);
+                case RotationIndex.NegXPosZPosY:
+                    return new Vector3(-v.X, v.Z, v.Y);
+                case RotationIndex.PosZPosXPosY:
+                    return new Vector3(v.Z, v.X, v.Y);
+                // Z = negative Z axis
+                case RotationIndex.PosXNegYNegZ:
+                    return new Vector3(v.X, -v.Y, -v.Z);
+                case RotationIndex.NegYNegXNegZ:
+                    return new Vector3(-v.Y, -v.X, -v.Z);
+                case RotationIndex.NegXPosYNegZ:
+                    return new Vector3(-v.X, v.Y, -v.Z);
+                case RotationIndex.PosYPosXNegZ:
+                    return new Vector3(v.Y, v.X, -v.Z);
+                // Z = negative Y axis
+                case RotationIndex.PosXPosZNegY:
+                    return new Vector3(v.X, v.Z, -v.Y);
+                case RotationIndex.PosZNegXNegY:
+                    return new Vector3(v.Z, -v.X, -v.Y);
+                case RotationIndex.NegXNegZNegY:
+                    return new Vector3(-v.X, -v.Z, -v.Y);
+                case RotationIndex.NegZPosXNegY:
+                    return new Vector3(-v.Z, v.X, -v.Y);
+                // Z = positive X axis
+                case RotationIndex.NegZPosYPosX:
+                    return new Vector3(-v.Z, v.Y, v.X);
+                case RotationIndex.PosYPosZPosX:
+                    return new Vector3(v.Y, v.Z, v.X);
+                case RotationIndex.PosZNegYPosX:
+                    return new Vector3(v.Z, -v.Y, v.X);
+                case RotationIndex.NegYNegZPosX:
+                    return new Vector3(-v.Y, -v.Z, v.X);
+                // Z = negative X axis
+                case RotationIndex.PosZPosYNegX:
+                    return new Vector3(v.Z, v.Y, -v.X);
+                case RotationIndex.PosYNegZNegX:
+                    return new Vector3(v.Y, -v.Z, -v.X);
+                case RotationIndex.NegZNegYNegX:
+                    return new Vector3(-v.Z, -v.Y, -v.X);
+                case RotationIndex.NegYPosZNegX:
+                    return new Vector3(-v.Y, v.Z, -v.X);
+            }
+            return v;
+        }
+
         private class Beacon
         {
             public int Id { get; set; }
@@ -121,43 +225,26 @@ namespace AoC._2021
             }
         }
 
-        private void RotateZAndAdd(ref List<Vector3> allOrientations, Vector3 original)
-        {
-            allOrientations.Add(original);
-            allOrientations.Add(new Vector3(original.Y, -original.X, original.Z));
-            allOrientations.Add(new Vector3(-original.X, -original.Y, original.Z));
-            allOrientations.Add(new Vector3(-original.Y, original.X, original.Z));
-        }
-
         private List<Vector3> GetAllOrientations(Vector3 original)
         {
-            Vector3 newOrientation;
             List<Vector3> allOrientations = new List<Vector3>();
-
-            // Z stays positive
-            RotateZAndAdd(ref allOrientations, original);
-            newOrientation = new Vector3(original.X, -original.Z, original.Y);
-            RotateZAndAdd(ref allOrientations, newOrientation);
-            newOrientation = new Vector3(original.X, -original.Y, -original.Z);
-            RotateZAndAdd(ref allOrientations, newOrientation);
-            newOrientation = new Vector3(original.X, original.Z, -original.Y);
-            RotateZAndAdd(ref allOrientations, newOrientation);
-            newOrientation = new Vector3(-original.Z, original.Y, original.X);
-            RotateZAndAdd(ref allOrientations, newOrientation);
-            newOrientation = new Vector3(original.Z, original.Y, -original.X);
-            RotateZAndAdd(ref allOrientations, newOrientation);
+            for (RotationIndex ri = RotationIndex.Start; ri <= RotationIndex.End; ++ri)
+            {
+                allOrientations.Add(ToRotationIndex(original, ri));
+            }
 
             return allOrientations;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            // Vector3 testCase = new Vector3(-2, -3, 1);
-            // List<Vector3> allOrientations = GetAllOrientations(testCase);
+            Vector3 testCase = new Vector3(1, 2, 3);
+            List<Vector3> asasd = GetAllOrientations(testCase);
+            var anotherOne = asasd.Distinct().ToList();
 
-            // Func<float, float> ToRadians = (degrees) => (float)(Math.PI / 180.0f * degrees);
-            // Quaternion rotateZ90Q = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, -ToRadians(90));
-            // Vector3 rotateZ90 = Vector3.Transform(testCase, rotateZ90Q);
+            Func<float, float> ToRadians = (degrees) => (float)(Math.PI / 180.0f * degrees);
+            Quaternion rotateZ90Q = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, -ToRadians(90));
+            Vector3 rotateZ90 = Vector3.Transform(testCase, rotateZ90Q);
             // return string.Empty;
 
             List<KeyValuePair<int, Vector3>> curBeacons = new List<KeyValuePair<int, Vector3>>();
@@ -212,28 +299,6 @@ namespace AoC._2021
                     }
                 }
             }
-
-            // Func<float, float> ToRadians = (degrees) => (float)(Math.PI / 180.0f * degrees);
-
-            // Vector3 testVector = new Vector3(8, 0, 7);
-            // List<Vector3> testVectors = new List<Vector3>();
-            // testVectors.Add(testVector);
-            // for (int x = 0; x < 4; ++x)
-            // {
-            //     Vector3 xRotate = Vector3.Transform(testVector, new Quaternion(ToRadians(x * 90), 0, 0, 0));
-            //     testVectors.Add(xRotate);
-            //     for (int y = 0; y < 4; ++y)
-            //     {
-            //         Vector3 yRotate = Vector3.Transform(testVector, new Quaternion(0, ToRadians(y * 90), 0, 0));
-            //         testVectors.Add(xRotate);
-            //         for (int z = 0; z < 4; ++z)
-            //         {
-            //             Vector3 zRotate = Vector3.Transform(testVector, new Quaternion(0, 0, ToRadians(z * 90), 0));
-            //             testVectors.Add(zRotate);
-            //         }
-            //     }
-            // }
-            // HashSet<float> testUnion = vecs.First().Value.Union(vecs.Skip(1).First().Value).ToHashSet();
             return string.Empty;
         }
 
