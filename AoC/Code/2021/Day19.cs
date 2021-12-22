@@ -337,6 +337,12 @@ namespace AoC._2021
                 Global = new Info();
             }
 
+            public Beacon(Beacon.Info info, List<KeyValuePair<int, Vector3>> localBeacons)
+            {
+                Local = new Info(info.Id, info.Pos, localBeacons);
+                Global = new Info();
+            }
+
             public override string ToString()
             {
                 if (Global.Id == InvalidId)
@@ -417,41 +423,20 @@ namespace AoC._2021
                     beacon.Global = new Beacon.Info(++nextGlobalIdx, ToRotationIndex(beacon.Local.Pos, ri), rotatedPos);
                     globalBeacons.Add(beacon.Global.Id, beacon);
                 }
-                // foreach (Beacon beacon in beacons)
-                // {
-                //     foreach (KeyValuePair<int, Beacon> globalBeacon in globalBeacons)
-                //     {
-                //         if (globalBeacon.Value.Global.Id == beacon.Global.Id)
-                //         {
-                //             continue;
-                //         }
-
-                //         if (globalBeacon.Value.Global.ToOthers.Select(to => to.Key).Contains(beacon.Global.Id))
-                //         {
-                //             continue;
-                //         }
-
-                //         Vector3 inRange = Vector3.Abs(beacon.Global.Pos - globalBeacon.Value.Global.Pos);
-                //         if (inRange.X <= 1000 || inRange.Y <= 1000 || inRange.Z <= 1000)
-                //         {
-                //             globalBeacon.Value.Global.ToOthers.Add(new KeyValuePair<int, Vector3>(beacon.Global.Id, globalBeacon.Value.Global.Pos - beacon.Global.Pos));
-                //         }
-                //     }
-                // }
             }
             localScanners.Remove(scannerId);
 
             DebugWriteLine($"Adding scanner [{scannerId,2}] to globals [{globalBeacons.Count} total beacons]");
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private bool CombineScanners(ref Dictionary<int, Beacon> globalBeacons, ref Dictionary<int, List<Beacon>> localScanners)
         {
-            Dictionary<int, List<Beacon>> localScanners = GetLocalScannerData(inputs);
-            Dictionary<int, Beacon> globalBeacons = new Dictionary<int, Beacon>();
-            PromoteToGlobal(0, ref localScanners, ref globalBeacons, RotationIndex.PosXPosYPosZ, null);
-
-            // priority queue? initial of 0, then matching pairs
-            Queue<KeyValuePair<int, List<Beacon>>> pendingScanners = new Queue<KeyValuePair<int, List<Beacon>>>(localScanners);
+            List<KeyValuePair<int, List<Beacon>>> sortedPendingScanners = new List<KeyValuePair<int, List<Beacon>>>(localScanners);
+            sortedPendingScanners = sortedPendingScanners.OrderBy(s => s.Value.Count).ToList();
+            PromoteToGlobal(sortedPendingScanners[0].Key, ref localScanners, ref globalBeacons, RotationIndex.PosXPosYPosZ, null);
+            sortedPendingScanners = new List<KeyValuePair<int, List<Beacon>>>(localScanners);
+            sortedPendingScanners = sortedPendingScanners.OrderBy(s => s.Value.Count).ToList();
+            Queue<KeyValuePair<int, List<Beacon>>> pendingScanners = new Queue<KeyValuePair<int, List<Beacon>>>(sortedPendingScanners);
 
             HashSet<int> pendingScannerIds = new HashSet<int>();
             HashSet<int> skippedScanners = new HashSet<int>();
@@ -462,7 +447,7 @@ namespace AoC._2021
                     int scannerId = localScanner.Key;
                     List<Beacon> localBeacons = localScanner.Value;
 
-                    DebugWriteLine($"Checking scanner [{scannerId,2}] ({pendingScanners.Count + 1,3} pending scanners)");
+                    // DebugWriteLine($"Checking scanner [{scannerId,2}] ({pendingScanners.Count + 1,3} pending scanners)");
 
                     RotationIndex rotationToGlobal = RotationIndex.Invalid;
                     Dictionary<int, int> localToGlobalId = new Dictionary<int, int>();
@@ -549,7 +534,7 @@ namespace AoC._2021
 
                     if (localToGlobalId.Count != preReduction)
                     {
-                        DebugWriteLine($"Scanner [{scannerId,2}] matches {localToGlobalId.Count} globals [logic to get {localToGlobalId.Count - preReduction}]");
+                        // DebugWriteLine($"Scanner [{scannerId,2}] matches {localToGlobalId.Count} globals [logic to get {localToGlobalId.Count - preReduction}]");
                     }
                     if (localToGlobalId.Count >= 12 && localToGlobalIds.Count == 0)
                     {
@@ -560,15 +545,62 @@ namespace AoC._2021
                     {
                         if (skippedScanners.Contains(localScanner.Key))
                         {
-                            DebugWriteLine($"Scanner [{scannerId,2}] deadlock!");
+                            return false;
                         }
                         skippedScanners.Add(localScanner.Key);
                         pendingScanners.Enqueue(localScanner);
                     }
                 }
             }
-            // 354 - to high
-            return globalBeacons.Count.ToString();
+            return true;
+        }
+
+        private int ProcessScanners(Dictionary<int, List<Beacon>> localScanners)
+        {
+            Dictionary<int, List<Beacon>> combinedScanners = new Dictionary<int, List<Beacon>>();
+            List<Dictionary<int, Beacon>> combinedGlobalBeacons = new List<Dictionary<int, Beacon>>();
+            while (localScanners.Count > 0)
+            {
+                DebugWriteLine($"Attempting to combine [{localScanners.Count,3}] scanners together");
+                Dictionary<int, Beacon> curGlobalBeacons = new Dictionary<int, Beacon>();
+                combinedGlobalBeacons.Add(curGlobalBeacons);
+                if (CombineScanners(ref curGlobalBeacons, ref localScanners))
+                {
+                    if (combinedGlobalBeacons.Count == 1)
+                    {
+                        return combinedGlobalBeacons.First().Count;
+                    }
+
+                    DebugWriteLine($"Failed to combine [{localScanners.Count,3}] scanners");
+
+                    // turn all global data into local, and try again
+                    localScanners.Clear();
+                    int curScannerGroupingIdx = Beacon.InvalidId;
+                    foreach (Dictionary<int, Beacon> globalBeacons in combinedGlobalBeacons)
+                    {
+                        localScanners[++curScannerGroupingIdx] = new List<Beacon>();
+                        List<KeyValuePair<int, Vector3>> asList = globalBeacons.ToList().Select(lb => new KeyValuePair<int, Vector3>(lb.Key, lb.Value.Global.Pos)).ToList();
+                        foreach (KeyValuePair<int, Beacon> pair in globalBeacons)
+                        {
+                            localScanners[curScannerGroupingIdx].Add(new Beacon(pair.Value.Global, asList));
+                        }
+                    }
+                    combinedGlobalBeacons.Clear();
+                }
+                else
+                {
+                    DebugWriteLine($"Failed to combine [{localScanners.Count,3}] scanners");
+                }
+            }
+
+            return combinedGlobalBeacons.First().Count;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        {
+            Dictionary<int, List<Beacon>> localScanners = GetLocalScannerData(inputs);
+            int beaconCount = ProcessScanners(localScanners);
+            return beaconCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
