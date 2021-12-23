@@ -228,6 +228,34 @@ namespace AoC._2021
 755,-354,-619
 553,889,-390
 
+--- scanner 4 ---
+727,592,562
+-293,-554,779
+441,611,-461
+-714,465,-776
+-743,427,-804
+-660,-479,-426
+832,-632,460
+927,-485,-438
+408,393,-506
+466,436,-512
+110,16,151
+-258,-428,682
+-393,719,612
+-211,-452,876
+808,-476,-593
+-575,615,604
+-485,667,467
+-680,325,-822
+-627,-443,-432
+872,-547,-609
+833,512,582
+807,604,487
+839,-516,451
+891,-625,532
+-652,-548,-490
+30,-46,-14
+
 --- scanner 2 ---
 649,640,665
 682,-795,504
@@ -282,34 +310,6 @@ namespace AoC._2021
 -868,-804,481
 614,-800,639
 595,780,-596
-
---- scanner 4 ---
-727,592,562
--293,-554,779
-441,611,-461
--714,465,-776
--743,427,-804
--660,-479,-426
-832,-632,460
-927,-485,-438
-408,393,-506
-466,436,-512
-110,16,151
--258,-428,682
--393,719,612
--211,-452,876
-808,-476,-593
--575,615,604
--485,667,467
--680,325,-822
--627,-443,-432
-872,-547,-609
-833,512,582
-807,604,487
-839,-516,451
-891,-625,532
--652,-548,-490
-30,-46,-14
 "
             });
             return testData;
@@ -464,17 +464,21 @@ namespace AoC._2021
                 }
             }
 
+            public int ScannerId { get; set; }
+
             public Info Local { get; init; }
             public Info Global { get; set; }
 
-            public Beacon(int localId, Vector3 localPos, List<KeyValuePair<int, Vector3>> localBeacons)
+            public Beacon(int scannerId, int localId, Vector3 localPos, List<KeyValuePair<int, Vector3>> localBeacons)
             {
+                ScannerId = scannerId;
                 Local = new Info(localId, localPos, localBeacons);
                 Global = new Info();
             }
 
-            public Beacon(Beacon.Info info, List<KeyValuePair<int, Vector3>> localBeacons)
+            public Beacon(int scannerId, Beacon.Info info, List<KeyValuePair<int, Vector3>> localBeacons)
             {
+                ScannerId = scannerId;
                 Local = new Info(info.Id, info.Pos, localBeacons);
                 Global = new Info();
             }
@@ -525,7 +529,7 @@ namespace AoC._2021
                     allScannerData[curScannerId] = new List<Beacon>();
                     foreach (var pair in localBeacons)
                     {
-                        allScannerData[curScannerId].Add(new Beacon(pair.Key, pair.Value, localBeacons));
+                        allScannerData[curScannerId].Add(new Beacon(curScannerId, pair.Key, pair.Value, localBeacons));
                     }
 
                     localBeacons.Clear();
@@ -535,11 +539,12 @@ namespace AoC._2021
             return allScannerData;
         }
 
-        private void PromoteToGlobal(int scannerId, ref Dictionary<int, List<Beacon>> localScanners, ref Dictionary<int, Beacon> globalBeacons, RotationIndex ri, Dictionary<int, int> localToGlobalId)
+        private void PromoteToGlobal(int scannerId, ref Dictionary<int, List<Beacon>> localScanners, ref Dictionary<int, Beacon> globalBeacons, ref Dictionary<int, Vector3> globalScanners, RotationIndex ri, Dictionary<int, int> localToGlobalId)
         {
             List<Beacon> beacons = localScanners[scannerId];
             if (globalBeacons.Count == 0)
             {
+                globalScanners[scannerId] = Vector3.Zero;
                 foreach (Beacon beacon in beacons)
                 {
                     beacon.Global = new Beacon.Info(beacon.Local);
@@ -548,15 +553,21 @@ namespace AoC._2021
             }
             else
             {
+                List<Beacon> sharedBeacons = beacons.Where(b => localToGlobalId.ContainsKey(b.Local.Id)).ToList();
+                Beacon shared = globalBeacons[localToGlobalId[sharedBeacons[0].Local.Id]];
+                Vector3 correctOrientation = ToRotationIndex(sharedBeacons[0].Local.Pos, ri);
+                Vector3 diff = shared.Global.Pos - correctOrientation;
+                globalScanners[scannerId] = diff;
+
                 int nextGlobalIdx = globalBeacons.Keys.Max();
-                List<KeyValuePair<int, Vector3>> rotatedPos = beacons.Select(l => new KeyValuePair<int, Vector3>(l.Local.Id, ToRotationIndex(l.Local.Pos, ri))).ToList();
-                foreach (Beacon beacon in beacons.Where(b => localToGlobalId.ContainsKey(b.Local.Id)))
+                List<KeyValuePair<int, Vector3>> rotatedPos = beacons.Select(l => new KeyValuePair<int, Vector3>(l.Local.Id, ToRotationIndex(l.Local.Pos, ri) + diff)).ToList();
+                foreach (Beacon beacon in sharedBeacons)
                 {
-                    beacon.Global = new Beacon.Info(localToGlobalId[beacon.Local.Id], ToRotationIndex(beacon.Local.Pos, ri), rotatedPos);
+                    beacon.Global = new Beacon.Info(localToGlobalId[beacon.Local.Id], ToRotationIndex(beacon.Local.Pos, ri) + diff, rotatedPos);
                 }
                 foreach (Beacon beacon in beacons.Where(b => !localToGlobalId.ContainsKey(b.Local.Id)))
                 {
-                    beacon.Global = new Beacon.Info(++nextGlobalIdx, ToRotationIndex(beacon.Local.Pos, ri), rotatedPos);
+                    beacon.Global = new Beacon.Info(++nextGlobalIdx, ToRotationIndex(beacon.Local.Pos, ri) + diff, rotatedPos);
                     globalBeacons.Add(beacon.Global.Id, beacon);
                 }
             }
@@ -565,11 +576,11 @@ namespace AoC._2021
             DebugWriteLine($"Adding scanner [{scannerId,2}] to globals [{globalBeacons.Count} total beacons]");
         }
 
-        private bool CombineScanners(ref Dictionary<int, Beacon> globalBeacons, ref Dictionary<int, List<Beacon>> localScanners)
+        private bool CombineScanners(ref Dictionary<int, Beacon> globalBeacons, ref Dictionary<int, Vector3> globalScanners, ref Dictionary<int, List<Beacon>> localScanners)
         {
             List<KeyValuePair<int, List<Beacon>>> sortedPendingScanners = new List<KeyValuePair<int, List<Beacon>>>(localScanners);
             sortedPendingScanners = sortedPendingScanners.OrderBy(s => s.Value.Count).ToList();
-            PromoteToGlobal(sortedPendingScanners[0].Key, ref localScanners, ref globalBeacons, RotationIndex.PosXPosYPosZ, null);
+            PromoteToGlobal(sortedPendingScanners[0].Key, ref localScanners, ref globalBeacons, ref globalScanners, RotationIndex.PosXPosYPosZ, null);
             sortedPendingScanners = new List<KeyValuePair<int, List<Beacon>>>(localScanners);
             sortedPendingScanners = sortedPendingScanners.OrderBy(s => s.Value.Count).ToList();
             Queue<KeyValuePair<int, List<Beacon>>> pendingScanners = new Queue<KeyValuePair<int, List<Beacon>>>(sortedPendingScanners);
@@ -674,7 +685,7 @@ namespace AoC._2021
                     }
                     if (localToGlobalId.Count >= 12 && localToGlobalIds.Count == 0)
                     {
-                        PromoteToGlobal(scannerId, ref localScanners, ref globalBeacons, rotationToGlobal, localToGlobalId);
+                        PromoteToGlobal(scannerId, ref localScanners, ref globalBeacons, ref globalScanners, rotationToGlobal, localToGlobalId);
                         skippedScanners.Clear();
                     }
                     else
@@ -691,20 +702,30 @@ namespace AoC._2021
             return true;
         }
 
+        Dictionary<int, KeyValuePair<int, Vector3>> ScannerPositions;
+
         private int ProcessScanners(Dictionary<int, List<Beacon>> localScanners, bool countBeacons)
         {
+            if (countBeacons)
+            {
+                return 0;
+            }
+
             Dictionary<int, List<Beacon>> combinedScanners = new Dictionary<int, List<Beacon>>();
+            List<Dictionary<int, Vector3>> combinedGlobalScanners = new List<Dictionary<int, Vector3>>();
             List<Dictionary<int, Beacon>> combinedGlobalBeacons = new List<Dictionary<int, Beacon>>();
             while (localScanners.Count > 0)
             {
                 DebugWriteLine($"Attempting to combine [{localScanners.Count,3}] scanners together");
                 Dictionary<int, Beacon> curGlobalBeacons = new Dictionary<int, Beacon>();
                 combinedGlobalBeacons.Add(curGlobalBeacons);
-                if (CombineScanners(ref curGlobalBeacons, ref localScanners))
+                Dictionary<int, Vector3> curGlobalScanners = new Dictionary<int, Vector3>();
+                combinedGlobalScanners.Add(curGlobalScanners);
+                if (CombineScanners(ref curGlobalBeacons, ref curGlobalScanners, ref localScanners))
                 {
                     if (combinedGlobalBeacons.Count == 1)
                     {
-                        return combinedGlobalBeacons.First().Count;
+                        break;
                     }
 
                     DebugWriteLine($"Failed to combine [{localScanners.Count,3}] scanners");
@@ -718,7 +739,7 @@ namespace AoC._2021
                         List<KeyValuePair<int, Vector3>> asList = globalBeacons.ToList().Select(lb => new KeyValuePair<int, Vector3>(lb.Key, lb.Value.Global.Pos)).ToList();
                         foreach (KeyValuePair<int, Beacon> pair in globalBeacons)
                         {
-                            localScanners[curScannerGroupingIdx].Add(new Beacon(pair.Value.Global, asList));
+                            localScanners[curScannerGroupingIdx].Add(new Beacon(curScannerGroupingIdx, pair.Value.Global, asList));
                         }
                     }
                     combinedGlobalBeacons.Clear();
@@ -733,11 +754,16 @@ namespace AoC._2021
             {
                 return combinedGlobalBeacons.First().Count;
             }
+            foreach (KeyValuePair<int, Vector3> pair in combinedGlobalScanners.First())
+            {
+                DebugWriteLine($"Scanner [{pair.Key,3}] = {pair.Value.ToString()}");
+            }
             return 0;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool countBeacons)
         {
+            ScannerPositions = new Dictionary<int, KeyValuePair<int, Vector3>>();
             Dictionary<int, List<Beacon>> localScanners = GetLocalScannerData(inputs);
             int value = ProcessScanners(localScanners, countBeacons);
             return value.ToString();
