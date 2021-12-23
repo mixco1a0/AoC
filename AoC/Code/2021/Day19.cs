@@ -228,34 +228,6 @@ namespace AoC._2021
 755,-354,-619
 553,889,-390
 
---- scanner 4 ---
-727,592,562
--293,-554,779
-441,611,-461
--714,465,-776
--743,427,-804
--660,-479,-426
-832,-632,460
-927,-485,-438
-408,393,-506
-466,436,-512
-110,16,151
--258,-428,682
--393,719,612
--211,-452,876
-808,-476,-593
--575,615,604
--485,667,467
--680,325,-822
--627,-443,-432
-872,-547,-609
-833,512,582
-807,604,487
-839,-516,451
-891,-625,532
--652,-548,-490
-30,-46,-14
-
 --- scanner 2 ---
 649,640,665
 682,-795,504
@@ -310,6 +282,34 @@ namespace AoC._2021
 -868,-804,481
 614,-800,639
 595,780,-596
+
+--- scanner 4 ---
+727,592,562
+-293,-554,779
+441,611,-461
+-714,465,-776
+-743,427,-804
+-660,-479,-426
+832,-632,460
+927,-485,-438
+408,393,-506
+466,436,-512
+110,16,151
+-258,-428,682
+-393,719,612
+-211,-452,876
+808,-476,-593
+-575,615,604
+-485,667,467
+-680,325,-822
+-627,-443,-432
+872,-547,-609
+833,512,582
+807,604,487
+839,-516,451
+891,-625,532
+-652,-548,-490
+30,-46,-14
 "
             });
             return testData;
@@ -358,7 +358,7 @@ namespace AoC._2021
             End = NegYPosZNegX
         }
 
-        private Vector3 ToRotationIndex(Vector3 v, RotationIndex targetRotation)
+        private static Vector3 ToRotationIndex(Vector3 v, RotationIndex targetRotation)
         {
             switch (targetRotation)
             {
@@ -420,33 +420,59 @@ namespace AoC._2021
             return v;
         }
 
+        private static readonly int InvalidId = -1;
+
+        private interface IScanner
+        {
+            public int Id { get; }
+            public Vector3 Pos { get; }
+            public List<Beacon> Beacons { get; }
+        }
+
+        private class Scanner : IScanner
+        {
+            public int Id { get; set; }
+            public Vector3 Pos { get; set; }
+            public List<Beacon> Beacons { get; set; }
+
+            public Scanner(int id, List<Beacon> beacons)
+            {
+                Id = id;
+                Pos = Vector3.Zero;
+                Beacons = beacons;
+            }
+
+            public override string ToString()
+            {
+                return $"[{Id}] {Pos.ToString()}";
+            }
+        }
+
         private class Beacon
         {
-            public static readonly int InvalidId = -1;
-
             public class Info
             {
                 public int Id { get; set; }
                 public Vector3 Pos { get; set; }
-                public List<KeyValuePair<int, Vector3>> ToOthers { get; set; }
+                public Dictionary<int, Vector3> ToOthers { get; set; }
 
                 public Info()
                 {
                     Id = InvalidId;
                     Pos = Vector3.Zero;
-                    ToOthers = new List<KeyValuePair<int, Vector3>>();
+                    ToOthers = new Dictionary<int, Vector3>();
                 }
 
-                public Info(int id, Vector3 pos, List<KeyValuePair<int, Vector3>> localBeacons)
+                public Info(int id, Vector3 pos, Dictionary<int, Vector3> localBeacons)
                 {
                     Id = id;
                     Pos = pos;
-                    ToOthers = new List<KeyValuePair<int, Vector3>>();
+                    ToOthers = new Dictionary<int, Vector3>();
                     foreach (KeyValuePair<int, Vector3> pair in localBeacons)
                     {
                         if (Pos != pair.Value)
                         {
-                            ToOthers.Add(new KeyValuePair<int, Vector3>(pair.Key, Pos - pair.Value));
+                            ToOthers[pair.Key] = Pos - pair.Value;
                         }
                     }
                 }
@@ -455,7 +481,7 @@ namespace AoC._2021
                 {
                     Id = other.Id;
                     Pos = other.Pos;
-                    ToOthers = new List<KeyValuePair<int, Vector3>>(other.ToOthers);
+                    ToOthers = new Dictionary<int, Vector3>(other.ToOthers);
                 }
 
                 public override string ToString()
@@ -464,22 +490,23 @@ namespace AoC._2021
                 }
             }
 
-            public int ScannerId { get; set; }
-
-            public Info Local { get; init; }
+            public Info Local { get; set; }
             public Info Global { get; set; }
 
-            public Beacon(int scannerId, int localId, Vector3 localPos, List<KeyValuePair<int, Vector3>> localBeacons)
+            public Beacon(int localId, Vector3 localPos, Dictionary<int, Vector3> localBeacons)
             {
-                ScannerId = scannerId;
-                Local = new Info(localId, localPos, localBeacons);
+                Init(localId, localPos, localBeacons);
+            }
+
+            public Beacon(Beacon.Info info, Dictionary<int, Vector3> localBeacons)
+            {
+                Local = new Info(info.Id, info.Pos, localBeacons);
                 Global = new Info();
             }
 
-            public Beacon(int scannerId, Beacon.Info info, List<KeyValuePair<int, Vector3>> localBeacons)
+            public void Init(int localId, Vector3 localPos, Dictionary<int, Vector3> localBeacons)
             {
-                ScannerId = scannerId;
-                Local = new Info(info.Id, info.Pos, localBeacons);
+                Local = new Info(localId, localPos, localBeacons);
                 Global = new Info();
             }
 
@@ -487,13 +514,13 @@ namespace AoC._2021
             {
                 if (Global.Id == InvalidId)
                 {
-                    return Local.ToString();
+                    return $"[L] {Local.ToString()}";
                 }
-                return Global.ToString();
+                return $"[G] {Global.ToString()}";
             }
         }
 
-        private Dictionary<RotationIndex, Vector3> GetAllOrientations(Vector3 original, List<RotationIndex> rotations)
+        private Dictionary<RotationIndex, Vector3> GetAllOrientations(Vector3 original, HashSet<RotationIndex> rotations)
         {
             Dictionary<RotationIndex, Vector3> allRotations = new Dictionary<RotationIndex, Vector3>();
             for (RotationIndex ri = RotationIndex.Start; ri <= RotationIndex.End; ++ri)
@@ -507,12 +534,12 @@ namespace AoC._2021
             return allRotations;
         }
 
-        private Dictionary<int, List<Beacon>> GetLocalScannerData(List<string> inputs)
+        private List<Scanner> ParseScanners(List<string> inputs)
         {
-            List<KeyValuePair<int, Vector3>> localBeacons = new List<KeyValuePair<int, Vector3>>();
-            Dictionary<int, List<Beacon>> allScannerData = new Dictionary<int, List<Beacon>>();
-            int curScannerId = Beacon.InvalidId;
-            int curLocalBeaconId = Beacon.InvalidId;
+            List<Scanner> scanners = new List<Scanner>();
+            Dictionary<int, Vector3> localBeacons = new Dictionary<int, Vector3>();
+            int curScannerId = InvalidId;
+            int curLocalBeaconId = InvalidId;
             foreach (string input in inputs)
             {
                 if (input.Contains("scanner"))
@@ -522,250 +549,278 @@ namespace AoC._2021
                 else if (!string.IsNullOrEmpty(input))
                 {
                     float[] vec3 = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
-                    localBeacons.Add(new KeyValuePair<int, Vector3>(++curLocalBeaconId, new Vector3(vec3)));
+                    localBeacons[++curLocalBeaconId] = new Vector3(vec3);
                 }
                 else
                 {
-                    allScannerData[curScannerId] = new List<Beacon>();
+                    List<Beacon> scannerBeacons = new List<Beacon>();
                     foreach (var pair in localBeacons)
                     {
-                        allScannerData[curScannerId].Add(new Beacon(curScannerId, pair.Key, pair.Value, localBeacons));
+                        scannerBeacons.Add(new Beacon(pair.Key, pair.Value, localBeacons));
                     }
+                    scanners.Add(new Scanner(curScannerId, scannerBeacons));
 
                     localBeacons.Clear();
-                    curLocalBeaconId = Beacon.InvalidId;
+                    curLocalBeaconId = InvalidId;
                 }
             }
-            return allScannerData;
+            return scanners;
         }
 
-        private void PromoteToGlobal(int scannerId, ref Dictionary<int, List<Beacon>> localScanners, ref Dictionary<int, Beacon> globalBeacons, ref Dictionary<int, Vector3> globalScanners, RotationIndex ri, Dictionary<int, int> localToGlobalId)
+        private class CombinedScanner : IScanner
         {
-            List<Beacon> beacons = localScanners[scannerId];
-            if (globalBeacons.Count == 0)
+            public class Child
             {
-                globalScanners[scannerId] = Vector3.Zero;
-                foreach (Beacon beacon in beacons)
+                public IScanner Scanner { get; init; }
+                public Vector3 Offset { get; init; }
+
+                public Child(IScanner scanner, Vector3 offset)
+                {
+                    Scanner = scanner;
+                    Offset = offset;
+                }
+
+                public override string ToString()
+                {
+                    return $"{Scanner.Id} [{Offset.ToString()}]";
+                }
+            }
+
+            public IScanner BaseScanner { get; set; }
+            public int Id { get => BaseScanner.Id; }
+            public Vector3 Pos { get => BaseScanner.Pos; }
+            public List<Child> Children { get; set; }
+            public List<Beacon> Beacons { get; init; }
+
+            public CombinedScanner(IScanner baseScanner)
+            {
+                BaseScanner = baseScanner;
+                Children = new List<Child>();
+
+                foreach (Beacon beacon in BaseScanner.Beacons)
                 {
                     beacon.Global = new Beacon.Info(beacon.Local);
-                    globalBeacons.Add(beacon.Local.Id, beacon);
                 }
+                Beacons = new List<Beacon>(BaseScanner.Beacons);
             }
-            else
+
+            public void AddScanner(IScanner childScanner, RotationIndex rotationIndex, Dictionary<int, int> localToGlobalId)
             {
-                List<Beacon> sharedBeacons = beacons.Where(b => localToGlobalId.ContainsKey(b.Local.Id)).ToList();
-                Beacon shared = globalBeacons[localToGlobalId[sharedBeacons[0].Local.Id]];
-                Vector3 correctOrientation = ToRotationIndex(sharedBeacons[0].Local.Pos, ri);
-                Vector3 diff = shared.Global.Pos - correctOrientation;
-                globalScanners[scannerId] = diff;
+                IEnumerable<Beacon> matchingBeacons = childScanner.Beacons.Where(b => localToGlobalId.ContainsKey(b.Local.Id));
+                Beacon keyBeacon = Beacons.Single(b => b.Global.Id == localToGlobalId[matchingBeacons.First().Local.Id]);
+                Vector3 fixedPos = ToRotationIndex(matchingBeacons.First().Local.Pos, rotationIndex);
+                Vector3 scannerOffset = keyBeacon.Global.Pos - fixedPos;
 
-                int nextGlobalIdx = globalBeacons.Keys.Max();
-                List<KeyValuePair<int, Vector3>> rotatedPos = beacons.Select(l => new KeyValuePair<int, Vector3>(l.Local.Id, ToRotationIndex(l.Local.Pos, ri) + diff)).ToList();
-                foreach (Beacon beacon in sharedBeacons)
+                int nextId = Beacons.Max(b => b.Global.Id);
+                Dictionary<int, Vector3> rotatedPos = childScanner.Beacons.ToDictionary(b => b.Local.Id, b => ToRotationIndex(b.Local.Pos, rotationIndex) + scannerOffset);
+                foreach (Beacon childBeacon in childScanner.Beacons)
                 {
-                    beacon.Global = new Beacon.Info(localToGlobalId[beacon.Local.Id], ToRotationIndex(beacon.Local.Pos, ri) + diff, rotatedPos);
+                    if (!localToGlobalId.ContainsKey(childBeacon.Local.Id))
+                    {
+                        childBeacon.Global = new Beacon.Info(++nextId, ToRotationIndex(childBeacon.Local.Pos, rotationIndex) + scannerOffset, rotatedPos);
+                        Beacons.Add(childBeacon);
+                    }
                 }
-                foreach (Beacon beacon in beacons.Where(b => !localToGlobalId.ContainsKey(b.Local.Id)))
+
+                Children.Add(new Child(childScanner, scannerOffset));
+            }
+
+            public List<Vector3> GetAllScannerPos()
+            {
+                List<Vector3> allPos = GetAllScannerPos(BaseScanner.Pos);
+                allPos.Add(BaseScanner.Pos);
+                return allPos;
+            }
+
+            public List<Vector3> GetAllScannerPos(Vector3 offset)
+            {
+                List<Vector3> allPos = new List<Vector3>();
+                allPos.Add(BaseScanner.Pos); // should be <0,0,0>
+                foreach (Child child in Children)
                 {
-                    beacon.Global = new Beacon.Info(++nextGlobalIdx, ToRotationIndex(beacon.Local.Pos, ri) + diff, rotatedPos);
-                    globalBeacons.Add(beacon.Global.Id, beacon);
+                    if (child.Scanner is Scanner)
+                    {
+                        allPos.Add(child.Scanner.Pos + child.Offset + offset);
+                    }
+                    else if (child.Scanner is CombinedScanner)
+                    {
+                        allPos.AddRange(((CombinedScanner)child.Scanner).GetAllScannerPos(offset + child.Offset));
+                    }
+                }
+                return allPos;
+            }
+
+            public void ResetBeacons()
+            {
+                Dictionary<int, Vector3> allPos = Beacons.ToDictionary(b => b.Global.Id, b => b.Global.Pos);
+                foreach (Beacon beacon in Beacons)
+                {
+                    beacon.Init(beacon.Global.Id, beacon.Global.Pos, allPos);
                 }
             }
-            localScanners.Remove(scannerId);
 
-            DebugWriteLine($"Adding scanner [{scannerId,2}] to globals [{globalBeacons.Count} total beacons]");
+            public override string ToString()
+            {
+                return $"[{Id}] {Pos.ToString()}";
+            }
         }
 
-        private bool CombineScanners(ref Dictionary<int, Beacon> globalBeacons, ref Dictionary<int, Vector3> globalScanners, ref Dictionary<int, List<Beacon>> localScanners)
+        private CombinedScanner CombineScanners(ref List<Scanner> localScanners)
         {
-            List<KeyValuePair<int, List<Beacon>>> sortedPendingScanners = new List<KeyValuePair<int, List<Beacon>>>(localScanners);
-            sortedPendingScanners = sortedPendingScanners.OrderBy(s => s.Value.Count).ToList();
-            PromoteToGlobal(sortedPendingScanners[0].Key, ref localScanners, ref globalBeacons, ref globalScanners, RotationIndex.PosXPosYPosZ, null);
-            sortedPendingScanners = new List<KeyValuePair<int, List<Beacon>>>(localScanners);
-            sortedPendingScanners = sortedPendingScanners.OrderBy(s => s.Value.Count).ToList();
-            Queue<KeyValuePair<int, List<Beacon>>> pendingScanners = new Queue<KeyValuePair<int, List<Beacon>>>(sortedPendingScanners);
+            List<CombinedScanner> combinedScanners = new List<CombinedScanner>();
+            Queue<IScanner> pendingScanners = new Queue<IScanner>(localScanners);
 
-            HashSet<int> pendingScannerIds = new HashSet<int>();
+            DebugWriteLine($"Matching scanner [{pendingScanners.Peek().Id,2}]");
+            combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
+
+            CombinedScanner currentCombinedScanner = combinedScanners.First();
             HashSet<int> skippedScanners = new HashSet<int>();
             while (pendingScanners.Count > 0)
             {
-                KeyValuePair<int, List<Beacon>> localScanner = pendingScanners.Dequeue();
+                IScanner pendingScanner = pendingScanners.Dequeue();
+                RotationIndex rotationToBase = RotationIndex.Invalid;
+                Dictionary<int, int> localToGlobalId = new Dictionary<int, int>();
+                Dictionary<int, HashSet<int>> localToGlobalIds = new Dictionary<int, HashSet<int>>();
+
+                // find potentially matching beacons
+                foreach (Beacon beacon in pendingScanner.Beacons)
                 {
-                    int scannerId = localScanner.Key;
-                    List<Beacon> localBeacons = localScanner.Value;
-
-                    // DebugWriteLine($"Checking scanner [{scannerId,2}] ({pendingScanners.Count + 1,3} pending scanners)");
-
-                    RotationIndex rotationToGlobal = RotationIndex.Invalid;
-                    Dictionary<int, int> localToGlobalId = new Dictionary<int, int>();
-                    Dictionary<int, List<int>> localToGlobalIds = new Dictionary<int, List<int>>();
-                    foreach (Beacon localBeacon in localBeacons)
+                    HashSet<int> potentialIds = new HashSet<int>();
+                    HashSet<int> connectedIds = new HashSet<int>();
+                    HashSet<RotationIndex> matchingRotations = new HashSet<RotationIndex>();
+                    foreach (var toOther in beacon.Local.ToOthers)
                     {
-                        List<int> potentialIds = new List<int>();
-                        List<int> matchingConnectedIds = new List<int>();
-                        List<RotationIndex> matchingRotations = new List<RotationIndex>();
-                        foreach (KeyValuePair<int, Vector3> toOther in localBeacon.Local.ToOthers)
+                        Dictionary<RotationIndex, Vector3> allOrientations = GetAllOrientations(toOther.Value, matchingRotations);
+                        foreach (Beacon potentialMatch in currentCombinedScanner.Beacons)
                         {
-                            Dictionary<RotationIndex, Vector3> allOrientations = GetAllOrientations(toOther.Value, matchingRotations);
-                            foreach (KeyValuePair<int, Beacon> globalBeacon in globalBeacons)
+                            IEnumerable<Vector3> matchingVectors = potentialMatch.Global.ToOthers.Select(to => to.Value).Intersect(allOrientations.Values).Distinct();
+                            if (matchingVectors.Any())
                             {
-                                List<Vector3> shared = globalBeacon.Value.Global.ToOthers.Select(to => to.Value).Intersect(allOrientations.Values).Distinct().ToList();
-                                if (shared.Count > 0)
+                                potentialIds.Add(potentialMatch.Global.Id);
+                                IEnumerable<int> matchingIds = potentialMatch.Global.ToOthers.Where(to => matchingVectors.Contains(to.Value)).Select(to => to.Key);
+                                connectedIds = connectedIds.Union(matchingIds).ToHashSet();
+                                IEnumerable<RotationIndex> rotations = allOrientations.Where(ao => matchingVectors.Contains(ao.Value)).Select(ao => ao.Key);
+                                if (matchingRotations.Any())
                                 {
-                                    potentialIds.Add(globalBeacon.Key);
-                                    IEnumerable<int> ids = globalBeacon.Value.Global.ToOthers.Where(to => shared.Contains(to.Value)).Select(to => to.Key);
-                                    if (matchingConnectedIds.Count == 0)
-                                    {
-                                        matchingConnectedIds = ids.ToList();
-                                    }
-                                    else
-                                    {
-                                        matchingConnectedIds = matchingConnectedIds.Union(ids).Distinct().ToList();
-                                    }
-
-                                    IEnumerable<RotationIndex> rot = allOrientations.Where(pair => shared.Contains(pair.Value)).Select(pair => pair.Key);
-                                    if (matchingRotations.Count == 0)
-                                    {
-                                        matchingRotations = rot.ToList();
-                                    }
-                                    else
-                                    {
-                                        matchingRotations = matchingRotations.Intersect(rot).ToList();
-                                    }
+                                    matchingRotations = matchingRotations.Intersect(rotations).ToHashSet();
+                                }
+                                else
+                                {
+                                    matchingRotations = rotations.ToHashSet();
                                 }
                             }
                         }
-
-                        int potentialMatches = potentialIds.Distinct().Count();
-                        if (potentialMatches == 1)
-                        {
-                            // DebugWriteLine($"Beacon [L{localBeacon.Local.Id,3}] matches global beacon [G{potentialIds.First(),3}]");
-                            localToGlobalId[localBeacon.Local.Id] = potentialIds.First();
-                            rotationToGlobal = matchingRotations.First();
-                        }
-                        else if (potentialMatches == 0)
-                        {
-                            // DebugWriteLine($"Beacon [L{localBeacon.Local.Id,3}] no matches");
-                        }
-                        else
-                        {
-                            localToGlobalIds[localBeacon.Local.Id] = new List<int>(potentialIds.Distinct());
-                            StringBuilder sb = new StringBuilder($"Beacon [L{localBeacon.Local.Id,3}] matches {potentialMatches} global beacons [");
-                            foreach (int pid in potentialIds.Distinct())
-                            {
-                                sb.Append($"G{pid,3} |");
-                            }
-                            sb[sb.Length - 1] = ']';
-                            // DebugWriteLine(sb.ToString());
-                        }
                     }
 
-                    int preReduction = localToGlobalId.Count;
-                    // DebugWriteLine($"Scanner [{scannerId,2}] matched {localToGlobalId.Count} globals");
-                    bool complete = localToGlobalId.Count >= 12;
-                    int globalIdCount = localToGlobalId.Count;
-                    while (!complete)
+                    if (potentialIds.Count == 1)
                     {
-                        int prevGlobalIdCount = localToGlobalId.Count;
-                        foreach (KeyValuePair<int, List<int>> pair in localToGlobalIds)
-                        {
-                            pair.Value.RemoveAll(id => localToGlobalId.ContainsValue(id));
-                        }
-                        foreach (KeyValuePair<int, List<int>> pair in localToGlobalIds.Where(p => p.Value.Count == 1))
-                        {
-                            localToGlobalId[pair.Key] = pair.Value.First();
-                        }
-                        complete = globalIdCount == localToGlobalId.Count;
-                        globalIdCount = localToGlobalId.Count;
+                        localToGlobalId[beacon.Local.Id] = potentialIds.First();
+                        rotationToBase = matchingRotations.First();
                     }
-
-                    if (localToGlobalId.Count != preReduction)
+                    else if (potentialIds.Count > 0)
                     {
-                        // DebugWriteLine($"Scanner [{scannerId,2}] matches {localToGlobalId.Count} globals [logic to get {localToGlobalId.Count - preReduction}]");
-                    }
-                    if (localToGlobalId.Count >= 12 && localToGlobalIds.Count == 0)
-                    {
-                        PromoteToGlobal(scannerId, ref localScanners, ref globalBeacons, ref globalScanners, rotationToGlobal, localToGlobalId);
-                        skippedScanners.Clear();
-                    }
-                    else
-                    {
-                        if (skippedScanners.Contains(localScanner.Key))
-                        {
-                            return false;
-                        }
-                        skippedScanners.Add(localScanner.Key);
-                        pendingScanners.Enqueue(localScanner);
+                        localToGlobalIds[beacon.Local.Id] = new HashSet<int>(potentialIds);
                     }
                 }
-            }
-            return true;
-        }
 
-        Dictionary<int, KeyValuePair<int, Vector3>> ScannerPositions;
-
-        private int ProcessScanners(Dictionary<int, List<Beacon>> localScanners, bool countBeacons)
-        {
-            if (countBeacons)
-            {
-                return 0;
-            }
-
-            Dictionary<int, List<Beacon>> combinedScanners = new Dictionary<int, List<Beacon>>();
-            List<Dictionary<int, Vector3>> combinedGlobalScanners = new List<Dictionary<int, Vector3>>();
-            List<Dictionary<int, Beacon>> combinedGlobalBeacons = new List<Dictionary<int, Beacon>>();
-            while (localScanners.Count > 0)
-            {
-                DebugWriteLine($"Attempting to combine [{localScanners.Count,3}] scanners together");
-                Dictionary<int, Beacon> curGlobalBeacons = new Dictionary<int, Beacon>();
-                combinedGlobalBeacons.Add(curGlobalBeacons);
-                Dictionary<int, Vector3> curGlobalScanners = new Dictionary<int, Vector3>();
-                combinedGlobalScanners.Add(curGlobalScanners);
-                if (CombineScanners(ref curGlobalBeacons, ref curGlobalScanners, ref localScanners))
+                if (localToGlobalId.Count < 12)
                 {
-                    if (combinedGlobalBeacons.Count == 1)
+                    while (true)
                     {
-                        break;
-                    }
-
-                    DebugWriteLine($"Failed to combine [{localScanners.Count,3}] scanners");
-
-                    // turn all global data into local, and try again
-                    localScanners.Clear();
-                    int curScannerGroupingIdx = Beacon.InvalidId;
-                    foreach (Dictionary<int, Beacon> globalBeacons in combinedGlobalBeacons)
-                    {
-                        localScanners[++curScannerGroupingIdx] = new List<Beacon>();
-                        List<KeyValuePair<int, Vector3>> asList = globalBeacons.ToList().Select(lb => new KeyValuePair<int, Vector3>(lb.Key, lb.Value.Global.Pos)).ToList();
-                        foreach (KeyValuePair<int, Beacon> pair in globalBeacons)
+                        int prevIdCount = localToGlobalId.Count;
+                        foreach (var curIdPair in localToGlobalIds)
                         {
-                            localScanners[curScannerGroupingIdx].Add(new Beacon(curScannerGroupingIdx, pair.Value.Global, asList));
+                            curIdPair.Value.RemoveWhere(idPair => localToGlobalId.ContainsValue(idPair));
+                        }
+                        foreach (var matchedPair in localToGlobalIds.Where(idPair => idPair.Value.Count == 1))
+                        {
+                            localToGlobalId[matchedPair.Key] = matchedPair.Value.First();
+                        }
+
+                        if (prevIdCount == localToGlobalId.Count)
+                        {
+                            break;
                         }
                     }
-                    combinedGlobalBeacons.Clear();
+                }
+
+                if (localToGlobalId.Count >= 12 && localToGlobalIds.Count == 0)
+                {
+                    currentCombinedScanner.AddScanner(pendingScanner, rotationToBase, localToGlobalId);
+                    localScanners.RemoveAll(ls => ls.Id == pendingScanner.Id);
+                    DebugWriteLine($"\tAdding scanner [{pendingScanner.Id,2}] to globals [{currentCombinedScanner.Beacons.Count} total beacons]");
+
+                    skippedScanners.Clear();
                 }
                 else
                 {
-                    DebugWriteLine($"Failed to combine [{localScanners.Count,3}] scanners");
+                    if (skippedScanners.Contains(pendingScanner.Id))
+                    {
+                        combinedScanners.Add(new CombinedScanner(pendingScanner));
+                        if (pendingScanners.Count == 0 && combinedScanners.Count > 1)
+                        {
+                            foreach (CombinedScanner combined in combinedScanners.OrderBy(cs => cs.Beacons.Count))
+                            {
+                                combined.ResetBeacons();
+                                pendingScanners.Enqueue(combined);
+                            }
+                            combinedScanners.Clear();
+                            combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
+                            DebugWriteLine($"All scanners combined. Restarting process.");
+                            DebugWriteLine($"[{pendingScanners.Count + 1,2} pending...]");
+                            DebugWriteLine("");
+                        }
+                        else
+                        {
+                            DebugWriteLine($"No matching scanners found for [{pendingScanner.Id,2}]. Starting new matching process.");
+                            DebugWriteLine("");
+                        }
+                        currentCombinedScanner = combinedScanners.Last();
+                        skippedScanners.Clear();
+                        DebugWriteLine($"Matching scanner [{currentCombinedScanner.Id,2}]");
+                    }
+                    else
+                    {
+                        skippedScanners.Add(pendingScanner.Id);
+                        pendingScanners.Enqueue(pendingScanner);
+                    }
                 }
             }
+            return combinedScanners.First();
+        }
 
+        private int ProcessScanners(List<Scanner> scanners, bool countBeacons)
+        {
+            CombinedScanner combinedScanners = CombineScanners(ref scanners);
             if (countBeacons)
             {
-                return combinedGlobalBeacons.First().Count;
+                return combinedScanners.Beacons.Count;
             }
-            foreach (KeyValuePair<int, Vector3> pair in combinedGlobalScanners.First())
+
+            Func<Vector3, Vector3, int> ManhattenDistance = (a, b) =>
             {
-                DebugWriteLine($"Scanner [{pair.Key,3}] = {pair.Value.ToString()}");
+                return Math.Abs((int)(a.X - b.X)) + Math.Abs((int)(a.Y - b.Y)) + Math.Abs((int)(a.Z - b.Z));
+            };
+
+            int maxDist = int.MinValue;
+            List<Vector3> allScannerPos = combinedScanners.GetAllScannerPos();
+            foreach (Vector3 pos1 in allScannerPos)
+            {
+                foreach (Vector3 pos2 in allScannerPos)
+                {
+                    if (pos1 != pos2)
+                    {
+                        maxDist = Math.Max(maxDist, ManhattenDistance(pos1, pos2));
+                    }
+                }
             }
-            return 0;
+            return maxDist;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool countBeacons)
         {
-            ScannerPositions = new Dictionary<int, KeyValuePair<int, Vector3>>();
-            Dictionary<int, List<Beacon>> localScanners = GetLocalScannerData(inputs);
-            int value = ProcessScanners(localScanners, countBeacons);
+            List<Scanner> scanners = ParseScanners(inputs);
+            int value = ProcessScanners(scanners, countBeacons);
             return value.ToString();
         }
 
