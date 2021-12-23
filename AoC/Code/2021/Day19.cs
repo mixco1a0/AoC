@@ -596,6 +596,10 @@ namespace AoC._2021
             {
                 BaseScanner = baseScanner;
                 Children = new List<Child>();
+                if (baseScanner is CombinedScanner)
+                {
+                    Children.AddRange((baseScanner as CombinedScanner).Children);
+                }
 
                 foreach (Beacon beacon in BaseScanner.Beacons)
                 {
@@ -608,43 +612,48 @@ namespace AoC._2021
             {
                 IEnumerable<Beacon> matchingBeacons = childScanner.Beacons.Where(b => localToGlobalId.ContainsKey(b.Local.Id));
                 Beacon keyBeacon = Beacons.Single(b => b.Global.Id == localToGlobalId[matchingBeacons.First().Local.Id]);
-                Vector3 fixedPos = ToRotationIndex(matchingBeacons.First().Local.Pos, rotationIndex);
-                Vector3 scannerOffset = keyBeacon.Global.Pos - fixedPos;
+                Vector3 rotatedPos = ToRotationIndex(matchingBeacons.First().Local.Pos, rotationIndex);
+                Vector3 scannerOffset = keyBeacon.Global.Pos - rotatedPos;
 
                 int nextId = Beacons.Max(b => b.Global.Id);
-                Dictionary<int, Vector3> rotatedPos = childScanner.Beacons.ToDictionary(b => b.Local.Id, b => ToRotationIndex(b.Local.Pos, rotationIndex) + scannerOffset);
+                Dictionary<int, Vector3> allRotatedPos = childScanner.Beacons.ToDictionary(b => b.Local.Id, b => ToRotationIndex(b.Local.Pos, rotationIndex) + scannerOffset);
                 foreach (Beacon childBeacon in childScanner.Beacons)
                 {
                     if (!localToGlobalId.ContainsKey(childBeacon.Local.Id))
                     {
-                        childBeacon.Global = new Beacon.Info(++nextId, ToRotationIndex(childBeacon.Local.Pos, rotationIndex) + scannerOffset, rotatedPos);
+                        childBeacon.Global = new Beacon.Info(++nextId, ToRotationIndex(childBeacon.Local.Pos, rotationIndex) + scannerOffset, allRotatedPos);
                         Beacons.Add(childBeacon);
                     }
                 }
 
+                Console.WriteLine($"[mixco1a0]|[{BaseScanner.Id}] @ {BaseScanner.Pos.ToString()} - Adding child scanner [{childScanner.Id}] @ {scannerOffset}");
+
                 Children.Add(new Child(childScanner, scannerOffset));
             }
 
-            public List<Vector3> GetAllScannerPos()
+            public List<Vector3> GetAllScannerPos(Action<string> printFunc)
             {
-                List<Vector3> allPos = GetAllScannerPos(BaseScanner.Pos);
-                allPos.Add(BaseScanner.Pos);
-                return allPos;
+                printFunc("|GetAllScannerPos()|");
+                return GetAllScannerPos(Vector3.Zero, 0, printFunc);
             }
 
-            public List<Vector3> GetAllScannerPos(Vector3 offset)
+            public List<Vector3> GetAllScannerPos(Vector3 offset, int level, Action<string> printFunc)
             {
                 List<Vector3> allPos = new List<Vector3>();
-                allPos.Add(BaseScanner.Pos); // should be <0,0,0>
+                Vector3 pos = BaseScanner.Pos + offset;
+                printFunc($"*** {new string(' ', level)} Adding [C] [{BaseScanner.Id},2] @ {pos.ToString()}");
+                allPos.Add(pos);
                 foreach (Child child in Children)
                 {
                     if (child.Scanner is Scanner)
                     {
-                        allPos.Add(child.Scanner.Pos + child.Offset + offset);
+                        pos = child.Scanner.Pos + child.Offset + offset;
+                        printFunc($"*** {new string(' ', level + 2)} Adding [S] [{child.Scanner.Id,2}] @ {pos.ToString()}");
+                        allPos.Add(pos);
                     }
                     else if (child.Scanner is CombinedScanner)
                     {
-                        allPos.AddRange(((CombinedScanner)child.Scanner).GetAllScannerPos(offset + child.Offset));
+                        allPos.AddRange(((CombinedScanner)child.Scanner).GetAllScannerPos(offset + child.Offset, level + 4, printFunc));
                     }
                 }
                 return allPos;
@@ -670,6 +679,7 @@ namespace AoC._2021
             List<CombinedScanner> combinedScanners = new List<CombinedScanner>();
             Queue<IScanner> pendingScanners = new Queue<IScanner>(localScanners);
 
+            DebugWriteLine($"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
             DebugWriteLine($"Matching scanner [{pendingScanners.Peek().Id,2}]");
             combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
 
@@ -757,23 +767,35 @@ namespace AoC._2021
                     if (skippedScanners.Contains(pendingScanner.Id))
                     {
                         combinedScanners.Add(new CombinedScanner(pendingScanner));
+
                         if (pendingScanners.Count == 0 && combinedScanners.Count > 1)
                         {
+                            DebugWriteLine("");
+                            DebugWriteLine("******************");
+                            DebugWriteLine("*** VectorDump ***");
+                            DebugWriteLine("******************");
                             foreach (CombinedScanner combined in combinedScanners.OrderBy(cs => cs.Beacons.Count))
                             {
                                 combined.ResetBeacons();
+                                combined.GetAllScannerPos(DebugWriteLine);
                                 pendingScanners.Enqueue(combined);
                             }
+                            DebugWriteLine("******************");
+                            DebugWriteLine("*** VectorDump ***");
+                            DebugWriteLine("******************");
+
                             combinedScanners.Clear();
                             combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
-                            DebugWriteLine($"All scanners combined. Restarting process.");
-                            DebugWriteLine($"[{pendingScanners.Count + 1,2} pending...]");
+                            DebugWriteLine("");
+                            DebugWriteLine(".");
+                            DebugWriteLine($"All scanner combinations completed. Restarting process.");
+                            DebugWriteLine($"Starting new match process. [{pendingScanners.Count + 1,2} pending...]");
                             DebugWriteLine("");
                         }
                         else
                         {
-                            DebugWriteLine($"No matching scanners found for [{pendingScanner.Id,2}]. Starting new matching process.");
                             DebugWriteLine("");
+                            DebugWriteLine($"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
                         }
                         currentCombinedScanner = combinedScanners.Last();
                         skippedScanners.Clear();
@@ -781,6 +803,7 @@ namespace AoC._2021
                     }
                     else
                     {
+                        DebugWriteLine($"\t\t[skipping scanner [{pendingScanner.Id,2}]]");
                         skippedScanners.Add(pendingScanner.Id);
                         pendingScanners.Enqueue(pendingScanner);
                     }
@@ -803,7 +826,7 @@ namespace AoC._2021
             };
 
             int maxDist = int.MinValue;
-            List<Vector3> allScannerPos = combinedScanners.GetAllScannerPos();
+            List<Vector3> allScannerPos = combinedScanners.GetAllScannerPos(DebugWriteLine);
             foreach (Vector3 pos1 in allScannerPos)
             {
                 foreach (Vector3 pos2 in allScannerPos)
@@ -829,5 +852,8 @@ namespace AoC._2021
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, false);
+        // 12126 => too high
+        // 17944 => too high
+        // 19275 => too high
     }
 }
