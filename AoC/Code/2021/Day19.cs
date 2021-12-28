@@ -1,8 +1,7 @@
-using System.Text;
-using System.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace AoC._2021
 {
@@ -572,17 +571,19 @@ namespace AoC._2021
             public class Child
             {
                 public IScanner Scanner { get; init; }
-                public Vector3 Offset { get; init; }
+                public Vector3 Offset { get; set; }
+                public RotationIndex Rotation { get; init; }
 
-                public Child(IScanner scanner, Vector3 offset)
+                public Child(IScanner scanner, Vector3 offset, RotationIndex rotation)
                 {
                     Scanner = scanner;
                     Offset = offset;
+                    Rotation = rotation;
                 }
 
                 public override string ToString()
                 {
-                    return $"{Scanner.Id} [{Offset.ToString()}]";
+                    return $"{Scanner.Id} [{Offset.ToString()}] [{Rotation}]";
                 }
             }
 
@@ -610,11 +611,13 @@ namespace AoC._2021
 
             public void AddScanner(IScanner childScanner, RotationIndex rotationIndex, Dictionary<int, int> localToGlobalId)
             {
-                IEnumerable<Beacon> matchingBeacons = childScanner.Beacons.Where(b => localToGlobalId.ContainsKey(b.Local.Id));
-                Beacon keyBeacon = Beacons.Single(b => b.Global.Id == localToGlobalId[matchingBeacons.First().Local.Id]);
-                Vector3 rotatedPos = ToRotationIndex(matchingBeacons.First().Local.Pos, rotationIndex);
-                Vector3 scannerOffset = keyBeacon.Global.Pos - rotatedPos;
+                // get a shared beacon to convert the new scanner into the old scanner's coordinate system
+                Beacon newBeacon = childScanner.Beacons.First(b => localToGlobalId.ContainsKey(b.Local.Id));
+                Beacon oldBeacon = Beacons.Single(b => b.Global.Id == localToGlobalId[newBeacon.Local.Id]);
+                Vector3 newToOldOffset = ToRotationIndex(newBeacon.Local.Pos, rotationIndex);
+                Vector3 scannerOffset = oldBeacon.Global.Pos - newToOldOffset;
 
+                // add all of the non shared beacons to the old scanner's coordinate system
                 int nextId = Beacons.Max(b => b.Global.Id);
                 Dictionary<int, Vector3> allRotatedPos = childScanner.Beacons.ToDictionary(b => b.Local.Id, b => ToRotationIndex(b.Local.Pos, rotationIndex) + scannerOffset);
                 foreach (Beacon childBeacon in childScanner.Beacons)
@@ -626,34 +629,33 @@ namespace AoC._2021
                     }
                 }
 
-                Console.WriteLine($"[mixco1a0]|[{BaseScanner.Id}] @ {BaseScanner.Pos.ToString()} - Adding child scanner [{childScanner.Id}] @ {scannerOffset}");
-
-                Children.Add(new Child(childScanner, scannerOffset));
+                // add the new scanner as a child scanner
+                Children.Add(new Child(childScanner, scannerOffset, rotationIndex));
             }
 
             public List<Vector3> GetAllScannerPos(Action<string> printFunc)
             {
-                printFunc("|GetAllScannerPos()|");
-                return GetAllScannerPos(Vector3.Zero, 0, printFunc);
+                return GetAllScannerPos(Vector3.Zero, RotationIndex.PosXPosYPosZ, 0, printFunc);
             }
 
-            public List<Vector3> GetAllScannerPos(Vector3 offset, int level, Action<string> printFunc)
+            public List<Vector3> GetAllScannerPos(Vector3 offset, RotationIndex rotationIndex, int level, Action<string> printFunc)
             {
                 List<Vector3> allPos = new List<Vector3>();
-                Vector3 pos = BaseScanner.Pos + offset;
-                printFunc($"*** {new string(' ', level)} Adding [C] [{BaseScanner.Id},2] @ {pos.ToString()}");
+                Vector3 pos = ToRotationIndex(BaseScanner.Pos, rotationIndex) + offset;
+                printFunc($"*** {new string(' ', level)} Adding [C] [{BaseScanner.Id,2}] @ {pos.ToString()}");
                 allPos.Add(pos);
                 foreach (Child child in Children)
                 {
                     if (child.Scanner is Scanner)
                     {
-                        pos = child.Scanner.Pos + child.Offset + offset;
+                        pos = ToRotationIndex(child.Scanner.Pos + child.Offset, rotationIndex) + offset;
                         printFunc($"*** {new string(' ', level + 2)} Adding [S] [{child.Scanner.Id,2}] @ {pos.ToString()}");
                         allPos.Add(pos);
                     }
                     else if (child.Scanner is CombinedScanner)
                     {
-                        allPos.AddRange(((CombinedScanner)child.Scanner).GetAllScannerPos(offset + child.Offset, level + 4, printFunc));
+                        CombinedScanner childScanner = child.Scanner as CombinedScanner;
+                        allPos.AddRange(childScanner.GetAllScannerPos(child.Offset + offset, child.Rotation, level + 2, printFunc));
                     }
                 }
                 return allPos;
@@ -758,7 +760,7 @@ namespace AoC._2021
                 {
                     currentCombinedScanner.AddScanner(pendingScanner, rotationToBase, localToGlobalId);
                     localScanners.RemoveAll(ls => ls.Id == pendingScanner.Id);
-                    DebugWriteLine($"\tAdding scanner [{pendingScanner.Id,2}] to globals [{currentCombinedScanner.Beacons.Count} total beacons]");
+                    DebugWriteLine($"\tAdding scanner [{pendingScanner.Id,2}] to scanner {currentCombinedScanner.Id} [{currentCombinedScanner.Beacons.Count} total beacons]");
 
                     skippedScanners.Clear();
                 }
@@ -803,7 +805,7 @@ namespace AoC._2021
                     }
                     else
                     {
-                        DebugWriteLine($"\t\t[skipping scanner [{pendingScanner.Id,2}]]");
+                        // DebugWriteLine($"\t\t[skipping scanner [{pendingScanner.Id,2}]]");
                         skippedScanners.Add(pendingScanner.Id);
                         pendingScanners.Enqueue(pendingScanner);
                     }
@@ -855,5 +857,7 @@ namespace AoC._2021
         // 12126 => too high
         // 17944 => too high
         // 19275 => too high
+        // 18882 => too high
+        // 12083 => wrong
     }
 }
