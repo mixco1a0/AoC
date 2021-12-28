@@ -681,8 +681,8 @@ namespace AoC._2021
             List<CombinedScanner> combinedScanners = new List<CombinedScanner>();
             Queue<IScanner> pendingScanners = new Queue<IScanner>(localScanners);
 
-            DebugWriteLine($"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
-            DebugWriteLine($"Matching scanner [{pendingScanners.Peek().Id,2}]");
+            // DebugWriteLine($"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
+            // DebugWriteLine($"Matching scanner [{pendingScanners.Peek().Id,2}]");
             combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
 
             CombinedScanner currentCombinedScanner = combinedScanners.First();
@@ -744,9 +744,11 @@ namespace AoC._2021
                         {
                             curIdPair.Value.RemoveWhere(idPair => localToGlobalId.ContainsValue(idPair));
                         }
-                        foreach (var matchedPair in localToGlobalIds.Where(idPair => idPair.Value.Count == 1))
+                        var toTrim = localToGlobalIds.Where(idPair => idPair.Value.Count == 1).ToList();
+                        foreach (var matchedPair in toTrim)
                         {
                             localToGlobalId[matchedPair.Key] = matchedPair.Value.First();
+                            localToGlobalIds.Remove(matchedPair.Key);
                         }
 
                         if (prevIdCount == localToGlobalId.Count)
@@ -760,7 +762,7 @@ namespace AoC._2021
                 {
                     currentCombinedScanner.AddScanner(pendingScanner, rotationToBase, localToGlobalId);
                     localScanners.RemoveAll(ls => ls.Id == pendingScanner.Id);
-                    DebugWriteLine($"\tAdding scanner [{pendingScanner.Id,2}] to scanner {currentCombinedScanner.Id} [{currentCombinedScanner.Beacons.Count} total beacons]");
+                    // DebugWriteLine($"\tAdding scanner [{pendingScanner.Id,2}] to scanner {currentCombinedScanner.Id} [{currentCombinedScanner.Beacons.Count} total beacons]");
 
                     skippedScanners.Clear();
                 }
@@ -772,36 +774,36 @@ namespace AoC._2021
 
                         if (pendingScanners.Count == 0 && combinedScanners.Count > 1)
                         {
-                            DebugWriteLine("");
-                            DebugWriteLine("******************");
-                            DebugWriteLine("*** VectorDump ***");
-                            DebugWriteLine("******************");
+                            // DebugWriteLine("");
+                            // DebugWriteLine("******************");
+                            // DebugWriteLine("*** VectorDump ***");
+                            // DebugWriteLine("******************");
                             foreach (CombinedScanner combined in combinedScanners.OrderBy(cs => cs.Beacons.Count))
                             {
                                 combined.ResetBeacons();
-                                combined.GetAllScannerPos(DebugWriteLine);
+                                // combined.GetAllScannerPos(DebugWriteLine);
                                 pendingScanners.Enqueue(combined);
                             }
-                            DebugWriteLine("******************");
-                            DebugWriteLine("*** VectorDump ***");
-                            DebugWriteLine("******************");
+                            // DebugWriteLine("******************");
+                            // DebugWriteLine("*** VectorDump ***");
+                            // DebugWriteLine("******************");
 
                             combinedScanners.Clear();
                             combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
-                            DebugWriteLine("");
-                            DebugWriteLine(".");
-                            DebugWriteLine($"All scanner combinations completed. Restarting process.");
-                            DebugWriteLine($"Starting new match process. [{pendingScanners.Count + 1,2} pending...]");
-                            DebugWriteLine("");
+                            // DebugWriteLine("");
+                            // DebugWriteLine(".");
+                            // DebugWriteLine($"All scanner combinations completed. Restarting process.");
+                            // DebugWriteLine($"Starting new match process. [{pendingScanners.Count + 1,2} pending...]");
+                            // DebugWriteLine("");
                         }
                         else
                         {
-                            DebugWriteLine("");
-                            DebugWriteLine($"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
+                            // DebugWriteLine("");
+                            // DebugWriteLine($"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
                         }
                         currentCombinedScanner = combinedScanners.Last();
                         skippedScanners.Clear();
-                        DebugWriteLine($"Matching scanner [{currentCombinedScanner.Id,2}]");
+                        // DebugWriteLine($"Matching scanner [{currentCombinedScanner.Id,2}]");
                     }
                     else
                     {
@@ -828,7 +830,7 @@ namespace AoC._2021
             };
 
             int maxDist = int.MinValue;
-            List<Vector3> allScannerPos = combinedScanners.GetAllScannerPos(DebugWriteLine);
+            List<Vector3> allScannerPos = combinedScanners.GetAllScannerPos((string x) => {});
             foreach (Vector3 pos1 in allScannerPos)
             {
                 foreach (Vector3 pos2 in allScannerPos)
@@ -854,10 +856,5 @@ namespace AoC._2021
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, false);
-        // 12126 => too high
-        // 17944 => too high
-        // 19275 => too high
-        // 18882 => too high
-        // 12083 => wrong
     }
 }
