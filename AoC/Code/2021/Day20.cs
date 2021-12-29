@@ -1,7 +1,7 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2021
 {
@@ -13,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -63,15 +63,16 @@ namespace AoC._2021
         private char EnhancePixel(List<string> pixels, string algorithm, int x, int y, char defaultPixel)
         {
             StringBuilder sb = new StringBuilder();
-            foreach (Core.Point curPixel in PixelCheck.Select(p => new Core.Point(p.X + x, p.Y + y)))
+            Core.Point curPixel = new Core.Point(x, y);
+            foreach (Core.Point gridPixel in PixelCheck.Select(p => curPixel + p))
             {
-                if (curPixel.Y < 0 || curPixel.Y >= pixels.Count || curPixel.X < 0 || curPixel.X >= pixels[y].Length)
+                if (gridPixel.Y < 0 || gridPixel.Y >= pixels.Count || gridPixel.X < 0 || gridPixel.X >= pixels[y].Length)
                 {
                     sb.Append(defaultPixel);
                 }
                 else
                 {
-                    sb.Append(pixels[curPixel.Y][curPixel.X]);
+                    sb.Append(pixels[gridPixel.Y][gridPixel.X]);
                 }
             }
 
