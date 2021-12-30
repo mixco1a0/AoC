@@ -7,7 +7,7 @@
 			"using System.Collections.Generic;",
 			"using System.Linq;",
 			"",
-			"namespace AoC._$0",
+			"namespace AoC._${TM_DIRECTORY/^.+\\\\(.*)$/$1/}$0",
 			"{",
 			"    class $TM_FILENAME_BASE : Day",
 			"    {",
