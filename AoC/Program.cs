@@ -21,14 +21,15 @@ namespace AoC
 
     class Program
     {
-        int m_curProcessor = 0;
+        private int m_curProcessor = 0;
 
-        const long DefaultRecordCount = 1000;
-        long m_recordCount = DefaultRecordCount;
+        private const long DefaultRecordCount = 1000;
+        private long m_recordCount = DefaultRecordCount;
         private long RecordCount { get { return m_recordCount; } }
 
-        const long DefaultMaxPerfTimeoutMs = 3600000;
-        long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
+        private const long DefaultMaxPerfTimeoutMs = 3600000;
+        private const long MaxPerfTimeoutPerCoreMs = 150000;
+        private long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
         private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
         private CommandLineArgs Args { get; set; }
@@ -187,7 +188,7 @@ namespace AoC
         /// <summary>
         /// Force the process to be considered the highest priority
         /// </summary>
-        private void SetHighPriority()
+        private void CycleHighPriorityCore()
         {
             if (OperatingSystem.IsWindows())
             {
@@ -210,7 +211,7 @@ namespace AoC
         /// </summary>
         private void RunWarmup()
         {
-            SetHighPriority();
+            CycleHighPriorityCore();
 
             Func<long, int, long> Warmup = (long seed, int count) =>
             {
@@ -247,10 +248,16 @@ namespace AoC
             LogLine("...Warming up");
             RunWarmup();
             ObjectHandle warmupHandle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
+            if (warmupHandle == null)
+            {
+                return false;
+            }
+            
             Day warmupDay = (Day)warmupHandle.Unwrap();
             warmupDay.RunProblem(part);
 
             DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
+            DateTime cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
 
             long i = 0;
             long maxI = RecordCount - existingRecords;
@@ -265,7 +272,7 @@ namespace AoC
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [timeout in {1}]", (double)i / (double)(maxI) * 100.0f, (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                    LogSameLine(string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
                 }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -282,6 +289,12 @@ namespace AoC
                 {
                     break;
                 }
+
+                if (DateTime.Now > cycleCore)
+                {
+                    CycleHighPriorityCore();
+                    cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
+                }
             }
             if (System.Diagnostics.Debugger.IsAttached)
             {
@@ -291,11 +304,11 @@ namespace AoC
             {
                 if (DateTime.Now > timeout)
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [timed out]\n\r", (double)i / (double)(maxI) * 100.0f));
+                    LogSameLine(string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 45)));
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 35)));
+                    LogSameLine(string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 55)));
                 }
             }
 
