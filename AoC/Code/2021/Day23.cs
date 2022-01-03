@@ -54,10 +54,11 @@ namespace AoC._2021
             public static char Empty { get => '.'; }
             public char[] Hallway { get; init; }
             public char[][] Rooms { get; init; }
+            public int Energy { get; init; }
 
             private static readonly Dictionary<int, int> RoomToHall = new Dictionary<int, int>() { { 0, 2 }, { 1, 4 }, { 2, 6 }, { 3, 8 } };
 
-            public BurrowState()
+            public BurrowState(int energy)
             {
                 Hallway = new char[11];
                 for (int i = 0; i < Hallway.Length; ++i)
@@ -71,11 +72,12 @@ namespace AoC._2021
                     Rooms[i][0] = Empty;
                     Rooms[i][1] = Empty;
                 }
+                Energy = energy;
             }
 
             public static BurrowState Parse(string rooms1, string rooms2)
             {
-                BurrowState bs = new BurrowState();
+                BurrowState bs = new BurrowState(0);
                 char[] rooms1Amphipod = rooms1.Split('#', StringSplitOptions.RemoveEmptyEntries).Select(s => s[0]).ToArray();
                 char[] rooms2Amphipod = rooms2.Split("# ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(s => s[0]).ToArray();
                 for (int i = 0; i < bs.Rooms.Length; ++i)
@@ -124,7 +126,18 @@ namespace AoC._2021
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            BurrowState start = BurrowState.Parse(inputs[2], inputs[3]);
+            PriorityQueue<BurrowState, int> burrowStates = new PriorityQueue<BurrowState, int>();
+            burrowStates.Enqueue(BurrowState.Parse(inputs[2], inputs[3]), 0);
+            while (burrowStates.Count > 0)
+            {
+                BurrowState bs = burrowStates.Dequeue();
+                if (bs.IsComplete())
+                {
+                    return bs.Energy.ToString();
+                }
+
+                // add next states...
+            }
             return string.Empty;
         }
 
