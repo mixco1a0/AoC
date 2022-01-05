@@ -156,11 +156,6 @@ namespace AoC._2021
                             }
                         }
                     }
-
-                    // if (nextStates.Any())
-                    // {
-                    //     return nextStates;
-                    // }
                 }
                 // send someone in to the hallway
                 for (int i = 0; i < Rooms.Length; ++i)
@@ -319,16 +314,16 @@ namespace AoC._2021
                     }
                     else
                     {
-                        sb.Append('_');
+                        sb.Append('|');
                         if (room[0] == RoomToAmphipod[curRoom] && room[1] == RoomToAmphipod[curRoom])
                         {
-                            sb.Append('#');
-                            sb.Append('#');
+                            sb.Append(char.ToLower(room[0]));
+                            sb.Append(char.ToLower(room[1]));
                         }
                         else if (room[1] == RoomToAmphipod[curRoom])
                         {
                             sb.Append(room[0]);
-                            sb.Append('#');
+                            sb.Append(char.ToLower(room[1]));
                         }
                         else
                         {
@@ -381,8 +376,8 @@ namespace AoC._2021
         {
             PriorityQueue<BurrowState, int> burrowStates = new PriorityQueue<BurrowState, int>();
             burrowStates.Enqueue(BurrowState.Parse(inputs[2], inputs[3]), 0);
-            HashSet<string> visited = new HashSet<string>();
-            visited.Add(burrowStates.Peek().Id(true));
+            Dictionary<string, int> visited = new Dictionary<string, int>();
+            visited.Add(burrowStates.Peek().Id(true), 0);
             Dictionary<string, BurrowState> histories = new Dictionary<string, BurrowState>();
             while (burrowStates.Count > 0)
             {
@@ -390,15 +385,15 @@ namespace AoC._2021
 
                 if (bs.IsComplete())
                 {
-                    BurrowState cur = bs;
-                    int step = 0;
-                    while (histories.ContainsKey(cur.Id(true)))
-                    {
-                        DebugWriteLine($"Step:N-({step++,4}) [{cur.Energy,-6}]");
-                        cur.Print(DebugWriteLine);
-                        DebugWriteLine("");
-                        cur = histories[cur.Id(true)];
-                    }
+                    // BurrowState cur = bs;
+                    // int step = 0;
+                    // while (histories.ContainsKey(cur.Id(true)))
+                    // {
+                    //     DebugWriteLine($"Step:N-({step++,4}) [{cur.Energy,-6}]");
+                    //     cur.Print(DebugWriteLine);
+                    //     DebugWriteLine("");
+                    //     cur = histories[cur.Id(true)];
+                    // }
                     return bs.Energy.ToString();
                 }
 
@@ -406,11 +401,11 @@ namespace AoC._2021
                 foreach (BurrowState ns in nextStates)
                 {
                     string id = ns.Id(true);
-                    if (!visited.Contains(id))
+                    if (!visited.ContainsKey(id) || visited[id] > ns.Energy)
                     {
                         histories[id] = bs;
                         // instead of just energy, also use missing pieces as weights D => 1000 per wrong, C => 100 per wrong, etc
-                        visited.Add(id);
+                        visited[id] = ns.Energy;
                         burrowStates.Enqueue(ns, ns.Energy);
                     }
                 }
@@ -420,7 +415,6 @@ namespace AoC._2021
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
-            // 19349 => too high
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
