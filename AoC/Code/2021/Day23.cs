@@ -111,17 +111,18 @@ namespace AoC._2021
                 List<BurrowState> nextStates = new List<BurrowState>();
                 if (Hallway.Any(h => h != Empty))
                 {
-                    Dictionary<int, char> hallwayPairs = Hallway.Where(h => h != Empty).Select((h, i) => new { idx = i, amphipod = h }).ToDictionary(hi => hi.idx, hi => hi.amphipod);
+                    Dictionary<int, char> hallwayPairs = Hallway.Select((h, i) => new { idx = i, val = h }).Where(hi => hi.val != Empty).ToDictionary(hi => hi.idx, hi => hi.val);
                     foreach (KeyValuePair<int, char> pair in hallwayPairs)
                     {
                         // is the amphipods room empty, or housing same amphipods?
                         int roomIdx = AmphipodToRoom[pair.Value];
+                        int roomToHall = RoomToHall[roomIdx];
                         if (Rooms[roomIdx][0] == Empty && (Rooms[roomIdx][1] == Empty || Rooms[roomIdx][1] == pair.Value))
                         {
                             // is there anyone in the way?
                             bool pathClear = true;
-                            int start = Math.Min(pair.Key, roomIdx);
-                            int end = Math.Max(pair.Key, roomIdx);
+                            int start = Math.Min(pair.Key, roomToHall);
+                            int end = Math.Max(pair.Key, roomToHall);
                             for (int i = start; pathClear && i <= end; ++i)
                             {
                                 if (i == pair.Key)
@@ -155,6 +156,11 @@ namespace AoC._2021
                             }
                         }
                     }
+
+                    // if (nextStates.Any())
+                    // {
+                    //     return nextStates;
+                    // }
                 }
                 // send someone in to the hallway
                 for (int i = 0; i < Rooms.Length; ++i)
@@ -189,9 +195,31 @@ namespace AoC._2021
                         {
                             if (sendToHall.Hallway[h] == Empty)
                             {
-                                if (AmphipodToRoom.Values.Contains(h))
+                                if (RoomToHall.Values.Contains(h))
                                 {
                                     ++moveCount;
+                                    // if stopped above the hallway to own room, check if it can fit
+                                    int targetRoom = RoomToHall.First(rth => rth.Value == h).Key;
+                                    if (AmphipodToRoom[amphipod] == targetRoom)
+                                    {
+                                        if (Rooms[targetRoom][0] == Empty && (Rooms[targetRoom][1] == Empty || Rooms[targetRoom][1] == amphipod))
+                                        {
+                                            ++moveCount;
+                                            roomSlot = 0;
+                                            if (Rooms[targetRoom][1] == Empty)
+                                            {
+                                                // move down 2
+                                                ++moveCount;
+                                                roomSlot = 1;
+                                            }
+                                            BurrowState goHome = new BurrowState(sendToHall);
+                                            goHome.Rooms[targetRoom][roomSlot] = amphipod;
+                                            goHome.Hallway[baseHallway] = Empty;
+                                            goHome.Energy += AmphipodEnergy[amphipod] * moveCount;
+                                            nextStates.Add(goHome);
+                                            break;
+                                        }
+                                    }
                                     continue;
                                 }
 
@@ -213,9 +241,31 @@ namespace AoC._2021
                         {
                             if (sendToHall.Hallway[h] == Empty)
                             {
-                                if (AmphipodToRoom.Values.Contains(h))
+                                if (RoomToHall.Values.Contains(h))
                                 {
                                     ++moveCount;
+                                    // if stopped above the hallway to own room, check if it can fit
+                                    int targetRoom = RoomToHall.First(rth => rth.Value == h).Key;
+                                    if (AmphipodToRoom[amphipod] == targetRoom)
+                                    {
+                                        if (Rooms[targetRoom][0] == Empty && (Rooms[targetRoom][1] == Empty || Rooms[targetRoom][1] == amphipod))
+                                        {
+                                            ++moveCount;
+                                            roomSlot = 0;
+                                            if (Rooms[targetRoom][1] == Empty)
+                                            {
+                                                // move down 2
+                                                ++moveCount;
+                                                roomSlot = 1;
+                                            }
+                                            BurrowState goHome = new BurrowState(sendToHall);
+                                            goHome.Rooms[targetRoom][roomSlot] = amphipod;
+                                            goHome.Hallway[baseHallway] = Empty;
+                                            goHome.Energy += AmphipodEnergy[amphipod] * moveCount;
+                                            nextStates.Add(goHome);
+                                            break;
+                                        }
+                                    }
                                     continue;
                                 }
 
@@ -246,41 +296,84 @@ namespace AoC._2021
                 return isComplete;
             }
 
-            public string Id()
+            public string Id(bool simple)
             {
                 // generate a ulong instead of a string
-                StringBuilder sb = new StringBuilder(string.Join("", Hallway));
+                StringBuilder sb = new StringBuilder();
+                if (simple)
+                {
+                    sb.Append(Hallway);
+                }
+                else
+                {
+                    IEnumerable<char> hallString = Hallway.Select((h, i) => { if (h == Empty && RoomToHall.ContainsValue(i)) { return $"{RoomToHall.Single(rh => rh.Value == i).Key}".First(); } else { return h; } });
+                    sb.Append(string.Join(string.Empty, hallString));
+                }
+                int curRoom = 0;
                 foreach (char[] room in Rooms)
                 {
-                    sb.Append(room[0]);
-                    sb.Append(room[1]);
+                    if (simple)
+                    {
+                        sb.Append(room[0]);
+                        sb.Append(room[1]);
+                    }
+                    else
+                    {
+                        sb.Append('_');
+                        if (room[0] == RoomToAmphipod[curRoom] && room[1] == RoomToAmphipod[curRoom])
+                        {
+                            sb.Append('#');
+                            sb.Append('#');
+                        }
+                        else if (room[1] == RoomToAmphipod[curRoom])
+                        {
+                            sb.Append(room[0]);
+                            sb.Append('#');
+                        }
+                        else
+                        {
+                            sb.Append(room[0]);
+                            sb.Append(room[1]);
+                        }
+                    }
+                    ++curRoom;
                 }
                 return sb.ToString();
             }
 
-            public override string ToString()
+            public string Print(Action<string> printFunc)
             {
-                StringBuilder sb = new StringBuilder("\r\n");
-                sb.AppendLine("#############");
+                printFunc("#############");
+                StringBuilder sb = new StringBuilder();
                 sb.Append('#');
                 sb.Append(string.Join("", Hallway));
-                sb.AppendLine("#");
+                sb.Append("#");
+                printFunc(sb.ToString());
+                sb.Clear();
                 sb.Append("###");
                 foreach (char[] room in Rooms)
                 {
                     sb.Append(room[0]);
                     sb.Append("#");
                 }
-                sb.AppendLine("##");
+                sb.Append("##");
+                printFunc(sb.ToString());
+                sb.Clear();
                 sb.Append("  #");
                 foreach (char[] room in Rooms)
                 {
                     sb.Append(room[1]);
                     sb.Append("#");
                 }
-                sb.AppendLine("  ");
-                sb.AppendLine("  #########  ");
+                sb.Append("  ");
+                printFunc(sb.ToString());
+                printFunc("  #########  ");
                 return sb.ToString();
+            }
+
+            public override string ToString()
+            {
+                return $"{Id(false)} ({Energy,-6})";
             }
         }
 
@@ -289,30 +382,35 @@ namespace AoC._2021
             PriorityQueue<BurrowState, int> burrowStates = new PriorityQueue<BurrowState, int>();
             burrowStates.Enqueue(BurrowState.Parse(inputs[2], inputs[3]), 0);
             HashSet<string> visited = new HashSet<string>();
+            visited.Add(burrowStates.Peek().Id(true));
+            Dictionary<string, BurrowState> histories = new Dictionary<string, BurrowState>();
             while (burrowStates.Count > 0)
             {
                 BurrowState bs = burrowStates.Dequeue();
 
-                // debug
-                // DebugWriteLine($"Current: [{bs.Energy}]");
-                // string to = bs.ToString();
-                // foreach (string t in to.Split("\r\n", StringSplitOptions.RemoveEmptyEntries))
-                // {
-                //     DebugWriteLine(t);
-                // }
-                //end debug
-
                 if (bs.IsComplete())
                 {
+                    BurrowState cur = bs;
+                    int step = 0;
+                    while (histories.ContainsKey(cur.Id(true)))
+                    {
+                        DebugWriteLine($"Step:N-({step++,4}) [{cur.Energy,-6}]");
+                        cur.Print(DebugWriteLine);
+                        DebugWriteLine("");
+                        cur = histories[cur.Id(true)];
+                    }
                     return bs.Energy.ToString();
                 }
-                visited.Add(bs.Id());
 
                 List<BurrowState> nextStates = bs.GetNextStates();
                 foreach (BurrowState ns in nextStates)
                 {
-                    if (!visited.Contains(ns.Id()))
+                    string id = ns.Id(true);
+                    if (!visited.Contains(id))
                     {
+                        histories[id] = bs;
+                        // instead of just energy, also use missing pieces as weights D => 1000 per wrong, C => 100 per wrong, etc
+                        visited.Add(id);
                         burrowStates.Enqueue(ns, ns.Energy);
                     }
                 }
@@ -322,6 +420,7 @@ namespace AoC._2021
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
+            // 19349 => too high
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
