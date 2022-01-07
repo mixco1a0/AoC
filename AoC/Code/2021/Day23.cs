@@ -15,8 +15,8 @@ namespace AoC._2021
             {
                 case Part.One:
                     return "v2";
-                // case Part.Two:
-                //     return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -39,9 +39,13 @@ namespace AoC._2021
             testData.Add(new TestDatum
             {
                 TestPart = Part.Two,
-                Output = "",
+                Output = "44169",
                 RawInput =
-@""
+@"#############
+#...........#
+###B#C#B#D###
+  #A#D#C#A#
+  #########"
             });
             return testData;
         }
@@ -353,10 +357,15 @@ namespace AoC._2021
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, List<string> additionalInput)
         {
+            List<string> fullInput = new List<string>();
+            fullInput.Add(inputs[2]);
+            fullInput.AddRange(additionalInput);
+            fullInput.Add(inputs[3]);
+
             PriorityQueue<BurrowState, int> burrowStates = new PriorityQueue<BurrowState, int>();
-            burrowStates.Enqueue(BurrowState.Parse(inputs.Skip(2).Take(2).ToList()), 0);
+            burrowStates.Enqueue(BurrowState.Parse(fullInput), 0);
             HashSet<string> visited = new HashSet<string>();
             while (burrowStates.Count > 0)
             {
@@ -387,9 +396,9 @@ namespace AoC._2021
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new List<string>());
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, new List<string>() { "  #D#C#B#A#  ", "  #D#B#A#C#  " });
     }
 }
