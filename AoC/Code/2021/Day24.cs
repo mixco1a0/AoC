@@ -13,10 +13,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -284,58 +284,104 @@ mod w 2"
             }
         }
 
-        private string FillIn(string filler, string toFill)
+        private class ALURule
         {
-            StringBuilder sb = new StringBuilder(toFill);
-            foreach (char c in filler)
+            public int HighIndex { get; set; }
+            public int LowIndex { get; set; }
+            public int Diff { get; set; }
+
+            public ALURule(int high, int low, int diff)
             {
-                int idx = toFill.IndexOf('_');
-                sb[idx] = c;
-                toFill = sb.ToString();
+                HighIndex = high;
+                LowIndex = low;
+                Diff = diff;
             }
-            return sb.ToString();
+
+            public void GetLow(out int low, out int high)
+            {
+                low = -1;
+                high = -1;
+                for (int i = 1; i <= 9; ++i)
+                {
+                    int test = i + Diff;
+                    if (test >= 1 && test <= 9)
+                    {
+                        low = i + Diff;
+                        high = i;
+                        break;
+                    }
+                }
+            }
+
+            public void GetHigh(out int low, out int high)
+            {
+                low = -1;
+                high = -1;
+                for (int i = 9; i >= 1; --i)
+                {
+                    int test = i + Diff;
+                    if (test >= 1 && test <= 9)
+                    {
+                        low = i + Diff;
+                        high = i;
+                        break;
+                    }
+                }
+            }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private static readonly List<ALURule> ALURules = new List<ALURule>()
+        {
+            new ALURule(0, 13, 0),
+            new ALURule(1, 12, 5),
+            new ALURule(2, 11, -8),
+            new ALURule(3, 8, -2),
+            new ALURule(4, 5, 7),
+            new ALURule(6, 7, -7),
+            new ALURule(9, 10, -3),
+        };
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findHighest)
         {
             Dictionary<char, int> registers = new Dictionary<char, int>() { { 'w', 0 }, { 'x', 0 }, { 'y', 0 }, { 'z', 0 } };
 
             string fullRegisterInput;
-            Util.GetVariable(nameof(fullRegisterInput), "__9929927_____", variables, out fullRegisterInput);
+            Util.GetVariable(nameof(fullRegisterInput), "______________", variables, out fullRegisterInput);
 
             Queue<int> registerInput = new Queue<int>();
 
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
             if (fullRegisterInput.Contains('_'))
             {
-                int unknownCount = fullRegisterInput.Count(c => c == '_');
-                for (int i = 9999999; i >= 1111111; --i)
+                StringBuilder sb = new StringBuilder(fullRegisterInput);
+                foreach (ALURule rule in ALURules)
                 {
-                    string cur = i.ToString();
-                    if (cur.Contains('0'))
+                    int low;
+                    int high;
+                    if (findHighest)
                     {
-                        continue;
+                        rule.GetHigh(out low, out high);
                     }
-
-                    registerInput.Clear();
-                    foreach (char fri in FillIn(cur, fullRegisterInput))
+                    else
                     {
-                        registerInput.Enqueue(int.Parse($"{fri}"));
+                        rule.GetLow(out low, out high);
                     }
-                    registers = new Dictionary<char, int>() { { 'w', 0 }, { 'x', 0 }, { 'y', 0 }, { 'z', 0 } };
-                    foreach (Instruction instruction in instructions)
-                    {
-                        if (!instruction.Execute(ref registers, ref registerInput, DebugWriteLine))
-                        {
-                            registers['z'] = 1;
-                            break;
-                        }
-                    }
-                    if (registers['z'] == 0)
-                    {
-                        return FillIn(cur, fullRegisterInput); 
-                    }
+                    sb[rule.HighIndex] = $"{high}"[0];
+                    sb[rule.LowIndex] = $"{low}"[0];
                 }
+                foreach (char ri in sb.ToString())
+                {
+                    registerInput.Enqueue(int.Parse($"{ri}"));
+                }
+                foreach (Instruction instruction in instructions)
+                {
+                    instruction.Execute(ref registers, ref registerInput, DebugWriteLine);
+                }
+                if (registers['z'] == 0)
+                {
+                    return sb.ToString();
+                }
+                return string.Empty;
             }
             else
             {
@@ -355,9 +401,9 @@ mod w 2"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
