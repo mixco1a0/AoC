@@ -31,7 +31,16 @@ namespace AoC
             value = defaultValue;
             if (variables != null && variables.ContainsKey(variableName))
             {
-                value = int.Parse(variables[variableName]);
+                value = long.Parse(variables[variableName]);
+            }
+        }
+
+        static public void GetVariable(string variableName, char defaultValue, Dictionary<string, string> variables, out char value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = variables[variableName][0];
             }
         }
 

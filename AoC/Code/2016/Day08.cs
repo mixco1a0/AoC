@@ -1,7 +1,7 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2016
 {
@@ -44,9 +44,6 @@ rotate column x=1 by 1"
             return testData;
         }
 
-        const char PixelOff = '.';
-        const char PixelOn = '#';
-
         private string[] InitGrid(Dictionary<string, string> variables, out int gridW, out int gridH)
         {
             gridW = 50;
@@ -66,7 +63,7 @@ rotate column x=1 by 1"
             string[] grid = new string[gridH];
             for (int i = 0; i < gridH; ++i)
             {
-                grid[i] = new string(PixelOff, gridW);
+                grid[i] = new string(Core.IGlyph.Off, gridW);
             }
             return grid;
         }
@@ -105,7 +102,7 @@ rotate column x=1 by 1"
         private void PerformRect(ref string[] grid, int x, int y)
         {
             StringBuilder sb = new StringBuilder();
-            string newRow = new string(PixelOn, x);
+            string newRow = new string(Core.IGlyph.On, x);
             for (int i = 0; i < y; ++i)
             {
                 sb.Clear();
@@ -135,91 +132,11 @@ rotate column x=1 by 1"
             grid = grid.Select((g, i) => $"{g[..col]}{sb[i]}{g[(col + 1)..]}").ToArray();
         }
 
-        static List<KeyValuePair<char, string[]>> LetterConversion = new List<KeyValuePair<char, string[]>>()
-        {
-            new KeyValuePair<char,string[]>('A', new string[] {
-                ".##..",
-                "#..#.",
-                "#..#.",
-                "####.",
-                "#..#.",
-                "#..#."}),
-            new KeyValuePair<char,string[]>('E', new string[] {
-                "####.",
-                "#....",
-                "###..",
-                "#....",
-                "#....",
-                "####."}),
-            new KeyValuePair<char,string[]>('G', new string[] {
-                ".##..",
-                "#..#.",
-                "#....",
-                "#.##.",
-                "#..#.",
-                ".###."}),
-            new KeyValuePair<char,string[]>('H', new string[] {
-                "#..#.",
-                "#..#.",
-                "####.",
-                "#..#.",
-                "#..#.",
-                "#..#."}),
-            new KeyValuePair<char,string[]>('O', new string[] {
-                ".##..",
-                "#..#.",
-                "#..#.",
-                "#..#.",
-                "#..#.",
-                ".##.."}),
-            new KeyValuePair<char,string[]>('P', new string[] {
-                "###..",
-                "#..#.",
-                "#..#.",
-                "###..",
-                "#....",
-                "#...."}),
-            new KeyValuePair<char,string[]>('R', new string[] {
-                "###..",
-                "#..#.",
-                "#..#.",
-                "###..",
-                "#.#..",
-                "#..#."}),
-            new KeyValuePair<char,string[]>('Y', new string[] {
-                "#...#",
-                "#...#",
-                ".#.#.",
-                "..#..",
-                "..#..",
-                "..#.."})
-        };
-
-        private string ConvertToLetters(string[] grid)
-        {
-            const int len = 5;
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < grid[0].Length; i += len)
-            {
-                string cur = string.Join("", grid.Select(g => g[i..(i+len)]));
-                foreach (var pair in LetterConversion)
-                {
-                    if (cur == string.Join("", pair.Value))
-                    {
-                        sb.Append(pair.Key);
-                        break;
-                    }
-                }
-            }
-            return sb.ToString();
-        }
-
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool readLetters)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool readGlyph)
         {
             int gridW, gridH;
             string[] grid = InitGrid(variables, out gridW, out gridH);
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
-            //Util.PrintGrid(grid.ToList(), DebugWriteLine);
             foreach (Instruction instruction in instructions)
             {
                 switch (instruction.Type)
@@ -234,15 +151,14 @@ rotate column x=1 by 1"
                         PerformCol(ref grid, instruction.Val1, -instruction.Val2);
                         break;
                 }
-                //Util.PrintGrid(grid.ToList(), DebugWriteLine);
             }
-            if (readLetters)
+            if (readGlyph)
             {
-                return ConvertToLetters(grid);
+                return Core.GlyphConverter.Process(grid, Core.GlyphConverter.Size._5x6);
             }
             else
             {
-                return string.Join("", grid).Replace(PixelOff.ToString(), "").Length.ToString();
+                return string.Join("", grid).Replace(Core.IGlyph.Off.ToString(), "").Length.ToString();
             }
         }
 
