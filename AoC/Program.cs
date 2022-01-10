@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Text.RegularExpressions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 using Newtonsoft.Json;
 
@@ -16,6 +18,56 @@ namespace AoC
         static void Main(string[] args)
         {
             new Program(args);
+        }
+    }
+
+    static class Win32
+    {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool GetConsoleMode(IntPtr stdHandle, out int mode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleMode(IntPtr stdHandle, int mode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr GetStdHandle(int stdHande);
+    }
+
+    record Color(int R, int G, int B) { }
+
+    class ConsoleExtension
+    {
+        private static IntPtr s_stdHandle;
+
+        private const string m_formatStringStart = "\x1b[{0};2;";
+        private const string m_formatStringColor = "{1};{2};{3}m";
+        //private const string           m_formatStringContent = "{4}";
+        //private const string m_formatStringEnd = "\x1b[0m";
+        //private static readonly string m_formatStringFull    = $"{m_formatStringStart}{m_formatStringColor}{m_formatStringContent}{m_formatStringEnd}";
+        private static readonly string m_formatStringFull = $"{m_formatStringStart}{m_formatStringColor}";
+
+        public enum Ground : byte
+        {
+            Fore = 38,
+            Back = 48
+        }
+
+        static ConsoleExtension()
+        {
+            s_stdHandle = Win32.GetStdHandle(-11);
+            int mode;
+            Win32.GetConsoleMode(s_stdHandle, out mode);
+            Win32.SetConsoleMode(s_stdHandle, mode | 0x4);
+        }
+
+        public static string GetColorFormat(Ground ground, AoC.Color color)
+        {
+            return GetColorFormat(ground, color.R, color.G, color.B);
+        }
+
+        public static string GetColorFormat(Ground ground, int r, int g, int b)
+        {
+            return string.Format(m_formatStringFull, (byte)ground, r, g, b);
         }
     }
 
@@ -33,6 +85,7 @@ namespace AoC
         private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
         private CommandLineArgs Args { get; set; }
+        private Color White = new Color(255, 255, 255);
 
         public Program(string[] args)
         {
@@ -437,17 +490,22 @@ namespace AoC
             LogLine($"{baseNamespace} Performance Metrics");
             LogLine("");
 
-            double p1Total = 0.0f;
-            double p2Total = 0.0f;
-            double min = double.MaxValue;
             string minStr = "";
-            double max = double.MinValue;
             string maxStr = "";
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;
-            List<string> logs = new List<string>();
-            logs.Add(string.Empty);
-            logs.Add(string.Empty);
+            Dictionary<Part, List<string>> logs = new Dictionary<Part, List<string>>();
+            Dictionary<Part, List<double>> mins = new Dictionary<Part, List<double>>();
+            Dictionary<Part, List<double>> avgs = new Dictionary<Part, List<double>>();
+            Dictionary<Part, List<double>> maxs = new Dictionary<Part, List<double>>();
+            for (Part part = Part.One; part <= Part.Two; ++part)
+            {
+                logs[part] = new List<string>();
+                mins[part] = new List<double>();
+                avgs[part] = new List<double>();
+                maxs[part] = new List<double>();
+            }
+
             foreach (string key in days.Keys)
             {
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[key].FullName);
@@ -464,55 +522,57 @@ namespace AoC
                             if (stats == null)
                             {
                                 logLine = $"{logLine} No stats found";
+                                mins[part].Add(double.NaN);
+                                avgs[part].Add(double.NaN);
+                                maxs[part].Add(double.NaN);
                             }
                             else
                             {
-                                // todo: make this smarter
-                                min = Math.Min(min, stats.Avg);
-                                if (min == stats.Avg)
-                                {
-                                    minStr = logLine;
-                                }
-
-                                max = Math.Max(max, stats.Avg);
-                                if (max == stats.Avg)
-                                {
-                                    maxStr = logLine;
-                                }
-
-                                if (part == Part.One)
-                                {
-                                    p1Total += stats.Avg;
-                                }
-
-                                if (part == Part.Two)
-                                {
-                                    p2Total += stats.Avg;
-                                }
-
-                                logLine += string.Format(" Avg={0:0.000} (ms) [{1} Records, Min={2:0.000} (ms), Max={3:0.000} (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
+                                mins[part].Add(stats.Min);
+                                avgs[part].Add(stats.Avg);
+                                maxs[part].Add(stats.Max);
+                                logLine += string.Format(" Avg=^{0:0.000}^ (ms) [{1} Records, Min=^{2:0.000}^ (ms), Max=^{3:0.000}^ (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
                             }
-                            logs.Add(logLine);
+                            logs[part].Add(logLine);
                             maxStringLength = Math.Max(maxStringLength, logLine.Length);
                         }
-                        logs.Add(string.Empty);
                     }
                 }
             }
 
-            string separator = new string('#', maxStringLength);
-            foreach (string log in logs)
+            double min = avgs.SelectMany(p => p.Value).Min(v => v);
+            double max = avgs.SelectMany(p => p.Value).Max(v => v);
+            Func<double, double> getAvg = (double val) =>
             {
-                if (string.IsNullOrEmpty(log))
+                if (val == double.NaN)
                 {
-                    LogLine(separator);
+                    return max;
                 }
-                else
+                return (val - min) / (max - min);
+            };
+            Func<double, AoC.Color> getColor = (double avg) =>
+            {
+                int r = (int)(avg * 255.0f);
+                int g = (int)(255.0f - avg * 255.0f);
+                return new Color(r, g, 0);
+            };
+
+            string separator = new string('#', maxStringLength);
+            for (int i = 0; i < logs[Part.One].Count; ++i)
+            {
+                for (Part part = Part.One; part <= Part.Two; ++part)
                 {
-                    LogLine(log);
+                    double minColor = getAvg(mins[part][i]);
+                    double avgColor = getAvg(avgs[part][i]);
+                    double maxColor = getAvg(maxs[part][i]);
+                    List<AoC.Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
+                    LogLineColored(logs[part][i], colors);
                 }
+                LogLine(separator);
             }
 
+            double p1Total = avgs[Part.One].Sum();
+            double p2Total = avgs[Part.Two].Sum();
             double totals = p1Total + p2Total;
             LogLine($"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
             LogLine($"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
@@ -553,6 +613,31 @@ namespace AoC
         private void LogLine(string message)
         {
             Console.WriteLine($"{Util.GetLogTimeStamp()} {message}");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="colors"></param>
+        private void LogLineColored(string message, List<AoC.Color> colors)
+        {
+            string[] split = Regex.Split(message, @"(\^[^\^]*\^)");
+            int colorIndex = 0;
+            Console.Write($"{Util.GetLogTimeStamp()} ");
+            for (int i = 0; i < split.Length; ++i)
+            {
+                if (split[i][0] == '^')
+                {
+                    string format = ConsoleExtension.GetColorFormat(ConsoleExtension.Ground.Fore, colors[colorIndex++]);
+                    Console.Write(string.Format("{0}{1}", format, split[i].Substring(1, split[1].Length - 2)));
+                }
+                else
+                {
+                    Console.Write(string.Format("{0}{1}", ConsoleExtension.GetColorFormat(ConsoleExtension.Ground.Fore, White), split[i]));
+                }
+            }
+            Console.WriteLine();
         }
 
         /// <summary>
