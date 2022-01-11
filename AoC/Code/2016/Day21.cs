@@ -154,7 +154,7 @@ rotate based on position of letter d"
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string defaultPassword, bool reverse)
         {
             string unscrambledPassword;
-            Util.GetVariable(nameof(unscrambledPassword), defaultPassword, variables, out unscrambledPassword);
+            GetVariable(nameof(unscrambledPassword), defaultPassword, variables, out unscrambledPassword);
             StringBuilder sb = new StringBuilder(unscrambledPassword);
 
             IEnumerable<Instruction> instructions = inputs.Select(Instruction.Parse);

@@ -63,7 +63,7 @@ namespace AoC._2015
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int defaultTimes)
         {
             int times;
-            Util.GetVariable(nameof(times), defaultTimes, variables, out times);
+            GetVariable(nameof(times), defaultTimes, variables, out times);
 
             string input = inputs.First();
             for (int i = 0; i < times; ++i)

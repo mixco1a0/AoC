@@ -17,42 +17,6 @@ namespace AoC
             return input.Split('\n').Select(str => str.Trim('\r'));
         }
 
-        static public void GetVariable(string variableName, int defaultValue, Dictionary<string, string> variables, out int value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = int.Parse(variables[variableName]);
-            }
-        }
-
-        static public void GetVariable(string variableName, long defaultValue, Dictionary<string, string> variables, out long value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = long.Parse(variables[variableName]);
-            }
-        }
-
-        static public void GetVariable(string variableName, char defaultValue, Dictionary<string, string> variables, out char value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = variables[variableName][0];
-            }
-        }
-
-        static public void GetVariable(string variableName, string defaultValue, Dictionary<string, string> variables, out string value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = variables[variableName];
-            }
-        }
-
         static public void RotateGrid(bool right, ref List<string> grid)
         {
             List<string> newGrid = new List<string>();

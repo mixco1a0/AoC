@@ -53,9 +53,9 @@ namespace AoC._2016
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findFirst)
         {
             long minValid;
-            Util.GetVariable(nameof(minValid), 0, variables, out minValid);
+            GetVariable(nameof(minValid), 0, variables, out minValid);
             long maxValid;
-            Util.GetVariable(nameof(maxValid), (long)uint.MaxValue, variables, out maxValid);
+            GetVariable(nameof(maxValid), (long)uint.MaxValue, variables, out maxValid);
 
             List<MinMax> minMax = inputs.Select(i => { string[] split = i.Split('-', StringSplitOptions.RemoveEmptyEntries); return new MinMax(long.Parse(split[0]), long.Parse(split[1])); }).ToList();
             minMax = minMax.OrderByDescending(m => m.Max).OrderBy(m => m.Min).ToList();

@@ -319,7 +319,7 @@ NOT y -> i"
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, char signalReset)
         {
             string wire;
-            Util.GetVariable(nameof(wire), "a", variables, out wire);
+            GetVariable(nameof(wire), "a", variables, out wire);
 
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
             instructions.Sort((a, b) => a.Type != b.Type ? (a.Type > b.Type ? 1 : -1) : (a.Destination.CompareTo(b.Destination)));

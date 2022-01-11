@@ -666,7 +666,7 @@ namespace AoC._2021
 
             // parsing and reducing validation
             int validationTest;
-            Util.GetVariable(nameof(validationTest), 0, variables, out validationTest);
+            GetVariable(nameof(validationTest), 0, variables, out validationTest);
             if (validationTest == 1)
             {
                 numbers[0].Reduce();

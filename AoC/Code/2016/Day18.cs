@@ -79,7 +79,7 @@ namespace AoC._2016
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int defaultRowCount)
         {
             int rowCount;
-            Util.GetVariable(nameof(rowCount), defaultRowCount, variables, out rowCount);
+            GetVariable(nameof(rowCount), defaultRowCount, variables, out rowCount);
             string prevRow = inputs.First();
             StringBuilder allTiles = new StringBuilder();
             for (int r = 0; r < rowCount; ++r)

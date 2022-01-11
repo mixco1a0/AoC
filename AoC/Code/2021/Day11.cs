@@ -156,7 +156,7 @@ namespace AoC._2021
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findSync)
         {
             int steps;
-            Util.GetVariable(nameof(steps), 100, variables, out steps);
+            GetVariable(nameof(steps), 100, variables, out steps);
             if (findSync)
             {
                 steps = int.MaxValue;
