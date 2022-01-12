@@ -9,7 +9,7 @@ namespace AoC.Core
 {
     public static class Logger
     {
-        private static readonly int  STD_OUTPUT_HANDLE = -11;
+        private static readonly int STD_OUTPUT_HANDLE = -11;
         private static readonly int ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
 
 
@@ -55,7 +55,14 @@ namespace AoC.Core
 
             IncludeTimeStamp = true;
             IncludeLogLevel = true;
-            LogLevel = ELogLevel.Info;
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                LogLevel = ELogLevel.Debug;
+            }
+            else
+            {
+                LogLevel = ELogLevel.Info;
+            }
             Enabled = true;
         }
 
@@ -63,7 +70,7 @@ namespace AoC.Core
         {
             Log(Console.Write, level, message);
         }
-        
+
         public static void Write(ELogLevel level, string format, params object[] args)
         {
             string message = string.Format(format, args);
