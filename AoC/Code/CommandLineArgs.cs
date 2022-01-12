@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using AoC.Core;
 
 namespace AoC
 {
@@ -103,52 +104,50 @@ namespace AoC
             }
         }
 
-        public void Print(Action<string> PrintFunc)
+        public void Print()
         {
             if (Args.Count > 0)
             {
-                PrintFunc("Command line arguments");
+                Logger.WriteLine(Logger.ELogLevel.Info, "Command line arguments");
                 foreach (KeyValuePair<SupportedArgument, string> argPair in Args)
                 {
-                    PrintFunc($"     -{string.Format("{0,-2}", SupportedArgs[argPair.Key].First())} {argPair.Value}");
+                    Logger.WriteLine(Logger.ELogLevel.Info, $"     -{string.Format("{0,-2}", SupportedArgs[argPair.Key].First())} {argPair.Value}");
                 }
             }
 
             if (InvalidArgs.Count > 0)
             {
-                PrintFunc("");
-                PrintFunc("Invalid arguments");
+                Logger.WriteLine(Logger.ELogLevel.Error, "\nInvalid arguments");
                 foreach (string invalidArg in InvalidArgs)
                 {
-                    PrintFunc($"     -{invalidArg}");
+                    Logger.WriteLine(Logger.ELogLevel.Info, $"     -{invalidArg}");
                 }
             }
 
             if (DuplicateArgs.Count > 0)
             {
-                PrintFunc("");
-                PrintFunc("Duplicate arguments");
+                Logger.WriteLine(Logger.ELogLevel.Warn, "\nDuplicate arguments");
                 foreach (string duplicateArg in DuplicateArgs)
                 {
-                    PrintFunc($"     -{duplicateArg}");
+                    Logger.WriteLine(Logger.ELogLevel.Info, $"     -{duplicateArg}");
                 }
             }
-            PrintFunc("");
+            Logger.WriteLine(Logger.ELogLevel.Info, "");
         }
 
-        public void PrintHelp(Action<string> PrintFunc)
+        public void PrintHelp()
         {
-            PrintFunc("Supported command line arguments");
+            Logger.WriteLine(Logger.ELogLevel.Info, "Supported command line arguments");
             foreach (KeyValuePair<SupportedArgument, List<string>> pair in SupportedArgs)
             {
-                PrintFunc($"     {pair.Key.ToString()}");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"     {pair.Key.ToString()}");
                 foreach (string val in pair.Value)
                 {
-                    PrintFunc($"          -{val}");
+                    Logger.WriteLine(Logger.ELogLevel.Info, $"          -{val}");
                 }
-                PrintFunc("");
+                Logger.WriteLine(Logger.ELogLevel.Info, "");
             }
-            PrintFunc("");
+            Logger.WriteLine(Logger.ELogLevel.Info, "");
         }
 
         public bool HasArg(SupportedArgument argType)

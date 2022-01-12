@@ -1,13 +1,14 @@
-﻿using System.Text.RegularExpressions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Threading;
-using System.Runtime.InteropServices;
+
+using AoC.Core;
 
 using Newtonsoft.Json;
 
@@ -18,56 +19,6 @@ namespace AoC
         static void Main(string[] args)
         {
             new Program(args);
-        }
-    }
-
-    static class Win32
-    {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool GetConsoleMode(IntPtr stdHandle, out int mode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool SetConsoleMode(IntPtr stdHandle, int mode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr GetStdHandle(int stdHande);
-    }
-
-    record Color(int R, int G, int B) { }
-
-    class ConsoleExtension
-    {
-        private static IntPtr s_stdHandle;
-
-        private const string m_formatStringStart = "\x1b[{0};2;";
-        private const string m_formatStringColor = "{1};{2};{3}m";
-        //private const string           m_formatStringContent = "{4}";
-        //private const string m_formatStringEnd = "\x1b[0m";
-        //private static readonly string m_formatStringFull    = $"{m_formatStringStart}{m_formatStringColor}{m_formatStringContent}{m_formatStringEnd}";
-        private static readonly string m_formatStringFull = $"{m_formatStringStart}{m_formatStringColor}";
-
-        public enum Ground : byte
-        {
-            Fore = 38,
-            Back = 48
-        }
-
-        static ConsoleExtension()
-        {
-            s_stdHandle = Win32.GetStdHandle(-11);
-            int mode;
-            Win32.GetConsoleMode(s_stdHandle, out mode);
-            Win32.SetConsoleMode(s_stdHandle, mode | 0x4);
-        }
-
-        public static string GetColorFormat(Ground ground, AoC.Color color)
-        {
-            return GetColorFormat(ground, color.R, color.G, color.B);
-        }
-
-        public static string GetColorFormat(Ground ground, int r, int g, int b)
-        {
-            return string.Format(m_formatStringFull, (byte)ground, r, g, b);
         }
     }
 
@@ -85,7 +36,6 @@ namespace AoC
         private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
         private CommandLineArgs Args { get; set; }
-        private Color White = new Color(255, 255, 255);
 
         public Program(string[] args)
         {
@@ -98,7 +48,7 @@ namespace AoC
 
                 if (Args.HasArg(CommandLineArgs.SupportedArgument.Help))
                 {
-                    Args.PrintHelp(LogLine);
+                    Args.PrintHelp();
                     return;
                 }
 
@@ -128,11 +78,11 @@ namespace AoC
                     Day day = RunDay(baseNamespace, Args.Args[CommandLineArgs.SupportedArgument.Day]);
                     if (day == null)
                     {
-                        LogLine($"Unable to find {baseNamespace}.{Args.Args[CommandLineArgs.SupportedArgument.Day]}");
+                        Logger.WriteLine(Logger.ELogLevel.Error, $"Unable to find {baseNamespace}.{Args.Args[CommandLineArgs.SupportedArgument.Day]}");
                     }
                     else
                     {
-                        LogLine("");
+                        Logger.WriteLine(Logger.ELogLevel.Info, "");
                     }
                 }
                 else if (!Args.HasArg(CommandLineArgs.SupportedArgument.SkipLatest))
@@ -140,11 +90,11 @@ namespace AoC
                     Day latestDay = RunLatestDay(baseNamespace);
                     if (latestDay == null)
                     {
-                        LogLine($"Unable to find any solutions for namespace {baseNamespace}");
+                        Logger.WriteLine(Logger.ELogLevel.Error, $"Unable to find any solutions for namespace {baseNamespace}");
                     }
                     else
                     {
-                        LogLine("");
+                        Logger.WriteLine(Logger.ELogLevel.Info, "");
                     }
                 }
 
@@ -161,8 +111,8 @@ namespace AoC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
+                Logger.WriteLine(Logger.ELogLevel.Fatal, e.Message);
+                Logger.WriteLine(Logger.ELogLevel.Fatal, e.StackTrace);
             }
         }
 
@@ -174,7 +124,7 @@ namespace AoC
         private CommandLineArgs ParseCommandLineArgs(string[] args)
         {
             CommandLineArgs commandLineArgs = new CommandLineArgs(args);
-            commandLineArgs.Print(LogLine);
+            commandLineArgs.Print();
             return commandLineArgs;
         }
 
@@ -216,13 +166,11 @@ namespace AoC
         {
             if (Args.HasArg(CommandLineArgs.SupportedArgument.RunWarmup))
             {
-                LogLine("...Warming up");
-                LogLine("");
+                Logger.WriteLine(Logger.ELogLevel.Info, "...Warming up\n");
                 RunWarmup();
             }
 
-            LogLine($"Running {baseNamespace}.{dayName} Advent of Code");
-            LogLine("");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"Running {baseNamespace}.{dayName} Advent of Code\n");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
@@ -297,15 +245,15 @@ namespace AoC
         /// <returns></returns>
         private bool RunPerformance(Type dayType, Part part, long existingRecords, ref PerfData runData)
         {
-            LogLine($"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
-            LogLine("...Warming up");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
+            Logger.WriteLine(Logger.ELogLevel.Info, "...Warming up");
             RunWarmup();
             ObjectHandle warmupHandle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
             if (warmupHandle == null)
             {
                 return false;
             }
-            
+
             Day warmupDay = (Day)warmupHandle.Unwrap();
             warmupDay.RunProblem(part);
 
@@ -320,12 +268,12 @@ namespace AoC
                 {
                     if (i > 0 && i % (RecordCount / 20) == 0)
                     {
-                        LogLine($"...{i} runs completed");
+                        Logger.WriteLine(Logger.ELogLevel.Info, $"...{i} runs completed");
                     }
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                    Logger.WriteSameLine(Logger.ELogLevel.Info, string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
                 }
 
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
@@ -351,17 +299,17 @@ namespace AoC
             }
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                LogLine($"...{maxI} runs completed");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"...{maxI} runs completed");
             }
             else
             {
                 if (DateTime.Now > timeout)
                 {
-                    LogSameLine(string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 45)));
+                    Logger.WriteLine(Logger.ELogLevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 50)));
                 }
                 else
                 {
-                    LogSameLine(string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 55)));
+                    Logger.WriteSameLine(Logger.ELogLevel.Info, string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 60)));
                 }
             }
 
@@ -376,8 +324,7 @@ namespace AoC
         {
             Day.UseLogs = false;
 
-            LogLine($"Running {baseNamespace} Performance");
-            LogLine("");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"Running {baseNamespace} Performance\n");
 
             PerfData perfData;
             string runDataFileName;
@@ -425,8 +372,7 @@ namespace AoC
         {
             Day.UseLogs = false;
 
-            LogLine($"Showing {baseNamespace} Performance");
-            LogLine("");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"Showing {baseNamespace} Performance\n");
 
             PerfData perfData;
             string runDataFileName;
@@ -445,7 +391,7 @@ namespace AoC
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
+                perfDataFileName = Path.Combine(workingDir, "perfdata_cmd.json");
             }
             else
             {
@@ -453,8 +399,8 @@ namespace AoC
             }
             if (File.Exists(perfDataFileName))
             {
-                LogLine($"Loading {perfDataFileName}");
-                LogLine("");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"Loading {perfDataFileName}\n");
+
                 string rawJson = File.ReadAllText(perfDataFileName);
                 perfData = JsonConvert.DeserializeObject<PerfData>(rawJson);
             }
@@ -471,8 +417,8 @@ namespace AoC
         /// <param name="perfData"></param>
         private void SaveRunData(string perfDataFileName, PerfData perfData)
         {
-            LogLine($"Saving {perfDataFileName}");
-            LogLine("");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"Saving {perfDataFileName}\n");
+
             string rawJson = JsonConvert.SerializeObject(perfData, Formatting.Indented);
             using (StreamWriter sWriter = new StreamWriter(perfDataFileName))
             {
@@ -487,11 +433,8 @@ namespace AoC
         /// <param name="perfData"></param>
         private void PrintMetrics(string baseNamespace, PerfData perfData)
         {
-            LogLine($"{baseNamespace} Performance Metrics");
-            LogLine("");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"{baseNamespace} Performance Metrics\n");
 
-            string minStr = "";
-            string maxStr = "";
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;
             Dictionary<Part, List<string>> logs = new Dictionary<Part, List<string>>();
@@ -506,6 +449,8 @@ namespace AoC
                 maxs[part] = new List<double>();
             }
 
+            double min = double.MaxValue, max = double.MinValue;
+            string minStr = "", maxStr = "";
             foreach (string key in days.Keys)
             {
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[key].FullName);
@@ -528,6 +473,18 @@ namespace AoC
                             }
                             else
                             {
+                                if (min > stats.Avg)
+                                {
+                                    min = stats.Avg;
+                                    minStr = logLine;
+                                }
+
+                                if (max < stats.Avg)
+                                {
+                                    max = stats.Avg;
+                                    maxStr = logLine;
+                                }
+
                                 mins[part].Add(stats.Min);
                                 avgs[part].Add(stats.Avg);
                                 maxs[part].Add(stats.Max);
@@ -540,8 +497,8 @@ namespace AoC
                 }
             }
 
-            double min = avgs.SelectMany(p => p.Value).Min(v => v);
-            double max = avgs.SelectMany(p => p.Value).Max(v => v);
+            // double min = avgs.SelectMany(p => p.Value).Min(v => v);
+            // double max = avgs.SelectMany(p => p.Value).Max(v => v);
             Func<double, double> getAvg = (double val) =>
             {
                 if (val == double.NaN)
@@ -550,11 +507,11 @@ namespace AoC
                 }
                 return (val - min) / (max - min);
             };
-            Func<double, AoC.Color> getColor = (double avg) =>
+            Func<double, Color> getColor = (double avg) =>
             {
-                int r = (int)(avg * 255.0f);
-                int g = (int)(255.0f - avg * 255.0f);
-                return new Color(r, g, 0);
+                int r = Math.Max(Math.Min((int)(avg * 255.0f), 255), 0);
+                int g = Math.Max(Math.Min((int)(255.0f - avg * 255.0f), 255), 0);
+                return Color.FromArgb(r, g, 0);
             };
 
             string separator = new string('#', maxStringLength);
@@ -565,88 +522,27 @@ namespace AoC
                     double minColor = getAvg(mins[part][i]);
                     double avgColor = getAvg(avgs[part][i]);
                     double maxColor = getAvg(maxs[part][i]);
-                    List<AoC.Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
-                    LogLineColored(logs[part][i], colors);
+                    List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
+                    Logger.WriteLine(Logger.ELogLevel.Info, logs[part][i], colors);
                 }
-                LogLine(separator);
+                Logger.WriteLine(Logger.ELogLevel.Info, separator);
             }
 
             double p1Total = avgs[Part.One].Sum();
             double p2Total = avgs[Part.Two].Sum();
             double totals = p1Total + p2Total;
-            LogLine($"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
-            LogLine($"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
-            LogLine($"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
-            LogLine(new string('#', maxStringLength));
+            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
+            Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
 
             if (totals > 0)
             {
-                LogLine($"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
-                LogLine($"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
-                LogLine(new string('#', maxStringLength));
-                LogLine(new string('#', maxStringLength));
+                Logger.WriteLine(Logger.ELogLevel.Info, $"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
+                Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
+                Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength + 2));
             }
-        }
-
-        /// <summary>
-        /// Console.Write with a timestamp
-        /// </summary>
-        /// <param name="message"></param>
-        private void Log(string message)
-        {
-            Console.Write($"{Util.GetLogTimeStamp()} {message}");
-        }
-
-        /// <summary>
-        /// Console.Write without a timestamp
-        /// </summary>
-        /// <param name="message"></param>
-        private void LogAppend(string message)
-        {
-            Console.Write($"{message}");
-        }
-
-        /// <summary>
-        /// Console.WriteLine with a timestamp
-        /// </summary>
-        /// <param name="message"></param>
-        private void LogLine(string message)
-        {
-            Console.WriteLine($"{Util.GetLogTimeStamp()} {message}");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="colors"></param>
-        private void LogLineColored(string message, List<AoC.Color> colors)
-        {
-            string[] split = Regex.Split(message, @"(\^[^\^]*\^)");
-            int colorIndex = 0;
-            Console.Write($"{Util.GetLogTimeStamp()} ");
-            for (int i = 0; i < split.Length; ++i)
-            {
-                if (split[i][0] == '^')
-                {
-                    string format = ConsoleExtension.GetColorFormat(ConsoleExtension.Ground.Fore, colors[colorIndex++]);
-                    Console.Write(string.Format("{0}{1}", format, split[i].Substring(1, split[1].Length - 2)));
-                }
-                else
-                {
-                    Console.Write(string.Format("{0}{1}", ConsoleExtension.GetColorFormat(ConsoleExtension.Ground.Fore, White), split[i]));
-                }
-            }
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Console.Write into the previous console location
-        /// </summary>
-        /// <param name="message"></param>
-        private void LogSameLine(string message)
-        {
-            Console.Write($"\r{Util.GetLogTimeStamp()} {message}");
         }
     }
 }
