@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -134,7 +134,7 @@ namespace AoC
         /// <returns></returns>
         private string GetLatestNamespace()
         {
-            string regex = string.Concat(nameof(AoC),@"\..*(\d{4})");
+            string regex = string.Concat(nameof(AoC), @"\..*(\d{4})");
             return Assembly.GetExecutingAssembly().GetTypes()
                         .Select(t => Regex.Match(t.FullName, regex))
                         .Where(m => m.Success).Select(m => m.Value).Max();
@@ -403,7 +403,7 @@ namespace AoC
             string workingDir = Util.WorkingDirectory;
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                perfDataFileName = Path.Combine(workingDir, "perfdata_cmd.json");
+                perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
             }
             else
             {
@@ -521,6 +521,11 @@ namespace AoC
             };
             Func<double, Color> getColor = (double avg) =>
             {
+                if (avg == double.NaN)
+                {
+                    return Color.LightGray;
+                }
+
                 int r = Math.Max(Math.Min((int)(avg * 255.0f), 255), 0);
                 int g = Math.Max(Math.Min((int)(255.0f - avg * 255.0f), 255), 0);
                 return Color.FromArgb(r, g, 0);
