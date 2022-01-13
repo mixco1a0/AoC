@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+
+using AoC.Core;
 
 namespace AoC
 {
@@ -60,8 +63,8 @@ namespace AoC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
+                Logger.WriteLine(Logger.ELogLevel.Fatal, e.Message);
+                Logger.WriteLine(Logger.ELogLevel.Fatal, e.StackTrace);
             }
         }
 
@@ -103,7 +106,7 @@ namespace AoC
             // get test data if there is any
             IEnumerable<TestDatum> partSpecificTestData = m_testData[DayName].Where(datum => datum.TestPart == part);
 
-            // run tests if there any
+            // run tests if there are any
             foreach (TestDatum datum in partSpecificTestData)
             {
                 // make sure the test has an output, and isn't just the default empty test set
@@ -125,30 +128,36 @@ namespace AoC
             RunPart(runType, part, inputs, expectedOuput, variables);
             timer.Stop();
 
-            Log($"{timer.Print()}");
+            Log(Logger.ELogLevel.Info, $"{timer.Print()}");
             return timer.GetElapsedMs();
         }
 
         private void RunPart(RunType runType, Part part, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
         {
-            m_logID = string.Format("{0}|{1}|{2}|part{3}|{4}", Year, DayName, runType == RunType.Problem ? "problem" : "testing", part == Part.One ? "1" : "2", GetSolutionVersion(part));
+            m_logID = string.Format("{0}|{1}|{2}|part{3}|{4}", Year, DayName, runType.ToString().ToLower(), part == Part.One ? "1" : "2", GetSolutionVersion(part));
             try
             {
                 string actualOutput = m_partSpecificFunctions[part](inputs, variables);
-                if (runType == RunType.Testing && actualOutput != expectedOuput)
+                if (runType == RunType.Testing)
                 {
-                    LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", '!');
+                    if (actualOutput != expectedOuput)
+                    {
+                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", '!', Color.Firebrick);
+                    }
+                    else
+                    {
+                        LogAnswer(actualOutput, '?', Color.ForestGreen);
+                    }
                 }
                 else
                 {
-                    LogAnswer(actualOutput, runType == RunType.Problem ? '#' : '?');
+                    LogAnswer(actualOutput, '#', Color.GhostWhite);
                 }
             }
             catch (Exception e)
             {
-                Log($"{e.Message}");
-                Log($"{e.StackTrace.Split('\r').FirstOrDefault()}");
-                Log($"{e.StackTrace}");
+                Log(Logger.ELogLevel.Fatal, $"{e.Message}");
+                Log(Logger.ELogLevel.Fatal, $"{e.StackTrace}");
             }
         }
 
@@ -188,11 +197,11 @@ namespace AoC
             }
         }
 
-        private void Log(string log)
+        private void Log(Logger.ELogLevel logLevel, string log)
         {
             if (UseLogs)
             {
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {log}");
+                Logger.WriteLine(logLevel, $"[{m_logID}] {log}");
             }
         }
 
@@ -200,21 +209,23 @@ namespace AoC
         {
             if (UseLogs)
             {
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{DefaultLogID}]");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{DefaultLogID}]");
             }
         }
 
-        private void LogAnswer(string answer, char filler)
+        private void LogAnswer(string answer, char filler, Color color)
         {
             if (UseLogs && !string.IsNullOrWhiteSpace(answer))
             {
                 string buffer = new string(filler, answer.Length);
                 string empty = new string(' ', answer.Length);
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 5)}{buffer}{new string(filler, 5)}");
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 3)}  {empty }  {new string(filler, 3)}");
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 3)}  {answer}  {new string(filler, 3)}");
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 3)}  {empty }  {new string(filler, 3)}");
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] {new string(filler, 5)}{buffer}{new string(filler, 5)}");
+                string bigFiller = new string(filler, 5);
+                string smallFiller = new string(filler, 3);
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {bigFiller}{buffer}{bigFiller}");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {smallFiller}  {empty }  {smallFiller}");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {smallFiller}  {Logger.ColorMarker}{answer}{Logger.ColorMarker}  {smallFiller}", new List<Color>() { color });
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {smallFiller}  {empty }  {smallFiller}");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {bigFiller}{buffer}{bigFiller}");
             }
         }
 
@@ -222,7 +233,7 @@ namespace AoC
         {
             if (UseLogs)
             {
-                Console.Write($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] \t{log}");
             }
         }
 
@@ -230,7 +241,7 @@ namespace AoC
         {
             if (UseLogs)
             {
-                Console.WriteLine($"{Util.GetLogTimeStamp()} [{m_logID}] \t{log}");
+                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] \t{log}");
             }
         }
     }
