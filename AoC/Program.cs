@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 using AoC.Core;
@@ -64,9 +65,8 @@ namespace AoC
                     m_maxPerfTimeoutMs = long.Parse(Args[CommandLine.ESupportedArgument.PerfTimeout]);
                 }
 
-                // TODO: programatically find the latest year to use
                 // get the namespace to use
-                string baseNamespace = nameof(AoC._2021);
+                string baseNamespace = GetLatestNamespace();
                 if (Args.HasValue(CommandLine.ESupportedArgument.Namespace))
                 {
                     baseNamespace = Args[CommandLine.ESupportedArgument.Namespace];
@@ -126,6 +126,18 @@ namespace AoC
             CommandLine commandLine = new CommandLine(args);
             commandLine.Print();
             return commandLine;
+        }
+
+        /// <summary>
+        /// Get the latest year for the namespace
+        /// </summary>
+        /// <returns></returns>
+        private string GetLatestNamespace()
+        {
+            string regex = string.Concat(nameof(AoC),@"\..*(\d{4})");
+            return Assembly.GetExecutingAssembly().GetTypes()
+                        .Select(t => Regex.Match(t.FullName, regex))
+                        .Where(m => m.Success).Select(m => m.Value).Max();
         }
 
         /// <summary>
