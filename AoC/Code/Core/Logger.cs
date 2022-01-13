@@ -46,6 +46,8 @@ namespace AoC.Core
         public static bool IncludeLogLevel { get; set; }
         public static ELogLevel LogLevel { get; set; }
         public static bool Enabled { get; set; }
+        public static char ColorMarker => '^';
+        private static string ColorRegex => string.Concat(@"(\", ColorMarker, @"[^\", ColorMarker, @"]*\", ColorMarker, ")");
 
         static Logger()
         {
@@ -125,7 +127,7 @@ namespace AoC.Core
 
         private static void LogColorized(Action<string> logFunc, ELogLevel level, string message, List<Color> colors)
         {
-            string[] split = Regex.Split(message, @"(\^[^\^]*\^)");
+            string[] split = Regex.Split(message, ColorRegex);
             int colorIndex = 0;
             StringBuilder colorizedMessage = new StringBuilder();
             for (int i = 0; i < split.Length; ++i)
