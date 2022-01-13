@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -500,7 +500,7 @@ namespace AoC
                                 mins[part].Add(stats.Min);
                                 avgs[part].Add(stats.Avg);
                                 maxs[part].Add(stats.Max);
-                                logLine += string.Format(" Avg=^{0:0.000}^ (ms) [{1} Records, Min=^{2:0.000}^ (ms), Max=^{3:0.000}^ (ms)]", stats.Avg, stats.Count, stats.Min, stats.Max);
+                                logLine += string.Format(" Avg={0}{1:0.000}{0} (ms) [{2} Records, Min={0}{3:0.000}{0} (ms), Max={0}{4:0.000}{0} (ms)]", Logger.ColorMarker, stats.Avg, stats.Count, stats.Min, stats.Max);
                             }
                             logs[part].Add(logLine);
                             maxStringLength = Math.Max(maxStringLength, logLine.Length);
@@ -509,8 +509,6 @@ namespace AoC
                 }
             }
 
-            // double min = avgs.SelectMany(p => p.Value).Min(v => v);
-            // double max = avgs.SelectMany(p => p.Value).Max(v => v);
             Func<double, double> getAvg = (double val) =>
             {
                 if (val == double.NaN)
@@ -548,9 +546,10 @@ namespace AoC
             double p1Total = avgs[Part.One].Sum();
             double p2Total = avgs[Part.Two].Sum();
             double totals = p1Total + p2Total;
-            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"ss\.ffffff")} (s)");
-            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"ss\.ffffff")} (s)");
-            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"ss\.ffffff")} (s)");
+            // TODO: smart time metric
+            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"mm\.ss\.ffffff")} (m)");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"mm\.ss\.ffffff")} (m)");
+            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"mm\.ss\.ffffff")} (m)");
             Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
 
             if (totals > 0)
@@ -558,7 +557,7 @@ namespace AoC
                 Logger.WriteLine(Logger.ELogLevel.Info, $"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
                 Logger.WriteLine(Logger.ELogLevel.Info, $"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
                 Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
-                Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength + 2));
+                Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
             }
         }
     }
