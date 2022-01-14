@@ -240,7 +240,7 @@ namespace AoC
             const int count = 100000000;
             long seed = Environment.TickCount;
 
-            Timer timer = new Timer();
+            Util.Timer timer = new Util.Timer();
             timer.Start();
             while (timer.GetElapsedMs() < 1500)
             {

@@ -121,7 +121,7 @@ namespace AoC
         {
             LogFiller();
 
-            Timer timer = new Timer();
+            Util.Timer timer = new Util.Timer();
             timer.Start();
             RunPart(runType, part, inputs, expectedOuput, variables);
             timer.Stop();
