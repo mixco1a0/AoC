@@ -73,10 +73,10 @@ namespace AoC.Core
                 }
             }
 
-            if (HasValue(ESupportedArgument.LogLevel) && Enum.TryParse<Logger.ELogLevel>(this[ESupportedArgument.LogLevel], true, out Logger.ELogLevel logLevel))
+            if (HasValue(ESupportedArgument.LogLevel) && Enum.TryParse<Log.ELevel>(this[ESupportedArgument.LogLevel], true, out Log.ELevel logLevel))
             {
-                Logger.LogLevel = logLevel;
-                Logger.WriteLine(Logger.ELogLevel.Debug, $"Setting logging level to {Logger.LogLevel}");
+                Log.LogLevel = logLevel;
+                Log.WriteLine(Log.ELevel.Debug, $"Setting logging level to {Log.LogLevel}");
             }
         }
 
@@ -84,46 +84,46 @@ namespace AoC.Core
         {
             if (Count > 0)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, "Command line arguments");
+                Log.WriteLine(Log.ELevel.Info, "Command line arguments");
                 foreach (KeyValuePair<ESupportedArgument, string> argPair in this)
                 {
-                    Logger.WriteLine(Logger.ELogLevel.Info, $"{Tab}-{string.Format("{0,-3}", SupportedArgs[argPair.Key].First())} {argPair.Value}");
+                    Log.WriteLine(Log.ELevel.Info, $"{Tab}-{string.Format("{0,-3}", SupportedArgs[argPair.Key].First())} {argPair.Value}");
                 }
             }
 
             if (InvalidArgs.Count > 0)
             {
-                Logger.WriteLine(Logger.ELogLevel.Error, "\nInvalid arguments");
+                Log.WriteLine(Log.ELevel.Error, "\nInvalid arguments");
                 foreach (string invalidArg in InvalidArgs)
                 {
-                    Logger.WriteLine(Logger.ELogLevel.Info, $"{Tab}-{invalidArg}");
+                    Log.WriteLine(Log.ELevel.Info, $"{Tab}-{invalidArg}");
                 }
             }
 
             if (DuplicateArgs.Count > 0)
             {
-                Logger.WriteLine(Logger.ELogLevel.Warn, "\nDuplicate arguments");
+                Log.WriteLine(Log.ELevel.Warn, "\nDuplicate arguments");
                 foreach (string duplicateArg in DuplicateArgs)
                 {
-                    Logger.WriteLine(Logger.ELogLevel.Info, $"{Tab}-{duplicateArg}");
+                    Log.WriteLine(Log.ELevel.Info, $"{Tab}-{duplicateArg}");
                 }
             }
-            Logger.WriteLine(Logger.ELogLevel.Info, "");
+            Log.WriteLine(Log.ELevel.Info, "");
         }
 
         public void PrintHelp()
         {
-            Logger.WriteLine(Logger.ELogLevel.Info, "Supported command line arguments");
+            Log.WriteLine(Log.ELevel.Info, "Supported command line arguments");
             foreach (KeyValuePair<ESupportedArgument, List<string>> pair in SupportedArgs)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"{Tab}{pair.Key.ToString()}");
+                Log.WriteLine(Log.ELevel.Info, $"{Tab}{pair.Key.ToString()}");
                 foreach (string val in pair.Value)
                 {
-                    Logger.WriteLine(Logger.ELogLevel.Info, $"{Tab}{Tab}-{val}");
+                    Log.WriteLine(Log.ELevel.Info, $"{Tab}{Tab}-{val}");
                 }
-                Logger.WriteLine(Logger.ELogLevel.Info, "");
+                Log.WriteLine(Log.ELevel.Info, "");
             }
-            Logger.WriteLine(Logger.ELogLevel.Info, "");
+            Log.WriteLine(Log.ELevel.Info, "");
         }
 
         public bool Has(ESupportedArgument argType)

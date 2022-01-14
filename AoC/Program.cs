@@ -78,11 +78,11 @@ namespace AoC
                     Day day = RunDay(baseNamespace, Args[CommandLine.ESupportedArgument.Day]);
                     if (day == null)
                     {
-                        Logger.WriteLine(Logger.ELogLevel.Error, $"Unable to find {baseNamespace}.{Args[CommandLine.ESupportedArgument.Day]}");
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find {baseNamespace}.{Args[CommandLine.ESupportedArgument.Day]}");
                     }
                     else
                     {
-                        Logger.WriteLine(Logger.ELogLevel.Info, "");
+                        Log.WriteLine(Log.ELevel.Info, "");
                     }
                 }
                 else if (!Args.Has(CommandLine.ESupportedArgument.SkipLatest))
@@ -90,11 +90,11 @@ namespace AoC
                     Day latestDay = RunLatestDay(baseNamespace);
                     if (latestDay == null)
                     {
-                        Logger.WriteLine(Logger.ELogLevel.Error, $"Unable to find any solutions for namespace {baseNamespace}");
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find any solutions for namespace {baseNamespace}");
                     }
                     else
                     {
-                        Logger.WriteLine(Logger.ELogLevel.Info, "");
+                        Log.WriteLine(Log.ELevel.Info, "");
                     }
                 }
 
@@ -111,8 +111,8 @@ namespace AoC
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.ELogLevel.Fatal, e.Message);
-                Logger.WriteLine(Logger.ELogLevel.Fatal, e.StackTrace);
+                Log.WriteLine(Log.ELevel.Fatal, e.Message);
+                Log.WriteLine(Log.ELevel.Fatal, e.StackTrace);
             }
         }
 
@@ -178,11 +178,11 @@ namespace AoC
         {
             if (Args.Has(CommandLine.ESupportedArgument.RunWarmup))
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, "...Warming up\n");
+                Log.WriteLine(Log.ELevel.Info, "...Warming up\n");
                 RunWarmup();
             }
 
-            Logger.WriteLine(Logger.ELogLevel.Info, $"Running {baseNamespace}.{dayName} Advent of Code\n");
+            Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace}.{dayName} Advent of Code\n");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
@@ -257,37 +257,18 @@ namespace AoC
         /// <returns></returns>
         private bool RunPerformance(Type dayType, Part part, long existingRecords, ref PerfData runData)
         {
-            Logger.WriteLine(Logger.ELogLevel.Info, $"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
-            Logger.WriteLine(Logger.ELogLevel.Info, "...Warming up");
+            Log.WriteLine(Log.ELevel.Info, $"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
+            Log.WriteLine(Log.ELevel.Info, "...Warming up");
             RunWarmup();
-            ObjectHandle warmupHandle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
-            if (warmupHandle == null)
-            {
-                return false;
-            }
-
-            Day warmupDay = (Day)warmupHandle.Unwrap();
-            warmupDay.RunProblem(part);
 
             DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
             DateTime cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
 
-            long i = 0;
+            // run two warm up days first
+            long i = -2;
             long maxI = RecordCount - existingRecords;
             for (; i < maxI; ++i)
             {
-                if (System.Diagnostics.Debugger.IsAttached)
-                {
-                    if (i > 0 && i % (RecordCount / 20) == 0)
-                    {
-                        Logger.WriteLine(Logger.ELogLevel.Info, $"...{i} runs completed");
-                    }
-                }
-                else
-                {
-                    Logger.WriteSameLine(Logger.ELogLevel.Info, string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
-                }
-
                 ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
                 if (handle == null)
                 {
@@ -296,7 +277,27 @@ namespace AoC
 
                 Day day = (Day)handle.Unwrap();
                 day.RunProblem(part);
-                runData.AddData(day);
+                if (i < 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    runData.AddData(day);
+                }
+
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    Log.WriteLine(Log.ELevel.Spam, $"{day.TimeResults[part]}");
+                    if (i > 0 && i % (RecordCount / 20) == 0)
+                    {
+                        Log.WriteLine(Log.ELevel.Info, $"...{i} runs completed");
+                    }
+                }
+                else if (i >= 0)
+                {
+                    Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}][]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                }
 
                 if (DateTime.Now > timeout)
                 {
@@ -309,19 +310,20 @@ namespace AoC
                     cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
                 }
             }
+            
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"...{maxI} runs completed");
+                Log.WriteLine(Log.ELevel.Info, $"...{maxI} runs completed");
             }
             else
             {
                 if (DateTime.Now > timeout)
                 {
-                    Logger.WriteLine(Logger.ELogLevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 50)));
+                    Log.WriteLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 50)));
                 }
                 else
                 {
-                    Logger.WriteSameLine(Logger.ELogLevel.Info, string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 60)));
+                    Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 60)));
                 }
             }
 
@@ -336,7 +338,7 @@ namespace AoC
         {
             Day.UseLogs = false;
 
-            Logger.WriteLine(Logger.ELogLevel.Info, $"Running {baseNamespace} Performance\n");
+            Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace} Performance\n");
 
             PerfData perfData;
             string runDataFileName;
@@ -384,7 +386,7 @@ namespace AoC
         {
             Day.UseLogs = false;
 
-            Logger.WriteLine(Logger.ELogLevel.Info, $"Showing {baseNamespace} Performance\n");
+            Log.WriteLine(Log.ELevel.Info, $"Showing {baseNamespace} Performance\n");
 
             PerfData perfData;
             string runDataFileName;
@@ -411,7 +413,7 @@ namespace AoC
             }
             if (File.Exists(perfDataFileName))
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"Loading {perfDataFileName}\n");
+                Log.WriteLine(Log.ELevel.Info, $"Loading {perfDataFileName}\n");
 
                 string rawJson = File.ReadAllText(perfDataFileName);
                 perfData = JsonConvert.DeserializeObject<PerfData>(rawJson);
@@ -429,7 +431,7 @@ namespace AoC
         /// <param name="perfData"></param>
         private void SaveRunData(string perfDataFileName, PerfData perfData)
         {
-            Logger.WriteLine(Logger.ELogLevel.Info, $"Saving {perfDataFileName}\n");
+            Log.WriteLine(Log.ELevel.Info, $"Saving {perfDataFileName}\n");
 
             string rawJson = JsonConvert.SerializeObject(perfData, Formatting.Indented);
             using (StreamWriter sWriter = new StreamWriter(perfDataFileName))
@@ -445,7 +447,7 @@ namespace AoC
         /// <param name="perfData"></param>
         private void PrintMetrics(string baseNamespace, PerfData perfData)
         {
-            Logger.WriteLine(Logger.ELogLevel.Info, $"{baseNamespace} Performance Metrics\n");
+            Log.WriteLine(Log.ELevel.Info, $"{baseNamespace} Performance Metrics\n");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;
@@ -500,7 +502,7 @@ namespace AoC
                                 mins[part].Add(stats.Min);
                                 avgs[part].Add(stats.Avg);
                                 maxs[part].Add(stats.Max);
-                                logLine += string.Format(" Avg={0}{1:0.000}{0} (ms) [{2} Records, Min={0}{3:0.000}{0} (ms), Max={0}{4:0.000}{0} (ms)]", Logger.ColorMarker, stats.Avg, stats.Count, stats.Min, stats.Max);
+                                logLine += string.Format(" Avg={0}{1:0.000}{0} (ms) [{2} Records, Min={0}{3:0.000}{0} (ms), Max={0}{4:0.000}{0} (ms)]", Log.ColorMarker, stats.Avg, stats.Count, stats.Min, stats.Max);
                             }
                             logs[part].Add(logLine);
                             maxStringLength = Math.Max(maxStringLength, logLine.Length);
@@ -538,26 +540,26 @@ namespace AoC
                     double avgColor = getAvg(avgs[part][i]);
                     double maxColor = getAvg(maxs[part][i]);
                     List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
-                    Logger.WriteLine(Logger.ELogLevel.Info, logs[part][i], colors);
+                    Log.WriteLine(Log.ELevel.Info, logs[part][i], colors);
                 }
-                Logger.WriteLine(Logger.ELogLevel.Info, separator);
+                Log.WriteLine(Log.ELevel.Info, separator);
             }
 
             double p1Total = avgs[Part.One].Sum();
             double p2Total = avgs[Part.Two].Sum();
             double totals = p1Total + p2Total;
             // TODO: smart time metric
-            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"mm\.ss\.ffffff")} (m)");
-            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"mm\.ss\.ffffff")} (m)");
-            Logger.WriteLine(Logger.ELogLevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"mm\.ss\.ffffff")} (m)");
-            Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
+            Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"mm\.ss\.ffffff")} (m)");
+            Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"mm\.ss\.ffffff")} (m)");
+            Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"mm\.ss\.ffffff")} (m)");
+            Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
 
             if (totals > 0)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
-                Logger.WriteLine(Logger.ELogLevel.Info, $"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
-                Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
-                Logger.WriteLine(Logger.ELogLevel.Info, new string('#', maxStringLength));
+                Log.WriteLine(Log.ELevel.Info, $"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
+                Log.WriteLine(Log.ELevel.Info, $"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
+                Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
+                Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
             }
         }
     }

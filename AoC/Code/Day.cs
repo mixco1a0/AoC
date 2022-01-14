@@ -4,8 +4,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC
 {
     public enum Part
@@ -63,8 +61,8 @@ namespace AoC
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.ELogLevel.Fatal, e.Message);
-                Logger.WriteLine(Logger.ELogLevel.Fatal, e.StackTrace);
+                Core.Log.WriteLine(Core.Log.ELevel.Fatal, e.Message);
+                Core.Log.WriteLine(Core.Log.ELevel.Fatal, e.StackTrace);
             }
         }
 
@@ -128,7 +126,7 @@ namespace AoC
             RunPart(runType, part, inputs, expectedOuput, variables);
             timer.Stop();
 
-            Log(Logger.ELogLevel.Info, $"{timer.Print()}");
+            Log(Core.Log.ELevel.Info, $"{timer.Print()}");
             return timer.GetElapsedMs();
         }
 
@@ -156,8 +154,8 @@ namespace AoC
             }
             catch (Exception e)
             {
-                Log(Logger.ELogLevel.Fatal, $"{e.Message}");
-                Log(Logger.ELogLevel.Fatal, $"{e.StackTrace}");
+                Log(Core.Log.ELevel.Fatal, $"{e.Message}");
+                Log(Core.Log.ELevel.Fatal, $"{e.StackTrace}");
             }
         }
 
@@ -197,11 +195,11 @@ namespace AoC
             }
         }
 
-        private void Log(Logger.ELogLevel logLevel, string log)
+        private void Log(Core.Log.ELevel logLevel, string log)
         {
             if (UseLogs)
             {
-                Logger.WriteLine(logLevel, $"[{m_logID}] {log}");
+                Core.Log.WriteLine(logLevel, $"[{m_logID}] {log}");
             }
         }
 
@@ -209,7 +207,7 @@ namespace AoC
         {
             if (UseLogs)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{DefaultLogID}]");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{DefaultLogID}]");
             }
         }
 
@@ -221,11 +219,11 @@ namespace AoC
                 string empty = new string(' ', answer.Length);
                 string bigFiller = new string(filler, 5);
                 string smallFiller = new string(filler, 3);
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {bigFiller}{buffer}{bigFiller}");
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {smallFiller}  {empty }  {smallFiller}");
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {smallFiller}  {Logger.ColorMarker}{answer}{Logger.ColorMarker}  {smallFiller}", new List<Color>() { color });
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {smallFiller}  {empty }  {smallFiller}");
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] {bigFiller}{buffer}{bigFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] {bigFiller}{buffer}{bigFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] {smallFiller}  {empty }  {smallFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] {smallFiller}  {Core.Log.ColorMarker}{answer}{Core.Log.ColorMarker}  {smallFiller}", new List<Color>() { color });
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] {smallFiller}  {empty }  {smallFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] {bigFiller}{buffer}{bigFiller}");
             }
         }
 
@@ -233,7 +231,7 @@ namespace AoC
         {
             if (UseLogs)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] \t{log}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] \t{log}");
             }
         }
 
@@ -241,7 +239,7 @@ namespace AoC
         {
             if (UseLogs)
             {
-                Logger.WriteLine(Logger.ELogLevel.Info, $"[{m_logID}] \t{log}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] \t{log}");
             }
         }
     }
