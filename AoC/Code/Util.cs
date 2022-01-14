@@ -8,15 +8,6 @@ namespace AoC
 {
     class Util
     {
-        static public IEnumerable<string> ConvertInputToList(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return new List<string>();
-            }
-            return input.Split('\n').Select(str => str.Trim('\r'));
-        }
-
         static public void RotateGrid(bool right, ref List<string> grid)
         {
             List<string> newGrid = new List<string>();

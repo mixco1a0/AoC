@@ -96,7 +96,7 @@ namespace AoC
             string fileName = string.Format("{0}.txt", DayName);
             string inputFile = Path.Combine(Util.WorkingDirectory, "Data", Year, fileName);
             // TODO: if the file doesn't exist, download it
-            return Util.ConvertInputToList(File.ReadAllText(inputFile));
+            return ConvertInputToList(File.ReadAllText(inputFile));
         }
 
         private void RunAll(Part part, IEnumerable<string> problemInput)
@@ -159,42 +159,6 @@ namespace AoC
             }
         }
 
-        static public void GetVariable(string variableName, int defaultValue, Dictionary<string, string> variables, out int value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = int.Parse(variables[variableName]);
-            }
-        }
-
-        static public void GetVariable(string variableName, long defaultValue, Dictionary<string, string> variables, out long value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = long.Parse(variables[variableName]);
-            }
-        }
-
-        static public void GetVariable(string variableName, char defaultValue, Dictionary<string, string> variables, out char value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = variables[variableName][0];
-            }
-        }
-
-        static public void GetVariable(string variableName, string defaultValue, Dictionary<string, string> variables, out string value)
-        {
-            value = defaultValue;
-            if (variables != null && variables.ContainsKey(variableName))
-            {
-                value = variables[variableName];
-            }
-        }
-
         private void Log(Core.Log.ELevel logLevel, string log)
         {
             if (UseLogs)
@@ -240,6 +204,51 @@ namespace AoC
             if (UseLogs)
             {
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{m_logID}] \t{log}");
+            }
+        }
+
+        public static IEnumerable<string> ConvertInputToList(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return new List<string>();
+            }
+            return input.Split('\n').Select(str => str.Trim('\r'));
+        }
+
+        public static void GetVariable(string variableName, int defaultValue, Dictionary<string, string> variables, out int value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = int.Parse(variables[variableName]);
+            }
+        }
+
+        public static void GetVariable(string variableName, long defaultValue, Dictionary<string, string> variables, out long value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = long.Parse(variables[variableName]);
+            }
+        }
+
+        public static void GetVariable(string variableName, char defaultValue, Dictionary<string, string> variables, out char value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = variables[variableName][0];
+            }
+        }
+
+        public static void GetVariable(string variableName, string defaultValue, Dictionary<string, string> variables, out string value)
+        {
+            value = defaultValue;
+            if (variables != null && variables.ContainsKey(variableName))
+            {
+                value = variables[variableName];
             }
         }
     }
