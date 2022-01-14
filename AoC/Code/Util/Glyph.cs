@@ -2,13 +2,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AoC.Core
+namespace AoC.Util
 {
-    public interface IGlyph
+    public static class Glyph
     {
         public static char On { get => '#'; }
         public static char Off { get => '.'; }
+        public static char UnknownLetter { get => '?'; }
+    }
 
+    public interface IGlyph
+    {
+        public static KeyValuePair<char, string[]> DefaultPair { get => default; }
         public abstract Dictionary<char, string[]> Alphabet { get; }
         public abstract int Width { get; }
         public abstract int Height { get; }
@@ -166,44 +171,44 @@ namespace AoC.Core
 
     public class GlyphConverter
     {
-        public enum Size
+        public enum EType
         {
             _5x6,
         }
 
-        private static readonly Dictionary<Size, IGlyph> Converters = new Dictionary<Size, IGlyph>()
+        private static readonly Dictionary<EType, IGlyph> Converters = new Dictionary<EType, IGlyph>()
         {
-            {Size._5x6, new Glyph5x6()},
+            {EType._5x6, new Glyph5x6()},
         };
 
-        public static string Process(string[] glyphs, Size size)
+        public static string Process(string[] glyphs, EType type)
         {
-            return Process(glyphs, size, IGlyph.On, IGlyph.Off);
+            return Process(glyphs, type, Glyph.On, Glyph.Off);
         }
 
-        public static string Process(string[] glyphs, Size size, char on, char off)
+        public static string Process(string[] glyphs, EType type, char on, char off)
         {
             if (glyphs == null || glyphs[0] == null)
             {
                 return "glyph error";
             }
 
-            IGlyph glyphConverter = Converters[size];
+            IGlyph glyphConverter = Converters[type];
             Dictionary<char, string[]> alphabet = glyphConverter.Alphabet;
 
             // make sure the correct characters are used
-            if (on != IGlyph.On)
+            if (on != Glyph.On)
             {
                 for (int i = 0; i < glyphs.Length; ++i)
                 {
-                    glyphs[i] = glyphs[i].Replace(on, IGlyph.On);
+                    glyphs[i] = glyphs[i].Replace(on, Glyph.On);
                 }
             }
-            if (off != IGlyph.Off)
+            if (off != Glyph.Off)
             {
                 for (int i = 0; i < glyphs.Length; ++i)
                 {
-                    glyphs[i] = glyphs[i].Replace(off, IGlyph.Off);
+                    glyphs[i] = glyphs[i].Replace(off, Glyph.Off);
                 }
             }
 
@@ -211,7 +216,7 @@ namespace AoC.Core
             int length = glyphs[0].Length % glyphConverter.Width;
             if (length != 0)
             {
-                string empty = new string(IGlyph.Off, 5 - length);
+                string empty = new string(Glyph.Off, glyphConverter.Width - length);
                 for (int i = 0; i < glyphs.Length; ++i)
                 {
                     glyphs[i] += empty;
@@ -222,17 +227,16 @@ namespace AoC.Core
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < glyphs[0].Length; i += glyphConverter.Width)
             {
-                char letter = '?';
-                IEnumerable<string> glyph = glyphs.Select(s => s.Substring(i, glyphConverter.Width));
-                foreach (KeyValuePair<char, string[]> pair in alphabet)
+                IEnumerable<string> glyph = glyphs.Select(g => g.Substring(i, glyphConverter.Width));
+                KeyValuePair<char, string[]> matchingPair = alphabet.FirstOrDefault(a => a.Value != null && a.Value.SequenceEqual(glyph));
+                if (!matchingPair.Equals(IGlyph.DefaultPair))
                 {
-                    if (pair.Value != null && pair.Value.SequenceEqual(glyph))
-                    {
-                        letter = pair.Key;
-                        break;
-                    }
+                    sb.Append(matchingPair.Key);
                 }
-                sb.Append(letter);
+                else
+                {
+                    sb.Append(Glyph.UnknownLetter);
+                }
             }
             return sb.ToString();
         }

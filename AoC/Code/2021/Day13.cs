@@ -138,11 +138,11 @@ fold along x=5"
                 {
                     if (points.Any(p => p.X == x && p.Y == y))
                     {
-                        sb.Append(Core.IGlyph.On);
+                        sb.Append(Util.Glyph.On);
                     }
                     else
                     {
-                        sb.Append(Core.IGlyph.Off);
+                        sb.Append(Util.Glyph.Off);
                     }
                 }
                 glyph.Add(sb.ToString());
@@ -167,7 +167,7 @@ fold along x=5"
                 return points.Count().ToString();
             }
             string[] glyph = GetGlyph(points);
-            return Core.GlyphConverter.Process(glyph, Core.GlyphConverter.Size._5x6);
+            return Util.GlyphConverter.Process(glyph, Util.GlyphConverter.EType._5x6);
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
