@@ -6,14 +6,14 @@ using System.Text;
 
 namespace AoC.Core
 {
-    static class WorkingDirectory
+    public static class WorkingDirectory
     {
-        private static string s_dir;
+        private static string s_baseDir;
         static public string Get
         {
             get
             {
-                if (string.IsNullOrEmpty(s_dir))
+                if (string.IsNullOrEmpty(s_baseDir))
                 {
                     string curDir = Directory.GetCurrentDirectory();
                     string dirRoot = Path.GetPathRoot(curDir);
@@ -34,14 +34,14 @@ namespace AoC.Core
 
                     if (curDir != dirRoot)
                     {
-                        s_dir = curDir;
+                        s_baseDir = curDir;
                     }
                     else
                     {
                         throw new DirectoryNotFoundException($"Unable to find base directory */{nameof(AoC)}/*");
                     }
                 }
-                return s_dir;
+                return s_baseDir;
             }
         }
     }
