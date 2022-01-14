@@ -402,7 +402,7 @@ namespace AoC
         /// <param name="perfData"></param>
         private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
-            string workingDir = Util.WorkingDirectory;
+            string workingDir = Core.WorkingDirectory.Get;
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");

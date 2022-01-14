@@ -94,7 +94,7 @@ namespace AoC
         {
             // file input
             string fileName = string.Format("{0}.txt", DayName);
-            string inputFile = Path.Combine(Util.WorkingDirectory, "Data", Year, fileName);
+            string inputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, fileName);
             // TODO: if the file doesn't exist, download it
             return ConvertInputToList(File.ReadAllText(inputFile));
         }
