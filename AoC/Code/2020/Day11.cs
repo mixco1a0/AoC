@@ -64,7 +64,7 @@ L.LLLLL.LL"
                 return '.';
             }
 
-            int fullCount = Util.ProcessIndexBorder(x, y, seats, '#');
+            int fullCount = Util.Grid.ProcessIndexBorder(x, y, seats, '#');
 
             switch (seats[x][y])
             {
@@ -80,7 +80,7 @@ L.LLLLL.LL"
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<List<char>> seats = inputs.Select(a => a.ToCharArray().ToList()).ToList();
-            while (Util.ProcessGrid(ref seats, GetLocationState)) ;
+            while (Util.Grid.ProcessGrid(ref seats, GetLocationState)) ;
             return string.Join("", seats.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
         }
 
@@ -186,7 +186,7 @@ L.LLLLL.LL"
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<List<char>> seats = inputs.Select(a => a.ToCharArray().ToList()).ToList();
-            while (Util.ProcessGrid(ref seats, GetLocationStateStringent)) ;
+            while (Util.Grid.ProcessGrid(ref seats, GetLocationStateStringent)) ;
             return string.Join("", seats.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
         }
     }

@@ -464,7 +464,7 @@ Tile 3079:
                 Right = temp;
 
                 List<string> raw = Raw;
-                Util.RotateGrid(true, ref raw);
+                Util.Grid.RotateGrid(true, ref raw);
                 Raw = raw;
             }
 
@@ -478,7 +478,7 @@ Tile 3079:
                 Left = temp;
 
                 List<string> raw = Raw;
-                Util.RotateGrid(false, ref raw);
+                Util.Grid.RotateGrid(false, ref raw);
                 Raw = raw;
             }
 
@@ -493,7 +493,7 @@ Tile 3079:
                 Left = LeftR;
 
                 List<string> raw = Raw;
-                Util.FlipGrid(false, ref raw);
+                Util.Grid.FlipGrid(false, ref raw);
                 Raw = raw;
             }
 
@@ -508,7 +508,7 @@ Tile 3079:
                 Bottom = BottomR;
 
                 List<string> raw = Raw;
-                Util.FlipGrid(true, ref raw);
+                Util.Grid.FlipGrid(true, ref raw);
             }
 
             public List<string> Prune()
@@ -704,7 +704,7 @@ Tile 3079:
                 monsterCount = GetMonsterCount(actualImage, out modifiedImage);
 
                 // print out all found monsters
-                Util.PrintGrid(modifiedImage, DebugWriteLine);
+                Util.Grid.PrintGrid(modifiedImage, DebugWriteLine);
             }
 
             // todo: actually count the # characters from modifiedImage
@@ -740,11 +740,11 @@ Tile 3079:
                 }
 
                 // DebugWriteLine($"[{checkCount}] No monsters found, rotating image");
-                Util.RotateGrid(true, ref grid);
+                Util.Grid.RotateGrid(true, ref grid);
                 if (++checkCount % 4 == 0)
                 {
                     // DebugWriteLine($"[{checkCount}] No monsters found, flipping image");
-                    Util.FlipGrid(true, ref grid);
+                    Util.Grid.FlipGrid(true, ref grid);
                 }
 
                 if (checkCount > 8)
