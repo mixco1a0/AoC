@@ -48,7 +48,7 @@ UUUUD"
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Point start)
         {
-            MinMax range = new MinMax(0, numPad.First().Length - 1);
+            Base.Range range = new Base.Range(0, numPad.First().Length - 1);
             StringBuilder code = new StringBuilder();
             int x = start.X, y = start.Y;
             foreach (string input in inputs)

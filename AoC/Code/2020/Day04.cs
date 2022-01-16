@@ -155,12 +155,12 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             {
                 return false;
             }
-            return new MinMax { Min = min, Max = max }.GTE_LTE(valInt);
+            return new Base.Range { Min = min, Max = max }.HasInc(valInt);
         }
 
         private bool CheckIsValidHGT(string val)
         {
-            Dictionary<string, MinMax> valids = new Dictionary<string, MinMax> { { "cm", new MinMax { Min = 150, Max = 193 } }, { "in", new MinMax { Min = 59, Max = 76 } } };
+            Dictionary<string, Base.Range> valids = new Dictionary<string, Base.Range> { { "cm", new Base.Range { Min = 150, Max = 193 } }, { "in", new Base.Range { Min = 59, Max = 76 } } };
             string height = val[0..^2];
             string unit = val[^2..];
             int heightVal;
@@ -168,7 +168,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             {
                 return false;
             }
-            return valids[unit].GTE_LTE(heightVal);
+            return valids[unit].HasInc(heightVal);
         }
 
         private bool CheckIsValidHCL(string val)

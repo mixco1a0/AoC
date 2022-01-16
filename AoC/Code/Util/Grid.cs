@@ -171,7 +171,7 @@ namespace AoC.Util
             return sb.ToString();
         }
 
-        static public bool ProcessGrid(ref Dictionary<string, char> grid, List<MinMax> indexRanges, Func<Dictionary<string, char>, List<int>, char> ProcessIndexFunc)
+        static public bool ProcessGrid(ref Dictionary<string, char> grid, List<Base.Range> indexRanges, Func<Dictionary<string, char>, List<int>, char> ProcessIndexFunc)
         {
             bool complete = true;
 
@@ -213,7 +213,7 @@ namespace AoC.Util
         {
             int borderMatch = 0;
             string indexKey = GetDynamicIndexKey(index);
-            List<MinMax> indexRanges = index.Select(i => new MinMax(i - 1, i + 1)).ToList();
+            List<Base.Range> indexRanges = index.Select(i => new Base.Range(i - 1, i + 1)).ToList();
             List<int> borderIndex = indexRanges.Select(r => r.Min).ToList();
             while (true)
             {

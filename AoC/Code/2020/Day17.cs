@@ -73,13 +73,13 @@ namespace AoC._2020
                     grid[$"0,{y},{x},"] = row[x];
                 }
             }
-            List<MinMax> indexRanges = new List<MinMax>();
-            indexRanges.Add(new MinMax()); // z [0,0]
-            indexRanges.Add(new MinMax(0, inputs.Count - 1)); // y [0,n]
-            indexRanges.Add(new MinMax(0, inputs.First().Length - 1)); //x [0,n]
+            List<Base.Range> indexRanges = new List<Base.Range>();
+            indexRanges.Add(new Base.Range()); // z [0,0]
+            indexRanges.Add(new Base.Range(0, inputs.Count - 1)); // y [0,n]
+            indexRanges.Add(new Base.Range(0, inputs.First().Length - 1)); //x [0,n]
             for (int i = 0; i < 6; ++i)
             {
-                foreach (MinMax indexRange in indexRanges)
+                foreach (Base.Range indexRange in indexRanges)
                 {
                     --indexRange.Min;
                     ++indexRange.Max;
@@ -101,14 +101,14 @@ namespace AoC._2020
                     grid[$"0,0,{y},{x},"] = row[x];
                 }
             }
-            List<MinMax> indexRanges = new List<MinMax>();
-            indexRanges.Add(new MinMax()); // w [0,0]
-            indexRanges.Add(new MinMax()); // z [0,0]
-            indexRanges.Add(new MinMax(0, inputs.Count - 1)); // y [0,n]
-            indexRanges.Add(new MinMax(0, inputs.First().Length - 1)); //x [0,n]
+            List<Base.Range> indexRanges = new List<Base.Range>();
+            indexRanges.Add(new Base.Range()); // w [0,0]
+            indexRanges.Add(new Base.Range()); // z [0,0]
+            indexRanges.Add(new Base.Range(0, inputs.Count - 1)); // y [0,n]
+            indexRanges.Add(new Base.Range(0, inputs.First().Length - 1)); //x [0,n]
             for (int i = 0; i < 6; ++i)
             {
-                foreach (MinMax indexRange in indexRanges)
+                foreach (Base.Range indexRange in indexRanges)
                 {
                     --indexRange.Min;
                     ++indexRange.Max;
