@@ -23,7 +23,9 @@ namespace AoC.Base
 
     public class Point : Point<int>
     {
+        public Point() : base() { }
         public Point(int x, int y) : base(x, y) { }
+        public Point(Point other) : base(other) { }
 
         public static Point operator +(Point a, Point b)
         {

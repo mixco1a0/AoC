@@ -48,20 +48,20 @@ namespace AoC._2021
             return testData;
         }
 
-        private List<Coords> Movements = new List<Coords>
+        private List<Base.Point> Movements = new List<Base.Point>
         {
-            new Coords(-1, 0),
-            new Coords(1, 0),
-            new Coords(0, 1),
-            new Coords(0, -1),
+            new Base.Point(-1, 0),
+            new Base.Point(1, 0),
+            new Base.Point(0, 1),
+            new Base.Point(0, -1),
         };
 
         private bool IsLowPoint(int[,] grid, int maxX, int maxY, int x, int y)
         {
-            Coords cur = new Coords(x, y);
-            foreach (Coords movement in Movements)
+            Base.Point cur = new Base.Point(x, y);
+            foreach (Base.Point movement in Movements)
             {
-                Coords neighbor = cur + movement;
+                Base.Point neighbor = cur + movement;
                 if (neighbor.X < 0 || neighbor.X >= maxX || neighbor.Y < 0 || neighbor.Y >= maxY)
                 {
                     continue;
@@ -77,12 +77,12 @@ namespace AoC._2021
         private int FindBasin(int[,] grid, int maxX, int maxY, int x, int y)
         {
             int basinSize = 0;
-            HashSet<Coords> history = new HashSet<Coords>();
-            Queue<Coords> toCheck = new Queue<Coords>();
-            toCheck.Enqueue(new Coords(x, y));
+            HashSet<Base.Point> history = new HashSet<Base.Point>();
+            Queue<Base.Point> toCheck = new Queue<Base.Point>();
+            toCheck.Enqueue(new Base.Point(x, y));
             while (toCheck.Count() > 0)
             {
-                Coords coords = toCheck.Dequeue();
+                Base.Point coords = toCheck.Dequeue();
                 if (coords.X < 0 || coords.X >= maxX || coords.Y < 0 || coords.Y >= maxY)
                 {
                     continue;
@@ -98,7 +98,7 @@ namespace AoC._2021
                 ++basinSize;
                 history.Add(coords);
 
-                foreach (Coords movement in Movements)
+                foreach (Base.Point movement in Movements)
                 {
                     toCheck.Enqueue(coords + movement);
                 }

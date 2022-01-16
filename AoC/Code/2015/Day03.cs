@@ -73,21 +73,21 @@ namespace AoC._2015
         private const char U = '^';
         private const char D = 'v';
 
-        private Dictionary<char, Coords> Movements = new Dictionary<char, Coords>()
+        private Dictionary<char, Base.Point> Movements = new Dictionary<char, Base.Point>()
         {
-            {L, new Coords(-1, 0)},
-            {R, new Coords(1, 0)},
-            {U, new Coords(0, 1)},
-            {D, new Coords(0, -1)},
+            {L, new Base.Point(-1, 0)},
+            {R, new Base.Point(1, 0)},
+            {U, new Base.Point(0, 1)},
+            {D, new Base.Point(0, -1)},
         };
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool usingRobotSanta)
         {
             bool santaMove = true;
-            Coords santaCoords = new Coords();
-            Coords robotCoords = new Coords();
+            Base.Point santaCoords = new Base.Point();
+            Base.Point robotCoords = new Base.Point();
 
-            HashSet<Coords> visitedCoords = new HashSet<Coords>();
+            HashSet<Base.Point> visitedCoords = new HashSet<Base.Point>();
             visitedCoords.Add(santaCoords);
             foreach (char c in string.Join(' ', inputs))
             {

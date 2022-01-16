@@ -50,14 +50,14 @@ namespace AoC._2016
         private char OpenChar = '.';
         private char StartChar = '0';
 
-        private record Path(Coords Coords, int Steps) { }
+        private record Path(Base.Point Coords, int Steps) { }
 
-        private int PathTo(char[][] grid, Coords max, Coords start, char target)
+        private int PathTo(char[][] grid, Base.Point max, Base.Point start, char target)
         {
             Queue<Path> pendingChecks = new Queue<Path>();
             pendingChecks.Enqueue(new Path(start, 0));
 
-            HashSet<Coords> history = new HashSet<Coords>();
+            HashSet<Base.Point> history = new HashSet<Base.Point>();
             history.Add(start);
 
             while (pendingChecks.Count > 0)
@@ -68,10 +68,10 @@ namespace AoC._2016
                     return cur.Steps;
                 }
 
-                Coords[] movements = new Coords[] { new Coords(0, -1), new Coords(-1, 0), new Coords(0, 1), new Coords(1, 0) };
-                foreach (Coords movement in movements)
+                Base.Point[] movements = new Base.Point[] { new Base.Point(0, -1), new Base.Point(-1, 0), new Base.Point(0, 1), new Base.Point(1, 0) };
+                foreach (Base.Point movement in movements)
                 {
-                    Coords nextMove = cur.Coords + movement;
+                    Base.Point nextMove = cur.Coords + movement;
                     if (nextMove.X >= 0 && nextMove.X < max.X && nextMove.Y >= 0 && nextMove.Y < max.Y)
                     {
                         if (grid[nextMove.Y][nextMove.X] == WallChar || history.Contains(nextMove))
@@ -88,17 +88,17 @@ namespace AoC._2016
             return (int)short.MaxValue;
         }
 
-        private int[] GeneratePaths(char[][] grid, Coords max, char target, int totalTargets)
+        private int[] GeneratePaths(char[][] grid, Base.Point max, char target, int totalTargets)
         {
             // get starting position
-            Coords start = new Coords(-1, -1);
+            Base.Point start = new Base.Point(-1, -1);
             for (int y = 0; y < max.Y && start.Y < 0; ++y)
             {
                 for (int x = 0; x < max.X; ++x)
                 {
                     if (grid[y][x] == target)
                     {
-                        start = new Coords(x, y);
+                        start = new Base.Point(x, y);
                         break;
                     }
                 }
@@ -152,9 +152,9 @@ namespace AoC._2016
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool returnHome)
         {
-            Coords max = new Coords(inputs[0].Length, inputs.Count);
+            Base.Point max = new Base.Point(inputs[0].Length, inputs.Count);
             char[][] grid = new char[inputs.Count][];
-            Coords start = new Coords();
+            Base.Point start = new Base.Point();
             for (int i = 0; i < inputs.Count; ++i)
             {
                 grid[i] = inputs[i].ToCharArray();

@@ -85,7 +85,7 @@ namespace AoC._2021
             private int Row { get { return 0b11111; } }
             private int Col { get { return 0b00001_00001_00001_00001_00001; } }
 
-            private Dictionary<int, Coords> Numbers { get; set; }
+            private Dictionary<int, Base.Point> Numbers { get; set; }
             private int CallState { get; set; }
             private int Size { get; set; }
             private int LastCall { get; set; }
@@ -98,13 +98,13 @@ namespace AoC._2021
                 Completed = false;
                 CallState = 0;
 
-                Numbers = new Dictionary<int, Coords>();
+                Numbers = new Dictionary<int, Base.Point>();
                 for (int i = 0; i < Size; ++i)
                 {
                     int[] row = rawBoard[i].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
                     for (int j = 0; j < Size; ++j)
                     {
-                        Numbers.Add(row[j], new Coords(j, i));
+                        Numbers.Add(row[j], new Base.Point(j, i));
                     }
                 }
             }
@@ -119,7 +119,7 @@ namespace AoC._2021
                         numbers[i, j] = -1;
                     }
                 }
-                foreach (KeyValuePair<int, Coords> pair in Numbers)
+                foreach (KeyValuePair<int, Base.Point> pair in Numbers)
                 {
                     numbers[pair.Value.X, pair.Value.Y] = pair.Key;
                 }
@@ -156,7 +156,7 @@ namespace AoC._2021
                 LastCall = call;
                 if (Numbers.ContainsKey(call))
                 {
-                    Coords coords = Numbers[call];
+                    Base.Point coords = Numbers[call];
                     int binaryShifted = 1 << (coords.Y * Size + (Size - coords.X - 1));
                     CallState |= binaryShifted;
                     int rowCheck = Row << coords.Y * Size;
