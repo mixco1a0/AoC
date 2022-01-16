@@ -124,22 +124,22 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507"
         public class Cuboid
         {
             public bool On { get; set; }
-            public Core.Point X { get; set; }
-            public Core.Point Y { get; set; }
-            public Core.Point Z { get; set; }
+            public Base.Point X { get; set; }
+            public Base.Point Y { get; set; }
+            public Base.Point Z { get; set; }
             public Cuboid(bool on)
             {
                 On = on;
-                X = new Core.Point(0, 0);
-                Y = new Core.Point(0, 0);
-                Z = new Core.Point(0, 0);
+                X = new Base.Point(0, 0);
+                Y = new Base.Point(0, 0);
+                Z = new Base.Point(0, 0);
             }
             public Cuboid(bool on, int xi, int xa, int yi, int ya, int zi, int za)
             {
                 On = on;
-                X = new Core.Point(xi, xa);
-                Y = new Core.Point(yi, ya);
-                Z = new Core.Point(zi, za);
+                X = new Base.Point(xi, xa);
+                Y = new Base.Point(yi, ya);
+                Z = new Base.Point(zi, za);
             }
 
             public Cuboid GetIntersection(bool on, Cuboid other)

@@ -62,7 +62,7 @@ fold along x=5"
             return testData;
         }
 
-        private class Point : Core.Point<int>
+        private class Point : Base.Point<int>
         {
             public Point() : base() { }
             public Point(int x, int y) : base(x, y) { }
@@ -80,7 +80,7 @@ fold along x=5"
             }
         }
 
-        private class Instruction : Core.Pair<bool, int>
+        private class Instruction : Base.Pair<bool, int>
         {
             public bool XAxis { get => m_first; }
             public int Index { get => m_last; }

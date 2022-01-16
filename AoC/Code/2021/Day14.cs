@@ -81,7 +81,7 @@ CN -> C"
         {
             string polymer = inputs.First();
             Dictionary<char, int> soloIds = new Dictionary<char, int>();
-            Dictionary<string, Core.Pair<char, int>> pairIds = new Dictionary<string, Core.Pair<char, int>>();
+            Dictionary<string, Base.Pair<char, int>> pairIds = new Dictionary<string, Base.Pair<char, int>>();
             int curSoloId = 0, curPairId = 0;
             foreach (string input in inputs.Skip(2))
             {
@@ -94,7 +94,7 @@ CN -> C"
                 }
 
                 string pairString = split[0];
-                pairIds[pairString] = new Core.Pair<char, int>(soloChar, curPairId++);
+                pairIds[pairString] = new Base.Pair<char, int>(soloChar, curPairId++);
             }
 
             solos = new long[soloIds.Count];

@@ -1,8 +1,8 @@
 using System;
 
-namespace AoC.Core
+namespace AoC.Base
 {
-    public class Point<T> : Pair<T, T>
+    public class Point<T> : CPair<T, T>
         where T : IComparable
     {
         public T X { get => m_first; set => m_first = value; }
