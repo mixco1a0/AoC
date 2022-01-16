@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
+using AoC.Core;
+
 namespace AoC._2016
 {
     class Day05 : Day

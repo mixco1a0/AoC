@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AoC.Core;
+
 namespace AoC._2021
 {
     class Day20 : Day

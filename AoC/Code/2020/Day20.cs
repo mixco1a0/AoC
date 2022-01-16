@@ -1,8 +1,9 @@
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+
+using AoC.Core;
 
 namespace AoC._2020
 {

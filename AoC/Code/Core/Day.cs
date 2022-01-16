@@ -4,7 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 
-namespace AoC
+namespace AoC.Core
 {
     public enum Part
     {
@@ -26,10 +26,7 @@ namespace AoC
         protected abstract List<TestDatum> GetTestData();
         protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
         protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
-        public virtual string GetSolutionVersion(Part part)
-        {
-            return "v0";
-        }
+        public virtual string GetSolutionVersion(Part part) => "v0";
         #endregion
 
         private string DefaultLogID { get { return new string('.', 27); } }
@@ -92,6 +89,8 @@ namespace AoC
 
         private IEnumerable<string> GetInputFile()
         {
+            // TODO: cache off the input file somewhere
+            // TODO: cache off the answer file somewhere
             // file input
             string fileName = string.Format("{0}.txt", DayName);
             string inputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, fileName);

@@ -1,8 +1,10 @@
-using System.Text;
-using System.Security.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+
+using AoC.Core;
 
 namespace AoC._2016
 {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AoC.Core;
+
 namespace AoC._2016
 {
     class Day11 : Day
@@ -397,9 +399,7 @@ The fourth floor contains nothing relevant."
 
 /*
 
-TODO: still need some optimization in generating next steps, too slow
-
-using System;
+TODO: still need some optimization in generating next steps, too slowusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

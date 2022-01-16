@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+using AoC.Core;
+
 namespace AoC._2020
 {
     class Day05 : Day

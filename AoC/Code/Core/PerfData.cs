@@ -105,7 +105,7 @@ namespace AoC.Core
             DayData = new Dictionary<string, PerfPart>();
         }
 
-        public void AddData(AoC.Day day)
+        public void AddData(Day day)
         {
             if (!DayData.ContainsKey(day.DayName))
             {
@@ -134,7 +134,7 @@ namespace AoC.Core
             YearData = new Dictionary<string, PerfDay>();
         }
 
-        public void AddData(AoC.Day day)
+        public void AddData(Day day)
         {
             if (!YearData.ContainsKey(day.Year))
             {

@@ -1,7 +1,7 @@
-using System.Diagnostics;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using AoC.Core;
 
 namespace AoC._2015
 {

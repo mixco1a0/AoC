@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AoC
+namespace AoC.Core
 {
     public class TestDatum
     {

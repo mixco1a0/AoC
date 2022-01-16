@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using AoC.Core;
+
 namespace AoC._2015
 {
     class Day08 : Day

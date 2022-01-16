@@ -134,7 +134,7 @@ namespace AoC
         /// <returns></returns>
         private string GetLatestNamespace()
         {
-            string regex = string.Concat(nameof(AoC), @"\..*(\d{4})");
+            string regex = string.Concat(nameof(AoC), @"\._(\d{4})");
             return Assembly.GetExecutingAssembly().GetTypes()
                         .Select(t => Regex.Match(t.FullName, regex))
                         .Where(m => m.Success).Select(m => m.Value).Max();
@@ -148,7 +148,7 @@ namespace AoC
         private Dictionary<string, Type> GetDaysInNamespace(string baseNamespace)
         {
             return Assembly.GetExecutingAssembly().GetTypes()
-                                .Where(t => t.BaseType == typeof(AoC.Day) && t.Namespace.Contains(baseNamespace))
+                                .Where(t => t.BaseType == typeof(Day) && t.Namespace.Contains(baseNamespace))
                                 .ToDictionary(t => t.Name, t => t);
         }
 

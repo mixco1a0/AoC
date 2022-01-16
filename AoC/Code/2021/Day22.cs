@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using AoC.Core;
+
 namespace AoC._2021
 {
     class Day22 : Day
