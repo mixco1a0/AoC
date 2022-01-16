@@ -46,7 +46,7 @@ UUUUD"
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Point start)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Point start)
         {
             MinMax range = new MinMax(0, numPad.First().Length - 1);
             StringBuilder code = new StringBuilder();
@@ -55,7 +55,7 @@ UUUUD"
             {
                 foreach (char c in input)
                 {
-                    Point old = new Point(x, y);
+                    Base.Point old = new Base.Point(x, y);
                     switch (c)
                     {
                         case 'U':
@@ -85,11 +85,11 @@ UUUUD"
         static string[] numberPad1 = { "123", "456", "789" };
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad1, new Point(1, 1));
+            => SharedSolution(inputs, variables, numberPad1, new Base.Point(1, 1));
 
         static string[] numberPad2 = { "  1  ", " 234 ", "56789", " ABC ", "  D  " };
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad2, new Point(0, 2));
+            => SharedSolution(inputs, variables, numberPad2, new Base.Point(0, 2));
     }
 }

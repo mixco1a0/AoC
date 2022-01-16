@@ -57,7 +57,7 @@ namespace AoC._2016
         {
             // used for segment checks
             List<Segment> visited = new List<Segment>();
-            Point prev = new Point(0, 0);
+            Base.Point prev = new Base.Point(0, 0);
 
             int coordX = 0, coordY = 0, curDirection = 0;
             string[] input = inputs[0].Split(" ,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -86,9 +86,9 @@ namespace AoC._2016
 
                 if (segmentCheck)
                 {
-                    Segment cur = new Segment(prev, new Point(coordX, coordY));
+                    Segment cur = new Segment(prev, new Base.Point(coordX, coordY));
                     //DebugWriteLine($"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
-                    Point intersection = null;
+                    Base.Point intersection = null;
                     // check for intersection
                     foreach (Segment visit in visited.Take(visited.Count - 1))
                     {

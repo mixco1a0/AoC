@@ -30,7 +30,6 @@ namespace AoC
         }
     }
 
-    public record Point(int X, int Y) { }
 
     public class Coords : IEquatable<Coords>
     {
@@ -99,10 +98,10 @@ namespace AoC
 
     public class Segment
     {
-        public Point A { get; set; }
-        public Point B { get; set; }
+        public Base.Point A { get; set; }
+        public Base.Point B { get; set; }
 
-        public Segment(Point a, Point b)
+        public Segment(Base.Point a, Base.Point b)
         {
             A = a;
             B = b;
@@ -113,7 +112,7 @@ namespace AoC
             return new Segment(B, A);
         }
 
-        public Point GetIntersection(Segment other)
+        public Base.Point GetIntersection(Segment other)
         {
             // if this is X oriented, other is Y oriented
             if (A.X == B.X && other.A.Y == other.B.Y)
@@ -123,7 +122,7 @@ namespace AoC
                 if ((yRange.GTE_LTE(other.A.Y) || yRange.Flip().GTE_LTE(other.A.Y)) &&
                     (xRange.GTE_LTE(A.X) || xRange.Flip().GTE_LTE(A.X)))
                 {
-                    return new Point(A.X, other.A.Y);
+                    return new Base.Point(A.X, other.A.Y);
                 }
             }
             // if this is Y oriented, other is X oriented
@@ -134,7 +133,7 @@ namespace AoC
                 if ((xRange.GTE_LTE(other.A.X) || xRange.Flip().GTE_LTE(other.A.X)) &&
                     (yRange.GTE_LTE(A.Y) || yRange.Flip().GTE_LTE(A.Y)))
                 {
-                    return new Point(other.A.X, A.Y);
+                    return new Base.Point(other.A.X, A.Y);
                 }
             }
             return null;
