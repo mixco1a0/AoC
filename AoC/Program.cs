@@ -111,8 +111,7 @@ namespace AoC
             }
             catch (Exception e)
             {
-                Log.WriteLine(Log.ELevel.Fatal, e.Message);
-                Log.WriteLine(Log.ELevel.Fatal, e.StackTrace);
+                Log.WriteException(e);
             }
         }
 
@@ -532,7 +531,7 @@ namespace AoC
             {
                 if (avg == double.NaN)
                 {
-                    return Color.LightGray;
+                    return Core.Log.Neutral;
                 }
 
                 int r = Math.Max(Math.Min((int)(avg * 255.0f), 255), 0);
