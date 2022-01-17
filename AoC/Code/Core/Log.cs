@@ -49,6 +49,10 @@ namespace AoC.Core
         public static char ColorMarker => '^';
         private static string ColorRegex => string.Concat(@"(\", ColorMarker, @"[^\", ColorMarker, @"]*\", ColorMarker, ")");
 
+        public static Color Positive => Color.MediumSeaGreen;
+        public static Color Neutral => Color.Khaki;
+        public static Color Negative => Color.Salmon;
+
         static Log()
         {
             StdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -138,6 +142,16 @@ namespace AoC.Core
             InternalLogColorized(Console.WriteLine, level, message, colors);
         }
 
+        public static void WriteException(Exception e)
+        {
+            List<Color> exceptionColor = new List<Color>() { Negative };
+            WriteLine(ELevel.Fatal, $"{Core.Log.ColorMarker}{e.Message}{Core.Log.ColorMarker}", exceptionColor);
+            foreach (string st in e.StackTrace.Split("\n"))
+            {
+                WriteLine(ELevel.Fatal, $"{Core.Log.ColorMarker}{st}{Core.Log.ColorMarker}", exceptionColor);
+            }
+        }
+
         private static string GetColorFormat(EPlane plane, Color color)
         {
             return GetColorFormat(plane, color.R, color.G, color.B);
@@ -157,7 +171,7 @@ namespace AoC.Core
             StringBuilder colorizedMessage = new StringBuilder();
             for (int i = 0; i < split.Length; ++i)
             {
-                if (split[i][0] == '^')
+                if (!string.IsNullOrWhiteSpace(split[i]) && split[i][0] == '^')
                 {
                     string format = GetColorFormat(EPlane.Foreground, colors[colorIndex++]);
                     colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i].Substring(1, split[i].Length - 2)));
