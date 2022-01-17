@@ -13,10 +13,10 @@ namespace AoC._2015
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Part.One:
+                    return "v1";
+                case Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -45,7 +45,7 @@ David would gain 41 happiness units by sitting next to Carol."
             return testData;
         }
 
-        private record Units(string Name, int Happiness);
+        private record Units(string Name, int Happiness) {}
 
         private int ArrangeSeats(Dictionary<string, List<Units>> people, string person, List<string> peopleSitting, int tab)
         {

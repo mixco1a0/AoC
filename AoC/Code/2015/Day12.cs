@@ -16,6 +16,7 @@ namespace AoC._2015
             switch (part)
             {
                 case Part.One:
+                    return "v1";
                 case Part.Two:
                     return "v1";
                 default:
