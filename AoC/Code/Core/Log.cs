@@ -86,9 +86,34 @@ namespace AoC.Core
 
         public static void WriteAppend(ELevel level, string message)
         {
+            bool useLogLevel = IncludeLogLevel;
+            IncludeLogLevel = false;
             bool useTimeStamp = IncludeTimeStamp;
             IncludeTimeStamp = false;
             InternalLog(Console.Write, level, message);
+            IncludeLogLevel = useLogLevel;
+            IncludeTimeStamp = useTimeStamp;
+        }
+
+        public static void WriteAppend(ELevel level, string message, List<Color> colors)
+        {
+            bool useLogLevel = IncludeLogLevel;
+            IncludeLogLevel = false;
+            bool useTimeStamp = IncludeTimeStamp;
+            IncludeTimeStamp = false;
+            InternalLogColorized(Console.Write, level, message, colors);
+            IncludeLogLevel = useLogLevel;
+            IncludeTimeStamp = useTimeStamp;
+        }
+
+        public static void WriteAppendEnd(ELevel level)
+        {
+            bool useLogLevel = IncludeLogLevel;
+            IncludeLogLevel = false;
+            bool useTimeStamp = IncludeTimeStamp;
+            IncludeTimeStamp = false;
+            InternalLogSingleMessage(Console.Write, level, Environment.NewLine, false);
+            IncludeLogLevel = useLogLevel;
             IncludeTimeStamp = useTimeStamp;
         }
 
