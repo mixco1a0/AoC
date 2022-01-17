@@ -19,6 +19,7 @@ namespace AoC.Core
             RunPerf,
             PerfRecordCount,
             PerfTimeout,
+            CompactPerf,
             End
         }
 

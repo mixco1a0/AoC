@@ -310,7 +310,7 @@ namespace AoC
                     cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
                 }
             }
-            
+
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 Log.WriteLine(Log.ELevel.Info, $"...{maxI} runs completed");
@@ -374,7 +374,7 @@ namespace AoC
             }
 
             SaveRunData(runDataFileName, perfData);
-            PrintMetrics(baseNamespace, perfData);
+            PrintPerf(baseNamespace, perfData);
             Day.UseLogs = true;
         }
 
@@ -391,7 +391,7 @@ namespace AoC
             PerfData perfData;
             string runDataFileName;
             LoadPerfData(out runDataFileName, out perfData);
-            PrintMetrics(baseNamespace, perfData);
+            PrintPerf(baseNamespace, perfData);
             Day.UseLogs = true;
         }
 
@@ -441,11 +441,11 @@ namespace AoC
         }
 
         /// <summary>
-        /// Print out all the metrics from run data
+        /// Print out all the performance information from run data
         /// </summary>
         /// <param name="baseNamespace"></param>
         /// <param name="perfData"></param>
-        private void PrintMetrics(string baseNamespace, PerfData perfData)
+        private void PrintPerf(string baseNamespace, PerfData perfData)
         {
             Log.WriteLine(Log.ELevel.Info, $"{baseNamespace} Performance Metrics\n");
 
@@ -477,6 +477,7 @@ namespace AoC
                         {
                             string solutionVersion = day.GetSolutionVersion(part);
                             PerfStat stats = perfData.Get(day.Year, day.DayName, part, solutionVersion);
+
                             string logLine = $"[{day.Year}|{day.DayName}|part{(int)part}|{solutionVersion}]";
                             if (stats == null)
                             {
@@ -502,7 +503,15 @@ namespace AoC
                                 mins[part].Add(stats.Min);
                                 avgs[part].Add(stats.Avg);
                                 maxs[part].Add(stats.Max);
-                                logLine += string.Format(" Avg={0}{1:0.000}{0} (ms) [{2} Records, Min={0}{3:0.000}{0} (ms), Max={0}{4:0.000}{0} (ms)]", Log.ColorMarker, stats.Avg, stats.Count, stats.Min, stats.Max);
+
+                                if (Args.Has(CommandLine.ESupportedArgument.CompactPerf))
+                                {
+                                    logLine += string.Format(" Avg={0}{1:0.000}{0} (ms)", Log.ColorMarker, stats.Avg);
+                                }
+                                else
+                                {
+                                    logLine += string.Format(" Avg={0}{1:0.000}{0} (ms) [{2} Records, Min={0}{3:0.000}{0} (ms), Max={0}{4:0.000}{0} (ms)]", Log.ColorMarker, stats.Avg, stats.Count, stats.Min, stats.Max);
+                                }
                             }
                             logs[part].Add(logLine);
                             maxStringLength = Math.Max(maxStringLength, logLine.Length);
@@ -531,24 +540,55 @@ namespace AoC
                 return Color.FromArgb(r, g, 0);
             };
 
-            string separator = new string('#', maxStringLength);
-            for (int i = 0; i < logs[Part.One].Count; ++i)
+            if (Args.Has(CommandLine.ESupportedArgument.CompactPerf))
             {
-                for (Part part = Part.One; part <= Part.Two; ++part)
+                int maxLength = logs.SelectMany(l => l.Value).Max(lv => lv.Length) + 2;
+                string separator = new string('#', maxLength * 2 + 6);
+                for (int i = 0; i < logs[Part.Two].Count; ++i)
                 {
-                    double minColor = getAvg(mins[part][i]);
-                    double avgColor = getAvg(avgs[part][i]);
-                    double maxColor = getAvg(maxs[part][i]);
-                    List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
-                    Log.WriteLine(Log.ELevel.Info, logs[part][i], colors);
+                    if (i % 5 == 0)
+                    {
+                        Log.WriteLine(Log.ELevel.Info, separator);
+                    }
+                    List<Color> colors = new List<Color>();
+                    for (Part part = Part.One; part <= Part.Two; ++part)
+                    {
+                        double avgColor = getAvg(avgs[part][i]);
+                        colors.Add(getColor(avgColor));
+                    }
+                    Log.Write(Log.ELevel.Info, "## ");
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], colors);
+                    Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.One][i].Length));
+                    Log.WriteAppend(Log.ELevel.Info, " ## ");
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], colors);
+                    Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.Two][i].Length));
+                    Log.WriteAppend(Log.ELevel.Info, " ##");
+                    Log.WriteAppendEnd(Log.ELevel.Info);
                 }
                 Log.WriteLine(Log.ELevel.Info, separator);
+            }
+            else
+            {
+                string separator = new string('#', maxStringLength);
+                Log.WriteLine(Log.ELevel.Info, separator);
+                for (int i = 0; i < logs[Part.One].Count; ++i)
+                {
+                    for (Part part = Part.One; part <= Part.Two; ++part)
+                    {
+                        double minColor = getAvg(mins[part][i]);
+                        double avgColor = getAvg(avgs[part][i]);
+                        double maxColor = getAvg(maxs[part][i]);
+                        List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
+                        Log.WriteLine(Log.ELevel.Info, logs[part][i], colors);
+                    }
+                    Log.WriteLine(Log.ELevel.Info, separator);
+                }
             }
 
             double p1Total = avgs[Part.One].Sum();
             double p2Total = avgs[Part.Two].Sum();
             double totals = p1Total + p2Total;
-            // TODO: smart time metric
+            // TODO: smart time metric (show largest time form, m, s, ms, etc)
             Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"mm\.ss\.ffffff")} (m)");
             Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"mm\.ss\.ffffff")} (m)");
             Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"mm\.ss\.ffffff")} (m)");
