@@ -557,17 +557,11 @@ namespace AoC
                     {
                         Log.WriteLine(Log.ELevel.Info, separator);
                     }
-                    List<Color> colors = new List<Color>();
-                    for (Part part = Part.One; part <= Part.Two; ++part)
-                    {
-                        double avgColor = getAvg(avgs[part][i]);
-                        colors.Add(getColor(avgColor));
-                    }
                     Log.Write(Log.ELevel.Info, "## ");
-                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], colors);
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], new List<Color>() { getColor(getAvg(avgs[Part.One][i])) });
                     Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.One][i].Length));
                     Log.WriteAppend(Log.ELevel.Info, " ## ");
-                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], colors);
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], new List<Color>() { getColor(getAvg(avgs[Part.Two][i])) });
                     Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.Two][i].Length));
                     Log.WriteAppend(Log.ELevel.Info, " ##");
                     Log.WriteAppendEnd(Log.ELevel.Info);
