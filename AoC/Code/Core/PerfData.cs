@@ -83,7 +83,7 @@ namespace AoC.Core
                 }
                 PartData[pair.Key].AddData(day.GetSolutionVersion(pair.Key), pair.Value);
             }
-            PartData = PartData.OrderByDescending(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
+            PartData = PartData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(Part part, string version)
