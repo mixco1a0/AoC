@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -262,6 +262,7 @@ namespace AoC
 
             DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
             DateTime cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
+            bool cycleCores = false;
 
             // run two warm up days first
             long i = -2;
@@ -295,7 +296,14 @@ namespace AoC
                 }
                 else if (i >= 0)
                 {
-                    Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}][]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                    if (cycleCores)
+                    {
+                        Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                    }
+                    else
+                    {
+                        Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timeout in {1}]", (double)i / (double)(maxI) * 100.0f, (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                    }
                 }
 
                 if (DateTime.Now > timeout)
@@ -303,7 +311,7 @@ namespace AoC
                     break;
                 }
 
-                if (DateTime.Now > cycleCore)
+                if (cycleCores && DateTime.Now > cycleCore)
                 {
                     CycleHighPriorityCore();
                     cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
