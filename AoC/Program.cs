@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -480,7 +480,7 @@ namespace AoC
                             string logLine = $"[{day.Year}|{day.DayName}|part{(int)part}|{solutionVersion}]";
                             if (stats == null)
                             {
-                                logLine = $"{logLine} No stats found";
+                                logLine = string.Format("{0} {1}No stats found{1}", logLine, Log.ColorMarker);
                                 mins[part].Add(double.NaN);
                                 avgs[part].Add(double.NaN);
                                 maxs[part].Add(double.NaN);
@@ -521,15 +521,15 @@ namespace AoC
 
             Func<double, double> getAvg = (double val) =>
             {
-                if (val == double.NaN)
+                if (val.Equals(double.NaN))
                 {
-                    return max;
+                    return double.NaN;
                 }
                 return (val - min) / (max - min);
             };
             Func<double, Color> getColor = (double avg) =>
             {
-                if (avg == double.NaN)
+                if (avg.Equals(double.NaN))
                 {
                     return Core.Log.Neutral;
                 }
@@ -584,8 +584,8 @@ namespace AoC
                 }
             }
 
-            double p1Total = avgs[Part.One].Sum();
-            double p2Total = avgs[Part.Two].Sum();
+            double p1Total = avgs[Part.One].Where(a => !a.Equals(double.NaN)).Sum();
+            double p2Total = avgs[Part.Two].Where(a => !a.Equals(double.NaN)).Sum();
             double totals = p1Total + p2Total;
             // TODO: smart time metric (show largest time form, m, s, ms, etc)
             Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"mm\.ss\.ffffff")} (m)");
