@@ -2,21 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2015
 {
-    class Day09 : Day
+    class Day09 : Core.Day
     {
         public Day09() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
@@ -25,21 +23,21 @@ namespace AoC._2015
 
         public override bool SkipTestData => false;
 
-        protected override List<TestDatum> GetTestData()
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "605",
                 RawInput =
 @"London to Dublin = 464
 London to Belfast = 518
 Dublin to Belfast = 141"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "982",
                 RawInput =
 @"London to Dublin = 464
@@ -84,7 +82,7 @@ Dublin to Belfast = 141"
                 dist = curToInfo.Where(i => visitableCities.Contains(i.Destination)).Max(i => i.Distance);
             }
             string nextCity = curToInfo.Where(i => visitableCities.Contains(i.Destination)).Where(i => i.Distance == dist).First().Destination;
-            DebugWriteLine(Log.ELevel.Spam, $"{startCity} >--[{dist}]--> {nextCity}");
+            DebugWriteLine(Core.Log.ELevel.Spam, $"{startCity} >--[{dist}]--> {nextCity}");
             return dist + FindPathRecurse(map, nextCity, visitableCities.Where(c => c != nextCity).ToList(), findMin);
         }
 
