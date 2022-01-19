@@ -219,11 +219,19 @@ namespace AoC.Core
             }
         }
 
-        protected void DebugWrite(string log)
+        protected void DebugWrite(Log.ELevel level, string log)
         {
             if (UseLogs)
             {
-                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] \t{log}");
+                Core.Log.WriteLine(level, $"[{LogID}] \t{log}");
+            }
+        }
+
+        protected void DebugWriteLine(Log.ELevel level, string log)
+        {
+            if (UseLogs)
+            {
+                Core.Log.WriteLine(level, $"[{LogID}] \t{log}");
             }
         }
 
