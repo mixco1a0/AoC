@@ -1,42 +1,43 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2015
 {
-    class Day14 : Day
+    class Day14 : Core.Day
     {
-        private static int sTimes = 2503;
         public Day14() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string> { { nameof(sTimes), "1000" } },
+                TestPart = Core.Part.One,
+                Variables = new Dictionary<string, string> { { "times", "1000" } },
                 Output = "1120",
                 RawInput =
 @"Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.
 Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
-                Variables = new Dictionary<string, string> { { nameof(sTimes), "1000" } },
+                TestPart = Core.Part.Two,
+                Variables = new Dictionary<string, string> { { "times", "1000" } },
                 Output = "689",
                 RawInput =
 @"Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.
@@ -111,11 +112,8 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int times = sTimes;
-            if (variables != null && variables.ContainsKey(nameof(sTimes)))
-            {
-                times = int.Parse(variables[nameof(sTimes)]);
-            }
+            int times;
+            GetVariable(nameof(times), 2503, variables, out times);
 
             List<Reindeer> allReindeer = inputs.Select(Reindeer.Parse).ToList();
             for (int i = 0; i < times; ++i)
@@ -130,11 +128,8 @@ Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int times = sTimes;
-            if (variables != null && variables.ContainsKey(nameof(sTimes)))
-            {
-                times = int.Parse(variables[nameof(sTimes)]);
-            }
+            int times;
+            GetVariable(nameof(times), 2503, variables, out times);
 
             List<Reindeer> allReindeer = inputs.Select(Reindeer.Parse).ToList();
             for (int i = 0; i < times; ++i)
