@@ -23,6 +23,8 @@ namespace AoC._2015
             }
         }
 
+        public override bool SkipTestData => false;
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
@@ -82,7 +84,7 @@ Dublin to Belfast = 141"
                 dist = curToInfo.Where(i => visitableCities.Contains(i.Destination)).Max(i => i.Distance);
             }
             string nextCity = curToInfo.Where(i => visitableCities.Contains(i.Destination)).Where(i => i.Distance == dist).First().Destination;
-            // DebugWriteLine($"{startCity} >--[{dist}]--> {nextCity}");
+            DebugWriteLine(Log.ELevel.Spam, $"{startCity} >--[{dist}]--> {nextCity}");
             return dist + FindPathRecurse(map, nextCity, visitableCities.Where(c => c != nextCity).ToList(), findMin);
         }
 
