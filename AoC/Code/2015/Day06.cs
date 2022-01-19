@@ -2,54 +2,54 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2015
 {
-    class Day06 : Day
+    class Day06 : Core.Day
     {
         public Day06() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v2";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "4",
                 RawInput =
 @"turn on 499,499 through 500,500"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "1000000",
                 RawInput =
 @"toggle 0,0 through 999,999"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "1",
                 RawInput =
 @"turn on 0,0 through 0,0"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "2000000",
                 RawInput =
 @"toggle 0,0 through 999,999"
