@@ -7,30 +7,43 @@ namespace AoC.Util
 {
     public static class Grid
     {
-        static public void PrintGrid(List<string> grid, Action<string> PrintFunc)
+        static public void PrintGrid(Core.Log.ELevel level, List<string> grid)
         {
             StringBuilder sb = new StringBuilder();
-            PrintFunc($"Printing grid {grid.First().Length}x{grid.Count}:");
+            Core.Log.WriteLine(level, $"Printing grid {grid.First().Length}x{grid.Count}:");
             int idx = 0;
             foreach (string row in grid)
             {
                 sb.Clear();
                 sb.Append($"{idx++,4}| ");
                 sb.Append(row);
-                PrintFunc(sb.ToString());
+                Core.Log.WriteLine(level, sb.ToString());
             }
         }
 
-        static public void PrintGrid(char[][] grid, Action<string> PrintFunc)
+        static public void PrintGrid(Core.Log.ELevel level, List<List<char>> grid)
         {
             StringBuilder sb = new StringBuilder();
-            PrintFunc($"Printing grid {grid[0].Length}x{grid.Length}:");
+            Core.Log.WriteLine(level, $"Printing grid {grid[0].Count}x{grid.Count}:");
+            for (int i = 0; i < grid.Count; ++i)
+            {
+                sb.Clear();
+                sb.Append($"{i,4}| ");
+                sb.Append(string.Join(string.Empty, grid[i]));
+                Core.Log.WriteLine(level, sb.ToString());
+            }
+        }
+
+        static public void PrintGrid(Core.Log.ELevel level, char[][] grid)
+        {
+            StringBuilder sb = new StringBuilder();
+            Core.Log.WriteLine(level, $"Printing grid {grid[0].Length}x{grid.Length}:");
             for (int i = 0; i < grid.Length; ++i)
             {
                 sb.Clear();
                 sb.Append($"{i,4}| ");
                 sb.Append(string.Join(string.Empty, grid[i]));
-                PrintFunc(sb.ToString());
+                Core.Log.WriteLine(level, sb.ToString());
             }
         }
 

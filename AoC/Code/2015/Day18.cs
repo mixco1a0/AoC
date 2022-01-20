@@ -1,33 +1,36 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2015
 {
-    class Day18 : Day
+    class Day18 : Core.Day
     {
         public Day18() { }
-        static private int sSteps = 100;
-        public override string GetSolutionVersion(Part part)
+
+        private int _Steps { get; }
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string> { { nameof(sSteps), "4" } },
+                TestPart = Core.Part.One,
+                Variables = new Dictionary<string, string> { { nameof(_Steps), "4" } },
                 Output = "4",
                 RawInput =
 @".#.#.#
@@ -37,10 +40,10 @@ namespace AoC._2015
 #.#..#
 ####.."
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
-                Variables = new Dictionary<string, string> { { nameof(sSteps), "5" } },
+                TestPart = Core.Part.Two,
+                Variables = new Dictionary<string, string> { { nameof(_Steps), "5" } },
                 Output = "17",
                 RawInput =
 @"##.#.#
@@ -70,11 +73,7 @@ namespace AoC._2015
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int steps = sSteps;
-            if (variables != null && variables.ContainsKey(nameof(sSteps)))
-            {
-                steps = int.Parse(variables[nameof(sSteps)]);
-            }
+            GetVariable(nameof(_Steps), 100, variables, out int steps);
 
             List<List<char>> lights = inputs.Select(a => a.ToCharArray().ToList()).ToList();
             for (int i = 0; i < steps; ++i)
@@ -114,11 +113,7 @@ namespace AoC._2015
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int steps = sSteps;
-            if (variables != null && variables.ContainsKey(nameof(sSteps)))
-            {
-                steps = int.Parse(variables[nameof(sSteps)]);
-            }
+            GetVariable(nameof(_Steps), 100, variables, out int steps);
 
             List<List<char>> lights = inputs.Select(a => a.ToCharArray().ToList()).ToList();
             lights[0][0] = '#';
@@ -126,12 +121,12 @@ namespace AoC._2015
             lights[lights.Count - 1][0] = '#';
             lights[lights.Count - 1][lights[0].Count - 1] = '#';
 
-            // Util.PrintGrid(lights, DebugWriteLine);
+            Util.Grid.PrintGrid(Core.Log.ELevel.Spam, lights);
             for (int i = 0; i < steps; ++i)
             {
                 Util.Grid.ProcessGrid(ref lights, GetLocationStateCornersOn);
-                // DebugWriteLine($"After {i + 1} step");
-                // Util.PrintGrid(lights, DebugWriteLine);
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"After {i + 1} step");
+                Util.Grid.PrintGrid(Core.Log.ELevel.Spam, lights);
             }
             return string.Join("", lights.Select(c => string.Join("", c))).Replace(".", "").Count().ToString();
         }
