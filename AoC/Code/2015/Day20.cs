@@ -1,35 +1,46 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2015
 {
-    class Day20 : Day
+    class Day20 : Core.Day
     {
         public Day20() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "",
+                RawInput =
+@""
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
+            });
             return testData;
         }
-
-
-        // |10:29:18.636|  [2015|day20|problem|part1|v0] 	720720 -> 32497920
-        // |10:31:54.727|  [2015|day20|problem|part1|v0] 	776160 -> 33611760
-
 
         private long GetStart(long lhn)
         {
@@ -67,7 +78,7 @@ namespace AoC._2015
                 long now = Sum(house);
                 if (now > max)
                 {
-                    DebugWriteLine($"{house} -> {now}");
+                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{house} -> {now}");
                     max = now;
                 }
                 sum = now;
@@ -102,7 +113,7 @@ namespace AoC._2015
                 long now = Sum2(house);
                 if (now > max)
                 {
-                    DebugWriteLine($"{house} -> {now}");
+                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{house} -> {now}");
                     max = now;
                 }
                 sum = now;
