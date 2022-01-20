@@ -705,7 +705,7 @@ Tile 3079:
                 monsterCount = GetMonsterCount(actualImage, out modifiedImage);
 
                 // print out all found monsters
-                Util.Grid.PrintGrid(modifiedImage, DebugWriteLine);
+                // Util.Grid.PrintGrid(modifiedImage, DebugWriteLine);
             }
 
             // todo: actually count the # characters from modifiedImage
