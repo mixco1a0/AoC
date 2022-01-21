@@ -70,6 +70,10 @@ namespace AoC.Core
                     {
                         this[curSupportedArg] = arg;
                     }
+                    else
+                    {
+                        InvalidArgs.Add(arg);
+                    }
                     curSupportedArg = ESupportedArgument.Invalid;
                 }
             }
