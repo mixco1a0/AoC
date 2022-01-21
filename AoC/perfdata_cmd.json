@@ -2,6 +2,54 @@
   "YearData": {
     "2015": {
       "DayData": {
+        "day25": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v1": {
+                  "Min": 65.0361,
+                  "Max": 68.0466,
+                  "Avg": 65.56690600000003,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v1": {
+                  "Min": 64.5707,
+                  "Max": 79.4039,
+                  "Avg": 64.951087,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
+        "day24": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v1": {
+                  "Min": 0.005,
+                  "Max": 0.0134,
+                  "Avg": 0.008115,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v1": {
+                  "Min": 177.789,
+                  "Max": 275.8649,
+                  "Avg": 201.72730700000002,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
         "day23": {
           "PartData": {
             "One": {
