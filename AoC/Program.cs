@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -73,7 +73,7 @@ namespace AoC
                 }
 
                 // run the day specified or the latest day
-                if (Args.Has(CommandLine.ESupportedArgument.Day))
+                if (Args.HasValue(CommandLine.ESupportedArgument.Day))
                 {
                     Day day = RunDay(baseNamespace, Args[CommandLine.ESupportedArgument.Day]);
                     if (day == null)
@@ -488,7 +488,7 @@ namespace AoC
                             string logLine = $"[{day.Year}|{day.DayName}|part{(int)part}|{solutionVersion}]";
                             if (stats == null)
                             {
-                                logLine = string.Format("{0} {1}No stats found{1}", logLine, Log.ColorMarker);
+                                logLine = string.Format("{0} {1}<No stats found>{1}", logLine, Log.ColorMarker);
                                 mins[part].Add(double.NaN);
                                 avgs[part].Add(double.NaN);
                                 maxs[part].Add(double.NaN);
