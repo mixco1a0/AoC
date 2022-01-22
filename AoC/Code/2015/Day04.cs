@@ -14,9 +14,9 @@ namespace AoC._2015
             switch (part)
             {
                 case Core.Part.One:
-                    return "v2";
+                    return "v3";
                 case Core.Part.Two:
-                    return "v2";
+                    return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -51,9 +51,21 @@ namespace AoC._2015
             return testData;
         }
 
+        private bool HasLeadingZeroes(byte[] hashBytes, int leadingZeroes)
+        {
+            for (int z = 0; z < leadingZeroes; ++z)
+            {
+                byte mask = (z % 2 == 0) ? (byte)0xf0 : (byte)0x0f;
+                if ((hashBytes[z / 2] & mask) != 0x00)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int leadingZeroes)
         {
-            string zeroes = new string('0', leadingZeroes);
             string input = inputs[0];
             using (MD5 md5 = MD5.Create())
             {
@@ -63,8 +75,13 @@ namespace AoC._2015
                     sb.Append(i);
                     byte[] inputBytes = Encoding.ASCII.GetBytes(sb.ToString());
                     byte[] hashBytes = md5.ComputeHash(inputBytes);
-                    string md5String = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
-                    if (md5String.StartsWith(zeroes))
+                    // byte[] hashBytes = null;
+                    // Action compute = () =>
+                    // {
+                    //     hashBytes = md5.ComputeHash(inputBytes);
+                    // };
+                    // WasteTime(compute);
+                    if (HasLeadingZeroes(hashBytes, leadingZeroes))
                     {
                         return i.ToString();
                     }
