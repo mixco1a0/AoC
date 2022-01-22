@@ -71,7 +71,7 @@ namespace AoC._2015
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             long lhn = inputs.Select(long.Parse).First();
-            long house = GetStart(lhn); house = 776160;
+            long house = GetStart(lhn);
             long max = 0, sum = 0;
             while (true)
             {
@@ -106,7 +106,7 @@ namespace AoC._2015
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             long lhn = inputs.Select(long.Parse).First();
-            long house  = 776160;
+            long house = 776160;
             long max = 0, sum = 0;
             while (true)
             {
