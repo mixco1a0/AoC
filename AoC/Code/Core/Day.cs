@@ -15,6 +15,10 @@ namespace AoC.Core
     abstract public class Day
     {
         public static bool UseLogs { get; set; }
+        private const char LogCorrect = '#';
+        private const char LogUnknown = '?';
+        private const char LogIncorrect = '!';
+        private readonly string DefaultLogID = new string('.', 27);
 
         private enum RunType
         {
@@ -30,11 +34,12 @@ namespace AoC.Core
         public virtual bool SkipTestData => false;
         #endregion
 
-        private string DefaultLogID { get { return new string('.', 27); } }
 
         public string Year { get; private set; }
         public string DayName { get; private set; }
         public Dictionary<Part, double> TimeResults { get; private set; }
+        public Dictionary<Part, double> TimeWasted { get; private set; }
+        private double TimeWaste { get; set; }
 
         private string LogID { get; set; }
         private Dictionary<string, List<TestDatum>> TestData { get; set; }
@@ -45,6 +50,8 @@ namespace AoC.Core
             try
             {
                 TimeResults = new Dictionary<Part, double>();
+                TimeWasted = new Dictionary<Part, double>();
+                TimeWaste = 0.0f;
 
                 Year = this.GetType().Namespace.ToString()[^4..];
                 DayName = this.GetType().ToString()[^5..].ToLower();
@@ -133,12 +140,14 @@ namespace AoC.Core
             }
 
             TimeResults[part] = TimedRun(RunType.Problem, part, problemInput.ToList(), problemOutput.ElementAt(((int)part) - 1), null);
+            TimeWasted[part] = TimeWaste;
         }
 
         private double TimedRun(RunType runType, Part part, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
         {
             LogFiller();
 
+            TimeWaste = 0.0f;
             Util.Timer timer = new Util.Timer();
             timer.Start();
             RunPart(runType, part, inputs, expectedOuput, variables);
@@ -158,26 +167,26 @@ namespace AoC.Core
                 {
                     if (actualOutput != expectedOuput)
                     {
-                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", '!', Core.Log.Negative);
+                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", LogIncorrect, Core.Log.Negative);
                     }
                     else
                     {
-                        LogAnswer(actualOutput, '?', Core.Log.Positive);
+                        LogAnswer(actualOutput, LogCorrect, Core.Log.Positive);
                     }
                 }
                 else
                 {
                     if (string.IsNullOrWhiteSpace(expectedOuput))
                     {
-                        LogAnswer(actualOutput, '#', Core.Log.Neutral);
+                        LogAnswer(actualOutput, LogUnknown, Core.Log.Neutral);
                     }
                     else if (actualOutput != expectedOuput)
                     {
-                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", '!', Core.Log.Negative);
+                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", LogIncorrect, Core.Log.Negative);
                     }
                     else
                     {
-                        LogAnswer(actualOutput, '#', Core.Log.Positive);
+                        LogAnswer(actualOutput, LogCorrect, Core.Log.Positive);
                     }
                 }
             }
@@ -185,6 +194,15 @@ namespace AoC.Core
             {
                 Core.Log.WriteException(e);
             }
+        }
+
+        protected void WasteTime(Action action)
+        {
+            Util.Timer timer = new Util.Timer();
+            timer.Start();
+            action();
+            timer.Stop();
+            TimeWaste += timer.GetElapsedMs();
         }
 
         private void Log(Core.Log.ELevel logLevel, string log)
