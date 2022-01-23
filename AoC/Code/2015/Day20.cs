@@ -81,16 +81,16 @@ namespace AoC._2015
             return 0;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long start, Func<long, long> sumFunc)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, Func<long, long> sumFunc)
         {
             long lhn = inputs.Select(long.Parse).First();
             return sumFunc(lhn).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 1, Sum);
+            => SharedSolution(inputs, variables, Sum);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 1, Sum2);
+            => SharedSolution(inputs, variables, Sum2);
     }
 }
