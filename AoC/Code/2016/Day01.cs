@@ -2,52 +2,54 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2016
 {
-    class Day01 : Day
+    class Day01 : Core.Day
     {
         public Day01() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "5",
                 RawInput =
 @"R2, L3"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "2",
                 RawInput =
 @"R2, R2, R2"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "12",
                 RawInput =
 @"R5, L5, R5, R3"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "4",
                 RawInput =
 @"R8, R4, R4, R8"
@@ -89,7 +91,7 @@ namespace AoC._2016
                 if (segmentCheck)
                 {
                     Base.Segment cur = new Base.Segment(prev, new Base.Point(coordX, coordY));
-                    //DebugWriteLine($"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
+                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
                     Base.Point intersection = null;
                     // check for intersection
                     foreach (Base.Segment visit in visited.Take(visited.Count - 1))

@@ -1,5 +1,33 @@
 {
   "YearData": {
+    "2016": {
+      "DayData": {
+        "day01": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v1": {
+                  "Min": 0.0126,
+                  "Max": 1.57,
+                  "Avg": 0.030837,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v1": {
+                  "Min": 0.124,
+                  "Max": 1.1337,
+                  "Avg": 0.14681999999999998,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "2015": {
       "DayData": {
         "day25": {
