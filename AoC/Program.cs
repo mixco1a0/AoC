@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -535,6 +535,13 @@ namespace AoC
                 }
                 return (val - min) / (max - min);
             };
+
+            Base.Pair<float, float> loR = new Base.Pair<float, float>(Log.Neutral.R, Log.Negative.R);
+            Base.Pair<float, float> loG = new Base.Pair<float, float>(Log.Neutral.G, Log.Negative.G);
+            Base.Pair<float, float> loB = new Base.Pair<float, float>(Log.Neutral.B, Log.Negative.B);
+            Base.Pair<float, float> hiR = new Base.Pair<float, float>(Log.Positive.R, Log.Neutral.R);
+            Base.Pair<float, float> hiG = new Base.Pair<float, float>(Log.Positive.G, Log.Neutral.G);
+            Base.Pair<float, float> hiB = new Base.Pair<float, float>(Log.Positive.B, Log.Neutral.B);
             Func<double, Color> getColor = (double avg) =>
             {
                 if (avg.Equals(double.NaN))
@@ -542,9 +549,26 @@ namespace AoC
                     return Core.Log.Neutral;
                 }
 
-                int r = Math.Max(Math.Min((int)(avg * 255.0f), 255), 0);
-                int g = Math.Max(Math.Min((int)(255.0f - avg * 255.0f), 255), 0);
-                return Color.FromArgb(r, g, 0);
+                Func<double, Base.Pair<float, float>, int> getRangedColor = (double avg, Base.Pair<float, float> color) =>
+                {
+                    return Math.Max(Math.Min((int)((int)(((color.Last - color.First) * avg) + color.First)), 255), 0);
+                };
+
+                int r = 0, g = 0, b = 0;
+                if (avg >= 0.5f)
+                {
+                    r = getRangedColor(avg, loR);
+                    g = getRangedColor(avg, loG);
+                    b = getRangedColor(avg, loB);
+                }
+                else
+                {
+                    r = getRangedColor(avg, hiR);
+                    g = getRangedColor(avg, hiG);
+                    b = getRangedColor(avg, hiB);
+                }
+
+                return Color.FromArgb(r, g, b);
             };
 
             if (Args.Has(CommandLine.ESupportedArgument.CompactPerf))
