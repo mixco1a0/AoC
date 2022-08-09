@@ -58,7 +58,7 @@ xyx[xyxy]xyx"
             {
                 if (input[i] == input[i + 3] && input[i + 1] == input[i + 2] && input[i] != input[i + 1])
                 {
-                    found.Add(input[i..(i+2)]);
+                    found.Add(input[i..(i + 2)]);
                 }
             }
             return found;
@@ -71,7 +71,7 @@ xyx[xyxy]xyx"
             {
                 if (input[i] == input[i + 2] && input[i] != input[i + 1])
                 {
-                    found.Add(input[i..(i+2)]);
+                    found.Add(input[i..(i + 2)]);
                 }
             }
             return found;

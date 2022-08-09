@@ -22,7 +22,7 @@ namespace AoC._2016
         }
 
         public override bool SkipTestData => true;
-        
+
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
