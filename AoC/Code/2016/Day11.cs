@@ -3,31 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using AoC.Core;
-
 namespace AoC._2016
 {
-    class Day11 : Day
+    class Day11 : Core.Day
     {
         public Day11() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v3";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "11",
                 RawInput =
 @"The first floor contains a hydrogen-compatible microchip and a lithium-compatible microchip.
@@ -35,9 +37,9 @@ The second floor contains a hydrogen generator.
 The third floor contains a lithium generator.
 The fourth floor contains nothing relevant."
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
@@ -252,13 +254,13 @@ The fourth floor contains nothing relevant."
 
         private record BuildingState(Floor[] Floors, Elevator Elevator, int Steps, string ID)
         {
-            public void Print(Action<string> PrintFunc)
+            public void Print(Action<Core.Log.ELevel, string> PrintFunc)
             {
                 StringBuilder sb = new StringBuilder();
                 List<string> ids = new List<string>();
                 Floors.ToList().ForEach(f => ids.AddRange(f.Generators.Union(f.Microchips)));
                 HashSet<string> pairedIds = ids.ToHashSet();
-                PrintFunc($"[{ID}] @ {Steps}");
+                PrintFunc(Core.Log.ELevel.Spam, $"[{ID}] @ {Steps}");
                 foreach (Floor floor in Floors.Reverse())
                 {
                     sb.AppendFormat("F{0} {1}", floor.ID + 1, Elevator.Current == floor.ID ? "E  " : ".  ");
@@ -266,10 +268,10 @@ The fourth floor contains nothing relevant."
                     {
                         sb.AppendFormat("{0}{1}", floor.Generators.Contains(pid) ? $"{pid.First()}G " : ".  ", floor.Microchips.Contains(pid) ? $"{pid.First()}M " : ".  ");
                     }
-                    PrintFunc(sb.ToString());
+                    PrintFunc(Core.Log.ELevel.Spam, sb.ToString());
                     sb.Clear();
                 }
-                PrintFunc("");
+                PrintFunc(Core.Log.ELevel.Spam, "");
             }
         }
 
@@ -399,7 +401,9 @@ The fourth floor contains nothing relevant."
 
 /*
 
-TODO: still need some optimization in generating next steps, too slowusing System;
+TODO: still need some optimization in generating next steps, too slow.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
