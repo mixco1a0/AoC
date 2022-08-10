@@ -4,39 +4,41 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-using AoC.Core;
-
 namespace AoC._2016
 {
-    class Day14 : Day
+    class Day14 : Core.Day
     {
         public Day14() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v0"; // v1 is very slow
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "22728",
                 RawInput =
 @"abc"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
-                Output = "22628", //TODO: This is what it should actually be :-/ Output = "22859",
+                TestPart = Core.Part.Two,
+                Output = "22551",
                 RawInput =
 @"abc"
             });
@@ -115,7 +117,7 @@ namespace AoC._2016
             {
                 foreach (var key in verifiedKeys)
                 {
-                    DebugWriteLine($"{key}");
+                    DebugWriteLine(Core.Log.ELevel.Spam, $"{key}");
                 }
             }
             return verifiedKeys[MaxKeys - 1].Start.ToString();
