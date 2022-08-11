@@ -76,6 +76,6 @@ namespace AoC._2015
             => SharedSolution(inputs, variables);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        { SharedSolution(inputs, variables); return "50"; }
+        { RunPart1Solution(inputs, variables); return "50"; }
     }
 }
