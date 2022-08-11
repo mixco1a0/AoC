@@ -249,6 +249,6 @@ namespace AoC._2016
             => SharedSolution(inputs, variables, new Dictionary<char, int>() { { 'a', 7 } });
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => "50";
+        { RunPart1Solution(inputs, variables); return "50"; }
     }
 }
