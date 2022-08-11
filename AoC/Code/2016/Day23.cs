@@ -2,33 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2016
 {
-    class Day23 : Day
+    class Day23 : Core.Day
     {
         public Day23() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
-                    return "v1";
+                case Core.Part.Two:
+                    return "v0"; // v1 is very slow
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "3",
                 RawInput =
 @"cpy 2 a
@@ -39,9 +39,9 @@ cpy 1 a
 jnz 1 a
 dec a"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
