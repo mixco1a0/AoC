@@ -2,6 +2,30 @@
   "YearData": {
     "2020": {
       "DayData": {
+        "day09": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v1": {
+                  "Min": 0.3837,
+                  "Max": 1.3343,
+                  "Avg": 0.4373970000000002,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v1": {
+                  "Min": 1.0001,
+                  "Max": 1.9211,
+                  "Avg": 1.0968560000000003,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
         "day08": {
           "PartData": {
             "One": {
