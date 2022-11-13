@@ -1,31 +1,33 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2020
 {
-    class Day08 : Day
+    class Day08 : Core.Day
     {
         public Day08() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "5",
                 RawInput =
 @"nop +0
@@ -38,9 +40,9 @@ acc +1
 jmp -4
 acc +6"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "8",
                 RawInput =
 @"nop +0
