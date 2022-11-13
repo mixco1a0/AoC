@@ -3,31 +3,33 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-using AoC.Core;
-
 namespace AoC._2020
 {
-    class Day04 : Day
+    class Day04 : Core.Day
     {
         public Day04() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "2",
                 RawInput =
 @"ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
@@ -44,9 +46,9 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "0",
                 RawInput =
 @"eyr:1972 cid:100
@@ -63,9 +65,9 @@ hgt:59cm ecl:zzz
 eyr:2038 hcl:74454a iyr:2023
 pid:3556412378 byr:2007"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "4",
                 RawInput =
 @"pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
