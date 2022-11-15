@@ -3,31 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using AoC.Core;
-
 namespace AoC._2020
 {
-    class Day20 : Day
+    class Day20 : Core.Day
     {
         public Day20() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "20899048083289",
                 RawInput =
 @"Tile 2311:
@@ -139,9 +141,9 @@ Tile 3079:
 ..#.###...
 "
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "273",
                 RawInput =
 @"Tile 2311:
@@ -657,7 +659,7 @@ Tile 3079:
                         //   1 |
                         //    - 
                     }
-                    DebugWriteLine($"Match Found : Tile #{startingTile.ID} [Actions: {string.Join("", startingTile.Actions)}]");
+                    // DebugWriteLine($"Match Found : Tile #{startingTile.ID} [Actions: {string.Join("", startingTile.Actions)}]");
                     break;
                 }
             }
@@ -750,7 +752,7 @@ Tile 3079:
 
                 if (checkCount > 8)
                 {
-                    DebugWriteLine($"[{checkCount}] No monsters found in grid");
+                    // DebugWriteLine($"[{checkCount}] No monsters found in grid");
                     return false;
                 }
 
