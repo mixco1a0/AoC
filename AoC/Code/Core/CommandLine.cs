@@ -101,7 +101,7 @@ namespace AoC.Core
                 Log.WriteLine(Log.ELevel.Error, "\nInvalid arguments");
                 foreach (string invalidArg in InvalidArgs)
                 {
-                    Log.WriteLine(Log.ELevel.Info, $"{Tab}-{invalidArg}");
+                    Log.WriteLine(Log.ELevel.Error, $"{Tab}-{invalidArg}");
                 }
             }
 
