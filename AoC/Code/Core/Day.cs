@@ -27,11 +27,12 @@ namespace AoC.Core
         }
 
         #region Required Overrides
-        protected abstract List<TestDatum> GetTestData();
-        protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
-        protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
         public virtual string GetSolutionVersion(Part part) => "v0";
         public virtual bool SkipTestData => false;
+        protected abstract List<TestDatum> GetTestData();
+        public virtual void RunWarmup() {}
+        protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
+        protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
         #endregion
 
 
