@@ -20,7 +20,7 @@ namespace AoC._2020
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
