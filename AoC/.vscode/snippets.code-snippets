@@ -1,7 +1,7 @@
 {
 	"AoC.Day Template": {
 		"prefix": "aocdaytemplate",
-		"description": "Create a new day that implements AoC.Day",
+		"description": "Create a new day that implements AoC.Core.Day",
 		"body": [
 			"using System;",
 			"using System.Collections.Generic;",
