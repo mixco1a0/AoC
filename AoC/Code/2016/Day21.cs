@@ -1,33 +1,35 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2016
 {
-    class Day21 : Day
+    class Day21 : Core.Day
     {
         public Day21() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Variables = new Dictionary<string, string>() { { "unscrambledPassword", "abcde" } },
                 Output = "decab",
                 RawInput =
@@ -40,9 +42,9 @@ move position 3 to position 0
 rotate based on position of letter b
 rotate based on position of letter d"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Variables = new Dictionary<string, string>() { { "unscrambledPassword", "decab" } },
                 Output = "abcde",
                 RawInput =
@@ -154,7 +156,7 @@ rotate based on position of letter d"
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string defaultPassword, bool reverse)
         {
             string unscrambledPassword;
-            Util.GetVariable(nameof(unscrambledPassword), defaultPassword, variables, out unscrambledPassword);
+            GetVariable(nameof(unscrambledPassword), defaultPassword, variables, out unscrambledPassword);
             StringBuilder sb = new StringBuilder(unscrambledPassword);
 
             IEnumerable<Instruction> instructions = inputs.Select(Instruction.Parse);

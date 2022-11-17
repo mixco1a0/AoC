@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AoC.Core;
+
 namespace AoC._2021
 {
     class Day20 : Day
@@ -56,15 +58,15 @@ namespace AoC._2021
 
         static readonly char LightPixel = '#';
         static readonly char DarkPixel = '.';
-        static readonly Core.Point[] PixelCheck = new Core.Point[] { new Core.Point(-1, -1), new Core.Point(0, -1), new Core.Point(1, -1),
-                                                                     new Core.Point(-1, 0), new Core.Point(0, 0), new Core.Point(1, 0),
-                                                                     new Core.Point(-1, 1), new Core.Point(0, 1), new Core.Point(1, 1) };
+        static readonly Base.Point[] PixelCheck = new Base.Point[] { new Base.Point(-1, -1), new Base.Point(0, -1), new Base.Point(1, -1),
+                                                                     new Base.Point(-1, 0), new Base.Point(0, 0), new Base.Point(1, 0),
+                                                                     new Base.Point(-1, 1), new Base.Point(0, 1), new Base.Point(1, 1) };
 
         private char EnhancePixel(List<string> pixels, string algorithm, int x, int y, char defaultPixel)
         {
             StringBuilder sb = new StringBuilder();
-            Core.Point curPixel = new Core.Point(x, y);
-            foreach (Core.Point gridPixel in PixelCheck.Select(p => curPixel + p))
+            Base.Point curPixel = new Base.Point(x, y);
+            foreach (Base.Point gridPixel in PixelCheck.Select(p => curPixel + p))
             {
                 if (gridPixel.Y < 0 || gridPixel.Y >= pixels.Count || gridPixel.X < 0 || gridPixel.X >= pixels[y].Length)
                 {

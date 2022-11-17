@@ -3,77 +3,82 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day01 : Day
+    class Day01 : Core.Day
     {
         public Day01() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "0",
                 RawInput =
 @"(())"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "3",
                 RawInput =
 @"((("
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "3",
                 RawInput =
 @"))((((("
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "-1",
                 RawInput =
 @"())"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "-3",
                 RawInput =
 @")())())"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "1",
                 RawInput =
 @")"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "5",
                 RawInput =
 @"()())"
             });
             return testData;
         }
+
+        private static char Open => '(';
+        private static char Close => ')';
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool stopAtBasement)
         {
@@ -83,11 +88,11 @@ namespace AoC._2015
                 int curFloor = 0;
                 for (int i = 0; i < oneLine.Length; ++i)
                 {
-                    if (oneLine[i] == '(')
+                    if (oneLine[i] == Open)
                     {
                         ++curFloor;
                     }
-                    else if (oneLine[i] == ')')
+                    else if (oneLine[i] == Close)
                     {
                         --curFloor;
                     }
@@ -102,7 +107,7 @@ namespace AoC._2015
             }
             else
             {
-                return (oneLine.Where(c => c == '(').Count() - oneLine.Where(c => c == ')').Count()).ToString();
+                return (oneLine.Where(c => c == Open).Count() - oneLine.Where(c => c == Close).Count()).ToString();
             }
         }
 

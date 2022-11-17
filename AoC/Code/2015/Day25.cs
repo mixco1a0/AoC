@@ -4,34 +4,38 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day25 : Day
+    class Day25 : Core.Day
     {
         public Day25() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "1601130",
                 RawInput =
 @"3 3"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
@@ -39,7 +43,7 @@ namespace AoC._2015
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<int> coords = inputs.First().Split(" ,.".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Where(c => { int res; return int.TryParse(c, out res); }).Select(int.Parse).ToList();
             long code = 20151125;
@@ -57,7 +61,7 @@ namespace AoC._2015
                 }
                 else
                 {
-                    c++;
+                    ++c;
                 }
 
                 if (targetR == r && targetC == c)
@@ -68,9 +72,10 @@ namespace AoC._2015
             return code.ToString();
         }
 
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables);
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            return "";
-        }
+        { RunPart1Solution(inputs, variables); return "50"; }
     }
 }

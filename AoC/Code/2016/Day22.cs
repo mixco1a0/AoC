@@ -1,40 +1,42 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2016
 {
-    class Day22 : Day
+    class Day22 : Core.Day
     {
         public Day22() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "",
                 RawInput =
 @""
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "7",
                 RawInput =
 @"root@ebhq-gridcenter# df -h
@@ -54,7 +56,7 @@ Filesystem            Size  Used  Avail  Use%
 
         public class Node
         {
-            public Coords Coords { get; set; }
+            public Base.Point Coords { get; set; }
             public uint Size { get; set; }
             public uint Used { get; set; }
             public uint Avail { get; set; }
@@ -62,7 +64,7 @@ Filesystem            Size  Used  Avail  Use%
 
             public Node()
             {
-                Coords = new Coords();
+                Coords = new Base.Point();
                 Size = 0;
                 Used = 0;
                 Avail = 0;
@@ -116,7 +118,7 @@ Filesystem            Size  Used  Avail  Use%
                 node.Name = split[0].Substring(split[0].LastIndexOf('/') + 1);
 
                 string[] coordSplit = split[0].Split("-xy".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).TakeLast(2).ToArray();
-                node.Coords = new Coords(int.Parse(coordSplit[0]), int.Parse(coordSplit[1]));
+                node.Coords = new Base.Point(int.Parse(coordSplit[0]), int.Parse(coordSplit[1]));
                 node.Size = uint.Parse(split[1]);
                 node.Used = uint.Parse(split[2]);
                 node.Avail = uint.Parse(split[3]);
@@ -177,10 +179,10 @@ Filesystem            Size  Used  Avail  Use%
                     continue;
                 }
 
-                Coords[] nextCoords = new Coords[] { new Coords(0, -1), new Coords(-1, 0), new Coords(0, 1), new Coords(1, 0) };
-                foreach (Coords next in nextCoords)
+                Base.Point[] nextCoords = new Base.Point[] { new Base.Point(0, -1), new Base.Point(-1, 0), new Base.Point(0, 1), new Base.Point(1, 0) };
+                foreach (Base.Point next in nextCoords)
                 {
-                    Coords nextNodeCoords = nsh.Node.Coords + next;
+                    Base.Point nextNodeCoords = nsh.Node.Coords + next;
                     if (nextNodeCoords.X >= 0 && nextNodeCoords.X <= maxX && nextNodeCoords.Y >= 0 && nextNodeCoords.Y <= maxY)
                     {
                         Node nextNode = nodeGrid[nextNodeCoords.Y][nextNodeCoords.X];
@@ -220,10 +222,10 @@ Filesystem            Size  Used  Avail  Use%
                     return ns.Steps;
                 }
 
-                Coords[] nextCoords = new Coords[] { new Coords(0, -1), new Coords(-1, 0), new Coords(0, 1), new Coords(1, 0) };
-                foreach (Coords next in nextCoords)
+                Base.Point[] nextCoords = new Base.Point[] { new Base.Point(0, -1), new Base.Point(-1, 0), new Base.Point(0, 1), new Base.Point(1, 0) };
+                foreach (Base.Point next in nextCoords)
                 {
-                    Coords nextNodeCoords = ns.Node.Coords + next;
+                    Base.Point nextNodeCoords = ns.Node.Coords + next;
                     if (nextNodeCoords.X >= 0 && nextNodeCoords.X <= maxX && nextNodeCoords.Y >= 0 && nextNodeCoords.Y <= maxY)
                     {
                         Node nextNode = nodeGrid[nextNodeCoords.Y][nextNodeCoords.X];
@@ -241,7 +243,7 @@ Filesystem            Size  Used  Avail  Use%
             return (uint)int.MaxValue;
         }
 
-        private void PrintGrid(Node[][] nodeGrid, Coords start, Coords goal, Coords empty)
+        private void PrintGrid(Node[][] nodeGrid, Base.Point start, Base.Point goal, Base.Point empty)
         {
             float size = 0;
             uint nodeCount = 0;
@@ -255,7 +257,7 @@ Filesystem            Size  Used  Avail  Use%
             }
             size = (size * 2.0f) / (float)nodeCount;
 
-            DebugWriteLine("Grid Printout");
+            DebugWriteLine(Core.Log.ELevel.Spam, "Grid Printout");
             uint colIdx = 1;
             foreach (Node[] cols in nodeGrid)
             {
@@ -289,7 +291,7 @@ Filesystem            Size  Used  Avail  Use%
                     }
                     sb.Append(node);
                 }
-                DebugWriteLine(sb.ToString());
+                DebugWriteLine(Core.Log.ELevel.Spam, sb.ToString());
             }
         }
 
@@ -307,7 +309,7 @@ Filesystem            Size  Used  Avail  Use%
             {
                 nodeGrid[node.Coords.Y][node.Coords.X] = node;
             }
-            
+
             Queue<Node> optimizedPath;
             GetFullPathToTarget(nodeGrid, maxX, maxY, nodeGrid[0][maxX], nodeGrid[0][0], out optimizedPath);
 
@@ -327,7 +329,7 @@ Filesystem            Size  Used  Avail  Use%
                 goalNode = targetNode;
                 ++optimizedSteps;
 
-                //PrintGrid(nodeGrid, nodeGrid[0][0].Coords, goalNode.Coords, emptyNode.Coords);
+                //PrintGrid(nodeGrid, nodeGrid[0][0].Base.Point, goalNode.Base.Point, emptyNode.Base.Point);
             }
             return optimizedSteps.ToString();
         }

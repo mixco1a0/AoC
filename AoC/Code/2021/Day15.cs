@@ -1,7 +1,9 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+
+using AoC.Core;
 
 namespace AoC._2021
 {
@@ -69,12 +71,12 @@ namespace AoC._2021
             return testData;
         }
 
-        static readonly Core.Point[] GridMoves = new Core.Point[] { new Core.Point(0, 1), new Core.Point(1, 0), new Core.Point(-1, 0), new Core.Point(0, -1) };
+        static readonly Base.Point[] GridMoves = new Base.Point[] { new Base.Point(0, 1), new Base.Point(1, 0), new Base.Point(-1, 0), new Base.Point(0, -1) };
 
         private class Node
         {
             public long Weight { get; set; }
-            public Core.Point Prev { get; set; }
+            public Base.Point Prev { get; set; }
             public bool Done { get; set; }
             public long Path { get; set; }
 
@@ -92,7 +94,7 @@ namespace AoC._2021
             }
         }
 
-        private void Populate(ref Node[,] nodes, Core.Point start, Core.Point end)
+        private void Populate(ref Node[,] nodes, Base.Point start, Base.Point end)
         {
 
         }
@@ -138,7 +140,7 @@ namespace AoC._2021
             // reset first state
             nodes[0, 0].Path = 0;
             nodes[0, 0].Weight = 0;
-            nodes[0, 0].Prev = new Core.Point(0, 0);
+            nodes[0, 0].Prev = new Base.Point(0, 0);
             return nodes;
         }
 
@@ -159,13 +161,13 @@ namespace AoC._2021
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool enlargen)
         {
             Node[,] nodes = GetNodes(inputs, enlargen, out int maxX, out int maxY);
-            Core.Point end = new Core.Point(maxX - 1, maxY - 1);
+            Base.Point end = new Base.Point(maxX - 1, maxY - 1);
 
-            PriorityQueue<Core.Point, long> gridWalker = new PriorityQueue<Core.Point, long>();
-            gridWalker.Enqueue(new Core.Point(0, 0), 0);
+            PriorityQueue<Base.Point, long> gridWalker = new PriorityQueue<Base.Point, long>();
+            gridWalker.Enqueue(new Base.Point(0, 0), 0);
             while (gridWalker.Count > 0)
             {
-                Core.Point curPos = gridWalker.Dequeue();
+                Base.Point curPos = gridWalker.Dequeue();
 
                 Node curNode = nodes[curPos.X, curPos.Y];
                 if (curNode.Done)
@@ -182,9 +184,9 @@ namespace AoC._2021
                     break;
                 }
 
-                foreach (Core.Point gridMove in GridMoves)
+                foreach (Base.Point gridMove in GridMoves)
                 {
-                    Core.Point nextMove = curPos + gridMove;
+                    Base.Point nextMove = curPos + gridMove;
                     if (nextMove.X >= 0 && nextMove.X < maxX && nextMove.Y >= 0 && nextMove.Y < maxY)
                     {
                         Node nextNode = nodes[nextMove.X, nextMove.Y];

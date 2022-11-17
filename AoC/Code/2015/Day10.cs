@@ -4,33 +4,42 @@ using System.Text;
 
 namespace AoC._2015
 {
-    class Day10 : Day
+    class Day10 : Core.Day
     {
         public Day10() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v2";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Variables = new Dictionary<string, string> { { "times", "5" } },
                 Output = "6",
                 RawInput =
 @"1"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
             });
             return testData;
         }
@@ -63,13 +72,13 @@ namespace AoC._2015
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int defaultTimes)
         {
             int times;
-            Util.GetVariable(nameof(times), defaultTimes, variables, out times);
+            GetVariable(nameof(times), defaultTimes, variables, out times);
 
             string input = inputs.First();
             for (int i = 0; i < times; ++i)
             {
                 input = Process(input);
-                //DebugWriteLine($"{i} complete [{input.Length}]");
+                DebugWriteLine(Core.Log.ELevel.Spam, $"{i} complete [{input.Length}]");
             }
             return input.Length.ToString();
         }

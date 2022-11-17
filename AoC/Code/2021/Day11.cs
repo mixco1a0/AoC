@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AoC.Core;
+
 namespace AoC._2021
 {
     class Day11 : Day
@@ -76,16 +78,16 @@ namespace AoC._2021
             return testData;
         }
 
-        private List<Core.Point> Surrounding = new List<Core.Point>
+        private List<Base.Point> Surrounding = new List<Base.Point>
         {
-            new Core.Point(-1, -1),
-            new Core.Point(0, -1),
-            new Core.Point(1, -1),
-            new Core.Point(-1, 0),
-            new Core.Point(1, 0),
-            new Core.Point(-1, 1),
-            new Core.Point(0, 1),
-            new Core.Point(1, 1),
+            new Base.Point(-1, -1),
+            new Base.Point(0, -1),
+            new Base.Point(1, -1),
+            new Base.Point(-1, 0),
+            new Base.Point(1, 0),
+            new Base.Point(-1, 1),
+            new Base.Point(0, 1),
+            new Base.Point(1, 1),
         };
 
         private void PrintGrid(int[,] grid, int maxX, int maxY)
@@ -105,8 +107,8 @@ namespace AoC._2021
 
         private int Step(ref int[,] grid, int maxX, int maxY)
         {
-            HashSet<Core.Point> history = new HashSet<Core.Point>();
-            Queue<Core.Point> flash = new Queue<Core.Point>();
+            HashSet<Base.Point> history = new HashSet<Base.Point>();
+            Queue<Base.Point> flash = new Queue<Base.Point>();
             for (int x = 0; x < maxX; ++x)
             {
                 for (int y = 0; y < maxY; ++y)
@@ -114,14 +116,14 @@ namespace AoC._2021
                     ++grid[x, y];
                     if (grid[x, y] > 9)
                     {
-                        flash.Enqueue(new Core.Point(x, y));
+                        flash.Enqueue(new Base.Point(x, y));
                     }
                 }
             }
 
             while (flash.Count > 0)
             {
-                Core.Point cur = flash.Dequeue();
+                Base.Point cur = flash.Dequeue();
                 if (cur.X < 0 || cur.X >= maxX || cur.Y < 0 || cur.Y >= maxY)
                 {
                     continue;
@@ -133,7 +135,7 @@ namespace AoC._2021
                 if (++grid[cur.X, cur.Y] > 9)
                 {
                     history.Add(cur);
-                    foreach (Core.Point next in Surrounding)
+                    foreach (Base.Point next in Surrounding)
                     {
                         flash.Enqueue(cur + next);
                     }
@@ -142,7 +144,7 @@ namespace AoC._2021
             }
 
             int flashCount = 0;
-            foreach (Core.Point cur in history)
+            foreach (Base.Point cur in history)
             {
                 if (grid[cur.X, cur.Y] > 9)
                 {
@@ -156,7 +158,7 @@ namespace AoC._2021
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findSync)
         {
             int steps;
-            Util.GetVariable(nameof(steps), 100, variables, out steps);
+            GetVariable(nameof(steps), 100, variables, out steps);
             if (findSync)
             {
                 steps = int.MaxValue;

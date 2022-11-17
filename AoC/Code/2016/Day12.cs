@@ -4,27 +4,31 @@ using System.Linq;
 
 namespace AoC._2016
 {
-    class Day12 : Day
+    class Day12 : Core.Day
     {
         public Day12() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "42",
                 RawInput =
 @"cpy 41 a
@@ -34,9 +38,9 @@ dec a
 jnz a 2
 dec a"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
@@ -143,10 +147,10 @@ dec a"
                         ++i;
                         break;
                     case InstructionType.JumpValue:
-                        i = (cur.SourceValue != 0 ?  i + cur.Value : i + 1);
+                        i = (cur.SourceValue != 0 ? i + cur.Value : i + 1);
                         break;
                     case InstructionType.JumpRegister:
-                        i = (registers[cur.SourceRegister] != 0 ?  i + cur.Value : i + 1);
+                        i = (registers[cur.SourceRegister] != 0 ? i + cur.Value : i + 1);
                         break;
                 }
             }
@@ -157,6 +161,6 @@ dec a"
             => SharedSolution(inputs, variables, new Dictionary<char, int>());
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, new Dictionary<char, int>() {{'c', 1}});
+            => SharedSolution(inputs, variables, new Dictionary<char, int>() { { 'c', 1 } });
     }
 }

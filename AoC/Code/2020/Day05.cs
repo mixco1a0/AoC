@@ -3,25 +3,29 @@ using System.Collections.Generic;
 
 namespace AoC._2020
 {
-    class Day05 : Day
+    class Day05 : Core.Day
     {
         public Day05() { }
-        public override string GetSolutionVersion(Part part)
+        
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum { TestPart = Part.One, Output = "357", RawInput = "FBFBBFFRLR" });
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum { TestPart = Core.Part.One, Output = "357", RawInput = "FBFBBFFRLR" });
             return testData;
         }
 

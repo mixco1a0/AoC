@@ -4,26 +4,45 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day21 : Day
+    class Day21 : Core.Day
     {
         public Day21() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "",
+                RawInput =
+@""
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
+            });
             return testData;
         }
+
         static string store =
 @"Weapons:    Cost  Damage  Armor
 Dagger        8     4       0
@@ -55,7 +74,7 @@ Defense+3   80     0       3";
             Ring
         }
 
-        record Item(string Name, int Cost, int Damage, int Armor);
+        record Item(string Name, int Cost, int Damage, int Armor) { }
 
         private void ParseStore(out List<Item> weapons, out List<Item> armor, out List<Item> rings)
         {
@@ -88,7 +107,7 @@ Defense+3   80     0       3";
             }
         }
 
-        record Attacker(int HP, int Damage, int Armor);
+        record Attacker(int HP, int Damage, int Armor) { }
 
         bool RunBattleSimulation(Attacker player, Attacker boss)
         {
@@ -116,7 +135,7 @@ Defense+3   80     0       3";
             if (RunBattleSimulation(new Attacker(100, weapon.Damage + ring.Damage, armor.Armor + ring.Armor), boss))
             {
                 bestPrice = weapon.Cost + armor.Cost + ring.Cost;
-                DebugWriteLine($"Successful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${bestPrice}");
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${bestPrice}");
             }
 
             if (rings != null)
@@ -139,7 +158,7 @@ Defense+3   80     0       3";
             {
                 armorEnough = true;
                 bestPrice = weapon.Cost + armor.Cost;
-                DebugWriteLine($"Successful battle! {weapon.Name} + {armor.Name} @ ${bestPrice}");
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + {armor.Name} @ ${bestPrice}");
             }
 
             // get price without armor
@@ -162,7 +181,7 @@ Defense+3   80     0       3";
             // if weapon is enough, dont spend any more
             if (RunBattleSimulation(new Attacker(100, d, a), boss))
             {
-                DebugWriteLine($"Successful battle! {weapon.Name} + @ ${weapon.Cost}");
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + @ ${weapon.Cost}");
                 return weapon.Cost;
             }
             else
@@ -183,12 +202,10 @@ Defense+3   80     0       3";
             List<Item> weapons, armors, rings;
             ParseStore(out weapons, out armors, out rings);
             int bestPrice = int.MaxValue;
-            UseLogs = false;
             for (int w = 0; w < weapons.Count; ++w)
             {
                 bestPrice = Math.Min(bestPrice, GetBestPriceForWeapon(weapons[w], boss, armors, rings));
             }
-            UseLogs = true;
             return bestPrice.ToString();
         }
 
@@ -200,7 +217,7 @@ Defense+3   80     0       3";
             }
 
             int worstPrice = weapon.Cost + armor.Cost + ring.Cost;
-            DebugWriteLine($"Unsuccessful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${worstPrice}");
+            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${worstPrice}");
 
             if (rings != null)
             {
@@ -221,7 +238,7 @@ Defense+3   80     0       3";
             {
                 armorEnough = false;
                 worstPrice = weapon.Cost + armor.Cost;
-                DebugWriteLine($"Unsuccessful battle! {weapon.Name} + {armor.Name} @ ${worstPrice}");
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + {armor.Name} @ ${worstPrice}");
             }
 
             // get price without armor
@@ -245,7 +262,7 @@ Defense+3   80     0       3";
             {
                 return int.MinValue;
             }
-            DebugWriteLine($"Unsuccessful battle! {weapon.Name} + @ ${weapon.Cost}");
+            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + @ ${weapon.Cost}");
 
             int worstPrice = int.MinValue;
             foreach (Item armor in armors)
@@ -263,12 +280,10 @@ Defense+3   80     0       3";
             List<Item> weapons, armors, rings;
             ParseStore(out weapons, out armors, out rings);
             int worstPrice = int.MinValue;
-            UseLogs = false;
             for (int w = 0; w < weapons.Count; ++w)
             {
                 worstPrice = Math.Max(worstPrice, GetWorstPriceForWeapon(weapons[w], boss, armors, rings));
             }
-            UseLogs = true;
             return worstPrice.ToString();
         }
     }

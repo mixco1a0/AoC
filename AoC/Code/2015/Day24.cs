@@ -1,32 +1,33 @@
-using System.Diagnostics;
-using System.Text;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace AoC._2015
 {
-    class Day24 : Day
+    class Day24 : Core.Day
     {
         public Day24() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "99",
                 RawInput =
 @"1
@@ -40,9 +41,9 @@ namespace AoC._2015
 10
 11"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "44",
                 RawInput =
 @"1
@@ -59,7 +60,7 @@ namespace AoC._2015
             return testData;
         }
 
-        record QuantumEntanglement(long Value, int Count, List<int> Weights);
+        record QuantumEntanglement(long Value, int Count, List<int> Weights) { }
         static QuantumEntanglement MaxQE = new QuantumEntanglement(int.MaxValue, int.MaxValue, new List<int>());
 
         private QuantumEntanglement OptimizedEQ(QuantumEntanglement a, QuantumEntanglement b)

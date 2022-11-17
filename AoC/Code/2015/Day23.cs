@@ -1,37 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace AoC._2015
 {
-    class Day23 : Day
+    class Day23 : Core.Day
     {
+        private int _ReturnRegister { get; }
+
         public Day23() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string> { { "returnRegister", "a" } },
+                TestPart = Core.Part.One,
+                Variables = new Dictionary<string, string> { { nameof(_ReturnRegister), "a" } },
                 Output = "2",
                 RawInput =
 @"inc a
 jio a, +2
 tpl a
 inc a"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
             });
             return testData;
         }
@@ -46,7 +58,7 @@ inc a"
             JumpIfOne
         }
 
-        record InstructionSet(Instruction Instruction, char Register, int Offset);
+        record InstructionSet(Instruction Instruction, char Register, int Offset) { }
 
         List<InstructionSet> ParseInstructions(List<string> inputs)
         {
@@ -143,11 +155,7 @@ inc a"
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            string returnRegister = "b";
-            if (variables != null && variables.ContainsKey(nameof(returnRegister)))
-            {
-                returnRegister = variables[nameof(returnRegister)];
-            }
+            GetVariable(nameof(_ReturnRegister), "b", variables, out string returnRegister);
 
             List<InstructionSet> instructions = ParseInstructions(inputs);
             int curInstruction = 0;
@@ -198,11 +206,7 @@ inc a"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            string returnRegister = "b";
-            if (variables != null && variables.ContainsKey(nameof(returnRegister)))
-            {
-                returnRegister = variables[nameof(returnRegister)];
-            }
+            GetVariable(nameof(_ReturnRegister), "b", variables, out string returnRegister);
 
             List<InstructionSet> instructions = ParseInstructions(inputs);
             int curInstruction = 0;

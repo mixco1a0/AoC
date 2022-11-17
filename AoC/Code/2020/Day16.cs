@@ -4,27 +4,31 @@ using System.Linq;
 
 namespace AoC._2020
 {
-    class Day16 : Day
+    class Day16 : Core.Day
     {
         public Day16() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "71",
                 RawInput =
 @"class: 1-3 or 5-7
@@ -45,7 +49,7 @@ nearby tickets:
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            List<MinMax> ranges = new List<MinMax>();
+            List<Base.Range> ranges = new List<Base.Range>();
             bool myTicket = false;
             int invalids = 0;
             foreach (string input in inputs)
@@ -55,8 +59,8 @@ nearby tickets:
                     string[] split = input.Split("abcdefghijklmnopqrstuvwxyz: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                     string[] lower = split[0].Split('-');
                     string[] higher = split[1].Split('-');
-                    ranges.Add(new MinMax { Min = int.Parse(lower[0]), Max = int.Parse(lower[1]) });
-                    ranges.Add(new MinMax { Min = int.Parse(higher[0]), Max = int.Parse(higher[1]) });
+                    ranges.Add(new Base.Range { Min = int.Parse(lower[0]), Max = int.Parse(lower[1]) });
+                    ranges.Add(new Base.Range { Min = int.Parse(higher[0]), Max = int.Parse(higher[1]) });
                 }
                 else if (input.Contains(","))
                 {
@@ -69,7 +73,7 @@ nearby tickets:
                     int[] split = input.Split(',').Select(int.Parse).ToArray();
                     for (int i = 0; i < split.Length; ++i)
                     {
-                        if (ranges.Where(range => range.GTE_LTE(split[i])).Count() <= 0)
+                        if (ranges.Where(range => range.HasInc(split[i])).Count() <= 0)
                         {
                             invalids += split[i];
                         }
@@ -82,8 +86,8 @@ nearby tickets:
         class TicketInfo
         {
             public string Name { get; set; }
-            public MinMax Lower { get; set; }
-            public MinMax Higher { get; set; }
+            public Base.Range Lower { get; set; }
+            public Base.Range Higher { get; set; }
 
             public override string ToString()
             {
@@ -105,7 +109,7 @@ nearby tickets:
                     string[] split = input.Split("abcdefghijklmnopqrstuvwxyz: ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                     string[] lower = split[0].Split('-');
                     string[] higher = split[1].Split('-');
-                    ticketInfo.Add(new TicketInfo { Name = name, Lower = new MinMax { Min = int.Parse(lower[0]), Max = int.Parse(lower[1]) }, Higher = new MinMax { Min = int.Parse(higher[0]), Max = int.Parse(higher[1]) } });
+                    ticketInfo.Add(new TicketInfo { Name = name, Lower = new Base.Range { Min = int.Parse(lower[0]), Max = int.Parse(lower[1]) }, Higher = new Base.Range { Min = int.Parse(higher[0]), Max = int.Parse(higher[1]) } });
                 }
                 else if (input.Contains(","))
                 {
@@ -120,7 +124,7 @@ nearby tickets:
                     bool valid = true;
                     for (int i = 0; i < split.Length && valid; ++i)
                     {
-                        if (ticketInfo.Where(info => info.Lower.GTE_LTE(split[i]) || info.Higher.GTE_LTE(split[i])).Count() <= 0)
+                        if (ticketInfo.Where(info => info.Lower.HasInc(split[i]) || info.Higher.HasInc(split[i])).Count() <= 0)
                         {
                             valid = false;
                         }
@@ -141,7 +145,7 @@ nearby tickets:
                 foreach (List<int> ticket in validTickets)
                 {
                     int valueToCheck = ticket[i];
-                    var inRange = ticketInfo.Where(info => info.Lower.GTE_LTE(valueToCheck) || info.Higher.GTE_LTE(valueToCheck)).ToList();
+                    var inRange = ticketInfo.Where(info => info.Lower.HasInc(valueToCheck) || info.Higher.HasInc(valueToCheck)).ToList();
                     if (inRange.Count() > 0)
                     {
                         if (possibilities[i].Count == 0)

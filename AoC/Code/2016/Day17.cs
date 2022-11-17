@@ -1,67 +1,71 @@
-using System.Text;
-using System.Security.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AoC._2016
 {
-    class Day17 : Day
+    class Day17 : Core.Day
     {
         public Day17() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "DDRRRD",
                 RawInput =
 @"ihgpwlah"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "DDUDRLRRUDRD",
                 RawInput =
 @"kglvqrro"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "DRURDRUDDLLDLUURRDULRLDUUDDDRR",
                 RawInput =
 @"ulqzkmiv"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "370",
                 RawInput =
 @"ihgpwlah"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "492",
                 RawInput =
 @"kglvqrro"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "830",
                 RawInput =
 @"ulqzkmiv"
@@ -91,17 +95,17 @@ namespace AoC._2016
                 return new DoorStatus(open);
             }
 
-            static public Coords[] Directions = new Coords[4] { new Coords(0, -1), new Coords(0, 1), new Coords(-1, 0), new Coords(1, 0) };
+            static public Base.Point[] Directions = new Base.Point[4] { new Base.Point(0, -1), new Base.Point(0, 1), new Base.Point(-1, 0), new Base.Point(1, 0) };
 
             static public char[] Letters = new char[4] { 'U', 'D', 'L', 'R' };
         }
 
-        private record WalkStatus(string Path, Coords Coords) { }
+        private record WalkStatus(string Path, Base.Point Coords) { }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findLongestPath)
         {
             Queue<WalkStatus> pendingWalks = new Queue<WalkStatus>();
-            pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Coords(0, 0)));
+            pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Base.Point(0, 0)));
             int longestPath = 0;
             while (pendingWalks.Count > 0)
             {
@@ -124,7 +128,7 @@ namespace AoC._2016
                 {
                     if (ds.Status[i])
                     {
-                        Coords newCoords = ws.Coords + DoorStatus.Directions[i];
+                        Base.Point newCoords = ws.Coords + DoorStatus.Directions[i];
                         if (newCoords.X >= 0 && newCoords.X <= 3 && newCoords.Y >= 0 && newCoords.Y <= 3)
                         {
                             pendingWalks.Enqueue(new WalkStatus($"{ws.Path}{DoorStatus.Letters[i]}", newCoords));

@@ -1,40 +1,42 @@
-using System.Reflection;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace AoC._2020
 {
-    class Day17 : Day
+    class Day17 : Core.Day
     {
         public Day17() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v2";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "112",
                 RawInput =
 @".#.
 ..#
 ###"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "848",
                 RawInput =
 @".#.
@@ -46,8 +48,8 @@ namespace AoC._2020
 
         private char ProcessCube(Dictionary<string, char> grid, List<int> index)
         {
-            int activeCount = Util.ProcessIndexBorder(index, grid, '#');
-            string indexKey = Util.GetDynamicIndexKey(index);
+            int activeCount = Util.Grid.ProcessIndexBorder(index, grid, '#');
+            string indexKey = Util.Grid.GetDynamicIndexKey(index);
             if (!grid.ContainsKey(indexKey))
             {
                 grid[indexKey] = '.';
@@ -73,18 +75,18 @@ namespace AoC._2020
                     grid[$"0,{y},{x},"] = row[x];
                 }
             }
-            List<MinMax> indexRanges = new List<MinMax>();
-            indexRanges.Add(new MinMax()); // z [0,0]
-            indexRanges.Add(new MinMax(0, inputs.Count - 1)); // y [0,n]
-            indexRanges.Add(new MinMax(0, inputs.First().Length - 1)); //x [0,n]
+            List<Base.Range> indexRanges = new List<Base.Range>();
+            indexRanges.Add(new Base.Range()); // z [0,0]
+            indexRanges.Add(new Base.Range(0, inputs.Count - 1)); // y [0,n]
+            indexRanges.Add(new Base.Range(0, inputs.First().Length - 1)); //x [0,n]
             for (int i = 0; i < 6; ++i)
             {
-                foreach (MinMax indexRange in indexRanges)
+                foreach (Base.Range indexRange in indexRanges)
                 {
                     --indexRange.Min;
                     ++indexRange.Max;
                 }
-                Util.ProcessGrid(ref grid, indexRanges, ProcessCube);
+                Util.Grid.ProcessGrid(ref grid, indexRanges, ProcessCube);
             }
             return grid.Values.Where(c => c == '#').Count().ToString();
         }
@@ -101,19 +103,19 @@ namespace AoC._2020
                     grid[$"0,0,{y},{x},"] = row[x];
                 }
             }
-            List<MinMax> indexRanges = new List<MinMax>();
-            indexRanges.Add(new MinMax()); // w [0,0]
-            indexRanges.Add(new MinMax()); // z [0,0]
-            indexRanges.Add(new MinMax(0, inputs.Count - 1)); // y [0,n]
-            indexRanges.Add(new MinMax(0, inputs.First().Length - 1)); //x [0,n]
+            List<Base.Range> indexRanges = new List<Base.Range>();
+            indexRanges.Add(new Base.Range()); // w [0,0]
+            indexRanges.Add(new Base.Range()); // z [0,0]
+            indexRanges.Add(new Base.Range(0, inputs.Count - 1)); // y [0,n]
+            indexRanges.Add(new Base.Range(0, inputs.First().Length - 1)); //x [0,n]
             for (int i = 0; i < 6; ++i)
             {
-                foreach (MinMax indexRange in indexRanges)
+                foreach (Base.Range indexRange in indexRanges)
                 {
                     --indexRange.Min;
                     ++indexRange.Max;
                 }
-                Util.ProcessGrid(ref grid, indexRanges, ProcessCube);
+                Util.Grid.ProcessGrid(ref grid, indexRanges, ProcessCube);
             }
             return grid.Values.Where(c => c == '#').Count().ToString();
         }

@@ -4,27 +4,31 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day13 : Day
+    class Day13 : Core.Day
     {
         public Day13() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "330",
                 RawInput =
 @"Alice would gain 54 happiness units by sitting next to Bob.
@@ -40,10 +44,17 @@ David would gain 46 happiness units by sitting next to Alice.
 David would lose 7 happiness units by sitting next to Bob.
 David would gain 41 happiness units by sitting next to Carol."
             });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
+            });
             return testData;
         }
 
-        private record Units(string Name, int Happiness);
+        private record Units(string Name, int Happiness) { }
 
         private int ArrangeSeats(Dictionary<string, List<Units>> people, string person, List<string> peopleSitting, int tab)
         {
@@ -76,7 +87,7 @@ David would gain 41 happiness units by sitting next to Carol."
                     int curHappiness = 0;
                     curHappiness += h1;
                     curHappiness += people.Where(p => p.Key == nextTo).First().Value.Where(u => u.Name == person).First().Happiness;
-                    // DebugWriteLine($"{new string('\t', tab)}{person} <={curHappiness}=> {nextTo}");
+                    DebugWriteLine(Core.Log.ELevel.Spam, $"{new string('\t', tab)}{person} <={curHappiness}=> {nextTo}");
                     curHappiness += ArrangeSeats(people, nextTo, new List<string>(peopleSitting), tab + 1);
 
                     max = Math.Max(max, curHappiness);

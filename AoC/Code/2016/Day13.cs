@@ -1,39 +1,41 @@
-using System.Text;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace AoC._2016
 {
-    class Day13 : Day
+    class Day13 : Core.Day
     {
         public Day13() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Variables = new Dictionary<string, string>() { { "targetX", "7" }, { "targetY", "4" } },
                 Output = "11",
                 RawInput =
 @"10"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
@@ -59,16 +61,16 @@ namespace AoC._2016
             return bits % 2 == 0;
         }
 
-        private record PointWalk(Point Point, uint Distance) { }
+        private record PointWalk(Base.Point Point, uint Distance) { }
 
-        private uint WalkPath(Queue<PointWalk> points, Point target, uint magicNumber, int maxDistance)
+        private uint WalkPath(Queue<PointWalk> points, Base.Point target, uint magicNumber, int maxDistance)
         {
             HashSet<ulong> visited = new HashSet<ulong>();
             uint walkingPoints = 0;
             while (points.Count > 0)
             {
                 PointWalk pointWalk = points.Dequeue();
-                Point point = pointWalk.Point;
+                Base.Point point = pointWalk.Point;
 
                 // check if this is the target
                 if (maxDistance <= 0 && point.X == target.X && point.Y == target.Y)
@@ -100,15 +102,15 @@ namespace AoC._2016
                 }
 
                 // add new points
-                points.Enqueue(new PointWalk(new Point(point.X + 1, point.Y), pointWalk.Distance + 1));
-                points.Enqueue(new PointWalk(new Point(point.X, point.Y + 1), pointWalk.Distance + 1));
+                points.Enqueue(new PointWalk(new Base.Point(point.X + 1, point.Y), pointWalk.Distance + 1));
+                points.Enqueue(new PointWalk(new Base.Point(point.X, point.Y + 1), pointWalk.Distance + 1));
                 if (point.X > 0)
                 {
-                    points.Enqueue(new PointWalk(new Point(point.X - 1, point.Y), pointWalk.Distance + 1));
+                    points.Enqueue(new PointWalk(new Base.Point(point.X - 1, point.Y), pointWalk.Distance + 1));
                 }
                 if (point.Y > 0)
                 {
-                    points.Enqueue(new PointWalk(new Point(point.X, point.Y - 1), pointWalk.Distance + 1));
+                    points.Enqueue(new PointWalk(new Base.Point(point.X, point.Y - 1), pointWalk.Distance + 1));
                 }
 
             }
@@ -129,8 +131,8 @@ namespace AoC._2016
 
             uint magicNumber = uint.Parse(inputs.First());
             Queue<PointWalk> points = new Queue<PointWalk>();
-            points.Enqueue(new PointWalk(new Point(1, 1), 0));
-            return WalkPath(points, new Point(targetX, targetY), magicNumber, findMaxLocations ? 50 : 0).ToString();
+            points.Enqueue(new PointWalk(new Base.Point(1, 1), 0));
+            return WalkPath(points, new Base.Point(targetX, targetY), magicNumber, findMaxLocations ? 50 : 0).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)

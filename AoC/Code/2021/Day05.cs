@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AoC.Core;
+
 namespace AoC._2021
 {
     class Day05 : Day
@@ -60,17 +62,14 @@ namespace AoC._2021
             return testData;
         }
 
-        private class Segment
+        private static class SegmentExtension
         {
-            public Coords A { get; set; }
-            public Coords B { get; set; }
-
-            public static Segment Parse(string input)
+            public static Base.Segment Parse(string input)
             {
                 int[] vals = input.Split(", ->".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-                Coords a = new Coords(vals[0], vals[1]);
-                Coords b = new Coords(vals[2], vals[3]);
-                return new Segment() { A = a, B = b };
+                Base.Point a = new Base.Point(vals[0], vals[1]);
+                Base.Point b = new Base.Point(vals[2], vals[3]);
+                return new Base.Segment(a, b);
             }
         }
 
@@ -82,17 +81,17 @@ namespace AoC._2021
             DiagonalDown,
         }
 
-        private Dictionary<Direction, Coords> Movement = new Dictionary<Direction, Coords>()
+        private Dictionary<Direction, Base.Point> Movement = new Dictionary<Direction, Base.Point>()
         {
-            { Direction.NegativeX, new Coords(-1, 0) },
-            { Direction.NegativeY, new Coords(0, -1) },
-            { Direction.DiagonalUp, new Coords(-1, -1) },
-            { Direction.DiagonalDown, new Coords(-1, 1) },
+            { Direction.NegativeX, new Base.Point(-1, 0) },
+            { Direction.NegativeY, new Base.Point(0, -1) },
+            { Direction.DiagonalUp, new Base.Point(-1, -1) },
+            { Direction.DiagonalDown, new Base.Point(-1, 1) },
         };
 
-        private void PrintGrid(Dictionary<Coords, int> grid)
+        private void PrintGrid(Dictionary<Base.Point, int> grid)
         {
-            HashSet<Coords> coords = grid.Keys.ToHashSet();
+            HashSet<Base.Point> coords = grid.Keys.ToHashSet();
             int maxX = coords.Select(c => c.X).Max();
             int maxY = coords.Select(c => c.Y).Max();
             for (int y = 0; y <= maxY; ++y)
@@ -101,7 +100,7 @@ namespace AoC._2021
                 sb.AppendFormat("{0,3} | ", y);
                 for (int x = 0; x <= maxX; ++x)
                 {
-                    Coords cur = new Coords(x, y);
+                    Base.Point cur = new Base.Point(x, y);
                     if (grid.ContainsKey(cur))
                     {
                         sb.Append($"{grid[cur],1}");
@@ -119,8 +118,8 @@ namespace AoC._2021
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkDiagonals)
         {
-            Dictionary<Coords, int> overlaps = new Dictionary<Coords, int>();
-            Action<int, Direction, Coords> CheckCoords = (count, dir, start) =>
+            Dictionary<Base.Point, int> overlaps = new Dictionary<Base.Point, int>();
+            Action<int, Direction, Base.Point> CheckCoords = (count, dir, start) =>
             {
                 for (int i = 0; i <= count; ++i)
                 {
@@ -133,8 +132,8 @@ namespace AoC._2021
                 }
             };
 
-            Segment[] segments = inputs.Select(Segment.Parse).ToArray();
-            foreach (Segment segment in segments)
+            Base.Segment[] segments = inputs.Select(SegmentExtension.Parse).ToArray();
+            foreach (Base.Segment segment in segments)
             {
                 if (segment.A.X == segment.B.X)
                 {
@@ -146,8 +145,8 @@ namespace AoC._2021
                 }
                 else if (checkDiagonals)
                 {
-                    Coords start = segment.A.X > segment.B.X ? segment.A : segment.B;
-                    Coords end = start.Equals(segment.A) ? segment.B : segment.A;
+                    Base.Point start = segment.A.X > segment.B.X ? segment.A : segment.B;
+                    Base.Point end = start.Equals(segment.A) ? segment.B : segment.A;
                     if (end.Y < start.Y)
                     {
                         CheckCoords(Math.Abs(segment.A.X - segment.B.X), Direction.DiagonalUp, start);

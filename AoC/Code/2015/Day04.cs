@@ -5,46 +5,67 @@ using System.Text;
 
 namespace AoC._2015
 {
-    class Day04 : Day
+    class Day04 : Core.Day
     {
         public Day04() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
-                    return "v2";
-                case Part.Two:
-                    return "v2";
+                case Core.Part.One:
+                    return "v3";
+                case Core.Part.Two:
+                    return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "609043",
                 RawInput =
 @"abcdef"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "1048970",
                 RawInput =
 @"pqrstuv"
             });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
+            });
             return testData;
+        }
+
+        private bool HasLeadingZeroes(byte[] hashBytes, int leadingZeroes)
+        {
+            for (int z = 0; z < leadingZeroes; ++z)
+            {
+                byte mask = (z % 2 == 0) ? (byte)0xf0 : (byte)0x0f;
+                if ((hashBytes[z / 2] & mask) != 0x00)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int leadingZeroes)
         {
-            string zeroes = new string('0', leadingZeroes);
             string input = inputs[0];
             using (MD5 md5 = MD5.Create())
             {
@@ -54,8 +75,13 @@ namespace AoC._2015
                     sb.Append(i);
                     byte[] inputBytes = Encoding.ASCII.GetBytes(sb.ToString());
                     byte[] hashBytes = md5.ComputeHash(inputBytes);
-                    string md5String = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
-                    if (md5String.StartsWith(zeroes))
+                    // byte[] hashBytes = null;
+                    // Action compute = () =>
+                    // {
+                    //     hashBytes = md5.ComputeHash(inputBytes);
+                    // };
+                    // WasteTime(compute);
+                    if (HasLeadingZeroes(hashBytes, leadingZeroes))
                     {
                         return i.ToString();
                     }

@@ -5,27 +5,31 @@ using System.Linq;
 
 namespace AoC._2020
 {
-    class Day04 : Day
+    class Day04 : Core.Day
     {
         public Day04() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "2",
                 RawInput =
 @"ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
@@ -42,9 +46,9 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "0",
                 RawInput =
 @"eyr:1972 cid:100
@@ -61,9 +65,9 @@ hgt:59cm ecl:zzz
 eyr:2038 hcl:74454a iyr:2023
 pid:3556412378 byr:2007"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "4",
                 RawInput =
 @"pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
@@ -155,12 +159,12 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             {
                 return false;
             }
-            return new MinMax { Min = min, Max = max }.GTE_LTE(valInt);
+            return new Base.Range { Min = min, Max = max }.HasInc(valInt);
         }
 
         private bool CheckIsValidHGT(string val)
         {
-            Dictionary<string, MinMax> valids = new Dictionary<string, MinMax> { { "cm", new MinMax { Min = 150, Max = 193 } }, { "in", new MinMax { Min = 59, Max = 76 } } };
+            Dictionary<string, Base.Range> valids = new Dictionary<string, Base.Range> { { "cm", new Base.Range { Min = 150, Max = 193 } }, { "in", new Base.Range { Min = 59, Max = 76 } } };
             string height = val[0..^2];
             string unit = val[^2..];
             int heightVal;
@@ -168,7 +172,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
             {
                 return false;
             }
-            return valids[unit].GTE_LTE(heightVal);
+            return valids[unit].HasInc(heightVal);
         }
 
         private bool CheckIsValidHCL(string val)

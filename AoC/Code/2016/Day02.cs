@@ -1,31 +1,35 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2016
 {
-    class Day02 : Day
+    class Day02 : Core.Day
     {
         public Day02() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "1985",
                 RawInput =
 @"ULL
@@ -33,9 +37,9 @@ RRDDD
 LURDL
 UUUUD"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "5DB3",
                 RawInput =
 @"ULL
@@ -46,16 +50,16 @@ UUUUD"
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Point start)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Point start)
         {
-            MinMax range = new MinMax(0, numPad.First().Length - 1);
+            Base.Range range = new Base.Range(0, numPad.First().Length - 1);
             StringBuilder code = new StringBuilder();
             int x = start.X, y = start.Y;
             foreach (string input in inputs)
             {
                 foreach (char c in input)
                 {
-                    Point old = new Point(x, y);
+                    Base.Point old = new Base.Point(x, y);
                     switch (c)
                     {
                         case 'U':
@@ -85,11 +89,11 @@ UUUUD"
         static string[] numberPad1 = { "123", "456", "789" };
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad1, new Point(1, 1));
+            => SharedSolution(inputs, variables, numberPad1, new Base.Point(1, 1));
 
         static string[] numberPad2 = { "  1  ", " 234 ", "56789", " ABC ", "  D  " };
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad2, new Point(0, 2));
+            => SharedSolution(inputs, variables, numberPad2, new Base.Point(0, 2));
     }
 }

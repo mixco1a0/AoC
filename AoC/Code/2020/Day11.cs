@@ -4,27 +4,31 @@ using System.Linq;
 
 namespace AoC._2020
 {
-    class Day11 : Day
+    class Day11 : Core.Day
     {
         public Day11() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v2";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "37",
                 RawInput =
 @"L.LL.LL.LL
@@ -38,9 +42,9 @@ LLLLLLLLLL
 L.LLLLLL.L
 L.LLLLL.LL"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "26",
                 RawInput =
 @"L.LL.LL.LL
@@ -64,7 +68,7 @@ L.LLLLL.LL"
                 return '.';
             }
 
-            int fullCount = Util.ProcessIndexBorder(x, y, seats, '#');
+            int fullCount = Util.Grid.ProcessIndexBorder(x, y, seats, '#');
 
             switch (seats[x][y])
             {
@@ -80,7 +84,7 @@ L.LLLLL.LL"
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<List<char>> seats = inputs.Select(a => a.ToCharArray().ToList()).ToList();
-            while (Util.ProcessGrid(ref seats, GetLocationState)) ;
+            while (Util.Grid.ProcessGrid(ref seats, GetLocationState)) ;
             return string.Join("", seats.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
         }
 
@@ -186,7 +190,7 @@ L.LLLLL.LL"
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<List<char>> seats = inputs.Select(a => a.ToCharArray().ToList()).ToList();
-            while (Util.ProcessGrid(ref seats, GetLocationStateStringent)) ;
+            while (Util.Grid.ProcessGrid(ref seats, GetLocationStateStringent)) ;
             return string.Join("", seats.Select(c => string.Join("", c))).Replace(".", "").Replace("L", "").Count().ToString();
         }
     }

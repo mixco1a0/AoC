@@ -4,48 +4,52 @@ using System.Linq;
 
 namespace AoC._2016
 {
-    class Day01 : Day
+    class Day01 : Core.Day
     {
         public Day01() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "5",
                 RawInput =
 @"R2, L3"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "2",
                 RawInput =
 @"R2, R2, R2"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "12",
                 RawInput =
 @"R5, L5, R5, R3"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "4",
                 RawInput =
 @"R8, R4, R4, R8"
@@ -56,8 +60,8 @@ namespace AoC._2016
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool segmentCheck)
         {
             // used for segment checks
-            List<Segment> visited = new List<Segment>();
-            Point prev = new Point(0, 0);
+            List<Base.Segment> visited = new List<Base.Segment>();
+            Base.Point prev = new Base.Point(0, 0);
 
             int coordX = 0, coordY = 0, curDirection = 0;
             string[] input = inputs[0].Split(" ,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -86,11 +90,11 @@ namespace AoC._2016
 
                 if (segmentCheck)
                 {
-                    Segment cur = new Segment(prev, new Point(coordX, coordY));
-                    //DebugWriteLine($"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
-                    Point intersection = null;
+                    Base.Segment cur = new Base.Segment(prev, new Base.Point(coordX, coordY));
+                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
+                    Base.Point intersection = null;
                     // check for intersection
-                    foreach (Segment visit in visited.Take(visited.Count - 1))
+                    foreach (Base.Segment visit in visited.Take(visited.Count - 1))
                     {
                         intersection = cur.GetIntersection(visit);
                         if (intersection != null)

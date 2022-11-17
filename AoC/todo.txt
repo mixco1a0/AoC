@@ -1,0 +1,8 @@
+profiler
+separate warm up function
+change warm up script to only run the days
+update the perf runs to cap out at specific times
+have a config file
+have perf always show the latest version if version is 0
+
+have multi threaded versions required for specific days

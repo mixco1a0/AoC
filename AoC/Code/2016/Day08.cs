@@ -5,27 +5,31 @@ using System.Text;
 
 namespace AoC._2016
 {
-    class Day08 : Day
+    class Day08 : Core.Day
     {
         public Day08() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Variables = new Dictionary<string, string> { { "gridW", "7" }, { "gridH", "3" } },
                 Output = "6",
                 RawInput =
@@ -34,9 +38,9 @@ rotate column x=1 by 1
 rotate row y=0 by 4
 rotate column x=1 by 1"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
@@ -63,7 +67,7 @@ rotate column x=1 by 1"
             string[] grid = new string[gridH];
             for (int i = 0; i < gridH; ++i)
             {
-                grid[i] = new string(Core.IGlyph.Off, gridW);
+                grid[i] = new string(Util.Glyph.Off, gridW);
             }
             return grid;
         }
@@ -102,7 +106,7 @@ rotate column x=1 by 1"
         private void PerformRect(ref string[] grid, int x, int y)
         {
             StringBuilder sb = new StringBuilder();
-            string newRow = new string(Core.IGlyph.On, x);
+            string newRow = new string(Util.Glyph.On, x);
             for (int i = 0; i < y; ++i)
             {
                 sb.Clear();
@@ -154,11 +158,11 @@ rotate column x=1 by 1"
             }
             if (readGlyph)
             {
-                return Core.GlyphConverter.Process(grid, Core.GlyphConverter.Size._5x6);
+                return Util.GlyphConverter.Process(grid, Util.GlyphConverter.EType._5x6);
             }
             else
             {
-                return string.Join("", grid).Replace(Core.IGlyph.Off.ToString(), "").Length.ToString();
+                return string.Join("", grid).Replace(Util.Glyph.Off.ToString(), "").Length.ToString();
             }
         }
 

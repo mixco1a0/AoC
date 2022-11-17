@@ -4,27 +4,31 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day19 : Day
+    class Day19 : Core.Day
     {
         public Day19() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "4",
                 RawInput =
 @"H => HO
@@ -33,9 +37,9 @@ O => HH
 
 HOH"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "7",
                 RawInput =
 @"H => HO
@@ -44,9 +48,9 @@ O => HH
 
 HOHOHO"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "3",
                 RawInput =
 @"e => H
@@ -57,9 +61,9 @@ O => HH
 
 HOH"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "6",
                 RawInput =
 @"e => H
@@ -73,7 +77,7 @@ HOHOHO"
             return testData;
         }
 
-        public record Replacement(string pre, string post);
+        public record Replacement(string pre, string post) {}
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
@@ -127,7 +131,7 @@ HOHOHO"
             {
                 if (steps != minSteps && steps < minSteps)
                 {
-                    DebugWriteLine($"New min found {steps}");
+                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"New min found {steps}");
                 }
                 minSteps = Math.Min(minSteps, steps);
                 return;
@@ -141,7 +145,7 @@ HOHOHO"
             if (!unique.Contains(molecule))
             {
                 unique.Add(molecule);
-                // DebugWriteLine($"Testing: {molecule}");
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Testing: {molecule}");
             }
             else
             {

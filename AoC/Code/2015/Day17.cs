@@ -1,33 +1,34 @@
-using System.Diagnostics;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace AoC._2015
 {
-    class Day17 : Day
+    class Day17 : Core.Day
     {
         public Day17() { }
-        static private int sLiters = 150;
-        public override string GetSolutionVersion(Part part)
+        
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
-                Variables = new Dictionary<string, string> { { nameof(sLiters), "25" } },
+                TestPart = Core.Part.One,
+                Variables = new Dictionary<string, string> { { "liters", "25" } },
                 Output = "4",
                 RawInput =
 @"20
@@ -36,10 +37,10 @@ namespace AoC._2015
 5
 5"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
-                Variables = new Dictionary<string, string> { { nameof(sLiters), "25" } },
+                TestPart = Core.Part.Two,
+                Variables = new Dictionary<string, string> { { "liters", "25" } },
                 Output = "3",
                 RawInput =
 @"20
@@ -95,7 +96,7 @@ namespace AoC._2015
                         {
                             ++solutionCount[used];
                         }
-                        // DebugWriteLine($"VALID: {string.Join(',', bools.Select((b, i) => new { b = b, i = i }).Where(pair => pair.b).Select(pair => $"{inputs[pair.i]}[#{pair.i}]"))}");
+                        DebugWriteLine(Core.Log.ELevel.Spam, $"VALID: {string.Join(',', bools.Select((b, i) => new { b = b, i = i }).Where(pair => pair.b).Select(pair => $"{inputs[pair.i]}[#{pair.i}]"))}");
                         bools[i] = false;
                         total -= inputs[i];
                         ++count;
@@ -134,11 +135,8 @@ namespace AoC._2015
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int liters = sLiters;
-            if (variables != null && variables.ContainsKey(nameof(sLiters)))
-            {
-                liters = int.Parse(variables[nameof(sLiters)]);
-            }
+            int liters;
+            GetVariable(nameof(liters), 150, variables, out liters);
 
             int dummy;
             return TryNext(liters, inputs.Select(int.Parse).OrderByDescending(_ => _).ToList(), out dummy).ToString();
@@ -146,11 +144,8 @@ namespace AoC._2015
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            int liters = sLiters;
-            if (variables != null && variables.ContainsKey(nameof(sLiters)))
-            {
-                liters = int.Parse(variables[nameof(sLiters)]);
-            }
+            int liters;
+            GetVariable(nameof(liters), 150, variables, out liters);
 
             int uniqueMin;
             TryNext(liters, inputs.Select(int.Parse).OrderByDescending(_ => _).ToList(), out uniqueMin);

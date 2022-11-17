@@ -3,64 +3,66 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day03 : Day
+    class Day03 : Core.Day
     {
         public Day03() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v2";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "2",
                 RawInput =
 @">"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "4",
                 RawInput =
 @"^>v<"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "2",
                 RawInput =
 @"^v^v^v^v^v"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "3",
                 RawInput =
 @"^v"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "3",
                 RawInput =
 @"^>v<"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "11",
                 RawInput =
 @"^v^v^v^v^v"
@@ -73,21 +75,21 @@ namespace AoC._2015
         private const char U = '^';
         private const char D = 'v';
 
-        private Dictionary<char, Coords> Movements = new Dictionary<char, Coords>()
+        private Dictionary<char, Base.Point> Movements = new Dictionary<char, Base.Point>()
         {
-            {L, new Coords(-1, 0)},
-            {R, new Coords(1, 0)},
-            {U, new Coords(0, 1)},
-            {D, new Coords(0, -1)},
+            {L, new Base.Point(-1, 0)},
+            {R, new Base.Point(1, 0)},
+            {U, new Base.Point(0, 1)},
+            {D, new Base.Point(0, -1)},
         };
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool usingRobotSanta)
         {
             bool santaMove = true;
-            Coords santaCoords = new Coords();
-            Coords robotCoords = new Coords();
+            Base.Point santaCoords = new Base.Point();
+            Base.Point robotCoords = new Base.Point();
 
-            HashSet<Coords> visitedCoords = new HashSet<Coords>();
+            HashSet<Base.Point> visitedCoords = new HashSet<Base.Point>();
             visitedCoords.Add(santaCoords);
             foreach (char c in string.Join(' ', inputs))
             {

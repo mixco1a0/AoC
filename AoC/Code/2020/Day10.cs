@@ -3,27 +3,31 @@ using System.Linq;
 
 namespace AoC._2020
 {
-    class Day10 : Day
+    class Day10 : Core.Day
     {
         public Day10() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "35",
                 RawInput =
 @"16
@@ -38,9 +42,9 @@ namespace AoC._2020
 12
 4"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "220",
                 RawInput =
 @"28
@@ -75,9 +79,9 @@ namespace AoC._2020
 10
 3"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "8",
                 RawInput =
 @"16
@@ -92,9 +96,9 @@ namespace AoC._2020
 12
 4"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "19208",
                 RawInput =
 @"28
@@ -131,6 +135,7 @@ namespace AoC._2020
             });
             return testData;
         }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             List<long> numbers = inputs.Select(long.Parse).OrderBy(_ => _).ToList();

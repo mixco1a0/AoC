@@ -6,34 +6,38 @@ using System.Text;
 
 namespace AoC._2016
 {
-    class Day05 : Day
+    class Day05 : Core.Day
     {
         public Day05() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "18f47a30",
                 RawInput =
 @"abc"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "05ace8e3",
                 RawInput =
 @"abc"
@@ -43,33 +47,33 @@ namespace AoC._2016
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useEmbeddedIndex, bool quickSkip)
         {
-            if (quickSkip)
-            {
-                if (useEmbeddedIndex)
-                {
-                    if (inputs.First() == "abc")
-                    {
-                        return "05ace8e3";
-                    }
+            // if (quickSkip)
+            // {
+            //     if (useEmbeddedIndex)
+            //     {
+            //         if (inputs.First() == "abc")
+            //         {
+            //             return "05ace8e3";
+            //         }
 
-                    if (inputs.First() == "reyedfim")
-                    {
-                        return "863dde27";
-                    }
-                }
-                else
-                {
-                    if (inputs.First() == "abc")
-                    {
-                        return "18f47a30";
-                    }
+            //         if (inputs.First() == "reyedfim")
+            //         {
+            //             return "863dde27";
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (inputs.First() == "abc")
+            //         {
+            //             return "18f47a30";
+            //         }
 
-                    if (inputs.First() == "reyedfim")
-                    {
-                        return "f97c354d";
-                    }
-                }
-            }
+            //         if (inputs.First() == "reyedfim")
+            //         {
+            //             return "f97c354d";
+            //         }
+            //     }
+            // }
 
             const int passwordLength = 8;
             string password = string.Empty;
@@ -117,7 +121,7 @@ namespace AoC._2016
 
                     if (prevUsed != usedIndices)
                     {
-                        DebugWriteLine($"pwd={password}");
+                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"pwd={password}");
                     }
                 }
             }

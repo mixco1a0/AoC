@@ -1,7 +1,9 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+
+using AoC.Core;
 
 namespace AoC._2021
 {
@@ -346,7 +348,7 @@ mod w 2"
             Dictionary<char, int> registers = new Dictionary<char, int>() { { 'w', 0 }, { 'x', 0 }, { 'y', 0 }, { 'z', 0 } };
 
             string fullRegisterInput;
-            Util.GetVariable(nameof(fullRegisterInput), "______________", variables, out fullRegisterInput);
+            GetVariable(nameof(fullRegisterInput), "______________", variables, out fullRegisterInput);
 
             Queue<int> registerInput = new Queue<int>();
 
@@ -396,7 +398,7 @@ mod w 2"
             }
 
             char returnRegister;
-            Util.GetVariable(nameof(returnRegister), 'z', variables, out returnRegister);
+            GetVariable(nameof(returnRegister), 'z', variables, out returnRegister);
             return registers[returnRegister].ToString();
         }
 

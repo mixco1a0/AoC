@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using AoC.Core;
+
 namespace AoC._2021
 {
     class Day17 : Day
@@ -87,7 +89,7 @@ namespace AoC._2021
             return maxHeight;
         }
 
-        private void AdjustVelocity(ref Core.Point position, ref Core.Point velocity)
+        private void AdjustVelocity(ref Base.Point position, ref Base.Point velocity)
         {
             position += velocity;
             if (velocity.X != 0)
@@ -101,8 +103,8 @@ namespace AoC._2021
         {
             for (int x = 1; ; ++x)
             {
-                Core.Point probe = new Core.Point(0, 0);
-                Core.Point velocity = new Core.Point(x, 0);
+                Base.Point probe = new Base.Point(0, 0);
+                Base.Point velocity = new Base.Point(x, 0);
                 while (velocity.X > 0 && probe.X <= maxX)
                 {
                     AdjustVelocity(ref probe, ref velocity);
@@ -118,19 +120,19 @@ namespace AoC._2021
         private int SolveAll(int startX, List<int> possibleYs, int minX, int maxX, int minY, int maxY)
         {
             possibleYs.AddRange(Enumerable.Range(1, minY * -1).Select(e => e * -1));
-            HashSet<Core.Point> knownLocations = new HashSet<Core.Point>();
+            HashSet<Base.Point> knownLocations = new HashSet<Base.Point>();
             foreach (int y in possibleYs)
             {
                 for (int x = startX; x <= maxX; ++x)
                 {
-                    Core.Point pos = new Core.Point(0, 0);
-                    Core.Point vel = new Core.Point(x, y);
+                    Base.Point pos = new Base.Point(0, 0);
+                    Base.Point vel = new Base.Point(x, y);
                     while (pos.X < maxX && pos.Y > minY)
                     {
                         AdjustVelocity(ref pos, ref vel);
                         if (minX <= pos.X && pos.X <= maxX && minY <= pos.Y && pos.Y <= maxY)
                         {
-                            knownLocations.Add(new Core.Point(x, y));
+                            knownLocations.Add(new Base.Point(x, y));
                             break;
                         }
                     }

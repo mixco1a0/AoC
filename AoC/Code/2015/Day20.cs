@@ -4,113 +4,93 @@ using System.Linq;
 
 namespace AoC._2015
 {
-    class Day20 : Day
+    class Day20 : Core.Day
     {
         public Day20() { }
-        public override string GetSolutionVersion(Part part)
+
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v2";
+                case Core.Part.Two:
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
-        protected override List<TestDatum> GetTestData()
+
+        public override bool SkipTestData => true;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "",
+                RawInput =
+@""
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "",
+                RawInput =
+@""
+            });
             return testData;
         }
 
-
-        // |10:29:18.636|  [2015|day20|problem|part1|v0] 	720720 -> 32497920
-        // |10:31:54.727|  [2015|day20|problem|part1|v0] 	776160 -> 33611760
-
-
-        private long GetStart(long lhn)
+        private long Sum(long lhn)
         {
-            long temp = lhn;
-            for (long l = 1; ; ++l)
+            long maxHouse = lhn / 10;
+            long[] sums = new long[maxHouse];
+            for (long i = 1; i < maxHouse; ++i)
             {
-                if (temp - l <= 0)
+                for (long j = i; j < maxHouse; j += i)
                 {
-                    return l;
+                    sums[j] += i * 10;
                 }
-                temp -= l;
             }
+            return sums.Select((s, i) => new {val = s, idx = i}).Where(o => o.val >= lhn).Min(o => o.idx);
         }
 
-        private long Sum(long end)
+        private long Sum2(long lhn)
         {
-            long sum = 0;
-            for (long i = 1; i <= end; ++i)
+            long maxHouse = lhn / 10;
+            List<long> sums = new List<long>();
+            for (int i = 1; i < maxHouse; ++i)
             {
-                if (end % i == 0)
+                IEnumerable<int> newValues = Enumerable.Range(1, 50).Reverse().Select(e => e * i);
+                foreach (int v in newValues)
                 {
-                    sum += 10 * i;
+                    if (sums.Count < v)
+                    {
+                        sums.AddRange(Enumerable.Range(sums.Count, v - sums.Count + 1).Select(_ => 0L));
+                    }
+                    sums[v] += i * 11;
+                }
+                
+                if (sums[i] >= lhn)
+                {
+                    return i;
                 }
             }
-            return sum;
+            return 0;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, Func<long, long> sumFunc)
+        {
+            long lhn = inputs.Select(long.Parse).First();
+            return sumFunc(lhn).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            long lhn = inputs.Select(long.Parse).First();
-            long house = GetStart(lhn); house = 776160;
-            long max = 0, sum = 0;
-            while (true)
-            {
-                long now = Sum(house);
-                if (now > max)
-                {
-                    DebugWriteLine($"{house} -> {now}");
-                    max = now;
-                }
-                sum = now;
-                if (sum >= lhn)
-                {
-                    return house.ToString();
-                }
-                ++house;
-            }
-        }
-
-        private long Sum2(long end)
-        {
-            long sum = 0;
-            for (long i = 1; i <= end; ++i)
-            {
-                if (end % i == 0 && end / i <= 50)
-                {
-                    sum += 11 * i;
-                }
-            }
-            return sum;
-        }
+            => SharedSolution(inputs, variables, Sum);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            long lhn = inputs.Select(long.Parse).First();
-            long house  = 776160;
-            long max = 0, sum = 0;
-            while (true)
-            {
-                long now = Sum2(house);
-                if (now > max)
-                {
-                    DebugWriteLine($"{house} -> {now}");
-                    max = now;
-                }
-                sum = now;
-                if (sum >= lhn)
-                {
-                    return house.ToString();
-                }
-                ++house;
-            }
-        }
+            => SharedSolution(inputs, variables, Sum2);
     }
 }
