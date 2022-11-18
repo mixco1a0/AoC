@@ -14,10 +14,10 @@ namespace AoC._2021
         {
             switch (part)
             {
-                case Part.One:
-                    return "v2";
-                case Part.Two:
-                    return "v4";
+                // case Part.One:
+                //     return "v2";
+                // case Part.Two:
+                //     return "v4";
                 default:
                     return base.GetSolutionVersion(part);
             }
