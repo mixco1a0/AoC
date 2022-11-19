@@ -3,21 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using AoC.Core;
-
 namespace AoC._2021
 {
-    class Day13 : Day
+    class Day13 : Core.Day
     {
         public Day13() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                case Part.One:
+                case Core.Part.One:
                     return "v1";
-                case Part.Two:
+                case Core.Part.Two:
                     return "v1";
                 default:
                     return base.GetSolutionVersion(part);
@@ -26,12 +24,12 @@ namespace AoC._2021
 
         public override bool SkipTestData => true;
 
-        protected override List<TestDatum> GetTestData()
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "17",
                 RawInput =
 @"6,10
@@ -56,9 +54,9 @@ namespace AoC._2021
 fold along y=7
 fold along x=5"
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "",
                 RawInput =
 @""
