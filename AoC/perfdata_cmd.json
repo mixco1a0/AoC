@@ -2,6 +2,30 @@
   "YearData": {
     "2021": {
       "DayData": {
+        "day11": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v1": {
+                  "Min": 1.1228,
+                  "Max": 3.0657,
+                  "Avg": 1.2581089999999997,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v1": {
+                  "Min": 4.2524,
+                  "Max": 7.208,
+                  "Avg": 4.619316,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
         "day10": {
           "PartData": {
             "One": {
