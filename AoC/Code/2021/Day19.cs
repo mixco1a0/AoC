@@ -3,33 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using AoC.Core;
-
 namespace AoC._2021
 {
-    class Day19 : Day
+    class Day19 : Core.Day
     {
         public Day19() { }
 
-        public override string GetSolutionVersion(Part part)
+        public override string GetSolutionVersion(Core.Part part)
         {
             switch (part)
             {
-                // case Part.One:
-                //     return "v1";
-                // case Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v0"; // v1 is very slow
+                case Core.Part.Two:
+                    return "v0"; // v1 is very slow
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        protected override List<TestDatum> GetTestData()
+        public override bool SkipTestData => false;
+
+        protected override List<Core.TestDatum> GetTestData()
         {
-            List<TestDatum> testData = new List<TestDatum>();
-            testData.Add(new TestDatum
+            List<Core.TestDatum> testData = new List<Core.TestDatum>();
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.One,
+                TestPart = Core.Part.One,
                 Output = "79",
                 RawInput =
 @"--- scanner 0 ---
@@ -170,9 +170,9 @@ namespace AoC._2021
 30,-46,-14
 "
             });
-            testData.Add(new TestDatum
+            testData.Add(new Core.TestDatum
             {
-                TestPart = Part.Two,
+                TestPart = Core.Part.Two,
                 Output = "3621",
                 RawInput =
 @"--- scanner 0 ---
