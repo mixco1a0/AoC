@@ -2,6 +2,54 @@
   "YearData": {
     "2021": {
       "DayData": {
+        "day07": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v2": {
+                  "Min": 2.4113,
+                  "Max": 3.7094,
+                  "Avg": 2.597953999999999,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v4": {
+                  "Min": 4.6964,
+                  "Max": 7.7521,
+                  "Avg": 6.241713,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
+        "day06": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v2": {
+                  "Min": 0.0217,
+                  "Max": 1.3887,
+                  "Avg": 0.041457000000000015,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v2": {
+                  "Min": 0.0331,
+                  "Max": 0.0668,
+                  "Avg": 0.043470999999999996,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
         "day05": {
           "PartData": {
             "One": {
