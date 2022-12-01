@@ -49,14 +49,27 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "45000",
                 RawInput =
-@""
+@"1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000"
             });
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool top1)
         {
             List<int> cals = new List<int>();
             cals.Add(0);
@@ -73,13 +86,21 @@ namespace AoC._2022
                     cals[calIdx] += int.Parse(input);
                 }
             }
-            return cals.Max().ToString();
+            if (top1)
+            {
+                return cals.Max().ToString();
+            }
+            else
+            {
+                cals.Sort();
+                return cals.TakeLast(3).Sum().ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
