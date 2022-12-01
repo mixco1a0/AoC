@@ -14,14 +14,14 @@ namespace AoC._2022
             {
                 case Core.Part.One:
                     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -69,7 +69,7 @@ namespace AoC._2022
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool top1)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int maxCount)
         {
             List<int> cals = new List<int>();
             cals.Add(0);
@@ -86,21 +86,14 @@ namespace AoC._2022
                     cals[calIdx] += int.Parse(input);
                 }
             }
-            if (top1)
-            {
-                return cals.Max().ToString();
-            }
-            else
-            {
-                cals.Sort();
-                return cals.TakeLast(3).Sum().ToString();
-            }
+            cals.Sort();
+            return cals.TakeLast(maxCount).Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, true);
+            => SharedSolution(inputs, variables, 1);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, false);
+            => SharedSolution(inputs, variables, 3);
     }
 }
