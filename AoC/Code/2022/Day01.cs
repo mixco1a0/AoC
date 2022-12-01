@@ -12,8 +12,8 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
                 // case Core.Part.Two:
                 //     return "v1";
                 default:
@@ -29,9 +29,22 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
-                Output = "",
+                Output = "24000",
                 RawInput =
-@""
+@"1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000"
             });
             testData.Add(new Core.TestDatum
             {
@@ -45,7 +58,22 @@ namespace AoC._2022
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            List<int> cals = new List<int>();
+            cals.Add(0);
+            int calIdx = 0;
+            foreach (string input in inputs)
+            {
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    cals.Add(0);
+                    calIdx++;
+                }
+                else
+                {
+                    cals[calIdx] += int.Parse(input);
+                }
+            }
+            return cals.Max().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
