@@ -1,3 +1,3 @@
 dotnet build -c Release
-bin\Release\net6.0\AoC.exe -sl -n 2021 -cp -sp
+bin\Release\net7.0\AoC.exe -sl -n 2021 -cp -sp
 pause

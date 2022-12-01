@@ -22,6 +22,8 @@ namespace AoC._2021
             }
         }
 
+        public override bool SkipTestData => true;
+
         protected override List<TestDatum> GetTestData()
         {
             List<TestDatum> testData = new List<TestDatum>();
