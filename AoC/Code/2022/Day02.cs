@@ -13,15 +13,15 @@ namespace AoC._2022
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -47,103 +47,81 @@ C Z"
             return testData;
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        static Dictionary<char, char> Win = new Dictionary<char, char> { { 'A', 'C' }, { 'B', 'A' }, { 'C', 'B' } };
+        static Dictionary<char, char> Lose = Win.ToDictionary(w => w.Value, w => w.Key);
+        static Dictionary<char, int> Points = new Dictionary<char, int>() { { 'A', 1 }, { 'B', 2 }, { 'C', 3 } };
+
+        class Strategy : Base.Pair<char, char>
         {
-            int score = 0;
-
-            Func<char, int> RPS = (char input) =>
+            static public Strategy Parse(string input)
             {
-                switch (input)
-                {
-                    case 'A':
-                    case 'X':
-                        return 1;
-                    case 'B':
-                    case 'Y':
-                        return 2;
-                    case 'C':
-                    case 'Z':
-                        return 3;
-                }
-                return 0;
-            };
-
-            foreach (string input in inputs)
-            {
-                string[] split = input.Split(' ');
-                if (RPS(split[0].First()) == RPS(split[1].First()))
-                {
-                    score += 3;
-                }
-                else if (split[0] == "A")
-                {
-                    if (split[1] == "Y")
-                    {
-                        score += 6;
-                    }
-                }
-                else if (split[0] == "B")
-                {
-                    if (split[1] == "Z")
-                    {
-                        score += 6;
-                    }
-                }
-                else if (split[0] == "C")
-                {
-                    if (split[1] == "X")
-                    {
-                        score += 6;
-                    }
-                }
-                score += RPS(split[1].First());
+                return new Strategy(){First = input[0], Last = (char)((int)input[2] - 23)};
             }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool input)
+        {
+            List<Strategy> guide = inputs.Select(Strategy.Parse).ToList();
+
+            int score = 0;
+            foreach (Strategy strat in guide)
+            {
+                // determine choice
+                if (input)
+                {
+                    score += Points[strat.Last];
+                }
+                else
+                {
+                    // lose
+                    if (strat.Last == 'A')
+                    {
+                        score += Points[Win[strat.First]];
+                    }
+                    // tie
+                    else if (strat.Last == 'B')
+                    {
+                        score += Points[strat.First];
+                    }
+                    // win
+                    else if (strat.Last == 'C')
+                    {
+                        score += Points[Lose[strat.First]];
+                    }
+                }
+
+                // determine outcome
+                if (input)
+                {
+                    if (strat.First == strat.Last)
+                    {
+                        score += 3;
+                    }
+                    else if (strat.First == Win[strat.Last])
+                    {
+                        score += 6;
+                    }
+                }
+                else
+                {
+                    if (strat.Last == 'B')
+                    {
+                        score += 3;
+                    }
+                    else if (strat.Last == 'C')
+                    {
+                        score += 6;
+                    }
+                }
+            }
+
             return score.ToString();
         }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            int score = 0;
-
-            Dictionary<char, char> Win = new Dictionary<char, char>{{'A', 'B'}, {'B', 'C'}, {'C', 'A'}};
-            Dictionary<char, char> Lose = Win.ToDictionary(w => w.Value, w => w.Key);
-
-            Func<char, int> RPS = (char input) =>
-            {
-                switch (input)
-                {
-                    case 'A':
-                    case 'X':
-                        return 1;
-                    case 'B':
-                    case 'Y':
-                        return 2;
-                    case 'C':
-                    case 'Z':
-                        return 3;
-                }
-                return 0;
-            };
-
-            foreach (string input in inputs)
-            {
-                string[] split = input.Split(' ');
-                if (split[1] == "X")
-                {
-                    score += RPS(Lose[split[0].First()]);
-                }
-                else if (split[1] == "Y")
-                {
-                    score += 3;
-                    score += RPS(split[0].First());
-                }
-                else if (split[1] == "Z")
-                {
-                    score += 6;
-                    score += RPS(Win[split[0].First()]);
-                }
-            }
-            return score.ToString();
-        }
+            => SharedSolution(inputs, variables, false);
     }
 }
