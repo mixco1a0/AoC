@@ -38,14 +38,16 @@ C Z"
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "12",
                 RawInput =
-@""
+@"A Y
+B X
+C Z"
             });
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
         {
             int score = 0;
 
@@ -99,10 +101,49 @@ C Z"
             return score.ToString();
         }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
-
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+        {
+            int score = 0;
+
+            Dictionary<char, char> Win = new Dictionary<char, char>{{'A', 'B'}, {'B', 'C'}, {'C', 'A'}};
+            Dictionary<char, char> Lose = Win.ToDictionary(w => w.Value, w => w.Key);
+
+            Func<char, int> RPS = (char input) =>
+            {
+                switch (input)
+                {
+                    case 'A':
+                    case 'X':
+                        return 1;
+                    case 'B':
+                    case 'Y':
+                        return 2;
+                    case 'C':
+                    case 'Z':
+                        return 3;
+                }
+                return 0;
+            };
+
+            foreach (string input in inputs)
+            {
+                string[] split = input.Split(' ');
+                if (split[1] == "X")
+                {
+                    score += RPS(Lose[split[0].First()]);
+                }
+                else if (split[1] == "Y")
+                {
+                    score += 3;
+                    score += RPS(split[0].First());
+                }
+                else if (split[1] == "Z")
+                {
+                    score += 6;
+                    score += RPS(Win[split[0].First()]);
+                }
+            }
+            return score.ToString();
+        }
     }
 }
