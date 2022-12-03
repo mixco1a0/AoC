@@ -470,6 +470,24 @@ namespace AoC
                 maxs[part] = new List<double>();
             }
 
+            List<Base.Pair<double, string>> TimeMagnitude = new List<Base.Pair<double, string>>();
+            TimeMagnitude.Add(new Base.Pair<double, string>(3600000.0, "h"));
+            TimeMagnitude.Add(new Base.Pair<double, string>(60000.0, "m"));
+            TimeMagnitude.Add(new Base.Pair<double, string>(1000.0, "s"));
+            TimeMagnitude.Add(new Base.Pair<double, string>(1.0, "ms"));
+            TimeMagnitude.Add(new Base.Pair<double, string>(.001, "µs"));
+            Func<double, Base.Pair<double, string>> getTimeMagnitude = (double val) =>
+            {
+                foreach (var pair in TimeMagnitude)
+                {
+                    if (val >= pair.First)
+                    {
+                        return new Base.Pair<double, string>(val / pair.First, pair.Last);
+                    }
+                }
+                return TimeMagnitude.Last();
+            };
+
             double min = double.MaxValue, max = double.MinValue;
             string minStr = "", maxStr = "";
             foreach (string key in days.Keys)
@@ -513,11 +531,15 @@ namespace AoC
 
                                 if (Args.Has(CommandLine.ESupportedArgument.CompactPerf))
                                 {
-                                    logLine += string.Format(" Avg={0}{1:0.000}{0} (ms)", Log.ColorMarker, stats.Avg);
+                                    var tm = getTimeMagnitude(stats.Avg);
+                                    logLine += string.Format(" Avg={0}{1:000.000}{0} ({2})", Log.ColorMarker, tm.First, tm.Last);
                                 }
                                 else
                                 {
-                                    logLine += string.Format(" Avg={0}{1:0.000}{0} (ms) [{2} Records, Min={0}{3:0.000}{0} (ms), Max={0}{4:0.000}{0} (ms)]", Log.ColorMarker, stats.Avg, stats.Count, stats.Min, stats.Max);
+                                    var avgTm = getTimeMagnitude(stats.Avg);
+                                    var minTm = getTimeMagnitude(stats.Min);
+                                    var maxTm = getTimeMagnitude(stats.Max);
+                                    logLine += string.Format(" Avg={0}{1:000.000}{0} ({2}) [{3} Records, Min={0}{4:000.000}{0} ({5}), Max={0}{6:000.000}{0} ({7})]", Log.ColorMarker, avgTm.First, avgTm.Last, stats.Count, minTm.First, minTm.Last, maxTm.First, maxTm.Last);
                                 }
                             }
                             logs[part].Add(logLine);
