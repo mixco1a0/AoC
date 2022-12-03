@@ -41,9 +41,14 @@ CrZsJsPPZsGzwwsLwLmpwMDw"
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "70",
                 RawInput =
-@""
+@"vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw"
             });
             return testData;
         }
@@ -60,6 +65,8 @@ CrZsJsPPZsGzwwsLwLmpwMDw"
                 string r = input.Substring(size);
                 char[] allShared = l.ToCharArray().Intersect(r.ToCharArray()).ToArray();
                 char shared = allShared[0];
+
+
                 if (shared >= 'a' && shared <= 'z')
                 {
                     priorities += (int)shared - 96;
@@ -76,6 +83,24 @@ CrZsJsPPZsGzwwsLwLmpwMDw"
             => SharedSolution(inputs, variables);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+        {
+            // a = 97 -> -96
+            // A = 65 -> -38
+            int priorities = 0;
+            for (int i = 0; i < inputs.Count; i+=3)
+            {
+                char[] allShared = inputs[i].ToCharArray().Intersect(inputs[i+1].ToCharArray().Intersect(inputs[i+2].ToCharArray())).ToArray();
+                char shared = allShared[0];
+                if (shared >= 'a' && shared <= 'z')
+                {
+                    priorities += (int)shared - 96;
+                }
+                else
+                {
+                    priorities += (int)shared - 38;
+                }
+            }
+            return priorities.ToString();
+        }
     }
 }
