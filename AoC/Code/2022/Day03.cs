@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -53,19 +53,26 @@ CrZsJsPPZsGzwwsLwLmpwMDw"
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkCompartments)
         {
-            // a = 97 -> -96
-            // A = 65 -> -38
+            // a = 97 -> 1  pt  (-96)
+            // A = 65 -> 27 pts (-38)
             int priorities = 0;
-            foreach(string input in inputs)
+            for (int i = 0; i < inputs.Count;)
             {
-                int size = input.Length/2;
-                string l = input.Substring(0, size);
-                string r = input.Substring(size);
-                char[] allShared = l.ToCharArray().Intersect(r.ToCharArray()).ToArray();
-                char shared = allShared[0];
-
+                char shared = ' ';
+                if (checkCompartments)
+                {
+                    int size = inputs[i].Length/2;
+                    string l = inputs[i].Substring(0, size);
+                    string r = inputs[i].Substring(size);
+                    shared = l.Intersect(r).Single();
+                    ++i;
+                }
+                else
+                {
+                    shared = inputs[i++].Intersect(inputs[i++].Intersect(inputs[i++])).Single();
+                }
 
                 if (shared >= 'a' && shared <= 'z')
                 {
@@ -80,27 +87,9 @@ CrZsJsPPZsGzwwsLwLmpwMDw"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            // a = 97 -> -96
-            // A = 65 -> -38
-            int priorities = 0;
-            for (int i = 0; i < inputs.Count; i+=3)
-            {
-                char[] allShared = inputs[i].ToCharArray().Intersect(inputs[i+1].ToCharArray().Intersect(inputs[i+2].ToCharArray())).ToArray();
-                char shared = allShared[0];
-                if (shared >= 'a' && shared <= 'z')
-                {
-                    priorities += (int)shared - 96;
-                }
-                else
-                {
-                    priorities += (int)shared - 38;
-                }
-            }
-            return priorities.ToString();
-        }
+            => SharedSolution(inputs, variables, false);
     }
 }
