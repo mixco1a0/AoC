@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -67,11 +67,11 @@ namespace AoC._2022
             List<Base.Range[]> ranges = inputs.Select(Parse).ToList();
             if (fullyContainCheck)
             {
-                return ranges.Where(r => (r[0].HasInc(r[1].Min) && r[0].HasInc(r[1].Max)) || (r[1].HasInc(r[0].Min) && r[1].HasInc(r[0].Max))).Count().ToString();
+                return ranges.Where(r => r[0].HasInc(r[1]) || r[1].HasInc(r[0])).Count().ToString();
             }
             else
             {
-                return ranges.Where(r => (r[0].HasInc(r[1].Min) || r[0].HasInc(r[1].Max)) || (r[1].HasInc(r[0].Min) || r[1].HasInc(r[0].Max))).Count().ToString();
+                return ranges.Where(r => r[0].HasIncOr(r[1]) || r[1].HasIncOr(r[0])).Count().ToString();
             }
         }
 
