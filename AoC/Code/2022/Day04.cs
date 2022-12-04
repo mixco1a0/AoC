@@ -41,9 +41,14 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "4",
                 RawInput =
-@""
+@"2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8"
             });
             return testData;
         }
@@ -57,16 +62,23 @@ namespace AoC._2022
             return ranges;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool fullyContainCheck)
         {
             List<Base.Range[]> ranges = inputs.Select(Parse).ToList();
-            return ranges.Where(r => (r[0].HasInc(r[1].Min) && r[0].HasInc(r[1].Max)) || (r[1].HasInc(r[0].Min) && r[1].HasInc(r[0].Max))).Count().ToString();
+            if (fullyContainCheck)
+            {
+                return ranges.Where(r => (r[0].HasInc(r[1].Min) && r[0].HasInc(r[1].Max)) || (r[1].HasInc(r[0].Min) && r[1].HasInc(r[0].Max))).Count().ToString();
+            }
+            else
+            {
+                return ranges.Where(r => (r[0].HasInc(r[1].Min) || r[0].HasInc(r[1].Max)) || (r[1].HasInc(r[0].Min) || r[1].HasInc(r[0].Max))).Count().ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
