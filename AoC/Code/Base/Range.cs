@@ -18,7 +18,21 @@ namespace AoC.Base
         /// <param name="value"></param>
         /// <returns></returns>
         public virtual bool HasInc(T value) => Has(value, true, true);
-        
+
+        /// <summary>
+        /// [Min, Max]
+        /// </summary>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public virtual bool HasInc(Range<T> range) => HasInc(range.Min) && HasInc(range.Max);
+
+        /// <summary>
+        /// [Min, Max]
+        /// </summary>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public virtual bool HasIncOr(Range<T> range) => HasInc(range.Min) || HasInc(range.Max);
+
         /// <summary>
         /// [Min, Max)
         /// </summary>
@@ -67,9 +81,9 @@ namespace AoC.Base
 
     public class Range : Range<int>
     {
-        public Range() : base() {}
-        public Range(int min, int max) : base(min, max) {}
-        public Range(Range other) : base(other) {}
+        public Range() : base() { }
+        public Range(int min, int max) : base(min, max) { }
+        public Range(Range other) : base(other) { }
 
         public override bool HasInc(int value) => Min <= value && value <= Max;
         public override bool HasIncExc(int value) => Min <= value && value < Max;
@@ -79,9 +93,9 @@ namespace AoC.Base
 
     public class LongRange : Range<long>
     {
-        public LongRange() : base() {}
-        public LongRange(int min, int max) : base(min, max) {}
-        public LongRange(LongRange other) : base(other) {}
+        public LongRange() : base() { }
+        public LongRange(int min, int max) : base(min, max) { }
+        public LongRange(LongRange other) : base(other) { }
 
         public override bool HasInc(long value) => Min <= value && value <= Max;
         public override bool HasIncExc(long value) => Min <= value && value < Max;
