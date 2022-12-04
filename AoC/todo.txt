@@ -1,3 +1,5 @@
+fix color ranges not respecting max and mins of their respective type
+
 profiler
 separate warm up function
 change warm up script to only run the days

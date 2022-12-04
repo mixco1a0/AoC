@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -447,6 +447,9 @@ namespace AoC
             }
         }
 
+        internal class TimeMagnitude : Base.Pair<double, string> { public TimeMagnitude(double d, string s) : base(d, s) { } }
+        internal class ColorRange : Base.Range<float> { public ColorRange(float min, float max) : base(min, max) { } }
+
         /// <summary>
         /// Print out all the performance information from run data
         /// </summary>
@@ -455,6 +458,7 @@ namespace AoC
         private void PrintPerf(string baseNamespace, PerfData perfData)
         {
             Log.WriteLine(Log.ELevel.Info, $"{baseNamespace} Performance Metrics\n");
+            bool compactPerf = Args.Has(CommandLine.ESupportedArgument.CompactPerf);
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;
@@ -470,24 +474,26 @@ namespace AoC
                 maxs[part] = new List<double>();
             }
 
-            List<Base.Pair<double, string>> TimeMagnitude = new List<Base.Pair<double, string>>();
-            TimeMagnitude.Add(new Base.Pair<double, string>(3600000.0, "h"));
-            TimeMagnitude.Add(new Base.Pair<double, string>(60000.0, "m"));
-            TimeMagnitude.Add(new Base.Pair<double, string>(1000.0, "s"));
-            TimeMagnitude.Add(new Base.Pair<double, string>(1.0, "ms"));
-            TimeMagnitude.Add(new Base.Pair<double, string>(.001, "µs"));
-            Func<double, Base.Pair<double, string>> getTimeMagnitude = (double val) =>
+            List<TimeMagnitude> timeMagnitudes = new List<TimeMagnitude>();
+            timeMagnitudes.Add(new TimeMagnitude(60000.0, " m"));
+            timeMagnitudes.Add(new TimeMagnitude(1000.0, " s"));
+            timeMagnitudes.Add(new TimeMagnitude(1.0, "ms"));
+            timeMagnitudes.Add(new TimeMagnitude(.001, "µs"));
+            Func<double, TimeMagnitude> getTimeMagnitude = (double val) =>
             {
-                foreach (var pair in TimeMagnitude)
+                foreach (var pair in timeMagnitudes)
                 {
                     if (val >= pair.First)
                     {
-                        return new Base.Pair<double, string>(val / pair.First, pair.Last);
+                        return new TimeMagnitude(val / pair.First, pair.Last);
                     }
                 }
-                return TimeMagnitude.Last();
+                return timeMagnitudes.Last();
             };
 
+            // min and max only take into account the avg
+            // there needs to be a min and max for the Min and the Max
+            // use Range<double>
             double min = double.MaxValue, max = double.MinValue;
             string minStr = "", maxStr = "";
             foreach (string key in days.Keys)
@@ -529,16 +535,16 @@ namespace AoC
                                 avgs[part].Add(stats.Avg);
                                 maxs[part].Add(stats.Max);
 
-                                if (Args.Has(CommandLine.ESupportedArgument.CompactPerf))
+                                if (compactPerf)
                                 {
-                                    var tm = getTimeMagnitude(stats.Avg);
+                                    TimeMagnitude tm = getTimeMagnitude(stats.Avg);
                                     logLine += string.Format(" Avg={0}{1:000.000}{0} ({2})", Log.ColorMarker, tm.First, tm.Last);
                                 }
                                 else
                                 {
-                                    var avgTm = getTimeMagnitude(stats.Avg);
-                                    var minTm = getTimeMagnitude(stats.Min);
-                                    var maxTm = getTimeMagnitude(stats.Max);
+                                    TimeMagnitude avgTm = getTimeMagnitude(stats.Avg);
+                                    TimeMagnitude minTm = getTimeMagnitude(stats.Min);
+                                    TimeMagnitude maxTm = getTimeMagnitude(stats.Max);
                                     logLine += string.Format(" Avg={0}{1:000.000}{0} ({2}) [{3} Records, Min={0}{4:000.000}{0} ({5}), Max={0}{6:000.000}{0} ({7})]", Log.ColorMarker, avgTm.First, avgTm.Last, stats.Count, minTm.First, minTm.Last, maxTm.First, maxTm.Last);
                                 }
                             }
@@ -558,12 +564,12 @@ namespace AoC
                 return (val - min) / (max - min);
             };
 
-            Base.Pair<float, float> loR = new Base.Pair<float, float>(Log.Neutral.R, Log.Negative.R);
-            Base.Pair<float, float> loG = new Base.Pair<float, float>(Log.Neutral.G, Log.Negative.G);
-            Base.Pair<float, float> loB = new Base.Pair<float, float>(Log.Neutral.B, Log.Negative.B);
-            Base.Pair<float, float> hiR = new Base.Pair<float, float>(Log.Positive.R, Log.Neutral.R);
-            Base.Pair<float, float> hiG = new Base.Pair<float, float>(Log.Positive.G, Log.Neutral.G);
-            Base.Pair<float, float> hiB = new Base.Pair<float, float>(Log.Positive.B, Log.Neutral.B);
+            ColorRange loR = new ColorRange(Log.Neutral.R, Log.Negative.R);
+            ColorRange loG = new ColorRange(Log.Neutral.G, Log.Negative.G);
+            ColorRange loB = new ColorRange(Log.Neutral.B, Log.Negative.B);
+            ColorRange hiR = new ColorRange(Log.Positive.R, Log.Neutral.R);
+            ColorRange hiG = new ColorRange(Log.Positive.G, Log.Neutral.G);
+            ColorRange hiB = new ColorRange(Log.Positive.B, Log.Neutral.B);
             Func<double, Color> getColor = (double avg) =>
             {
                 if (avg.Equals(double.NaN))
@@ -571,9 +577,9 @@ namespace AoC
                     return Core.Log.Neutral;
                 }
 
-                Func<double, Base.Pair<float, float>, int> getRangedColor = (double avg, Base.Pair<float, float> color) =>
+                Func<double, ColorRange, int> getRangedColor = (double avg, ColorRange colorRange) =>
                 {
-                    return Math.Max(Math.Min((int)((int)(((color.Last - color.First) * avg) + color.First)), 255), 0);
+                    return Math.Max(Math.Min((int)((int)(((colorRange.Max - colorRange.Min) * avg) + colorRange.Min)), 255), 0);
                 };
 
                 int r = 0, g = 0, b = 0;
@@ -593,7 +599,7 @@ namespace AoC
                 return Color.FromArgb(r, g, b);
             };
 
-            if (Args.Has(CommandLine.ESupportedArgument.CompactPerf))
+            if (compactPerf)
             {
                 int maxLength = logs.SelectMany(l => l.Value).Max(lv => lv.Length) + 2;
                 string separator = new string('#', maxLength * 2 + 6);
@@ -613,6 +619,7 @@ namespace AoC
                     Log.WriteAppendEnd(Log.ELevel.Info);
                 }
                 Log.WriteLine(Log.ELevel.Info, separator);
+                maxStringLength = separator.Length;
             }
             else
             {
@@ -635,16 +642,43 @@ namespace AoC
             double p1Total = avgs[Part.One].Where(a => !a.Equals(double.NaN)).Sum();
             double p2Total = avgs[Part.Two].Where(a => !a.Equals(double.NaN)).Sum();
             double totals = p1Total + p2Total;
-            // TODO: smart time metric (show largest time form, m, s, ms, etc)
-            Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part1|--] Sum={TimeSpan.FromMilliseconds(p1Total).ToString(@"mm\.ss\.ffffff")} (m)");
-            Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|part2|--] Sum={TimeSpan.FromMilliseconds(p2Total).ToString(@"mm\.ss\.ffffff")} (m)");
-            Log.WriteLine(Log.ELevel.Info, $"[{baseNamespace[^4..]}|total|-all-|--] Sum={TimeSpan.FromMilliseconds(totals).ToString(@"mm\.ss\.ffffff")} (m)");
+
+            Func<string, string, string, string> getLogHeader = (string day, string part, string version) =>
+            {
+                return string.Format("[{0}|{1}|{2}|{3}]", baseNamespace[^4..], day, part, version);
+            };
+
+            Action<double, string, string, Color> logTotal = (double time, string logHeader, string logEnder, Color color) =>
+            {
+                string noColor = string.Format("{0}{1} Sum=", compactPerf ? "## " : "", logHeader);
+                Log.Write(Log.ELevel.Info, noColor);
+
+                TimeMagnitude tm = getTimeMagnitude(time);
+                string yesColor = string.Format("{0:000.000}", tm.First);
+                Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), new List<Color>() { color });
+
+                string remainingLog = $" ({tm.Last}){logEnder}";
+                Log.WriteAppend(Log.ELevel.Info, remainingLog);
+
+                if (compactPerf)
+                {
+                    int curLen = noColor.Length + yesColor.Length + remainingLog.Length;
+                    string end = new string(' ', maxStringLength - curLen - 2);
+                    Log.WriteAppend(Log.ELevel.Info, $"{end}##");
+                }
+
+                Log.WriteAppendEnd(Log.ELevel.Info);
+            };
+
+            logTotal(p1Total, getLogHeader("total", "part1", "--"), string.Empty, Log.Neutral);
+            logTotal(p2Total, getLogHeader("total", "part2", "--"), string.Empty, Log.Neutral);
+            logTotal(totals, getLogHeader("total", "-all-", "--"), string.Empty, Log.Neutral);
             Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
 
             if (totals > 0)
             {
-                Log.WriteLine(Log.ELevel.Info, $"{minStr} Min={TimeSpan.FromMilliseconds(min).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", min / (p1Total + p2Total) * 100.0f)}]");
-                Log.WriteLine(Log.ELevel.Info, $"{maxStr} Max={TimeSpan.FromMilliseconds(max).ToString(@"ss\.ffffff")} (s) [{string.Format("{0:00.00}%", max / (p1Total + p2Total) * 100.0f)}]");
+                logTotal(min, minStr, string.Format(" [{0:00.00}%]", min / totals * 100.0f), Log.Negative);
+                logTotal(max, maxStr, string.Format(" [{0:00.00}%]", max / totals * 100.0f), Log.Positive);
                 Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
                 Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
             }
