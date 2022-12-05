@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using System.Text;
 using System.Runtime.Serialization;
 using System;
@@ -46,9 +47,17 @@ move 1 from 1 to 2"
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "MCD",
                 RawInput =
-@""
+@"    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2"
             });
             return testData;
         }
@@ -63,7 +72,7 @@ move 1 from 1 to 2"
             }
         };
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool isCrateMover9001)
         {
 
             List<Dictionary<int, char>> crates = new List<Dictionary<int, char>>();
@@ -98,7 +107,7 @@ move 1 from 1 to 2"
                     ship[key[pair.Key]].Push(pair.Value);
                 }
             }
-            
+
             // go through instructions now
             for (int i = inputsIdx; i < inputs.Count; ++i)
             {
@@ -108,9 +117,24 @@ move 1 from 1 to 2"
                 }
 
                 MoveInstruction mi = MoveInstruction.Parse(inputs[i]);
-                for (int j = 0; j < mi.Count; ++j)
+                if (isCrateMover9001)
                 {
-                    ship[mi.To].Push(ship[mi.From].Pop());
+                    StringBuilder moving = new StringBuilder();
+                    for (int j = 0; j < mi.Count; ++j)
+                    {
+                        moving.Append(ship[mi.From].Pop());
+                    }
+                    foreach (char m in moving.ToString().Reverse())
+                    {
+                        ship[mi.To].Push(m);
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < mi.Count; ++j)
+                    {
+                        ship[mi.To].Push(ship[mi.From].Pop());
+                    }
                 }
             }
 
@@ -119,14 +143,14 @@ move 1 from 1 to 2"
             {
                 sb.Append(pair.Value.Peek());
             }
-            
+
             return sb.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
