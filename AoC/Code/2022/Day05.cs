@@ -15,16 +15,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -72,51 +72,53 @@ move 1 from 1 to 2"
             }
         };
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool isCrateMover9001)
+        private void ParseShip(ref List<string> inputs, out Dictionary<int, Stack<char>> ship)
         {
-
-            List<Dictionary<int, char>> crates = new List<Dictionary<int, char>>();
-            int inputsIdx = 0;
-            bool shipParseComplete = false;
-            for (; inputsIdx < inputs.Count && !shipParseComplete; ++inputsIdx)
+            Dictionary<int, int> key = new Dictionary<int, int>();
+            List<Dictionary<int, char>> stacks = new List<Dictionary<int, char>>();
+            for (int i = 0; i < inputs.Count; ++i)
             {
-                string input = inputs[inputsIdx];
-                Dictionary<int, char> crateRow = input.Select((letter, index) => (letter, index)).Where(pair => char.IsLetter(pair.letter)).ToDictionary(pair => pair.index, pair => pair.letter);
-                if (crateRow.Count == 0)
+                string input = inputs[i];
+                Dictionary<int, char> crates = input.Select((letter, index) => (letter, index)).Where(pair => char.IsLetter(pair.letter)).ToDictionary(pair => pair.index, pair => pair.letter);
+                if (crates.Count == 0)
                 {
-                    crateRow = input.Select((number, index) => (number, index)).Where(pair => char.IsNumber(pair.number)).ToDictionary(pair => pair.index, pair => pair.number);
-                    shipParseComplete = true;
+                    crates = input.Select((number, index) => (number, index)).Where(pair => char.IsNumber(pair.number)).ToDictionary(pair => pair.index, pair => pair.number);
+                    key = crates.ToDictionary(pair => pair.Key, pair => int.Parse($"{pair.Value}"));
+                    inputs.RemoveRange(0, i + 1);
+                    break;
                 }
-                crates.Add(crateRow);
+                stacks.Add(crates);
             }
 
-            Dictionary<int, Stack<char>> ship = new Dictionary<int, Stack<char>>();
-            crates.Reverse();
-            Dictionary<int, int> key = crates[0].ToDictionary(pair => pair.Key, pair => int.Parse($"{pair.Value}"));
-            crates.RemoveAt(0);
-
+            ship = new Dictionary<int, Stack<char>>();
             foreach (var pair in key)
             {
                 ship[pair.Value] = new Stack<char>();
             }
 
-            foreach (var crate in crates)
+            stacks.Reverse();
+            foreach (var stack in stacks)
             {
-                foreach (var pair in crate)
+                foreach (var crate in stack)
                 {
-                    ship[key[pair.Key]].Push(pair.Value);
+                    ship[key[crate.Key]].Push(crate.Value);
                 }
             }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool isCrateMover9001)
+        {
+            ParseShip(ref inputs, out Dictionary<int, Stack<char>> ship);
 
             // go through instructions now
-            for (int i = inputsIdx; i < inputs.Count; ++i)
+            foreach (string input in inputs)
             {
-                if (string.IsNullOrWhiteSpace(inputs[i]))
+                if (string.IsNullOrWhiteSpace(input))
                 {
                     continue;
                 }
 
-                MoveInstruction mi = MoveInstruction.Parse(inputs[i]);
+                MoveInstruction mi = MoveInstruction.Parse(input);
                 if (isCrateMover9001)
                 {
                     StringBuilder moving = new StringBuilder();
