@@ -677,8 +677,8 @@ namespace AoC
 
             if (totals > 0)
             {
-                logTotal(min, minStr, string.Format(" [{0:00.00}%]", min / totals * 100.0f), Log.Negative);
-                logTotal(max, maxStr, string.Format(" [{0:00.00}%]", max / totals * 100.0f), Log.Positive);
+                logTotal(min, minStr, string.Format(" [{0:00.00}%]", min / totals * 100.0f), Log.Positive);
+                logTotal(max, maxStr, string.Format(" [{0:00.00}%]", max / totals * 100.0f), Log.Negative);
                 Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
                 Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
             }
