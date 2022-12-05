@@ -609,13 +609,13 @@ namespace AoC
                     {
                         Log.WriteLine(Log.ELevel.Info, separator);
                     }
-                    Log.Write(Log.ELevel.Info, "## ");
+                    Log.Write(Log.ELevel.Info, "##  ");
                     Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], new List<Color>() { getColor(getAvg(avgs[Part.One][i])) });
                     Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.One][i].Length));
-                    Log.WriteAppend(Log.ELevel.Info, " ## ");
+                    Log.WriteAppend(Log.ELevel.Info, "##  ");
                     Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], new List<Color>() { getColor(getAvg(avgs[Part.Two][i])) });
                     Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.Two][i].Length));
-                    Log.WriteAppend(Log.ELevel.Info, " ##");
+                    Log.WriteAppend(Log.ELevel.Info, "##");
                     Log.WriteAppendEnd(Log.ELevel.Info);
                 }
                 Log.WriteLine(Log.ELevel.Info, separator);
@@ -650,7 +650,7 @@ namespace AoC
 
             Action<double, string, string, Color> logTotal = (double time, string logHeader, string logEnder, Color color) =>
             {
-                string noColor = string.Format("{0}{1} Sum=", compactPerf ? "## " : "", logHeader);
+                string noColor = string.Format("{0}{1} Sum=", compactPerf ? "##  " : "", logHeader);
                 Log.Write(Log.ELevel.Info, noColor);
 
                 TimeMagnitude tm = getTimeMagnitude(time);
