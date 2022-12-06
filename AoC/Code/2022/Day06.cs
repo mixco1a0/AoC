@@ -29,9 +29,37 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
-                Output = "",
+                Output = "7",
                 RawInput =
-@""
+@"mjqjpqmgbljsphdztnvjfqwrcgsmlb"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "5",
+                RawInput =
+@"bvwbjplbgvbhsrlpgdmjqwftvncz"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "6",
+                RawInput =
+@"nppdvjthqldpwncqszvftbrmjlhg"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "10",
+                RawInput =
+@"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "11",
+                RawInput =
+@"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"
             });
             testData.Add(new Core.TestDatum
             {
@@ -45,6 +73,14 @@ namespace AoC._2022
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
+            string sequence = inputs.First();
+            for (int i = 0; i < sequence.Length - 4; ++i)
+            {
+                if (sequence.Substring(i, 4).DistinctBy(_ => _).Count() == 4)
+                {
+                    return (i + 4).ToString();
+                }
+            }
             return string.Empty;
         }
 
