@@ -64,30 +64,58 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "19",
                 RawInput =
-@""
+@"mjqjpqmgbljsphdztnvjfqwrcgsmlb"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "23",
+                RawInput =
+@"bvwbjplbgvbhsrlpgdmjqwftvncz"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "23",
+                RawInput =
+@"nppdvjthqldpwncqszvftbrmjlhg"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "29",
+                RawInput =
+@"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "26",
+                RawInput =
+@"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"
             });
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int messageLen)
         {
             string sequence = inputs.First();
-            for (int i = 0; i < sequence.Length - 4; ++i)
+            for (int i = 0; i < sequence.Length - messageLen; ++i)
             {
-                if (sequence.Substring(i, 4).DistinctBy(_ => _).Count() == 4)
+                if (sequence.Substring(i, messageLen).DistinctBy(_ => _).Count() == messageLen)
                 {
-                    return (i + 4).ToString();
+                    return (i + messageLen).ToString();
                 }
             }
             return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 4);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 14);
     }
 }
