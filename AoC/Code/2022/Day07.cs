@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -126,11 +126,6 @@ $ ls
                 Files = new List<File>();
             }
 
-            public void Cache()
-            {
-                GetSize();
-            }
-
             public long GetSize()
             {
                 if (Size == 0)
@@ -201,15 +196,7 @@ $ ls
                     }
                     else
                     {
-                        if (cur.Children.Where(c => c.Name == split[1]).Any())
-                        {
-                            cur = cur.Children.Single(c => c.Name == split[1]);
-                        }
-                        else
-                        {
-                            cur.Children.Add(new FilePath(split[1]) { Parent = cur });
-                            cur = cur.Children.Last();
-                        }
+                        cur = cur.Children.Single(c => c.Name == split[1]);
                     }
                 }
                 else
@@ -233,7 +220,6 @@ $ ls
             }
             else
             {
-                root.Cache();
                 List<FilePath> validDeletes = new List<FilePath>();
                 const long totalSpace = 70000000;
                 FindDelete(root, totalSpace - root.GetSize(), ref validDeletes);
