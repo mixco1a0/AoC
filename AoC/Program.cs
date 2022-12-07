@@ -648,9 +648,9 @@ namespace AoC
                 return string.Format("[{0}|{1}|{2}|{3}]", baseNamespace[^4..], day, part, version);
             };
 
-            Action<double, string, string, Color> logTotal = (double time, string logHeader, string logEnder, Color color) =>
+            Action<double, string, string, string, Color> logTotal = (double time, string logHeader, string valueType, string logEnder, Color color) =>
             {
-                string noColor = string.Format("{0}{1} Sum=", compactPerf ? "##  " : "", logHeader);
+                string noColor = string.Format("{0}{1} {2}=", compactPerf ? "##  " : "", logHeader, valueType);
                 Log.Write(Log.ELevel.Info, noColor);
 
                 TimeMagnitude tm = getTimeMagnitude(time);
@@ -670,15 +670,15 @@ namespace AoC
                 Log.WriteAppendEnd(Log.ELevel.Info);
             };
 
-            logTotal(p1Total, getLogHeader("total", "part1", "--"), string.Empty, Log.Neutral);
-            logTotal(p2Total, getLogHeader("total", "part2", "--"), string.Empty, Log.Neutral);
-            logTotal(totals, getLogHeader("total", "-all-", "--"), string.Empty, Log.Neutral);
+            logTotal(p1Total, getLogHeader("total", "part1", "--"), "Sum", string.Empty, Log.Neutral);
+            logTotal(p2Total, getLogHeader("total", "part2", "--"), "Sum", string.Empty, Log.Neutral);
+            logTotal(totals, getLogHeader("total", "-all-", "--"), "Sum", string.Empty, Log.Neutral);
             Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
 
             if (totals > 0)
             {
-                logTotal(min, minStr, string.Format(" [{0:00.00}%]", min / totals * 100.0f), Log.Positive);
-                logTotal(max, maxStr, string.Format(" [{0:00.00}%]", max / totals * 100.0f), Log.Negative);
+                logTotal(min, minStr, "Min", string.Format(" [{0:00.00}%]", min / totals * 100.0f), Log.Positive);
+                logTotal(max, maxStr, "Max", string.Format(" [{0:00.00}%]", max / totals * 100.0f), Log.Negative);
                 Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
                 Log.WriteLine(Log.ELevel.Info, new string('#', maxStringLength));
             }
