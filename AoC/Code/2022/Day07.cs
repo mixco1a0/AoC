@@ -58,9 +58,31 @@ $ ls
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "24933642",
                 RawInput =
-@""
+@"$ cd /
+$ ls
+dir a
+14848514 b.txt
+8504156 c.dat
+dir d
+$ cd a
+$ ls
+dir e
+29116 f
+2557 g
+62596 h.lst
+$ cd e
+$ ls
+584 i
+$ cd ..
+$ cd ..
+$ cd d
+$ ls
+4060174 j
+8033020 d.log
+5626152 d.ext
+7214296 k"
             });
             return testData;
         }
@@ -94,6 +116,7 @@ $ ls
             public FilePath Parent { get; set; }
             public List<FilePath> Children { get; set; }
             public List<File> Files { get; set; }
+            private long Size { get; set; }
 
             public FilePath(string name)
             {
@@ -103,11 +126,19 @@ $ ls
                 Files = new List<File>();
             }
 
+            public void Cache()
+            {
+                GetSize();
+            }
+
             public long GetSize()
             {
-                long size = Files.Sum(f => f.Size);
-                size += Children.Sum(c => c.GetSize());
-                return size;
+                if (Size == 0)
+                {
+                    Size = Files.Sum(f => f.Size);
+                    Size += Children.Sum(c => c.GetSize());
+                }
+                return Size;
             }
 
             public override string ToString()
@@ -123,17 +154,30 @@ $ ls
                 SumDirectories(child, ref validSizes);
             }
 
-            long size = filePath.GetSize();
-            if (size <= 100000)
+            if (filePath.GetSize() <= 100000)
             {
-                validSizes.Add(size);
+                validSizes.Add(filePath.GetSize());
                 return true;
             }
 
             return false;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private void FindDelete(FilePath filePath, long unusedSpace, ref List<FilePath> validDeletes)
+        {
+            foreach (FilePath child in filePath.Children)
+            {
+                FindDelete(child, unusedSpace, ref validDeletes);
+            }
+
+            const long requiredSpace = 30000000;
+            if (unusedSpace + filePath.GetSize() >= requiredSpace)
+            {
+                validDeletes.Add(filePath);
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool deleteFiles)
         {
             FilePath root = new FilePath("/");
             FilePath cur = root;
@@ -172,7 +216,7 @@ $ ls
                 {
                     if (input.StartsWith("dir"))
                     {
-                        cur.Children.Add(new FilePath(input.Substring(4) ){ Parent = cur });
+                        cur.Children.Add(new FilePath(input.Substring(4)) { Parent = cur });
                     }
                     else
                     {
@@ -180,16 +224,27 @@ $ ls
                     }
                 }
             }
-            
-            List<long> validSizes = new List<long>();
-            SumDirectories(root, ref validSizes);
-            return validSizes.Sum().ToString();
+
+            if (!deleteFiles)
+            {
+                List<long> validSizes = new List<long>();
+                SumDirectories(root, ref validSizes);
+                return validSizes.Sum().ToString();
+            }
+            else
+            {
+                root.Cache();
+                List<FilePath> validDeletes = new List<FilePath>();
+                const long totalSpace = 70000000;
+                FindDelete(root, totalSpace - root.GetSize(), ref validDeletes);
+                return validDeletes.Min(f => f.GetSize()).ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
