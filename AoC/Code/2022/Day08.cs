@@ -40,9 +40,13 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "8",
                 RawInput =
-@""
+@"30373
+25512
+65332
+33549
+35390"
             });
             return testData;
         }
@@ -105,7 +109,68 @@ namespace AoC._2022
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
 
+        private int Score(List<string> grid, int x, int y, int maxX, int maxY)
+        {
+            if (x == 0 || y == 0 || x == maxX || y == maxY)
+            {
+                return 0;
+            }
+
+            int curView = grid[y][x] - '0';
+            int l = 0, r = 0, t = 0, d = 0;
+            for (int iterX = x - 1; iterX >= 0; --iterX)
+            {
+                int value = grid[y][iterX] - '0';
+                ++l;
+                if (value >= curView)
+                {
+                    break;
+                }
+            }
+            for (int iterX = x + 1; iterX <= maxX; ++iterX)
+            {
+                int value = grid[y][iterX] - '0';
+                ++r;
+                if (value >= curView)
+                {
+                    break;
+                }
+            }
+            for (int iterY = y - 1; iterY >= 0; --iterY)
+            {
+                int value = grid[iterY][x] - '0';
+                ++t;
+                if (value >= curView)
+                {
+                    break;
+                }
+            }
+            for (int iterY = y + 1; iterY <= maxX; ++iterY)
+            {
+                int value = grid[iterY][x] - '0';
+                ++d;
+                if (value >= curView)
+                {
+                    break;
+                }
+            }
+
+            return l * r * t * d;
+        }
+
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+        {
+            HashSet<Base.Point> visiblePoints = new HashSet<Base.Point>();
+            List<string> grid = new List<string>(inputs);
+            int maxScore = 0;
+            for (int y = 0; y < grid.Count; ++y)
+            {
+                for (int x = 0; x < grid[0].Length; ++x)
+                {
+                    maxScore = Math.Max(maxScore, Score(grid, x, y, grid[0].Length - 1, grid.Count - 1));
+                }
+            }
+            return maxScore.ToString();
+        }
     }
 }
