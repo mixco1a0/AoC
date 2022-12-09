@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -196,12 +196,6 @@ U 20"
                     if (!visited.Contains(rope.Last()))
                     {
                         visited.Add(new(rope.Last()));
-                    }
-
-                    if (nodeCount > 2)
-                    {
-                        // DebugWriteLine($"Moving: {i.Direction}");
-                        // PrintRope(rope);
                     }
                 }
             }
