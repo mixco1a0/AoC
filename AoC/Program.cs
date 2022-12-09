@@ -491,6 +491,12 @@ namespace AoC
                 return timeMagnitudes.Last();
             };
 
+            Dictionary<string, Color> timeUnitColor = new Dictionary<string, Color>();
+            timeUnitColor[" m"] = Log.Negative;
+            timeUnitColor[" s"] = Color.FromArgb(243, 196, 131); // denim 0x1560bd
+            timeUnitColor["ms"] = Color.FromArgb(180, 213, 131); // iceburg 0x74b3ce
+            timeUnitColor["µs"] = Log.Positive;
+
             // min and max only take into account the avg
             // there needs to be a min and max for the Min and the Max
             // use Range<double>
@@ -657,12 +663,12 @@ namespace AoC
                 string yesColor = string.Format("{0:000.000}", tm.First);
                 Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), new List<Color>() { color });
 
-                string remainingLog = $" ({tm.Last}){logEnder}";
-                Log.WriteAppend(Log.ELevel.Info, remainingLog);
+                string remainingLog = string.Format(" ({0}{1}{0}){2}", Log.ColorMarker, tm.Last, logEnder);
+                Log.WriteAppend(Log.ELevel.Info, remainingLog, new List<Color>() {timeUnitColor[tm.Last]});
 
                 if (compactPerf)
                 {
-                    int curLen = noColor.Length + yesColor.Length + remainingLog.Length;
+                    int curLen = noColor.Length + yesColor.Length + remainingLog.Length - 2;
                     string end = new string(' ', maxStringLength - curLen - 2);
                     Log.WriteAppend(Log.ELevel.Info, $"{end}##");
                 }
