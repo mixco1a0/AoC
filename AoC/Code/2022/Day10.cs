@@ -1,4 +1,3 @@
-using System.Collections.Specialized;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -202,19 +201,8 @@ noop"
             }
         }
 
-        void PrintCRT(char[][] crt)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, HashSet<int> interestingSignals)
         {
-            DebugWriteLine("CRT:");
-            foreach (char[] c in crt)
-            {
-                DebugWriteLine(string.Join("", c));
-            }
-            DebugWriteLine("");
-        }
-
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool watchCRT)
-        {
-            HashSet<int> interestingSignals = new HashSet<int>() { 20, 60, 100, 140, 180, 220 };
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
             int crtX = 0;
             int crtY = 0;
@@ -230,12 +218,7 @@ noop"
             for (int i = 0; i < instructions.Count; ++i)
             {
                 Instruction instruction = instructions[i];
-                if (interestingSignals.Contains(cycle))
-                {
-                    signalStrength += cycle * spritePosition;
-                }
-
-                if (watchCRT)
+                if (interestingSignals == null)
                 {
                     if (Math.Abs(spritePosition - crtX) <= 1)
                     {
@@ -252,11 +235,14 @@ noop"
                         ++crtY;
                         if (crtY >= crt.Length)
                         {
-                            PrintCRT(crt);
                             string[] glyph = crt.Select(row => string.Join("", row)).ToArray();
                             return Util.GlyphConverter.Process(glyph, Util.GlyphConverter.EType._5x6);
                         }
                     }
+                }
+                else if (interestingSignals.Contains(cycle))
+                {
+                    signalStrength += cycle * spritePosition;
                 }
 
                 if (!instruction.NoOp)
@@ -283,9 +269,9 @@ noop"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, false);
+            => SharedSolution(inputs, variables, new HashSet<int>() { 20, 60, 100, 140, 180, 220 });
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, true);
+            => SharedSolution(inputs, variables, null);
     }
 }
