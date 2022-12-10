@@ -202,42 +202,90 @@ noop"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        void PrintCRT(char[][] crt)
+        {
+            DebugWriteLine("CRT:");
+            foreach (char[] c in crt)
+            {
+                DebugWriteLine(string.Join("", c));
+            }
+            DebugWriteLine("");
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool watchCRT)
         {
             HashSet<int> interestingSignals = new HashSet<int>() { 20, 60, 100, 140, 180, 220 };
             List<Instruction> instructions = inputs.Select(Instruction.Parse).ToList();
-            int x = 1;
+            int crtX = 0;
+            int crtY = 0;
+            char[][] crt = new char[6][];
+            for (int i = 0; i < crt.Length; ++i)
+            {
+                crt[i] = new char[40];
+            }
+            int spritePosition = 1;
             int cycle = 1;
             int signalStrength = 0;
-            foreach (Instruction i in instructions)
+            bool delay = false;
+            for (int i = 0; i < instructions.Count; ++i)
             {
+                Instruction instruction = instructions[i];
                 if (interestingSignals.Contains(cycle))
                 {
-                    signalStrength += cycle * x;
+                    signalStrength += cycle * spritePosition;
                 }
 
-                if (i.NoOp)
+                if (watchCRT)
                 {
-                    ++cycle;
-                    continue;
+                    if (Math.Abs(spritePosition - crtX) <= 1)
+                    {
+                        crt[crtY][crtX] = '#';
+                    }
+                    else
+                    {
+                        crt[crtY][crtX] = '.';
+                    }
+                    ++crtX;
+                    if (crtX >= crt[0].Length)
+                    {
+                        crtX = 0;
+                        ++crtY;
+                        if (crtY >= crt.Length)
+                        {
+                            PrintCRT(crt);
+                            string[] glyph = crt.Select(row => string.Join("", row)).ToArray();
+                            return Util.GlyphConverter.Process(glyph, Util.GlyphConverter.EType._5x6);
+                        }
+                    }
+                }
+
+                if (!instruction.NoOp)
+                {
+                    if (!delay)
+                    {
+                        delay = true;
+                        --i;
+                    }
+                    else
+                    {
+                        delay = false;
+                    }
                 }
 
                 ++cycle;
-                if (interestingSignals.Contains(cycle))
-                {
-                    signalStrength += cycle * x;
-                }
 
-                x += i.XDiff;
-                ++cycle;
+                if (!instruction.NoOp && !delay)
+                {
+                    spritePosition += instruction.XDiff;
+                }
             }
             return signalStrength.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
