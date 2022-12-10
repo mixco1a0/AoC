@@ -466,12 +466,19 @@ namespace AoC
             Dictionary<Part, List<double>> mins = new Dictionary<Part, List<double>>();
             Dictionary<Part, List<double>> avgs = new Dictionary<Part, List<double>>();
             Dictionary<Part, List<double>> maxs = new Dictionary<Part, List<double>>();
+            Dictionary<Part, List<Color>> minColors = new Dictionary<Part, List<Color>>();
+            Dictionary<Part, List<Color>> avgColors = new Dictionary<Part, List<Color>>();
+            Dictionary<Part, List<Color>> maxColors = new Dictionary<Part, List<Color>>();
             for (Part part = Part.One; part <= Part.Two; ++part)
             {
                 logs[part] = new List<string>();
                 mins[part] = new List<double>();
                 avgs[part] = new List<double>();
                 maxs[part] = new List<double>();
+
+                minColors[part] = new List<Color>();
+                avgColors[part] = new List<Color>();
+                maxColors[part] = new List<Color>();
             }
 
             List<TimeMagnitude> timeMagnitudes = new List<TimeMagnitude>();
@@ -492,10 +499,10 @@ namespace AoC
             };
 
             Dictionary<string, Color> timeUnitColor = new Dictionary<string, Color>();
-            timeUnitColor[" m"] = Log.Negative;
-            timeUnitColor[" s"] = Color.FromArgb(243, 196, 131); // denim 0x1560bd
-            timeUnitColor["ms"] = Color.FromArgb(180, 213, 131); // iceburg 0x74b3ce
-            timeUnitColor["µs"] = Log.Positive;
+            timeUnitColor[" m"] = Color.FromArgb(232, 85, 78);
+            timeUnitColor[" s"] = Color.FromArgb(241, 156, 101);
+            timeUnitColor["ms"] = Color.FromArgb(255, 210, 101);
+            timeUnitColor["µs"] = Color.FromArgb(42, 168, 118);
 
             // min and max only take into account the avg
             // there needs to be a min and max for the Min and the Max
@@ -522,6 +529,9 @@ namespace AoC
                                 mins[part].Add(double.NaN);
                                 avgs[part].Add(double.NaN);
                                 maxs[part].Add(double.NaN);
+                                avgColors[part].Add(Log.Neutral);
+                                minColors[part].Add(Log.Neutral);
+                                maxColors[part].Add(Log.Neutral);
                             }
                             else
                             {
@@ -544,14 +554,18 @@ namespace AoC
                                 if (compactPerf)
                                 {
                                     TimeMagnitude tm = getTimeMagnitude(stats.Avg);
-                                    logLine += string.Format(" Avg={0}{1:000.000}{0} ({2})", Log.ColorMarker, tm.First, tm.Last);
+                                    avgColors[part].Add(timeUnitColor[tm.Last]);
+                                    logLine += string.Format(" Avg={0}{1:000.000}{0} ({0}{2}{0})", Log.ColorMarker, tm.First, tm.Last);
                                 }
                                 else
                                 {
                                     TimeMagnitude avgTm = getTimeMagnitude(stats.Avg);
                                     TimeMagnitude minTm = getTimeMagnitude(stats.Min);
                                     TimeMagnitude maxTm = getTimeMagnitude(stats.Max);
-                                    logLine += string.Format(" Avg={0}{1:000.000}{0} ({2}) [{3} Records, Min={0}{4:000.000}{0} ({5}), Max={0}{6:000.000}{0} ({7})]", Log.ColorMarker, avgTm.First, avgTm.Last, stats.Count, minTm.First, minTm.Last, maxTm.First, maxTm.Last);
+                                    avgColors[part].Add(timeUnitColor[avgTm.Last]);
+                                    minColors[part].Add(timeUnitColor[minTm.Last]);
+                                    maxColors[part].Add(timeUnitColor[maxTm.Last]);
+                                    logLine += string.Format(" Avg={0}{1:000.000}{0} ({0}{2}{0}) [{3} Records, Min={0}{4:000.000}{0} ({0}{5}{0}), Max={0}{6:000.000}{0} ({0}{7}{0})]", Log.ColorMarker, avgTm.First, avgTm.Last, stats.Count, minTm.First, minTm.Last, maxTm.First, maxTm.Last);
                                 }
                             }
                             logs[part].Add(logLine);
@@ -580,7 +594,7 @@ namespace AoC
             {
                 if (avg.Equals(double.NaN))
                 {
-                    return Core.Log.Neutral;
+                    return Log.Neutral;
                 }
 
                 Func<double, ColorRange, int> getRangedColor = (double avg, ColorRange colorRange) =>
@@ -607,8 +621,8 @@ namespace AoC
 
             if (compactPerf)
             {
-                int maxLength = logs.SelectMany(l => l.Value).Max(lv => lv.Length) + 2;
-                string separator = new string('#', maxLength * 2 + 6);
+                int maxLength = logs.SelectMany(l => l.Value).Select(lv => lv.Replace($"{Log.ColorMarker}", "")).Max(lv => lv.Length) + 2;
+                string separator = new string('#', maxLength * 2 + 10);
                 for (int i = 0; i < logs[Part.Two].Count; ++i)
                 {
                     if (i % 5 == 0)
@@ -616,11 +630,11 @@ namespace AoC
                         Log.WriteLine(Log.ELevel.Info, separator);
                     }
                     Log.Write(Log.ELevel.Info, "##  ");
-                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], new List<Color>() { getColor(getAvg(avgs[Part.One][i])) });
-                    Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.One][i].Length));
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], new List<Color>() { getColor(getAvg(avgs[Part.One][i])), avgColors[Part.One][i] });
+                    Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.One][i].Replace($"{Log.ColorMarker}", "").Length));
                     Log.WriteAppend(Log.ELevel.Info, "##  ");
-                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], new List<Color>() { getColor(getAvg(avgs[Part.Two][i])) });
-                    Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.Two][i].Length));
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], new List<Color>() { getColor(getAvg(avgs[Part.Two][i])), avgColors[Part.Two][i] });
+                    Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.Two][i].Replace($"{Log.ColorMarker}", "").Length));
                     Log.WriteAppend(Log.ELevel.Info, "##");
                     Log.WriteAppendEnd(Log.ELevel.Info);
                 }
@@ -638,7 +652,7 @@ namespace AoC
                         double minColor = getAvg(mins[part][i]);
                         double avgColor = getAvg(avgs[part][i]);
                         double maxColor = getAvg(maxs[part][i]);
-                        List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor) };
+                        List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor), avgColors[part][i], minColors[part][i], maxColors[part][i] };
                         Log.WriteLine(Log.ELevel.Info, logs[part][i], colors);
                     }
                     Log.WriteLine(Log.ELevel.Info, separator);
@@ -664,7 +678,7 @@ namespace AoC
                 Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), new List<Color>() { color });
 
                 string remainingLog = string.Format(" ({0}{1}{0}){2}", Log.ColorMarker, tm.Last, logEnder);
-                Log.WriteAppend(Log.ELevel.Info, remainingLog, new List<Color>() {timeUnitColor[tm.Last]});
+                Log.WriteAppend(Log.ELevel.Info, remainingLog, new List<Color>() { timeUnitColor[tm.Last] });
 
                 if (compactPerf)
                 {
