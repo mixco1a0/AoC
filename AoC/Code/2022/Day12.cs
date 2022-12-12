@@ -41,9 +41,13 @@ abdefghi"
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "29",
                 RawInput =
-@""
+@"Sabqponm
+abcryxxl
+accszExk
+acctuvwj
+abdefghi"
             });
             return testData;
         }
@@ -71,7 +75,7 @@ abdefghi"
             }
         }
 
-        private Node[,] GetNodes(List<string> inputs, out Base.Point start, out Base.Point end, out int maxX, out int maxY)
+        private Node[,] GetNodes(List<string> inputs, out Base.Point start, out Base.Point end, out int maxX, out int maxY, bool reverse)
         {
             start = new Base.Point(-1, -1);
             end = new Base.Point(-1, -1);
@@ -85,12 +89,27 @@ abdefghi"
                     switch (inputs[y][x])
                     {
                         case 'S':
-                            start = new Base.Point(x, y);
-                            nodes[x, y] = new Node(0) { Prev = start, Path = 0 };
+                            if (reverse)
+                            {
+                                nodes[x, y] = new Node(0);
+                            }
+                            else
+                            {
+                                start = new Base.Point(x, y);
+                                nodes[x, y] = new Node(0) { Prev = start, Path = 0 };
+                            }
                             break;
                         case 'E':
-                            end = new Base.Point(x, y);
-                            nodes[x, y] = new Node('z' - 'a');
+                            if (reverse)
+                            {
+                                start = new Base.Point(x, y);
+                                nodes[x, y] = new Node('z' - 'a') { Prev = start, Path = 0 };
+                            }
+                            else
+                            {
+                                end = new Base.Point(x, y);
+                                nodes[x, y] = new Node('z' - 'a');
+                            }
                             break;
                         default:
                             nodes[x, y] = new Node(inputs[y][x] - 'a');
@@ -115,9 +134,9 @@ abdefghi"
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool reverse)
         {
-            Node[,] nodes = GetNodes(inputs, out Base.Point start, out Base.Point end, out int maxX, out int maxY);
+            Node[,] nodes = GetNodes(inputs, out Base.Point start, out Base.Point end, out int maxX, out int maxY, reverse);
             PriorityQueue<Base.Point, long> gridWalker = new PriorityQueue<Base.Point, long>();
             gridWalker.Enqueue(start, 0);
             while (gridWalker.Count > 0)
@@ -131,9 +150,19 @@ abdefghi"
                 }
                 curNode.Done = true;
 
-                if (curPos.CompareTo(end) == 0)
+                if (reverse)
                 {
-                    return nodes[curPos.X, curPos.Y].Path.ToString();
+                    if (curNode.Height == 0)
+                    {
+                        return curNode.Path.ToString();
+                    }
+                }
+                else
+                {
+                    if (curPos.CompareTo(end) == 0)
+                    {
+                        return curNode.Path.ToString();
+                    }
                 }
 
                 foreach (Base.Point gridMove in GridMoves)
@@ -142,7 +171,18 @@ abdefghi"
                     if (nextMove.X >= 0 && nextMove.X < maxX && nextMove.Y >= 0 && nextMove.Y < maxY)
                     {
                         Node nextNode = nodes[nextMove.X, nextMove.Y];
-                        if (curNode.Height + 1 >= nextNode.Height)
+                        Func<bool> canMoveTo = () =>
+                        {
+                            if (reverse)
+                            {
+                                return curNode.Height - 1 <= nextNode.Height;
+                            }
+                            else
+                            {
+                                return curNode.Height + 1 >= nextNode.Height;
+                            }
+                        };
+                        if (canMoveTo())
                         {
                             if (nextNode.Prev != null)
                             {
@@ -166,9 +206,9 @@ abdefghi"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
