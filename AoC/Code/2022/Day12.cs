@@ -13,9 +13,9 @@ namespace AoC._2022
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -51,157 +51,63 @@ abdefghi"
             return testData;
         }
 
-        static readonly Base.Point[] GridMoves = new Base.Point[] { new Base.Point(0, 1), new Base.Point(1, 0), new Base.Point(-1, 0), new Base.Point(0, -1) };
-
-        private class Node
+        private class Node : Util.AStarNode
         {
             public long Height { get; set; }
-            public Base.Point Prev { get; set; }
-            public bool Done { get; set; }
-            public long Path { get; set; }
 
-            public Node(long height)
+            public Node(long height) : base()
             {
                 Height = height;
-                Prev = null;
-                Done = false;
-                Path = long.MaxValue;
             }
 
             public override string ToString()
             {
-                return Done ? $"{Path,4}" : $"?{Height,2}?";
-            }
-        }
-
-        private Node[,] GetNodes(List<string> inputs, out Base.Point start, out Base.Point end, out int maxX, out int maxY, bool reverse)
-        {
-            start = new Base.Point(-1, -1);
-            end = new Base.Point(-1, -1);
-            maxX = inputs[0].Length;
-            maxY = inputs.Count;
-            Node[,] nodes = new Node[maxX, maxY];
-            for (int x = 0; x < maxX; ++x)
-            {
-                for (int y = 0; y < maxY; ++y)
-                {
-                    switch (inputs[y][x])
-                    {
-                        case 'S':
-                            if (reverse)
-                            {
-                                nodes[x, y] = new Node(0);
-                            }
-                            else
-                            {
-                                start = new Base.Point(x, y);
-                                nodes[x, y] = new Node(0) { Prev = start, Path = 0 };
-                            }
-                            break;
-                        case 'E':
-                            if (reverse)
-                            {
-                                start = new Base.Point(x, y);
-                                nodes[x, y] = new Node('z' - 'a') { Prev = start, Path = 0 };
-                            }
-                            else
-                            {
-                                end = new Base.Point(x, y);
-                                nodes[x, y] = new Node('z' - 'a');
-                            }
-                            break;
-                        default:
-                            nodes[x, y] = new Node(inputs[y][x] - 'a');
-                            break;
-                    }
-                }
-            }
-            return nodes;
-        }
-
-        private void PrintNodes(Node[,] nodes, int maxX, int maxY)
-        {
-            for (int y = 0; y < maxY; ++y)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append($"{y,3} | ");
-                for (int x = 0; x < maxX; ++x)
-                {
-                    sb.Append($"{(char)(nodes[x, y].Height + 'a'),1}");
-                }
-                DebugWriteLine(sb.ToString());
+                return Processed ? $"{Length,4}" : $"?{Height,2}?";
             }
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool reverse)
         {
-            Node[,] nodes = GetNodes(inputs, out Base.Point start, out Base.Point end, out int maxX, out int maxY, reverse);
-            PriorityQueue<Base.Point, long> gridWalker = new PriorityQueue<Base.Point, long>();
-            gridWalker.Enqueue(start, 0);
-            while (gridWalker.Count > 0)
+            Util.AStar<Node> aStar = new Util.AStar<Node>(inputs[0].Length, inputs.Count);
+            Util.AStar<Node>.InitializeNode initializeNode = (int x, int y) =>
             {
-                Base.Point curPos = gridWalker.Dequeue();
+                switch (inputs[y][x])
+                {
+                    case 'S':
+                        return new Node(0);
+                    case 'E':
+                        return new Node('z' - 'a');
+                    default:
+                        return new Node(inputs[y][x] - 'a');
+                }
+            };
 
-                Node curNode = nodes[curPos.X, curPos.Y];
-                if (curNode.Done)
-                {
-                    continue;
-                }
-                curNode.Done = true;
+            if (reverse)
+            {
+                Util.AStar<Node>.IsNode isStartNode = (int x, int y) => { return inputs[y][x] == 'E'; };
+                aStar.Initialize(inputs, initializeNode, isStartNode, null);
 
-                if (reverse)
+                Util.AStar<Node>.CanUseNode canUsedNode = (Node curNode, Node nextNode) =>
                 {
-                    if (curNode.Height == 0)
-                    {
-                        return curNode.Path.ToString();
-                    }
-                }
-                else
-                {
-                    if (curPos.CompareTo(end) == 0)
-                    {
-                        return curNode.Path.ToString();
-                    }
-                }
-
-                foreach (Base.Point gridMove in GridMoves)
-                {
-                    Base.Point nextMove = curPos + gridMove;
-                    if (nextMove.X >= 0 && nextMove.X < maxX && nextMove.Y >= 0 && nextMove.Y < maxY)
-                    {
-                        Node nextNode = nodes[nextMove.X, nextMove.Y];
-                        Func<bool> canMoveTo = () =>
-                        {
-                            if (reverse)
-                            {
-                                return curNode.Height - 1 <= nextNode.Height;
-                            }
-                            else
-                            {
-                                return curNode.Height + 1 >= nextNode.Height;
-                            }
-                        };
-                        if (canMoveTo())
-                        {
-                            if (nextNode.Prev != null)
-                            {
-                                Node existing = nodes[nextNode.Prev.X, nextNode.Prev.Y];
-                                if (curNode.Path < existing.Path)
-                                {
-                                    nextNode.Prev = curPos;
-                                }
-                            }
-                            else
-                            {
-                                nextNode.Prev = curPos;
-                                nextNode.Path = curNode.Path + 1;
-                            }
-                            gridWalker.Enqueue(nextMove, nextNode.Path);
-                        }
-                    }
-                }
+                    return curNode.Height - 1 <= nextNode.Height;
+                };
+                Util.AStar<Node>.IsEnd isEnd = (Base.Position pos) => { return aStar.Nodes[pos.X, pos.Y].Height == 0; };
+                aStar.Process(canUsedNode, isEnd);
             }
-            return string.Empty;
+            else
+            {
+                Util.AStar<Node>.IsNode isStartNode = (int x, int y) => { return inputs[y][x] == 'S'; };
+                Util.AStar<Node>.IsNode isEndNode = (int x, int y) => { return inputs[y][x] == 'E'; };
+                aStar.Initialize(inputs, initializeNode, isStartNode, isEndNode);
+
+                Util.AStar<Node>.CanUseNode canUsedNode = (Node curNode, Node nextNode) =>
+                {
+                    return curNode.Height + 1 >= nextNode.Height;
+                };
+                aStar.Process(canUsedNode);
+            }
+
+            return aStar.GetOptimalPath();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
