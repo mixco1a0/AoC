@@ -58,9 +58,31 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "140",
                 RawInput =
-@""
+@"[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]"
             });
             return testData;
         }
@@ -76,12 +98,26 @@ namespace AoC._2022
 
             public bool IsOrdered()
             {
-                return CheckOrdered(0, 0);
+                string originalL = L;
+                string originalR = R;
+                bool ordered = CheckOrdered(0, 0);
+                L = originalL;
+                R = originalR;
+                return ordered;
             }
 
             private bool CheckOrdered(int lStart, int rStart)
             {
-                bool ordered = true;
+                if (lStart >= L.Length)
+                {
+                    return true;
+                }
+
+                if (rStart >= R.Length)
+                {
+                    return false;
+                }
+
                 bool isLNum = char.IsDigit(L[lStart]);
                 bool isRNum = char.IsDigit(R[rStart]);
                 if (isLNum && isRNum)
@@ -145,8 +181,24 @@ namespace AoC._2022
                             return false;
                         }
 
-                        int idx = L.IndexOfAny(",[]".ToCharArray(), lStart);
-                        L = L.Insert(idx, "]").Insert(lStart, "[");
+                        int closeIdx = L.IndexOf(']', lStart);
+                        int openIdx = L.IndexOf('[', lStart);
+                        int commaIdx = L.IndexOf(',', lStart);
+                        if (openIdx >= 0 && openIdx < closeIdx)
+                        {
+                            if (commaIdx < openIdx)
+                            {
+                                L = L.Insert(commaIdx, "]").Insert(lStart, "[");
+                            }
+                            else
+                            {
+                                L = L.Insert(openIdx, "]").Insert(lStart, "[");
+                            }
+                        }
+                        else
+                        {
+                            L = L.Insert(closeIdx, "]").Insert(lStart, "[");
+                        }
                     }
                     else
                     {
@@ -155,12 +207,28 @@ namespace AoC._2022
                             return true;
                         }
 
-                        int idx = R.IndexOfAny(",[]".ToCharArray(), rStart);
-                        R = R.Insert(idx, "]").Insert(rStart, "[");
+                        int closeIdx = R.IndexOf(']', rStart);
+                        int openIdx = R.IndexOf(',', rStart);
+                        int commaIdx = R.IndexOf(',', rStart);
+                        if (openIdx >= 0 && openIdx < closeIdx)
+                        {
+                            if (commaIdx < openIdx)
+                            {
+                                R = R.Insert(commaIdx, "]").Insert(rStart, "[");
+                            }
+                            else
+                            {
+                                R = R.Insert(openIdx, "]").Insert(rStart, "[");
+                            }
+                        }
+                        else
+                        {
+                            R = R.Insert(closeIdx, "]").Insert(rStart, "[");
+                        }
                     }
                     return CheckOrdered(lStart, rStart);
                 }
-                return ordered;
+                return true;
             }
         }
 
@@ -188,21 +256,62 @@ namespace AoC._2022
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool orderPackets)
         {
-            ParsePairs(inputs, out List<PacketPair> packets);
-            // packets.ForEach((p) =>
-            // {
-            //     DebugWriteLine($"Processing {p.ToString()}");
-            //     DebugWriteLine($"   Ordered = {p.IsOrdered()}");
-            // });
-            return packets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet.IsOrdered()).Select(pair => pair.idx + 1).Sum().ToString();
+            if (!orderPackets)
+            {
+                ParsePairs(inputs, out List<PacketPair> packets);
+                // packets.ForEach((packet) =>
+                // {
+                //     if (packet.IsOrdered())
+                //     {
+                //         DebugWriteLine(packet.ToString());
+                //     }
+                // });
+                return packets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet.IsOrdered()).Select(pair => pair.idx + 1).Sum().ToString();
+            }
+            else
+            {
+                List<string> halfPackets = inputs.Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                halfPackets.AddRange(new List<string>() { "[[2]]", "[[6]]" });
+
+                string[] orderedPackets = new string[halfPackets.Count];
+                orderedPackets[0] = halfPackets[0];
+                halfPackets.RemoveAt(0);
+
+                PacketPair test = new PacketPair();
+                while (halfPackets.Count > 0)
+                {
+                    test.L = halfPackets[0];
+                    halfPackets.RemoveAt(0);
+                    // DebugWriteLine($"Sorting {test.L}");
+
+                    for (int i = 0; i < orderedPackets.Length; ++i)
+                    {
+                        if (string.IsNullOrWhiteSpace(orderedPackets[i]))
+                        {
+                            orderedPackets[i] = test.L;
+                            break;
+                        }
+
+                        test.R = orderedPackets[i];
+                        if (test.IsOrdered())
+                        {
+                            orderedPackets[i] = test.L;
+                            test.L = test.R;
+                        }
+                    }
+                }
+                var decoder = orderedPackets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet == "[[2]]" || pair.packet == "[[6]]").ToList();
+                return ((decoder[0].idx + 1) * (decoder[1].idx + 1)).ToString();
+            }
+            return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
