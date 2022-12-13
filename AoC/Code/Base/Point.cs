@@ -36,10 +36,5 @@ namespace AoC.Base
         {
             return new Point(a.X - b.X, a.Y - b.Y);
         }
-
-        public int Manhattan(Point other)
-        {
-            return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
-        }
     }
 }
