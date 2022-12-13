@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,16 +11,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -261,13 +260,6 @@ namespace AoC._2022
             if (!orderPackets)
             {
                 ParsePairs(inputs, out List<PacketPair> packets);
-                // packets.ForEach((packet) =>
-                // {
-                //     if (packet.IsOrdered())
-                //     {
-                //         DebugWriteLine(packet.ToString());
-                //     }
-                // });
                 return packets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet.IsOrdered()).Select(pair => pair.idx + 1).Sum().ToString();
             }
             else
@@ -284,7 +276,6 @@ namespace AoC._2022
                 {
                     test.L = halfPackets[0];
                     halfPackets.RemoveAt(0);
-                    // DebugWriteLine($"Sorting {test.L}");
 
                     for (int i = 0; i < orderedPackets.Length; ++i)
                     {
@@ -305,7 +296,6 @@ namespace AoC._2022
                 var decoder = orderedPackets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet == "[[2]]" || pair.packet == "[[6]]").ToList();
                 return ((decoder[0].idx + 1) * (decoder[1].idx + 1)).ToString();
             }
-            return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
