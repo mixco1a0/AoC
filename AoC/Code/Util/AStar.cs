@@ -29,7 +29,7 @@ namespace AoC.Util
         public int MaxX { get; private set; }
         public int MaxY { get; private set; }
         public TNode[,] Nodes { get; private set; }
-        public char[,] Raw { get; private set; }
+        public char[,] Input { get; private set; }
         public Base.Position Start { get; private set; }
         public Base.Position End { get; private set; }
 
@@ -41,7 +41,7 @@ namespace AoC.Util
             MaxX = maxX;
             MaxY = maxY;
             Nodes = new TNode[MaxX, MaxY];
-            Raw = new char[MaxX, MaxY];
+            Input = new char[MaxX, MaxY];
         }
 
         public delegate TNode InitializeNode(int x, int y);
@@ -53,7 +53,7 @@ namespace AoC.Util
             {
                 for (int y = 0; y < MaxY; ++y)
                 {
-                    Raw[x, y] = inputs[y][x];
+                    Input[x, y] = inputs[y][x];
                     Nodes[x, y] = initializeNode(x, y);
                     if (isStartNode(x, y))
                     {
@@ -69,40 +69,56 @@ namespace AoC.Util
             Initialized = true;
         }
 
-        // public void Enlargen(int multiplier, Func<TNode[,], int, int, TNode> GetAdjustedNode, Func<char[,], int, int, char> GetAdjustedRaw)
-        // {
-        //     TNode[,] originalNodes = Nodes;
-        //     char[,] originalValues = Raw;
-        //     int originalMaxX = MaxX;
-        //     int originalMaxY = MaxY;
+        public delegate TNode GetExpandedNode(TNode[,] originalNodes, int x, int y, int originalMaxX, int originalMaxY);
+        public delegate char GetExpandedInput(char[,] originalInput, int x, int y);
+        public void Expand(int multiplier, GetExpandedNode getExpandedNode, GetExpandedInput getExpandedRaw, IsNode isStartNode, IsNode isEndNode)
+        {
+            TNode[,] originalNodes = Nodes;
+            char[,] originalInput = Input;
+            int originalMaxX = MaxX;
+            int originalMaxY = MaxY;
 
-        //     MaxX *= multiplier;
-        //     MaxY *= multiplier;
-        //     Nodes = new TNode[MaxX, MaxY];
-        //     Raw = new char[MaxX, MaxY];
+            MaxX *= multiplier;
+            MaxY *= multiplier;
+            Nodes = new TNode[MaxX, MaxY];
+            Input = new char[MaxX, MaxY];
 
-        //     for (int x = 0; x < MaxX; ++x)
-        //     {
-        //         for (int y = 0; y < MaxY; ++y)
-        //         {
-        //             Nodes[x, y] = GetAdjustedNode(originalNodes, x, y);
-        //             Raw[x, y] = GetAdjustedRaw(originalValues, x, y);
-        //         }
-        //     }
-        // }
+            for (int x = 0; x < MaxX; ++x)
+            {
+                for (int y = 0; y < MaxY; ++y)
+                {
+                    Nodes[x, y] = getExpandedNode(originalNodes, x, y, originalMaxX, originalMaxY);
+                    Input[x, y] = getExpandedRaw(originalInput, x, y);
+                    if (isStartNode(x, y))
+                    {
+                        Start = new Base.Position(x, y);
+                    }
+                    if (isEndNode != null && isEndNode(x, y))
+                    {
+                        End = new Base.Position(x, y);
+                    }
+                }
+            }
+        }
 
         static readonly Base.Position[] NeighborOffsets = new Base.Position[] { new Base.Position(0, 1), new Base.Position(1, 0), new Base.Position(-1, 0), new Base.Position(0, -1) };
         static readonly char[] NeighborDirection = new char[] { '↓', '→', '←', '↑' };
 
-        public delegate long AdjustLength(TNode curNode, TNode prevNode);
-        public delegate bool IsEnd(Base.Position curPos);
-        public delegate long GetPriority(TNode curNode, TNode nextNode);
         public delegate bool CanUseNode(TNode curNode, TNode nextNode);
-        public void Process(CanUseNode canUseNode, IsEnd isEnd = null, AdjustLength adjustLength = null, GetPriority getPriority = null)
+        public delegate bool IsEnd(Base.Position curPos);
+        public delegate long AdjustLength(TNode curNode, TNode prevNode);
+        public delegate long GetPriority(TNode curNode, TNode nextNode);
+        public void Process(CanUseNode canUseNode = null, IsEnd isEnd = null, AdjustLength adjustLength = null, GetPriority getPriority = null)
         {
             if (!Initialized)
             {
                 return;
+            }
+
+            // by default, all nodes should be usable
+            if (canUseNode == null)
+            {
+                canUseNode = (TNode curNode, TNode nextNode) => { return true; };
             }
 
             // by default, check for the end position
@@ -200,7 +216,7 @@ namespace AoC.Util
                     }
                     else
                     {
-                        sb.Append($"{Raw[x, y],1}");
+                        sb.Append($"{Input[x, y],1}");
                     }
                 }
                 Core.Log.WriteLine(level, sb.ToString());
@@ -210,7 +226,7 @@ namespace AoC.Util
 
         public void PrintPath(Core.Log.ELevel level = Core.Log.ELevel.Debug)
         {
-            char[,] path = Raw;
+            char[,] path = Input;
             Base.Position curPos = End;
             while (curPos != null)
             {
