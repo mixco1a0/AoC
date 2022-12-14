@@ -1,7 +1,7 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2022
 {
@@ -13,16 +13,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -138,6 +138,7 @@ namespace AoC._2022
         void PrintCave(Dictionary<Base.Position, char> cave, int minX, int maxX, int minY, int maxY, bool endlessVoid)
         {
             StringBuilder sb = new StringBuilder();
+            Core.Log.WriteLine(Core.Log.ELevel.Debug, "");
             for (int y = minY; y <= maxY + 1; ++y)
             {
                 sb.Clear();
@@ -178,6 +179,7 @@ namespace AoC._2022
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Debug, sb.ToString());
             }
+            Core.Log.WriteLine(Core.Log.ELevel.Debug, "");
         }
 
         static readonly Base.Position[] Movement = new Base.Position[] { new Base.Position(0, 1), new Base.Position(-1, 1), new Base.Position(1, 1) };
@@ -226,7 +228,6 @@ namespace AoC._2022
             if (!endlessVoid)
             {
                 maxY += 2;
-                //PrintCave(cave, minX, maxX, minY, maxY, endlessVoid);
             }
 
             int sandCount = 0;
@@ -240,11 +241,6 @@ namespace AoC._2022
                 {
                     break;
                 }
-            }
-
-            if (!endlessVoid)
-            {
-                //PrintCave(cave, minX, maxX, minY, maxY, endlessVoid);
             }
             return sandCount.ToString();
         }
