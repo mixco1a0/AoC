@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,9 +13,9 @@ namespace AoC._2022
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -140,15 +141,19 @@ namespace AoC._2022
                     }
                     else if (left == right)
                     {
-                        if (L[lEnd] == R[rEnd] && R[rEnd] == ',')
+                        // L (...#,...) | R (...#,...)
+                        // L (...#]...) | R (...#]...)
+                        if (L[lEnd] == R[rEnd])
                         {
                             return CheckOrdered(lEnd + 1, rEnd + 1);
                         }
+                        // L (...#]...) | R (...#,...)
                         else if (R[rEnd] == ',')
                         {
                             // left has no more items
                             return true;
                         }
+                        // L (...#,...) | R (...#]...)
                         else if (L[lEnd] == ',')
                         {
                             // right has no more items
@@ -173,6 +178,25 @@ namespace AoC._2022
                 }
                 else
                 {
+                    Func<string, int, string> InsertList = (string source, int startIdx) =>
+                    {
+                        int closeIdx = source.IndexOf(']', startIdx);
+                        int openIdx = source.IndexOf('[', startIdx);
+                        int commaIdx = source.IndexOf(',', startIdx);
+                        // ...#,...
+                        if (commaIdx >= 0 && (closeIdx < 0 || commaIdx < closeIdx))
+                        {
+                            source = source.Insert(commaIdx, "]").Insert(startIdx, "[");
+                        }
+                        // ...#]
+                        else if (closeIdx >= 0)
+                        {
+                            // ...[#]]
+                            source = source.Insert(closeIdx, "]").Insert(startIdx, "[");
+                        }
+                        return source;
+                    };
+
                     if (isLNum)
                     {
                         if (R[rStart] == ']')
@@ -180,24 +204,7 @@ namespace AoC._2022
                             return false;
                         }
 
-                        int closeIdx = L.IndexOf(']', lStart);
-                        int openIdx = L.IndexOf('[', lStart);
-                        int commaIdx = L.IndexOf(',', lStart);
-                        if (openIdx >= 0 && openIdx < closeIdx)
-                        {
-                            if (commaIdx < openIdx)
-                            {
-                                L = L.Insert(commaIdx, "]").Insert(lStart, "[");
-                            }
-                            else
-                            {
-                                L = L.Insert(openIdx, "]").Insert(lStart, "[");
-                            }
-                        }
-                        else
-                        {
-                            L = L.Insert(closeIdx, "]").Insert(lStart, "[");
-                        }
+                        L = InsertList(L, lStart);
                     }
                     else
                     {
@@ -206,24 +213,7 @@ namespace AoC._2022
                             return true;
                         }
 
-                        int closeIdx = R.IndexOf(']', rStart);
-                        int openIdx = R.IndexOf(',', rStart);
-                        int commaIdx = R.IndexOf(',', rStart);
-                        if (openIdx >= 0 && openIdx < closeIdx)
-                        {
-                            if (commaIdx < openIdx)
-                            {
-                                R = R.Insert(commaIdx, "]").Insert(rStart, "[");
-                            }
-                            else
-                            {
-                                R = R.Insert(openIdx, "]").Insert(rStart, "[");
-                            }
-                        }
-                        else
-                        {
-                            R = R.Insert(closeIdx, "]").Insert(rStart, "[");
-                        }
+                        R = InsertList(R, rStart);
                     }
                     return CheckOrdered(lStart, rStart);
                 }
@@ -259,42 +249,32 @@ namespace AoC._2022
         {
             if (!orderPackets)
             {
-                ParsePairs(inputs, out List<PacketPair> packets);
-                return packets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet.IsOrdered()).Select(pair => pair.idx + 1).Sum().ToString();
+                ParsePairs(inputs, out List<PacketPair> packetPairs);
+                return packetPairs.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet.IsOrdered()).Select(pair => pair.idx + 1).Sum().ToString();
             }
             else
             {
-                List<string> halfPackets = inputs.Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-                halfPackets.AddRange(new List<string>() { "[[2]]", "[[6]]" });
+                int lowPackets = 0;
+                int midPackets = 0;
 
-                string[] orderedPackets = new string[halfPackets.Count];
-                orderedPackets[0] = halfPackets[0];
-                halfPackets.RemoveAt(0);
-
-                PacketPair test = new PacketPair();
-                while (halfPackets.Count > 0)
+                PacketPair testPair2 = new PacketPair() { R = "[[2]]" };
+                PacketPair testPair6 = new PacketPair() { R = "[[6]]" };
+                foreach (string packet in inputs.Where(i => !string.IsNullOrWhiteSpace(i)))
                 {
-                    test.L = halfPackets[0];
-                    halfPackets.RemoveAt(0);
-
-                    for (int i = 0; i < orderedPackets.Length; ++i)
+                    testPair2.L = packet;
+                    if (testPair2.IsOrdered())
                     {
-                        if (string.IsNullOrWhiteSpace(orderedPackets[i]))
-                        {
-                            orderedPackets[i] = test.L;
-                            break;
-                        }
-
-                        test.R = orderedPackets[i];
-                        if (test.IsOrdered())
-                        {
-                            orderedPackets[i] = test.L;
-                            test.L = test.R;
-                        }
+                        ++lowPackets;
+                        continue;
+                    }
+                    
+                    testPair6.L = packet;
+                    if (testPair6.IsOrdered())
+                    {
+                        ++midPackets;
                     }
                 }
-                var decoder = orderedPackets.Select((packet, idx) => (packet, idx)).Where(pair => pair.packet == "[[2]]" || pair.packet == "[[6]]").ToList();
-                return ((decoder[0].idx + 1) * (decoder[1].idx + 1)).ToString();
+                return ((lowPackets + 1) * (lowPackets + midPackets + 2)).ToString();
             }
         }
 
