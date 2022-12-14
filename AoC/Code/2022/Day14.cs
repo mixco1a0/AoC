@@ -38,9 +38,10 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "93",
                 RawInput =
-@""
+@"498,4 -> 498,6 -> 496,6
+503,4 -> 502,4 -> 502,9 -> 494,9"
             });
             return testData;
         }
@@ -134,7 +135,7 @@ namespace AoC._2022
             }
         }
 
-        void PrintCave(Dictionary<Base.Position, char> cave, int minX, int maxX, int minY, int maxY)
+        void PrintCave(Dictionary<Base.Position, char> cave, int minX, int maxX, int minY, int maxY, bool endlessVoid)
         {
             StringBuilder sb = new StringBuilder();
             for (int y = minY; y <= maxY + 1; ++y)
@@ -148,9 +149,31 @@ namespace AoC._2022
                     {
                         sb.Append(cave[cur]);
                     }
-                    else
+                    else if (endlessVoid)
                     {
                         sb.Append(AirVal);
+                    }
+                    else
+                    {
+                        if (y == maxY)
+                        {
+                            if (x < minX)
+                            {
+                                sb.Append('←');
+                            }
+                            else if (x > maxX)
+                            {
+                                sb.Append('→');
+                            }
+                            else
+                            {
+                                sb.Append(RockVal);
+                            }
+                        }
+                        else
+                        {
+                            sb.Append(AirVal);
+                        }
                     }
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Debug, sb.ToString());
@@ -158,13 +181,13 @@ namespace AoC._2022
         }
 
         static readonly Base.Position[] Movement = new Base.Position[] { new Base.Position(0, 1), new Base.Position(-1, 1), new Base.Position(1, 1) };
-        private bool DropSand(ref Dictionary<Base.Position, char> cave, int maxY, out Base.Position sand)
+        private bool DropSand(ref Dictionary<Base.Position, char> cave, int maxY, bool endlessVoid, out Base.Position sand)
         {
             sand = new Base.Position(500, 0);
             while (true)
             {
                 // infinite free fall
-                if (sand.Y > maxY)
+                if (endlessVoid && sand.Y > maxY)
                 {
                     return false;
                 }
@@ -175,6 +198,12 @@ namespace AoC._2022
                 {
                     Base.Position newSand = sand + move;
                     if (cave.ContainsKey(newSand))
+                    {
+                        continue;
+                    }
+
+                    // hit the floor
+                    if (!endlessVoid && newSand.Y == maxY)
                     {
                         continue;
                     }
@@ -191,24 +220,39 @@ namespace AoC._2022
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool endlessVoid)
         {
             GenerateCave(inputs, out Dictionary<Base.Position, char> cave, out int minX, out int maxX, out int minY, out int maxY);
-            PrintCave(cave, minX, maxX, minY, maxY);
+            if (!endlessVoid)
+            {
+                maxY += 2;
+                //PrintCave(cave, minX, maxX, minY, maxY, endlessVoid);
+            }
+
             int sandCount = 0;
-            while (DropSand(ref cave, maxY, out Base.Position sand))
+            while (DropSand(ref cave, maxY, endlessVoid, out Base.Position sand))
             {
                 ++sandCount;
                 cave[sand] = SandVal;
+                UpdateMax(sand, ref minX, ref maxX, ref minY, ref maxY);
+
+                if (!endlessVoid && sand.X == 500 && sand.Y == 0)
+                {
+                    break;
+                }
             }
-            //PrintCave(cave, minX, maxX, minY, maxY);
+
+            if (!endlessVoid)
+            {
+                //PrintCave(cave, minX, maxX, minY, maxY, endlessVoid);
+            }
             return sandCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
