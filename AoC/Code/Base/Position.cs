@@ -42,4 +42,26 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
         }
     }
+
+    public class LongPosition : Point<long>
+    {
+        public LongPosition() : base() { }
+        public LongPosition(long x, long y) : base(x, y) { }
+        public LongPosition(LongPosition other) : base(other) { }
+
+        public static LongPosition operator +(LongPosition a, LongPosition b)
+        {
+            return new LongPosition(a.X + b.X, a.Y + b.Y);
+        }
+
+        public static LongPosition operator -(LongPosition a, LongPosition b)
+        {
+            return new LongPosition(a.X - b.X, a.Y - b.Y);
+        }
+
+        public long Manhattan(LongPosition other)
+        {
+            return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
+        }
+    }
 }

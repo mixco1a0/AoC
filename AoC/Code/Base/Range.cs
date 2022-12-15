@@ -94,7 +94,7 @@ namespace AoC.Base
     public class LongRange : Range<long>
     {
         public LongRange() : base() { }
-        public LongRange(int min, int max) : base(min, max) { }
+        public LongRange(long min, long max) : base(min, max) { }
         public LongRange(LongRange other) : base(other) { }
 
         public override bool HasInc(long value) => Min <= value && value <= Max;
