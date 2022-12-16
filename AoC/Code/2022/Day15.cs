@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -128,7 +128,13 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
                 int matchingIdx = -1;
                 for (int i = 0; i < compressed.Count; ++i)
                 {
-                    if (compressed[i].HasInc(range.First) || compressed[i].HasInc(range.Last))
+                    Base.LongRange curCompressed = compressed[i];
+                    if (curCompressed.HasIncOr(range) || range.HasIncOr(curCompressed))
+                    {
+                        matchingIdx = i;
+                        break;
+                    }
+                    else if (curCompressed.First == range.Last + 1 || range.First == curCompressed.Last + 1)
                     {
                         matchingIdx = i;
                         break;
@@ -141,7 +147,7 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
                 }
                 else
                 {
-                    compressed.Add(range);
+                    compressed.Add(new Base.LongRange(Math.Max(minX, range.Min), Math.Min(maxX, range.Max)));
                 }
             }
 
@@ -162,7 +168,7 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
             {
                 GetVariable(nameof(_MaxX), 4000000, variables, out int maxX);
                 GetVariable(nameof(_MaxY), 4000000, variables, out int maxY);
-                for (long y = 0; y < maxY; ++y)
+                for (long y = maxY; y > 0; --y)
                 {
                     List<Base.LongRange> blockedRanges = GetBlockedRanges(sensors, y);
                     List<Base.LongRange> compressedRanges = CompressRanges(blockedRanges, 0, maxX);
