@@ -499,10 +499,10 @@ namespace AoC
             };
 
             Dictionary<string, Color> timeUnitColor = new Dictionary<string, Color>();
-            timeUnitColor[" m"] = Color.FromArgb(232, 85, 78);
-            timeUnitColor[" s"] = Color.FromArgb(241, 156, 101);
-            timeUnitColor["ms"] = Color.FromArgb(255, 210, 101);
-            timeUnitColor["µs"] = Color.FromArgb(42, 168, 118);
+            timeUnitColor[" m"] = Color.Violet;
+            timeUnitColor[" s"] = Log.Negative;
+            timeUnitColor["ms"] = Log.Neutral;
+            timeUnitColor["µs"] = Log.Positive;
 
             // min and max only take into account the avg
             // there needs to be a min and max for the Min and the Max
