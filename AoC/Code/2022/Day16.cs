@@ -56,20 +56,20 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
         {
             public string Id { get; set; }
             public int Rate { get; set; }
-            public int OpenedAt { get; set; }
             public Dictionary<string, int> Rooms { get; set; }
 
             public Room()
             {
                 Id = string.Empty;
                 Rate = 0;
-                OpenedAt = 0;
                 Rooms = new Dictionary<string, int>();
             }
 
-            public int GetPressure()
+            public Room(Room other)
             {
-                return OpenedAt * Rate;
+                Id = other.Id;
+                Rate = other.Rate;
+                Rooms = new Dictionary<string, int>(other.Rooms);
             }
 
             public static Room Parse(string input)
@@ -104,200 +104,339 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
             }
         }
 
+        // private class RoomState
+        // {
+        //     public int CurTime { get; set; }
+        //     public string CurId { get; set; }
+        //     public Dictionary<string, int> Opened { get; set; }
+        //     public HashSet<string> Closed { get; set; }
+        //     public List<IdToNew> History { get; set; }
+
+        //     public RoomState(Dictionary<string, Room> rooms, int time, Room curRoom, bool open)
+        //     {
+        //         CurTime = time;
+        //         CurId = curRoom.Id;
+        //         Opened = new Dictionary<string, int>();
+        //         Closed = new HashSet<string>(rooms.Keys);
+        //         History = new List<IdToNew>();
+        //         History.Add(new IdToNew(curRoom.Id, open));
+
+        //         if (open && Closed.Contains(CurId))
+        //         {
+        //             History.Add(new IdToNew(CurId, true));
+        //             Closed.Remove(CurId);
+        //             Opened.Add(CurId, CurTime);
+        //         }
+        //         else
+        //         {
+        //             History.Add(new IdToNew(CurId, false));
+        //         }
+        //     }
+
+        //     public RoomState(RoomState prev, int time, Room nextRoom, int stepsToRoom, bool open)
+        //     {
+        //         CurId = nextRoom.Id;
+        //         Opened = new Dictionary<string, int>(prev.Opened);
+        //         Closed = new HashSet<string>(prev.Closed);
+        //         History = new List<IdToNew>(prev.History);
+
+        //         if (open && Closed.Contains(CurId))
+        //         {
+        //             CurTime = time - stepsToRoom - 1;
+        //             History.Add(new IdToNew(CurId, true));
+        //             Closed.Remove(CurId);
+        //             Opened.Add(CurId, CurTime);
+        //         }
+        //         else
+        //         {
+        //             CurTime = time - stepsToRoom;
+        //             History.Add(new IdToNew(CurId, false));
+        //         }
+        //     }
+
+        //     public bool HasCycle()
+        //     {
+        //         HashSet<string> cycles = new HashSet<string>();
+        //         foreach (var pair in History)
+        //         {
+        //             if (!pair.Val)
+        //             {
+        //                 if (cycles.Contains(pair.Key))
+        //                 {
+        //                     return true;
+        //                 }
+
+        //                 cycles.Add(pair.Key);
+        //             }
+        //             else if (pair.Val)
+        //             {
+        //                 cycles.Clear();
+        //             }
+        //         }
+        //         return false;
+        //     }
+
+        //     public override string ToString()
+        //     {
+        //         return $"{CurTime} | {string.Join(" ", History.Select(p => $"{string.Format("{0}", p.Val ? "+" : "-")}{p.First}"))}";
+        //     }
+        // }
+
+        // private int GetPressureReleased(Dictionary<string, Room> rooms, RoomState rs)
+        // {
+        //     int total = 0;
+        //     foreach (var pair in rs.Opened)
+        //     {
+        //         total += rooms[pair.Key].Rate * pair.Value;
+        //     }
+        //     return total;
+        // }
+
+        // private int GetPotentialReleased(Dictionary<string, Room> rooms, RoomState rs)
+        // {
+        //     int total = 0;
+        //     foreach (string id in rs.Closed)
+        //     {
+        //         total += rooms[id].Rate * (rs.CurTime - 2);
+        //     }
+        //     return total;
+        // }
+
+        private void RemoveRoom(ref Dictionary<string, Room> rooms, string roomId)
+        {
+            Room removedRoom = rooms[roomId];
+            Dictionary<string, int> removedRoomConnections = removedRoom.Rooms;
+            foreach (var rrc in removedRoomConnections)
+            {
+                // grab a connection
+                Room connection = rooms[rrc.Key];
+                int distanceToConnection = removedRoomConnections[connection.Id];
+                connection.Rooms.Remove(roomId);
+
+                // connect this room to all of the other ones
+                foreach (var rrc2 in removedRoomConnections)
+                {
+                    if (rrc2.Key == connection.Id)
+                    {
+                        continue;
+                    }
+
+                    int distanceToOtherConnection = removedRoomConnections[rrc2.Key];
+                    connection.Rooms[rrc2.Key] = distanceToConnection + distanceToOtherConnection;
+                }
+            }
+
+            rooms.Remove(roomId);
+        }
+
         private class RoomState
         {
-            public int CurTime { get; set; }
-            public string CurId { get; set; }
-            public Dictionary<string, int> Opened { get; set; }
-            public HashSet<string> Closed { get; set; }
-            public List<IdToNew> History { get; set; }
+            public Dictionary<string, Room> Rooms { get; set; }
+        }
 
-            public RoomState(Dictionary<string, Room> rooms, int time, Room curRoom, bool open)
+        private class RoomNode
+        {
+            public string Prev { get; set; }
+            public bool Done { get; set; }
+            public int Path { get; set; }
+
+            public RoomNode()
             {
-                CurTime = time;
-                CurId = curRoom.Id;
-                Opened = new Dictionary<string, int>();
-                Closed = new HashSet<string>(rooms.Keys);
-                History = new List<IdToNew>();
-                History.Add(new IdToNew(curRoom.Id, open));
-
-                if (open && Closed.Contains(CurId))
-                {
-                    History.Add(new IdToNew(CurId, true));
-                    Closed.Remove(CurId);
-                    Opened.Add(CurId, CurTime);
-                }
-                else
-                {
-                    History.Add(new IdToNew(CurId, false));
-                }
-            }
-
-            public RoomState(RoomState prev, int time, Room nextRoom, int stepsToRoom, bool open)
-            {
-                CurId = nextRoom.Id;
-                Opened = new Dictionary<string, int>(prev.Opened);
-                Closed = new HashSet<string>(prev.Closed);
-                History = new List<IdToNew>(prev.History);
-
-                if (open && Closed.Contains(CurId))
-                {
-                    CurTime = time - stepsToRoom - 1;
-                    History.Add(new IdToNew(CurId, true));
-                    Closed.Remove(CurId);
-                    Opened.Add(CurId, CurTime);
-                }
-                else
-                {
-                    CurTime = time - stepsToRoom;
-                    History.Add(new IdToNew(CurId, false));
-                }
-            }
-
-            public bool HasCycle()
-            {
-                HashSet<string> cycles = new HashSet<string>();
-                foreach (var pair in History)
-                {
-                    if (!pair.Val)
-                    {
-                        if (cycles.Contains(pair.Key))
-                        {
-                            return true;
-                        }
-
-                        cycles.Add(pair.Key);
-                    }
-                    else if (pair.Val)
-                    {
-                        cycles.Clear();
-                    }
-                }
-                return false;
+                Prev = string.Empty;
+                Done = false;
+                Path = int.MaxValue;
             }
 
             public override string ToString()
             {
-                return $"{CurTime} | {string.Join(" ", History.Select(p => $"{string.Format("{0}", p.Val ? "+" : "-")}{p.First}"))}";
+                string done = Done ? "#|" : ".|";
+                return $"{done} {Path} [{Prev}]";
             }
         }
 
-        private int GetPressureReleased(Dictionary<string, Room> rooms, RoomState rs)
+        private void GetRoomToOthers(Dictionary<string, Room> rooms, string startingRoomId, out Dictionary<string, RoomNode> roomNodes)
         {
-            int total = 0;
-            foreach (var pair in rs.Opened)
+            roomNodes = rooms.ToDictionary(pair => pair.Key, pair => new RoomNode());
+            roomNodes[startingRoomId].Prev = startingRoomId;
+            roomNodes[startingRoomId].Path = 0;
+            PriorityQueue<string, int> roomTraversal = new PriorityQueue<string, int>();
+            roomTraversal.Enqueue(startingRoomId, 0);
+            while (roomTraversal.Count > 0)
             {
-                total += rooms[pair.Key].Rate * pair.Value;
+                string curRoomId = roomTraversal.Dequeue();
+                Room curRoom = rooms[curRoomId];
+                RoomNode curNode = roomNodes[curRoomId];
+                if (curNode.Done)
+                {
+                    continue;
+                }
+                curNode.Done = true;
+
+                RoomNode prevNode = roomNodes[curNode.Prev];
+                curNode.Path = prevNode.Path;
+                if (curNode.Prev != curRoomId)
+                {
+                    curNode.Path += curRoom.Rooms[curNode.Prev];
+                }
+
+                foreach (var nextRoomPair in curRoom.Rooms)
+                {
+                    RoomNode nextNode = roomNodes[nextRoomPair.Key];
+                    if (!nextNode.Done)
+                    {
+                        if (!string.IsNullOrWhiteSpace(nextNode.Prev))
+                        {
+                            RoomNode existing = roomNodes[nextNode.Prev];
+                            if (curNode.Path < existing.Path)
+                            {
+                                nextNode.Prev = curRoomId;
+                            }
+                        }
+                        else
+                        {
+                            nextNode.Prev = curRoomId;
+                        }
+                        roomTraversal.Enqueue(nextRoomPair.Key, curNode.Path + curRoom.Rooms[nextRoomPair.Key]);
+                    }
+                }
             }
-            return total;
         }
 
-        private int GetPotentialReleased(Dictionary<string, Room> rooms, RoomState rs)
+        private class TravelNode
         {
-            int total = 0;
-            foreach (string id in rs.Closed)
+            public string RoomId { get; set; }
+            public string History { get; set; }
+            public int CurTime { get; set; }
+            public Dictionary<string, Room> Rooms;
+            public Dictionary<string, int> Times { get; set; }
+            public int Pressure { get; set; }
+
+            public TravelNode(string roomId, int curTime, Dictionary<string, Room> rooms)
             {
-                total += rooms[id].Rate * (rs.CurTime - 2);
+                RoomId = roomId;
+                History = RoomId;
+                CurTime = curTime;
+                Rooms = new Dictionary<string, Room>();
+                foreach (var pair in rooms)
+                {
+                    Rooms[pair.Key] = new Room(pair.Value);
+                }
+                Times = new Dictionary<string, int>();
+                Pressure = 0;
             }
-            return total;
+
+            public TravelNode(string roomId, int curTime, TravelNode previous)
+            {
+                RoomId = roomId;
+                History = $"{previous.History}|{roomId}";
+                CurTime = curTime;
+                Rooms = new Dictionary<string, Room>();
+                foreach (var pair in previous.Rooms)
+                {
+                    Rooms[pair.Key] = new Room(pair.Value);
+                }
+                Times = new Dictionary<string, int>(previous.Times);
+                Times[roomId] = curTime;
+                Pressure = 0;
+            }
+        }
+
+        public class RoomTime : Base.Pair<string, int>
+        {
+            public RoomTime() : base()
+            {
+
+            }
+
+            public RoomTime(string id, int time) : base(id, time)
+            {
+
+            }
+        }
+
+        private int GetPressure(Dictionary<string, Room> rooms, Dictionary<string, int> times)
+        {
+            int pressure = 0;
+            foreach (var pair in rooms)
+            {
+                if (times.ContainsKey(pair.Key))
+                {
+                    pressure += times[pair.Key] * rooms[pair.Key].Rate;
+                }
+            }
+            return pressure;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
             Dictionary<string, Room> rooms = inputs.Select(Room.Parse).ToDictionary(r => r.Id, r => r);
-            // try to remove 0 rooms
+            // try to remove 0 rooms except for the starting point
             List<string> zeroRooms = rooms.Where(pair => pair.Value.Rate == 0 && pair.Value.Id != "AA").Select(pair => pair.Key).ToList();
-
             foreach (string zeroRoom in zeroRooms)
             {
-                Room zero = rooms[zeroRoom];
-                Dictionary<string, int> nextRooms = zero.Rooms;
-                foreach (var pair in nextRooms)
-                {
-                    Room cur = rooms[pair.Key];
-                    int distCached = nextRooms[cur.Id];
-                    cur.Rooms.Remove(zeroRoom);
-                    foreach (var dup in nextRooms)
-                    {
-                        if (dup.Key != cur.Id)
-                        {
-                            int dist = nextRooms[dup.Key];
-                            cur.Rooms[dup.Key] = dist + distCached;
-                        }
-                    }
-                }
-                rooms.Remove(zeroRoom);
+                RemoveRoom(ref rooms, zeroRoom);
             }
 
-            var starters = new Dictionary<string, int>(rooms["AA"].Rooms);
+            Dictionary<string, TravelNode> travelNodes = new Dictionary<string, TravelNode>();
+            travelNodes["AA"] = new TravelNode("AA", 30, rooms);
+
+            int maxPressure = int.MinValue;
+            Queue<RoomTime> roomTraversal = new Queue<RoomTime>();
+            roomTraversal.Enqueue(new RoomTime("AA", 30));
+            while (roomTraversal.Count > 0)
             {
-                string zeroRoom = "AA";
-                Room zero = rooms[zeroRoom];
-                Dictionary<string, int> nextRooms = zero.Rooms;
-                foreach (var pair in nextRooms)
-                {
-                    Room cur = rooms[pair.Key];
-                    int distCached = nextRooms[cur.Id];
-                    cur.Rooms.Remove(zeroRoom);
-                    foreach (var dup in nextRooms)
-                    {
-                        if (dup.Key != cur.Id)
-                        {
-                            int dist = nextRooms[dup.Key];
-                            cur.Rooms[dup.Key] = dist + distCached;
-                        }
-                    }
-                }
-                rooms.Remove(zeroRoom);
-            }
+                RoomTime roomTime = roomTraversal.Dequeue();
+                TravelNode curNode = travelNodes[roomTime.First];
+                string curNodeId = curNode.RoomId;
 
-            PriorityQueue<RoomState, int> roomStates = new PriorityQueue<RoomState, int>(Comparer<int>.Create((x, y) => y - x));
-            foreach (var s in starters)
-            {
-                RoomState rs = new RoomState(rooms, 30 - s.Value - 1, rooms[s.Key], true);
-                roomStates.Enqueue(rs, GetPressureReleased(rooms, rs) + GetPotentialReleased(rooms, rs));
-                rs = new RoomState(rooms, 30 - s.Value, rooms[s.Key], false);
-                roomStates.Enqueue(rs, GetPressureReleased(rooms, rs) + GetPotentialReleased(rooms, rs));
-            }
-            HashSet<string> visited = new HashSet<string>();
-            while (roomStates.Count > 0)
-            {
-                RoomState rs = roomStates.Dequeue();
-
-                // win condition
-                if (rs.Closed.Count == 0)
+                // check if complete, update maxPressure
+                if (curNode.Rooms.Count == 1 || curNode.CurTime == 0)
                 {
-                    return GetPressureReleased(rooms, rs).ToString();
+                    int pressure = GetPressure(rooms, curNode.Times);
+                    maxPressure = Math.Max(pressure, maxPressure);
+                    travelNodes.Remove(curNode.History);
+                    continue;
                 }
 
-                // next possible states
-                foreach (var pair in rooms[rs.CurId].Rooms)
+                if (curNode.CurTime < 0)
                 {
-                    // move to and open
-
-                    RoomState next = new RoomState(rs, rs.CurTime, rooms[pair.Key], pair.Value, true);
-                    if (rooms[next.CurId].Rate != 0)
-                    {
-                        if (!next.HasCycle())
-                        {
-                            roomStates.Enqueue(next, GetPressureReleased(rooms, next) + GetPotentialReleased(rooms, next));
-                        }
-                    }
-
-                    // move to
-                    if (next.Opened.Count != rs.Opened.Count || rooms[next.CurId].Rate == 0)
-                    {
-                        next = new RoomState(rs, rs.CurTime, rooms[pair.Key], pair.Value, false);
-                        if (!next.HasCycle())
-                        {
-                            roomStates.Enqueue(next, GetPressureReleased(rooms, next) + GetPotentialReleased(rooms, next));
-                        }
-                    }
+                    travelNodes.Remove(curNode.History);
+                    continue;
                 }
+
+                // get next states
+                GetRoomToOthers(curNode.Rooms, curNodeId, out Dictionary<string, RoomNode> roomNodes);
+
+                // remove current node for the next mapping
+                RemoveRoom(ref curNode.Rooms, curNodeId);
+
+                if (curNode.History.Contains("AA|DD|BB|JJ|HH"))
+                {
+                    DebugWriteLine("");
+                }
+
+                foreach (var pair in roomNodes)
+                {
+
+                    if (pair.Key == curNodeId)
+                    {
+                        continue;
+                    }
+
+                    TravelNode nextNode = new TravelNode(pair.Key, roomTime.Last - 1 - pair.Value.Path, curNode);
+                    if (nextNode.CurTime <= 0)
+                    {
+                        continue;
+                    }
+
+                    travelNodes[nextNode.History] = nextNode;
+                    roomTraversal.Enqueue(new RoomTime(nextNode.History, nextNode.CurTime));
+                }
+
+                travelNodes.Remove(curNode.History);
             }
 
-
-            return string.Empty;
+            return maxPressure.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
