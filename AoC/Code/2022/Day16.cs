@@ -45,9 +45,18 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "1707",
                 RawInput =
-@""
+@"Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+Valve BB has flow rate=13; tunnels lead to valves CC, AA
+Valve CC has flow rate=2; tunnels lead to valves DD, BB
+Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
+Valve EE has flow rate=3; tunnels lead to valves FF, DD
+Valve FF has flow rate=0; tunnels lead to valves EE, GG
+Valve GG has flow rate=0; tunnels lead to valves FF, HH
+Valve HH has flow rate=22; tunnel leads to valve GG
+Valve II has flow rate=0; tunnels lead to valves AA, JJ
+Valve JJ has flow rate=21; tunnel leads to valve II"
             });
             return testData;
         }
@@ -230,7 +239,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
             return pressure;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxTime, bool elephantHelper)
         {
             Dictionary<string, Room> rooms = inputs.Select(Room.Parse).ToDictionary(r => r.Id, r => r);
             Dictionary<string, Dictionary<string, RoomNode>> roomPaths = new Dictionary<string, Dictionary<string, RoomNode>>();
@@ -248,11 +257,11 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
             }
 
             Dictionary<string, TravelNode> travelNodes = new Dictionary<string, TravelNode>();
-            travelNodes["AA"] = new TravelNode("AA", 30, rooms);
+            travelNodes["AA"] = new TravelNode("AA", maxTime, rooms);
 
             long maxPressure = long.MinValue;
             PriorityQueue<RoomTime, long> roomTraversal = new PriorityQueue<RoomTime, long>();
-            roomTraversal.Enqueue(new RoomTime("AA", 30), 30);
+            roomTraversal.Enqueue(new RoomTime("AA", maxTime), maxTime);
             while (roomTraversal.Count > 0)
             {
                 RoomTime roomTime = roomTraversal.Dequeue();
@@ -267,17 +276,6 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
                 {
                     travelNodes.Remove(curNode.History);
                     continue;
-                }
-
-                // // get next states
-                // GetRoomToOthers(curNode.Rooms, curNodeId, out Dictionary<string, RoomNode> roomNodes);
-
-                // // remove current node for the next mapping
-                // RemoveRoom(ref curNode.Rooms, curNodeId);
-
-                if (curNode.History.Contains("AA|DD|BB|JJ|HH"))
-                {
-                    DebugWriteLine("");
                 }
 
                 Dictionary<string, RoomNode> roomNodes = roomPaths[curNodeId];
@@ -305,9 +303,9 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 30, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 26, true);
     }
 }
