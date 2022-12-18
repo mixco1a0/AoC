@@ -56,9 +56,33 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "30",
                 RawInput =
-@""
+@"1,2,2
+3,2,2
+2,1,2
+2,3,2
+2,2,1
+2,2,3"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "58",
+                RawInput =
+@"2,2,2
+1,2,2
+3,2,2
+2,1,2
+2,3,2
+2,2,1
+2,2,3
+2,2,4
+2,2,6
+1,2,5
+3,2,5
+2,1,5
+2,3,5"
             });
             return testData;
         }
@@ -87,7 +111,7 @@ namespace AoC._2022
             new Position3(0, 0, -1),
         };
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool removeAirPockets)
         {
             List<Position3> pos = inputs.Select(Position3.Parse).ToList();
 
@@ -99,13 +123,39 @@ namespace AoC._2022
                     unique.Add(p + m);
                 }
             }
-            return unique.Where(u => !pos.Contains(u)).Count().ToString();
+
+            unique.RemoveAll(u => pos.Contains(u));
+
+            if (!removeAirPockets)
+            {
+                return unique.Count.ToString();
+            }
+
+            int pocketCount = 0;
+            foreach (Position3 u in unique)
+            {
+                List<Position3> xs = pos.Where(p => p.Y == u.Y && p.Z == u.Z).ToList();
+                List<Position3> ys = pos.Where(p => p.X == u.X && p.Z == u.Z).ToList();
+                List<Position3> zs = pos.Where(p => p.X == u.X && p.Y == u.Y).ToList();
+                if (!xs.Any() || !ys.Any() || !zs.Any())
+                {
+                    continue;
+                }
+
+                if (u.X > xs.Min(s => s.X) && u.X < xs.Max(s => s.X) &&
+                    u.Y > ys.Min(s => s.Y) && u.Y < ys.Max(s => s.Y) &&
+                    u.Z > zs.Min(s => s.Z) && u.Z < zs.Max(s => s.Z))
+                {
+                    ++pocketCount;
+                }
+            }
+            return (unique.Count - pocketCount).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
