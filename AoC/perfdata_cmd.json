@@ -2,6 +2,30 @@
   "YearData": {
     "2022": {
       "DayData": {
+        "day20": {
+          "PartData": {
+            "One": {
+              "VersionData": {
+                "v1": {
+                  "Min": 64.1962,
+                  "Max": 79.2212,
+                  "Avg": 76.08130700000001,
+                  "Count": 100
+                }
+              }
+            },
+            "Two": {
+              "VersionData": {
+                "v1": {
+                  "Min": 986.4485,
+                  "Max": 1087.3565,
+                  "Avg": 1013.7265039999997,
+                  "Count": 100
+                }
+              }
+            }
+          }
+        },
         "day18": {
           "PartData": {
             "One": {

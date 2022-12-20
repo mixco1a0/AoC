@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -112,11 +112,9 @@ namespace AoC._2022
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int mixCount, long decryptionKey)
         {
-            bool print = false;
             List<long> file = inputs.Select(long.Parse).ToList();
             List<string> fileWithIds = inputs.Select((i, index) => string.Format("{0}[{1}]", long.Parse(i) * decryptionKey, index)).ToList();
             List<string> mixing = new List<string>(fileWithIds);
-            if (print) DebugWriteLine($"start  -> {string.Join(", ", fileWithIds)}");
             string zeroKey = string.Empty;
             for (int mc = 0; mc < mixCount; ++mc)
             {
@@ -160,12 +158,9 @@ namespace AoC._2022
 
                     fileWithIds.RemoveAt((int)index);
                     fileWithIds.Insert((int)newIndex, m);
-                    // if (print) DebugWriteLine($"{string.Format("{0, -5}", m)}  -> {string.Join(", ", fileWithIds)}");
                 }
-                if (print) DebugWriteLine($"round{mc} -> {string.Join(", ", fileWithIds)}");
             }
-
-            if (print) DebugWriteLine($"end    -> {string.Join(", ", fileWithIds)}");
+            
             long sum = 0;
             long start = fileWithIds.IndexOf(zeroKey);
             long[] indices = new long[] { (start + 1000) % mixing.Count, (start + 2000) % mixing.Count, (start + 3000) % mixing.Count };
