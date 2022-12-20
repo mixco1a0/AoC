@@ -83,79 +83,104 @@ namespace AoC._2022
             });
             testData.Add(new Core.TestDatum
             {
-                TestPart = Core.Part.Two,
-                Output = "",
+                TestPart = Core.Part.One,
+                Output = "3",
                 RawInput =
-@""
+@"1
+2
+-3
+3
+-2
+0
+4"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "1623178306",
+                RawInput =
+@"1
+2
+-3
+3
+-2
+0
+4"
             });
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int mixCount, long decryptionKey)
         {
             bool print = false;
-            List<int> file = inputs.Select(int.Parse).ToList();
-            List<string> fileWithIds = inputs.Select((i, index) => string.Format("{0}[{1}]", i, index)).ToList();
+            List<long> file = inputs.Select(long.Parse).ToList();
+            List<string> fileWithIds = inputs.Select((i, index) => string.Format("{0}[{1}]", long.Parse(i) * decryptionKey, index)).ToList();
             List<string> mixing = new List<string>(fileWithIds);
-            if (print) DebugWriteLine($"start -> {string.Join(", ", fileWithIds)}");
+            if (print) DebugWriteLine($"start  -> {string.Join(", ", fileWithIds)}");
             string zeroKey = string.Empty;
-            foreach (string m in mixing)
+            for (int mc = 0; mc < mixCount; ++mc)
             {
-                int[] split = m.Split("[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-                if (split[0] == 0)
+                foreach (string m in mixing)
                 {
-                    zeroKey = m;
-                    continue;
-                }
-
-                if (split[0] == mixing.Count)
-                {
-                    continue;
-                }
-
-                int index = fileWithIds.IndexOf(m);
-                int newIndex = split[0];
-                if (split[0] < 0)
-                {
-                    while (newIndex < 0)
+                    long[] split = m.Split("[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+                    if (split[0] == 0)
                     {
-                        newIndex = newIndex + mixing.Count - 1;
+                        zeroKey = m;
+                        continue;
                     }
-                }
-                else
-                {
+
+                    if (split[0] == mixing.Count)
+                    {
+                        continue;
+                    }
+
+                    long index = fileWithIds.IndexOf(m);
+                    long newIndex = split[0];
+                    if (split[0] < 0)
+                    {
+                        newIndex = newIndex % (mixing.Count - 1);
+                        while (newIndex < 0)
+                        {
+                            newIndex = newIndex + mixing.Count - 1;
+                        }
+                    }
+                    else
+                    {
+                        newIndex = newIndex % (mixing.Count - 1);
+                        while (newIndex >= mixing.Count)
+                        {
+                            newIndex = newIndex - mixing.Count + 1;
+                        }
+                    }
+                    newIndex += index;
                     while (newIndex >= mixing.Count)
                     {
                         newIndex = newIndex - mixing.Count + 1;
                     }
+
+                    fileWithIds.RemoveAt((int)index);
+                    fileWithIds.Insert((int)newIndex, m);
+                    // if (print) DebugWriteLine($"{string.Format("{0, -5}", m)}  -> {string.Join(", ", fileWithIds)}");
                 }
-                newIndex += index;
-                while (newIndex >= mixing.Count)
-                {
-                    newIndex = newIndex - mixing.Count + 1;
-                }
-                
-                fileWithIds.RemoveAt(index);
-                fileWithIds.Insert(newIndex, m);
-                if (print) DebugWriteLine($"{string.Format("{0, -5}", m)} -> {string.Join(", ", fileWithIds)}");
+                if (print) DebugWriteLine($"round{mc} -> {string.Join(", ", fileWithIds)}");
             }
 
-            if (print) DebugWriteLine($"end   -> {string.Join(", ", fileWithIds)}");
-            int sum = 0;
-            int start = fileWithIds.IndexOf(zeroKey);
-            int[] indices = new int[] { (start + 1000) % mixing.Count, (start + 2000) % mixing.Count, (start + 3000) % mixing.Count };
+            if (print) DebugWriteLine($"end    -> {string.Join(", ", fileWithIds)}");
+            long sum = 0;
+            long start = fileWithIds.IndexOf(zeroKey);
+            long[] indices = new long[] { (start + 1000) % mixing.Count, (start + 2000) % mixing.Count, (start + 3000) % mixing.Count };
             foreach (int i in indices)
             {
                 string[] split = fileWithIds[i].Split("[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                sum += int.Parse(split[0]);
+                sum += long.Parse(split[0]);
             }
             return sum.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 1, 1);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 10, 811589153);
     }
 }
