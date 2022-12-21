@@ -1,3 +1,4 @@
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -169,87 +170,126 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
             }
         }
 
-        private class TravelNode
+        private class TravelPlan
         {
-            public string RoomId { get; set; }
-            public string History { get; set; }
-            public long CurTime { get; set; }
-            public Dictionary<string, Room> Rooms;
-            public Dictionary<string, long> Times { get; set; }
-            public long Pressure { get; set; }
+            public string[] RoomIds { get; set; }
+            public string[] History { get; set; }
+            public long[] CurTime { get; set; }
+            public Dictionary<string, long>[] Times { get; set; }
             public HashSet<string> Used { get; set; }
 
-            public TravelNode(string roomId, long curTime, Dictionary<string, Room> rooms)
+            public int Count { get { return RoomIds.Length; } }
+
+            public TravelPlan(string[] roomIds, long curTime, Dictionary<string, Room> rooms)
             {
-                RoomId = roomId;
-                History = RoomId;
-                CurTime = curTime;
-                Rooms = new Dictionary<string, Room>();
-                foreach (var pair in rooms)
+                RoomIds = roomIds;
+                History = RoomIds;
+                CurTime = new long[Count];
+                Times = new Dictionary<string, long>[Count];
+                for (int i = 0; i < Count; ++i)
                 {
-                    Rooms[pair.Key] = new Room(pair.Value);
+                    CurTime[i] = curTime;
+                    Times[i] = new Dictionary<string, long>();
                 }
-                Times = new Dictionary<string, long>();
-                Pressure = 0;
                 Used = new HashSet<string>();
-                Used.Add(roomId);
-            }
-
-            public TravelNode(string roomId, long curTime, TravelNode previous)
-            {
-                RoomId = roomId;
-                History = $"{previous.History}|{roomId}";
-                CurTime = curTime;
-                Rooms = new Dictionary<string, Room>();
-                foreach (var pair in previous.Rooms)
+                foreach (string ri in roomIds)
                 {
-                    Rooms[pair.Key] = new Room(pair.Value);
+                    if (!Used.Contains(ri))
+                    {
+                        Used.Add(ri);
+                    }
                 }
-                Times = new Dictionary<string, long>(previous.Times);
-                Times[roomId] = curTime;
-                Pressure = 0;
+            }
+
+            public TravelPlan(string[] roomIds, long[] curTime, TravelPlan previous)
+            {
+                RoomIds = roomIds;
+                History = new string[Count];
+                CurTime = curTime;
+                Times = new Dictionary<string, long>[Count];
+                for (int i = 0; i < Count; ++i)
+                {
+                    if (!previous.History[i].EndsWith(roomIds[i]))
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append(previous.History[i]);
+                        sb.Append('|');
+                        sb.Append(roomIds[i]);
+                        History[i] = sb.ToString();
+                    }
+                    else
+                    {
+                        History[i] = previous.History[i];
+                    }
+                    Times[i] = new Dictionary<string, long>(previous.Times[i]);
+                    Times[i][RoomIds[i]] = curTime[i];
+                }
                 Used = new HashSet<string>(previous.Used);
-                Used.Add(roomId);
+                foreach (string ri in roomIds)
+                {
+                    if (!Used.Contains(ri))
+                    {
+                        Used.Add(ri);
+                    }
+                }
+            }
+
+            public string GetHistory()
+            {
+                StringBuilder bs = new StringBuilder();
+                bs.AppendJoin('#', History);
+                return bs.ToString();
+            }
+
+            public bool OutOfTime()
+            {
+                foreach (long ct in CurTime)
+                {
+                    if (ct < 0)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
-        public class RoomTime : Base.Pair<string, long>
-        {
-            public RoomTime() : base() { }
-
-            public RoomTime(string id, long time) : base(id, time) { }
-        }
-
-        private long GetPressure(Dictionary<string, Room> rooms, Dictionary<string, long> times)
+        private long GetPressure(Dictionary<string, Room> rooms, TravelPlan curNode)
         {
             long pressure = 0;
-            foreach (var pair in rooms)
+            foreach (Dictionary<string, long> times in curNode.Times)
             {
-                if (times.ContainsKey(pair.Key))
+                foreach (var pair in rooms)
                 {
-                    pressure += times[pair.Key] * rooms[pair.Key].Rate;
+                    if (times.ContainsKey(pair.Key))
+                    {
+                        pressure += times[pair.Key] * rooms[pair.Key].Rate;
+                    }
                 }
             }
             return pressure;
         }
 
-        private long GetPotentialPressure(Dictionary<string, Room> rooms, Dictionary<string, Dictionary<string, RoomPath>> roomPaths, TravelNode curNode)
+        private long GetPotentialPressure(Dictionary<string, Room> rooms, Dictionary<string, Dictionary<string, RoomPath>> roomPaths, TravelPlan curNode)
         {
-            string curRoomId = curNode.RoomId;
             List<string> potentialRooms = rooms.Where(r => r.Value.Rate != 0 && !curNode.Used.Contains(r.Key)).Select(r => r.Key).ToList();
             long potentialPressure = 0;
-            foreach (string p in potentialRooms)
+            for (int i = 0; i < curNode.RoomIds.Length; ++i)
             {
-                long path = roomPaths[curRoomId][p].Path;
-                if (curNode.CurTime - path - 1 > 0)
+                string curRoomId = curNode.RoomIds[i];
+                foreach (string p in potentialRooms)
                 {
-                    potentialPressure += (curNode.CurTime - path - 1) * rooms[p].Rate;
+                    long path = roomPaths[curRoomId][p].Path;
+                    if (curNode.CurTime[i] - path - 1 > 0)
+                    {
+                        potentialPressure += (curNode.CurTime[i] - path - 1) * rooms[p].Rate;
+                    }
                 }
             }
             return potentialPressure;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxTime, bool elephantHelper)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxTime, int explorerCount)
         {
             Dictionary<string, Room> rooms = inputs.Select(Room.Parse).ToDictionary(r => r.Id, r => r);
             Dictionary<string, Dictionary<string, RoomPath>> roomPaths = new Dictionary<string, Dictionary<string, RoomPath>>();
@@ -267,81 +307,150 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
             }
 
             int roomCount = rooms.Where(r => r.Value.Rate != 0).Count() + 1;
-            Dictionary<string, TravelNode> travelNodes = new Dictionary<string, TravelNode>();
-            travelNodes["AA"] = new TravelNode("AA", maxTime, rooms);
+            Dictionary<string, TravelPlan> travelPlans = new Dictionary<string, TravelPlan>();
+            TravelPlan initialPlan = new TravelPlan(Enumerable.Range(0, explorerCount).Select(i => "AA").ToArray(), maxTime, rooms);
+            travelPlans[initialPlan.GetHistory()] = initialPlan;
 
             long maxPressure = long.MinValue;
-            PriorityQueue<RoomTime, long> roomTraversal = new PriorityQueue<RoomTime, long>(Comparer<long>.Create((a, b) => (int)(b - a))); // 
-            roomTraversal.Enqueue(new RoomTime("AA", maxTime), maxTime);
+            PriorityQueue<string, long> roomTraversal = new PriorityQueue<string, long>(Comparer<long>.Create((a, b) => (int)(b - a))); // 
+            roomTraversal.Enqueue(initialPlan.GetHistory(), maxTime);
             while (roomTraversal.Count > 0)
             {
-                RoomTime roomTime = roomTraversal.Dequeue();
-                TravelNode curNode = travelNodes[roomTime.First];
-                string curNodeId = curNode.RoomId;
+                string curRoomTraversal = roomTraversal.Dequeue();
+                TravelPlan curNode = travelPlans[curRoomTraversal];
+                string[] curNodeIds = curNode.RoomIds;
 
-                long pressure = GetPressure(rooms, curNode.Times);
+                long pressure = GetPressure(rooms, curNode);
                 bool recordPressure = pressure > maxPressure;
-                // if (recordPressure)
-                // {
-                //     DebugWriteLine($"{pressure} | {curNode.History}");
-                // }
                 maxPressure = Math.Max(pressure, maxPressure);
 
-                // check if complete, update maxPressure
-                if (curNode.Used.Count == roomCount)
+                if (curNode.OutOfTime())
                 {
-                    return GetPressure(rooms, curNode.Times).ToString();
-                }
-
-                if (curNode.CurTime < 0)
-                {
-                    travelNodes.Remove(curNode.History);
+                    travelPlans.Remove(curNode.GetHistory());
                     continue;
                 }
 
-                Dictionary<string, RoomPath> roomNodes = roomPaths[curNodeId];
-                int nextStateCount = 0;
-                foreach (var pair in roomNodes)
+                // get the necessary paths from current room to the others
+                Dictionary<string, RoomPath>[] roomNodes = new Dictionary<string, RoomPath>[explorerCount];
+                for (int i = 0; i < explorerCount; ++i)
                 {
-                    if (curNode.Used.Contains(pair.Key) || rooms[pair.Key].Rate == 0)
-                    {
-                        continue;
-                    }
-
-                    TravelNode nextNode = new TravelNode(pair.Key, roomTime.Last - 1 - pair.Value.Path, curNode);
-                    if (nextNode.CurTime <= 0)
-                    {
-                        continue;
-                    }
-
-                    ++nextStateCount;
-                    travelNodes[nextNode.History] = nextNode;
-                    Room nextRoom = rooms[nextNode.RoomId];
-                    long nextPressure = GetPressure(rooms, nextNode.Times);
-                    long potentialPressure = GetPotentialPressure(rooms, roomPaths, nextNode);
-                    if (nextPressure + potentialPressure < maxPressure)
-                    {
-                        continue;
-                    }
-                    roomTraversal.Enqueue(new RoomTime(nextNode.History, nextNode.CurTime), nextPressure + potentialPressure - nextNode.CurTime);
+                    roomNodes[i] = roomPaths[curNodeIds[i]];
                 }
 
-                // if this had the highest potential, and has not future steps, it must be the winner
+                int nextStateCount = 0;
+                if (explorerCount > 1)
+                {
+                    nextStateCount = HandleNextStates(rooms, roomNodes, roomPaths, curNode, maxPressure, ref roomTraversal, ref travelPlans);
+                }
+                else
+                {
+                    nextStateCount = HandleNextStates(rooms, roomNodes[0], roomPaths, curNode, maxPressure, ref roomTraversal, ref travelPlans);
+                }
+                // if this had the highest potential, and has no future steps, it must be the winner
                 if (nextStateCount == 0 && recordPressure)
                 {
-                    return GetPressure(rooms, curNode.Times).ToString();
+                    return GetPressure(rooms, curNode).ToString();
                 }
 
-                travelNodes.Remove(curNode.History);
+                travelPlans.Remove(curNode.GetHistory());
             }
 
             return maxPressure.ToString();
         }
 
+        private int HandleNextStates(Dictionary<string, Room> rooms,
+                                     Dictionary<string, RoomPath> roomNodes,
+                                     Dictionary<string, Dictionary<string, RoomPath>> roomPaths,
+                                     TravelPlan curNode,
+                                     long maxPressure,
+                                     ref PriorityQueue<string, long> roomTraversal,
+                                     ref Dictionary<string, TravelPlan> travelPlans)
+        {
+            int nextStateCount = 0;
+            foreach (var pair in roomNodes)
+            {
+                if (curNode.Used.Contains(pair.Key) || rooms[pair.Key].Rate == 0)
+                {
+                    continue;
+                }
+
+                TravelPlan nextNode = new TravelPlan(new string[] { pair.Key }, new long[] { (curNode.CurTime[0] - 1 - pair.Value.Path) }, curNode);
+                if (nextNode.CurTime[0] <= 0)
+                {
+                    continue;
+                }
+
+                ++nextStateCount;
+                travelPlans[nextNode.History[0]] = nextNode;
+                Room nextRoom = rooms[nextNode.RoomIds[0]];
+                long nextPressure = GetPressure(rooms, nextNode);
+                long potentialPressure = GetPotentialPressure(rooms, roomPaths, nextNode);
+                if (nextPressure + potentialPressure < maxPressure)
+                {
+                    continue;
+                }
+                roomTraversal.Enqueue(nextNode.History[0], nextPressure + potentialPressure);
+            }
+            return nextStateCount;
+        }
+
+        private int HandleNextStates(Dictionary<string, Room> rooms,
+                                     Dictionary<string, RoomPath>[] roomNodes,
+                                     Dictionary<string, Dictionary<string, RoomPath>> roomPaths,
+                                     TravelPlan curNode,
+                                     long maxPressure,
+                                     ref PriorityQueue<string, long> roomTraversal,
+                                     ref Dictionary<string, TravelPlan> travelPlans)
+        {
+            int nextStateCount = 0;
+            
+            int moveIdx = 0;
+            int stayIdx = 1;
+            if (curNode.CurTime[0] < curNode.CurTime[1])
+            {
+                moveIdx = 1;
+                stayIdx = 0;
+            }
+
+            foreach (var pair in roomNodes[moveIdx])
+            {
+                if (curNode.Used.Contains(pair.Key) || rooms[pair.Key].Rate == 0)
+                {
+                    continue;
+                }
+
+                string[] nextRoomIds = new string[curNode.Count];
+                nextRoomIds[moveIdx] = pair.Key;
+                nextRoomIds[stayIdx] = curNode.RoomIds[stayIdx];
+
+                long[] nextTimes = new long[curNode.Count];
+                nextTimes[moveIdx] = curNode.CurTime[moveIdx] - 1 - pair.Value.Path;
+                nextTimes[stayIdx] = curNode.CurTime[stayIdx];
+
+                TravelPlan nextNode = new TravelPlan(nextRoomIds, nextTimes, curNode);
+                if (nextNode.CurTime[moveIdx] <= 0) // maybe check both times here
+                {
+                    continue;
+                }
+
+                ++nextStateCount;
+                travelPlans[nextNode.GetHistory()] = nextNode;
+                Room nextRoom = rooms[nextNode.RoomIds[moveIdx]];
+                long nextPressure = GetPressure(rooms, nextNode);
+                long potentialPressure = GetPotentialPressure(rooms, roomPaths, nextNode);
+                if (nextPressure + potentialPressure < maxPressure)
+                {
+                    continue;
+                }
+                roomTraversal.Enqueue(nextNode.GetHistory(), nextPressure + potentialPressure);
+            }
+            return nextStateCount;
+        }
+
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 30, false);
+            => SharedSolution(inputs, variables, 30, 1);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 26, true);
+            => SharedSolution(inputs, variables, 26, 2);
     }
 }
