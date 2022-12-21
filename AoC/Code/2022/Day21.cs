@@ -12,16 +12,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -260,7 +260,6 @@ hmdt: 32"
                 if (values.ContainsKey(monkey.Others[0]) && values.ContainsKey(monkey.Others[1]))
                 {
                     values[monkey.Id] = monkey.Perform(values);
-                    //DebugWriteLine($"{monkey.Id} => {monkey.Others[0]} [{values[monkey.Others[0]]}] {(char)monkey.Op} {monkey.Others[1]} [{values[monkey.Others[1]]}] = {values[monkey.Id]}");
                     continue;
                 }
 
