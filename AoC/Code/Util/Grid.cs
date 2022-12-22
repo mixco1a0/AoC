@@ -47,6 +47,19 @@ namespace AoC.Util
             }
         }
 
+        static public void PrintGrid(char[,] grid, Core.Log.ELevel level = Core.Log.ELevel.Spam)
+        {
+            StringBuilder sb = new StringBuilder();
+            Core.Log.WriteLine(level, $"Printing grid {grid.GetLength(0)}x{grid.GetLength(1)}:");
+            for (int y = 0; y < grid.GetLength(1); ++y)
+            {
+                sb.Clear();
+                sb.Append($"{y,4}| ");
+                sb.Append(string.Join(string.Empty, Enumerable.Range(0, grid.GetLength(0)).Select(x => grid[x, y])));
+                Core.Log.WriteLine(level, sb.ToString());
+            }
+        }
+
         static public void RotateGrid(bool right, ref List<string> grid)
         {
             List<string> newGrid = new List<string>();
