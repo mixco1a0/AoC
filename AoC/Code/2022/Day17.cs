@@ -37,33 +37,35 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "1514285714288",
                 RawInput =
-@""
+@">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"
             });
             return testData;
         }
 
-        static readonly List<Base.Position>[] RockShapes =
+        static readonly List<Base.LongPosition>[] RockShapes =
         {
-            new List<Base.Position>() { new Base.Position(0, 0), new Base.Position(1, 0), new Base.Position(2, 0), new Base.Position(3, 0) },
-            new List<Base.Position>() { new Base.Position(1, 0), new Base.Position(0, 1), new Base.Position(1, 1), new Base.Position(2, 1), new Base.Position(1, 2) },
-            new List<Base.Position>() { new Base.Position(2, 0), new Base.Position(2, 1), new Base.Position(2, 2), new Base.Position(0, 0), new Base.Position(1, 0) },
-            new List<Base.Position>() { new Base.Position(0, 0), new Base.Position(0, 1), new Base.Position(0, 2), new Base.Position(0, 3) },
-            new List<Base.Position>() { new Base.Position(0, 0), new Base.Position(1, 0), new Base.Position(0, 1), new Base.Position(1, 1) },
+            new List<Base.LongPosition>() { new Base.LongPosition(0, 0), new Base.LongPosition(1, 0), new Base.LongPosition(2, 0), new Base.LongPosition(3, 0) },
+            new List<Base.LongPosition>() { new Base.LongPosition(1, 0), new Base.LongPosition(0, 1), new Base.LongPosition(1, 1), new Base.LongPosition(2, 1), new Base.LongPosition(1, 2) },
+            new List<Base.LongPosition>() { new Base.LongPosition(2, 0), new Base.LongPosition(2, 1), new Base.LongPosition(2, 2), new Base.LongPosition(0, 0), new Base.LongPosition(1, 0) },
+            new List<Base.LongPosition>() { new Base.LongPosition(0, 0), new Base.LongPosition(0, 1), new Base.LongPosition(0, 2), new Base.LongPosition(0, 3) },
+            new List<Base.LongPosition>() { new Base.LongPosition(0, 0), new Base.LongPosition(1, 0), new Base.LongPosition(0, 1), new Base.LongPosition(1, 1) },
         };
+        private int MinX { get { return 0; } }
+        private int MaxX { get { return 7; } }
 
-        private void PrintRocks(HashSet<Base.Position> usedPoints, List<Base.Position> rock, int highestY, int minX, int maxX)
+        private void PrintRocks(Dictionary<Base.LongPosition, char> usedRocks, List<Base.LongPosition> rock, long minY, long maxY)
         {
             StringBuilder sb = new StringBuilder();
-            for (int y = highestY; y > 0; --y)
+            for (long y = maxY; y > 0 && y >= minY; --y)
             {
                 sb.Clear();
                 sb.Append(string.Format("{0, 3} - ", y));
-                for (int x = minX - 1; x <= maxX; ++x)
+                for (int x = MinX - 1; x <= MaxX; ++x)
                 {
-                    Base.Position pos = new Base.Position(x, y);
-                    if (x < minX || x >= maxX)
+                    Base.LongPosition pos = new Base.LongPosition(x, y);
+                    if (x < MinX || x >= MaxX)
                     {
                         sb.Append('|');
                     }
@@ -71,9 +73,9 @@ namespace AoC._2022
                     {
                         sb.Append('@');
                     }
-                    else if (usedPoints.Contains(pos))
+                    else if (usedRocks.ContainsKey(pos))
                     {
-                        sb.Append('#');
+                        sb.Append(usedRocks[pos]);
                     }
                     else
                     {
@@ -85,15 +87,15 @@ namespace AoC._2022
             DebugWriteLine("  0 - +-------+");
         }
 
-        private bool CanMove(HashSet<Base.Position> usedPoints, ref List<Base.Position> rock, Base.Position movement, int minX, int maxX)
+        private bool CanMove(HashSet<Base.LongPosition> usedPoints, ref List<Base.LongPosition> rock, Base.LongPosition movement)
         {
-            List<Base.Position> movedRock = new List<Base.Position>();
+            List<Base.LongPosition> movedRock = new List<Base.LongPosition>();
             for (int i = 0; i < rock.Count; ++i)
             {
                 movedRock.Add(rock[i] + movement);
 
-                Base.Position movedRockNode = movedRock.Last();
-                if (movedRockNode.X < minX || movedRockNode.X >= maxX || movedRockNode.Y <= 0 || usedPoints.Contains(movedRockNode))
+                Base.LongPosition movedRockNode = movedRock.Last();
+                if (movedRockNode.X < MinX || movedRockNode.X >= MaxX || movedRockNode.Y <= 0 || usedPoints.Contains(movedRockNode))
                 {
                     return false;
                 }
@@ -103,91 +105,224 @@ namespace AoC._2022
             return true;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private long DetectCycle(Dictionary<long, string> cycleDetection, long[] ys, Dictionary<Base.LongPosition, char> usedRocks, out long yCycle)
         {
-            int rockIdx = 0;
+            yCycle = -1;
+            long maxY = ys.Max();
+            foreach (long yCheck in ys)
+            {
+                string cycleCheck = cycleDetection[yCheck];
+                if (cycleDetection.Any(c => c.Key < ys.Min() - 1 && c.Value == cycleCheck))
+                {
+                    List<long> matches = cycleDetection.Where(p => p.Value == cycleCheck && p.Key < yCheck && Math.Abs(p.Key - yCheck) > 4)
+                                                       .Select(p => p.Key).OrderByDescending(_ => _).ToList();
+                    if (matches.Count >= 2)
+                    {
+                        // DebugWriteLine($"Checking for {cycleCheck} [{yCheck}]");
+                        // PrintRocks(usedRocks, new List<Base.LongPosition>(), yCheck - 2 * (yCheck - matches.Min()), ys.Max(), MinX, MaxX);
+                        foreach (long m in matches)
+                        {
+                            long cycleLen = yCheck - m;
+                            if (cycleLen <= 4)
+                            {
+                                continue;
+                            }
+
+                            bool cycleFound = true;
+                            for (long matchY = 0; cycleFound && matchY <= cycleLen; ++matchY)
+                            {
+                                if (m - matchY <= 0)
+                                {
+                                    cycleFound = false;
+                                    break;
+                                }
+
+                                if (cycleDetection[maxY - matchY] != cycleDetection[m - matchY])
+                                {
+                                    cycleFound = false;
+                                    break;
+                                }
+                            }
+
+                            if (cycleFound)
+                            {
+                                // DebugWriteLine($"Cycle found with length {cycleLen}...");
+                                // PrintRocks(usedRocks, new List<Base.LongPosition>(), yCheck - 2 * cycleLen, yCheck);
+                                yCycle = yCheck;
+                                return cycleLen;
+                            }
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+
+        private bool ValidateCycle(Dictionary<long, string> cycleDetection, Dictionary<Base.LongPosition, char> usedRocks, ref Info info)
+        {
+            long validateStart = info.TargetCycleEnd();
+            long cycleStart = info.CycleStart;
+
+            string cycleCheck = cycleDetection[validateStart];
+
+            for (long matchY = 0; matchY <= info.CycleLen; ++matchY)
+            {
+                if (cycleDetection[validateStart - matchY] != cycleDetection[cycleStart - matchY])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private class Info
+        {
+            public long RockIdx { get; set; }
+            public long HighestY { get; set; }
+            public bool SpawnNewRock { get; set; }
+            public long RockCount { get; set; }
+            public long CycleStart { get; set; }
+            public long CycleLen { get; set; }
+            public long CycleRockCount { get; set; }
+            public long CycleCount { get; set; }
+
+            public Info()
+            {
+                RockIdx = -1;
+                HighestY = 0;
+                SpawnNewRock = true;
+                RockCount = 0;
+                CycleStart = 0;
+                CycleLen = 0;
+                CycleRockCount = 0;
+                CycleCount = 0;
+            }
+
+            public long Length()
+            {
+                return HighestY + CycleLen * CycleCount;
+            }
+
+            public long Rocks()
+            {
+                return RockCount + CycleRockCount * CycleCount;
+            }
+
+            public long TargetCycleEnd()
+            {
+                return CycleStart + CycleLen;
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxRockCount)
+        {
             char[] jets = inputs[0].ToCharArray();
-            HashSet<Base.Position> usedPoints = new HashSet<Base.Position>();
-            int highestY = 0;
-            const int minX = 0;
-            const int maxX = 7;
-            bool newRock = true;
-            int rockCount = 0;
-            List<Base.Position> newRockPos = new List<Base.Position>();
+            HashSet<Base.LongPosition> usedPoints = new HashSet<Base.LongPosition>();
+            Dictionary<Base.LongPosition, char> usedRocks = new Dictionary<Base.LongPosition, char>();
+            Dictionary<long, string> cycleDetection = new Dictionary<long, string>();
+            Info info = new Info();
+            List<Base.LongPosition> newRockPos = new List<Base.LongPosition>();
             for (int i = 0; i < jets.Length; i = (i + 1) % jets.Length)
             {
-                if (newRock)
+                if (info.SpawnNewRock)
                 {
-                    ++rockCount;
-                    if (rockCount == 2023)
+                    info.SpawnNewRock = false;
+
+                    info.RockIdx = (info.RockIdx + 1) % RockShapes.Length;
+
+                    if (info.CycleStart > 0)
                     {
-                        return highestY.ToString();
+                        ++info.CycleRockCount;
                     }
-                    newRock = false;
-                    newRockPos = new List<Base.Position>();
-                    int newHighestY = highestY;
-                    foreach (Base.Position node in RockShapes[rockIdx])
+                    ++info.RockCount;
+                    if (info.Rocks() == maxRockCount)
                     {
-                        newRockPos.Add(new Base.Position(node.X + 2, node.Y + highestY + 4));
+                        return info.Length().ToString();
+                    }
+                    newRockPos = new List<Base.LongPosition>();
+                    long newHighestY = info.HighestY;
+                    foreach (Base.LongPosition node in RockShapes[info.RockIdx])
+                    {
+                        newRockPos.Add(new Base.LongPosition(node.X + 2, node.Y + info.HighestY + 4));
                         newHighestY = Math.Max(newHighestY, newRockPos.Last().Y);
                     }
-                    rockIdx = (rockIdx + 1) % RockShapes.Length;
-                    // DebugWriteLine($"New rock");
-                    // PrintRocks(usedPoints, newRockPos, newHighestY, minX, maxX);
                 }
 
                 bool moved = false;
                 if (jets[i] == '>')
                 {
-                    moved = CanMove(usedPoints, ref newRockPos, new Base.Position(1, 0), minX, maxX);
+                    moved = CanMove(usedPoints, ref newRockPos, new Base.LongPosition(1, 0));
                 }
                 else
                 {
-                    moved = CanMove(usedPoints, ref newRockPos, new Base.Position(-1, 0), minX, maxX);
+                    moved = CanMove(usedPoints, ref newRockPos, new Base.LongPosition(-1, 0));
                 }
-                // if (moved)
-                // {
-                //     DebugWriteLine($"Jet moved [{jets[i]}]");
-                //     PrintRocks(usedPoints, newRockPos, highestY + 4, minX, maxX);
-                // }
-                // else
-                // {
-                //     DebugWriteLine($"Jet still [{jets[i]}]");
-                // }
 
-                moved = CanMove(usedPoints, ref newRockPos, new Base.Position(0, -1), minX, maxX);
+                moved = CanMove(usedPoints, ref newRockPos, new Base.LongPosition(0, -1));
                 if (!moved)
                 {
                     newRockPos.ForEach(r => usedPoints.Add(r));
-                    newRock = true;
-                    foreach (var r in newRockPos)
+                    newRockPos.ForEach(r => usedRocks[r] = (char)(info.RockIdx + '0'));
+                    info.SpawnNewRock = true;
+                    info.HighestY = Math.Max(info.HighestY, newRockPos.Max(r => r.Y));
+                    // foreach (var r in newRockPos)
+                    // {
+                    //     if (r.Y > info.HighestY)
+                    //     {
+                    //         info.HighestY = r.Y;
+                    //     }
+                    // }
+
+                    long[] ys = newRockPos.Select(p => p.Y).Distinct().ToArray();
+                    foreach (long y in ys)
                     {
-                        if (r.Y > highestY)
+                        string newLine = string.Empty;
+                        for (int x = MinX; x < MaxX; ++x)
                         {
-                            highestY = r.Y;
+                            Base.LongPosition pos = new Base.LongPosition(x, y);
+                            if (usedRocks.ContainsKey(pos))
+                            {
+                                newLine += usedRocks[pos];
+                            }
+                            else
+                            {
+                                newLine += '.';
+                            }
+                        }
+
+                        cycleDetection[y] = newLine;
+                    }
+
+                    if (info.CycleStart > 0 && ys.Contains(info.TargetCycleEnd()))
+                    {
+                        if (ValidateCycle(cycleDetection, usedRocks, ref info))
+                        {
+                            // fast forward
+                            info.CycleStart = -1;
+                            long pendingRocks = maxRockCount - info.RockCount;
+                            info.CycleCount = pendingRocks / info.CycleRockCount;
                         }
                     }
 
-                    // DebugWriteLine($"Rock added");
-                    // PrintRocks(usedPoints, newRockPos, highestY + 4, minX, maxX);
-                    // DebugWriteLine(".");
-                    // DebugWriteLine("..");
+                    if (info.CycleStart == 0 && ys.Max() > 1)
+                    {
+                        long cycleLen = DetectCycle(cycleDetection, ys, usedRocks, out long yCycle);
+                        if (cycleLen > 0 && yCycle > 0)
+                        {
+                            info.CycleStart = yCycle + 1;
+                            info.CycleLen = cycleLen;
+                        }
+                    }
                 }
-                // else
-                // {
-                //     DebugWriteLine($"Rock fell");
-                //     PrintRocks(usedPoints, newRockPos, highestY + 4, minX, maxX);
-                //     DebugWriteLine(".");
-                //     DebugWriteLine("..");
-                // }
             }
             return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 2023);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 1000000000000);
     }
 }
