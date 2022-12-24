@@ -14,32 +14,20 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
-            //             testData.Add(new Core.TestDatum
-            //             {
-            //                 TestPart = Core.Part.One,
-            //                 Output = "110",
-            //                 RawInput =
-            // @".....
-            // ..##.
-            // ..#..
-            // .....
-            // ..##.
-            // ....."
-            //             });
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
@@ -250,7 +238,6 @@ namespace AoC._2022
             int maxX = xs.Max() + 1;
             int minY = ys.Min() - 1;
             int maxY = ys.Max() + 1;
-
 
             StringBuilder sb = new StringBuilder();
             DebugWriteLine("Elves:");
