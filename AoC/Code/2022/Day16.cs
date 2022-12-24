@@ -14,8 +14,8 @@ namespace AoC._2022
             {
                 case Core.Part.One:
                     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
