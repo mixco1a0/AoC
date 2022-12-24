@@ -174,11 +174,11 @@ namespace AoC.Core
                 if (!string.IsNullOrWhiteSpace(split[i]) && split[i][0] == ColorMarker)
                 {
                     string format = GetColorFormat(EPlane.Foreground, colors[colorIndex++]);
-                    colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i].Substring(1, split[i].Length - 2)));
+                    colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i].Substring(1, split[i].Length - 2)).Replace('{', '[').Replace('}', ']'));
                 }
                 else
                 {
-                    colorizedMessage.AppendFormat("\x1b[0m{0}", split[i]);
+                    colorizedMessage.AppendFormat("\x1b[0m{0}", split[i].Replace('{', '[').Replace('}', ']'));
                 }
             }
             InternalLog(logFunc, level, colorizedMessage.ToString());
