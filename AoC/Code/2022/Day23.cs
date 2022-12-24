@@ -56,9 +56,15 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "20",
                 RawInput =
-@""
+@"....#..
+..###.#
+#...#.#
+.#...##
+#.###..
+##.#.##
+.#..#.."
             });
             return testData;
         }
@@ -270,7 +276,7 @@ namespace AoC._2022
             DebugWriteLine("..");
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int rounds)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int rounds, bool dontStop)
         {
             Parse(inputs, out HashSet<Elf> elves);
             // PrintElves(elves);
@@ -278,6 +284,10 @@ namespace AoC._2022
             {
                 PerformStepOne(ref elves, out HashSet<Elf> stationaryElves, out Dictionary<Position2, bool> potentialMoves);
                 PerformStepTwo(ref elves, stationaryElves, potentialMoves);
+                if (stationaryElves.Count == elves.Count)
+                {
+                    return (r + 1).ToString();
+                }
                 // PrintElves(elves);
             }
 
@@ -297,9 +307,9 @@ namespace AoC._2022
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 10);
+            => SharedSolution(inputs, variables, 10, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 0);
+            => SharedSolution(inputs, variables, int.MaxValue, true);
     }
 }
