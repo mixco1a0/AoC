@@ -42,9 +42,14 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "54",
                 RawInput =
-@""
+@"#.######
+#>>.<^<#
+#.<..<<#
+#>v.><>#
+#<^v^^>#
+######.#"
             });
             return testData;
         }
@@ -231,19 +236,19 @@ namespace AoC._2022
             }
         }
 
-        private int Walk()
+        private int Walk(int initialCycle)
         {
             int lower = Math.Min(MaxX, MaxY);
             int upper = Math.Max(MaxX, MaxY);
-            int maxCycle = upper;
-            while (maxCycle % lower != 0)
+            int maxUniqueCycles = upper;
+            while (maxUniqueCycles % lower != 0)
             {
-                maxCycle += upper;
+                maxUniqueCycles += upper;
             }
 
             int minWalk = int.MaxValue;
             Dictionary<CyclePos, WalkPath> walkPaths = new Dictionary<CyclePos, WalkPath>();
-            CyclePos cycleStart = new CyclePos(0, Start);
+            CyclePos cycleStart = new CyclePos(initialCycle, Start);
             walkPaths[cycleStart] = new WalkPath() { Prev = cycleStart, Path = -1 };
             Queue<CyclePos> queue = new Queue<CyclePos>();
             queue.Enqueue(cycleStart);
@@ -302,23 +307,33 @@ namespace AoC._2022
             return minWalk;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private void SwapStartEnd()
+        {
+            Pos2 tmp = Start;
+            Start = End;
+            End = tmp;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool getSnack)
         {
             Parse(inputs);
             Start = new Pos2(0, -1);
             End = new Pos2(MaxX - 1, MaxY);
-            //int minWalk = int.MaxValue;
-            //WalkBFS(0, Start, ref minWalk);
-            //WalkAStar(0, ref minWalk);
-            //return minWalk.ToString();
-            return Walk().ToString();
+            int minWalk = Walk(0);
+            if (getSnack)
+            {
+                SwapStartEnd();
+                minWalk += Walk(minWalk);
+                SwapStartEnd();
+                minWalk += Walk(minWalk);
+            }
+            return minWalk.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
-        // 418 [TOO HIGH]
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
