@@ -118,8 +118,6 @@ namespace AoC._2022
                                                        .Select(p => p.Key).OrderByDescending(_ => _).ToList();
                     if (matches.Count >= 2)
                     {
-                        // DebugWriteLine($"Checking for {cycleCheck} [{yCheck}]");
-                        // PrintRocks(usedRocks, new List<Base.LongPosition>(), yCheck - 2 * (yCheck - matches.Min()), ys.Max(), MinX, MaxX);
                         foreach (long m in matches)
                         {
                             long cycleLen = yCheck - m;
@@ -137,7 +135,7 @@ namespace AoC._2022
                                     break;
                                 }
 
-                                if (cycleDetection[maxY - matchY] != cycleDetection[m - matchY])
+                                if (cycleDetection[yCheck - matchY] != cycleDetection[m - matchY])
                                 {
                                     cycleFound = false;
                                     break;
@@ -146,8 +144,6 @@ namespace AoC._2022
 
                             if (cycleFound)
                             {
-                                // DebugWriteLine($"Cycle found with length {cycleLen}...");
-                                // PrintRocks(usedRocks, new List<Base.LongPosition>(), yCheck - 2 * cycleLen, yCheck);
                                 yCycle = yCheck;
                                 return cycleLen;
                             }
@@ -238,6 +234,7 @@ namespace AoC._2022
                     ++info.RockCount;
                     if (info.Rocks() == maxRockCount)
                     {
+                        PrintRocks(usedRocks, new List<Base.LongPosition>(), info.HighestY - 15, info.HighestY + 1);
                         return info.Length().ToString();
                     }
                     newRockPos = new List<Base.LongPosition>();
@@ -266,13 +263,6 @@ namespace AoC._2022
                     newRockPos.ForEach(r => usedRocks[r] = (char)(info.RockIdx + '0'));
                     info.SpawnNewRock = true;
                     info.HighestY = Math.Max(info.HighestY, newRockPos.Max(r => r.Y));
-                    // foreach (var r in newRockPos)
-                    // {
-                    //     if (r.Y > info.HighestY)
-                    //     {
-                    //         info.HighestY = r.Y;
-                    //     }
-                    // }
 
                     long[] ys = newRockPos.Select(p => p.Y).Distinct().ToArray();
                     foreach (long y in ys)
@@ -298,6 +288,11 @@ namespace AoC._2022
                     {
                         if (ValidateCycle(cycleDetection, usedRocks, ref info))
                         {
+                            --info.CycleRockCount; // remove the starting rock
+                            DebugWriteLine($"verified cycle |{cycleDetection[info.TargetCycleEnd() - 1]}|");
+                            // PrintRocks(usedRocks, new List<Base.LongPosition>(), info.CycleStart - 1 - info.CycleLen, info.CycleStart - 1);
+                            // DebugWriteLine($"post verified cycle |{cycleDetection[info.CycleLen]}|");
+                            // PrintRocks(usedRocks, new List<Base.LongPosition>(), info.CycleStart - 1, info.TargetCycleEnd() - 1);
                             // fast forward
                             info.CycleStart = -1;
                             long pendingRocks = maxRockCount - info.RockCount;
@@ -312,6 +307,7 @@ namespace AoC._2022
                         {
                             info.CycleStart = yCycle + 1;
                             info.CycleLen = cycleLen;
+                            DebugWriteLine($"found cycle |{cycleDetection[yCycle]}| [{cycleLen}]");
                         }
                     }
                 }
@@ -324,5 +320,6 @@ namespace AoC._2022
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, 1000000000000);
+            // 1541449275363 [too low]
     }
 }
