@@ -44,18 +44,26 @@ namespace AoC._2022
             return testData;
         }
 
-        static readonly List<Base.LongPosition>[] RockShapes =
+        private record LPos2(long X, long Y)
         {
-            new List<Base.LongPosition>() { new Base.LongPosition(0, 0), new Base.LongPosition(1, 0), new Base.LongPosition(2, 0), new Base.LongPosition(3, 0) },
-            new List<Base.LongPosition>() { new Base.LongPosition(1, 0), new Base.LongPosition(0, 1), new Base.LongPosition(1, 1), new Base.LongPosition(2, 1), new Base.LongPosition(1, 2) },
-            new List<Base.LongPosition>() { new Base.LongPosition(2, 0), new Base.LongPosition(2, 1), new Base.LongPosition(2, 2), new Base.LongPosition(0, 0), new Base.LongPosition(1, 0) },
-            new List<Base.LongPosition>() { new Base.LongPosition(0, 0), new Base.LongPosition(0, 1), new Base.LongPosition(0, 2), new Base.LongPosition(0, 3) },
-            new List<Base.LongPosition>() { new Base.LongPosition(0, 0), new Base.LongPosition(1, 0), new Base.LongPosition(0, 1), new Base.LongPosition(1, 1) },
+            public static LPos2 operator +(LPos2 a, LPos2 b)
+            {
+                return new LPos2(a.X + b.X, a.Y + b.Y);
+            }
+        }
+
+        static readonly List<LPos2>[] RockShapes =
+        {
+            new List<LPos2>() { new LPos2(0, 0), new LPos2(1, 0), new LPos2(2, 0), new LPos2(3, 0) },
+            new List<LPos2>() { new LPos2(1, 0), new LPos2(0, 1), new LPos2(1, 1), new LPos2(2, 1), new LPos2(1, 2) },
+            new List<LPos2>() { new LPos2(2, 0), new LPos2(2, 1), new LPos2(2, 2), new LPos2(0, 0), new LPos2(1, 0) },
+            new List<LPos2>() { new LPos2(0, 0), new LPos2(0, 1), new LPos2(0, 2), new LPos2(0, 3) },
+            new List<LPos2>() { new LPos2(0, 0), new LPos2(1, 0), new LPos2(0, 1), new LPos2(1, 1) },
         };
         private int MinX { get { return 0; } }
         private int MaxX { get { return 7; } }
 
-        private void PrintRocks(Dictionary<Base.LongPosition, char> usedRocks, List<Base.LongPosition> rock, long minY, long maxY)
+        private void PrintRocks(Dictionary<LPos2, char> usedRocks, List<LPos2> rock, long minY, long maxY)
         {
             StringBuilder sb = new StringBuilder();
             for (long y = maxY; y > 0 && y >= minY; --y)
@@ -64,7 +72,7 @@ namespace AoC._2022
                 sb.Append(string.Format("{0, 3} - ", y));
                 for (int x = MinX - 1; x <= MaxX; ++x)
                 {
-                    Base.LongPosition pos = new Base.LongPosition(x, y);
+                    LPos2 pos = new LPos2(x, y);
                     if (x < MinX || x >= MaxX)
                     {
                         sb.Append('|');
@@ -87,14 +95,14 @@ namespace AoC._2022
             DebugWriteLine("  0 - +-------+");
         }
 
-        private bool CanMove(HashSet<Base.LongPosition> usedPoints, ref List<Base.LongPosition> rock, Base.LongPosition movement)
+        private bool CanMove(HashSet<LPos2> usedPoints, ref List<LPos2> rock, LPos2 movement)
         {
-            List<Base.LongPosition> movedRock = new List<Base.LongPosition>();
+            List<LPos2> movedRock = new List<LPos2>();
             for (int i = 0; i < rock.Count; ++i)
             {
                 movedRock.Add(rock[i] + movement);
 
-                Base.LongPosition movedRockNode = movedRock.Last();
+                LPos2 movedRockNode = movedRock.Last();
                 if (movedRockNode.X < MinX || movedRockNode.X >= MaxX || movedRockNode.Y <= 0 || usedPoints.Contains(movedRockNode))
                 {
                     return false;
@@ -105,10 +113,11 @@ namespace AoC._2022
             return true;
         }
 
-        private long DetectCycle(Dictionary<long, string> cycleDetection, long[] ys, Dictionary<Base.LongPosition, char> usedRocks, out long yCycle)
+        private long DetectCycle(Dictionary<long, string> cycleDetection, long[] ys, Dictionary<LPos2, char> usedRocks, out long yCycle)
         {
             yCycle = -1;
             long maxY = ys.Max();
+            //long yCheck = ys.Max();
             foreach (long yCheck in ys)
             {
                 string cycleCheck = cycleDetection[yCheck];
@@ -154,7 +163,7 @@ namespace AoC._2022
             return 0;
         }
 
-        private bool ValidateCycle(Dictionary<long, string> cycleDetection, Dictionary<Base.LongPosition, char> usedRocks, ref Info info)
+        private bool ValidateCycle(Dictionary<long, string> cycleDetection, Dictionary<LPos2, char> usedRocks, ref Info info)
         {
             long validateStart = info.TargetCycleEnd();
             long cycleStart = info.CycleStart;
@@ -214,11 +223,12 @@ namespace AoC._2022
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxRockCount)
         {
             char[] jets = inputs[0].ToCharArray();
-            HashSet<Base.LongPosition> usedPoints = new HashSet<Base.LongPosition>();
-            Dictionary<Base.LongPosition, char> usedRocks = new Dictionary<Base.LongPosition, char>();
+            HashSet<LPos2> usedPoints = new HashSet<LPos2>();
+            Dictionary<LPos2, char> usedRocks = new Dictionary<LPos2, char>();
             Dictionary<long, string> cycleDetection = new Dictionary<long, string>();
             Info info = new Info();
-            List<Base.LongPosition> newRockPos = new List<Base.LongPosition>();
+            List<LPos2> newRockPos = new List<LPos2>();
+            long minCycleCheck = 5;
             for (int i = 0; i < jets.Length; i = (i + 1) % jets.Length)
             {
                 if (info.SpawnNewRock)
@@ -234,34 +244,33 @@ namespace AoC._2022
                     ++info.RockCount;
                     if (info.Rocks() == maxRockCount)
                     {
-                        PrintRocks(usedRocks, new List<Base.LongPosition>(), info.HighestY - 15, info.HighestY + 1);
+                        // PrintRocks(usedRocks, new List<LPos2>(), info.HighestY - 15, info.HighestY + 1);
                         return info.Length().ToString();
                     }
-                    newRockPos = new List<Base.LongPosition>();
+                    newRockPos = new List<LPos2>();
                     long newHighestY = info.HighestY;
-                    foreach (Base.LongPosition node in RockShapes[info.RockIdx])
+                    foreach (LPos2 node in RockShapes[info.RockIdx])
                     {
-                        newRockPos.Add(new Base.LongPosition(node.X + 2, node.Y + info.HighestY + 4));
+                        newRockPos.Add(new LPos2(node.X + 2, node.Y + info.HighestY + 4));
                         newHighestY = Math.Max(newHighestY, newRockPos.Last().Y);
                     }
                 }
 
-                bool moved = false;
                 if (jets[i] == '>')
                 {
-                    moved = CanMove(usedPoints, ref newRockPos, new Base.LongPosition(1, 0));
+                    CanMove(usedPoints, ref newRockPos, new LPos2(1, 0));
                 }
                 else
                 {
-                    moved = CanMove(usedPoints, ref newRockPos, new Base.LongPosition(-1, 0));
+                    CanMove(usedPoints, ref newRockPos, new LPos2(-1, 0));
                 }
 
-                moved = CanMove(usedPoints, ref newRockPos, new Base.LongPosition(0, -1));
-                if (!moved)
+                if (!CanMove(usedPoints, ref newRockPos, new LPos2(0, -1)))
                 {
                     newRockPos.ForEach(r => usedPoints.Add(r));
                     newRockPos.ForEach(r => usedRocks[r] = (char)(info.RockIdx + '0'));
                     info.SpawnNewRock = true;
+                    long preHighest = info.HighestY;
                     info.HighestY = Math.Max(info.HighestY, newRockPos.Max(r => r.Y));
 
                     long[] ys = newRockPos.Select(p => p.Y).Distinct().ToArray();
@@ -270,7 +279,7 @@ namespace AoC._2022
                         string newLine = string.Empty;
                         for (int x = MinX; x < MaxX; ++x)
                         {
-                            Base.LongPosition pos = new Base.LongPosition(x, y);
+                            LPos2 pos = new LPos2(x, y);
                             if (usedRocks.ContainsKey(pos))
                             {
                                 newLine += usedRocks[pos];
@@ -289,10 +298,10 @@ namespace AoC._2022
                         if (ValidateCycle(cycleDetection, usedRocks, ref info))
                         {
                             --info.CycleRockCount; // remove the starting rock
-                            DebugWriteLine($"verified cycle |{cycleDetection[info.TargetCycleEnd() - 1]}|");
-                            // PrintRocks(usedRocks, new List<Base.LongPosition>(), info.CycleStart - 1 - info.CycleLen, info.CycleStart - 1);
+                            DebugWriteLine($"verified cycle |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
+                            // PrintRocks(usedRocks, new List<LPos2>(), info.CycleStart - info.CycleLen, info.CycleStart - 1);
                             // DebugWriteLine($"post verified cycle |{cycleDetection[info.CycleLen]}|");
-                            // PrintRocks(usedRocks, new List<Base.LongPosition>(), info.CycleStart - 1, info.TargetCycleEnd() - 1);
+                            // PrintRocks(usedRocks, new List<LPos2>(), info.CycleStart, info.TargetCycleEnd() - 1);
                             // fast forward
                             info.CycleStart = -1;
                             long pendingRocks = maxRockCount - info.RockCount;
@@ -300,7 +309,7 @@ namespace AoC._2022
                         }
                     }
 
-                    if (info.CycleStart == 0 && ys.Max() > 1)
+                    if (info.CycleStart == 0 && ys.Max() > 1 && info.RockCount > minCycleCheck)
                     {
                         long cycleLen = DetectCycle(cycleDetection, ys, usedRocks, out long yCycle);
                         if (cycleLen > 0 && yCycle > 0)
@@ -308,6 +317,7 @@ namespace AoC._2022
                             info.CycleStart = yCycle + 1;
                             info.CycleLen = cycleLen;
                             DebugWriteLine($"found cycle |{cycleDetection[yCycle]}| [{cycleLen}]");
+                            // PrintRocks(usedRocks, new List<LPos2>(), yCycle + 1 - cycleLen, yCycle);
                         }
                     }
                 }
@@ -321,5 +331,7 @@ namespace AoC._2022
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, 1000000000000);
             // 1541449275363 [too low]
+            // 1538773148170 [too low]
+            // 1542343387470 [wrong]
     }
 }
