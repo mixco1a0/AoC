@@ -37,9 +37,10 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "3472",
                 RawInput =
-@""
+@"Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
+Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian."
             });
             return testData;
         }
@@ -429,7 +430,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 int maxObs = bp.MaxObsidianRequried();
 
                 HashSet<PossibilityNode> used = new HashSet<PossibilityNode>();
-                DebugWriteLine($"Running blueprint #{bp.Id}");
+                DebugWriteLine(Core.Log.ELevel.Debug, $"Running blueprint #{bp.Id}");
                 maxGeodes[bp.Id] = int.MinValue;
                 List<EMaterial> botOrder = new List<EMaterial>();
                 PriorityQueue<PossibilityNode, int> botOrderNodes = new PriorityQueue<PossibilityNode, int>(); //Comparer<int>.Create((a, b) => b - a)
@@ -463,7 +464,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
 
                         if (op._Resources.Geode > maxGeodes[bp.Id])
                         {
-                            DebugWriteLine($"{op._Resources.Geode} @ {string.Join(",", cur.Bots.Select(b => b.ToString().Substring(0, 3)))}");
+                            DebugWriteLine(Core.Log.ELevel.Debug, $"{op._Resources.Geode} @ {string.Join(",", cur.Bots.Select(b => b.ToString().Substring(0, 3)))}");
                         }
                         cur.MinScore = op._Resources.Geode;
                         maxGeodes[bp.Id] = Math.Max(maxGeodes[bp.Id], op._Resources.Geode);
