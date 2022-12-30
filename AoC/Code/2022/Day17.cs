@@ -1,7 +1,7 @@
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2022
 {
@@ -13,16 +13,16 @@ namespace AoC._2022
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -124,7 +124,7 @@ namespace AoC._2022
                 {
                     List<long> matches = cycleDetection.Where(p => p.Value == cycleCheck && p.Key < yCheck && Math.Abs(p.Key - yCheck) > 4)
                                                        .Select(p => p.Key).OrderByDescending(_ => _).ToList();
-                    if (matches.Count >= 2)
+                    if (matches.Any())
                     {
                         foreach (long m in matches)
                         {
@@ -274,23 +274,23 @@ namespace AoC._2022
                     info.HighestY = Math.Max(info.HighestY, newRockPos.Max(r => r.Y));
 
                     long[] ys = newRockPos.Select(p => p.Y).Distinct().ToArray();
+                    StringBuilder sb = new StringBuilder();
                     foreach (long y in ys)
                     {
-                        string newLine = string.Empty;
+                        sb.Clear();
                         for (int x = MinX; x < MaxX; ++x)
                         {
                             LPos2 pos = new LPos2(x, y);
                             if (usedRocks.ContainsKey(pos))
                             {
-                                newLine += usedRocks[pos];
+                                sb.Append(usedRocks[pos]);
                             }
                             else
                             {
-                                newLine += '.';
+                                sb.Append('.');
                             }
                         }
-
-                        cycleDetection[y] = newLine;
+                        cycleDetection[y] = sb.ToString();
                     }
 
                     if (info.CycleStart > 0 && ys.Contains(info.TargetCycleEnd()))
@@ -298,18 +298,18 @@ namespace AoC._2022
                         if (ValidateCycle(cycleDetection, usedRocks, ref info))
                         {
                             info.CycleVerification.Add(info.CycleRockCount);
-                            DebugWriteLine($"verified cycle @ {info.TargetCycleEnd() - 1} [#{info.CycleVerification.Count}] |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
+                            DebugWriteLine(Core.Log.ELevel.Debug, $"verified cycle @ {info.TargetCycleEnd() - 1} [#{info.CycleVerification.Count}] |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
 
                             if (info.CycleVerification.Distinct().Count() != 1)
                             {
-                                DebugWriteLine($"verified, but different rock counts!");
+                                DebugWriteLine(Core.Log.ELevel.Debug, $"verified, but different rock counts!");
                                 info.CycleRockCount = 0;
                                 info.CycleStart = 0;
                                 info.CycleVerification.Clear();
                             }
                             else
                             {
-                                if (info.CycleVerification.Count < 20)
+                                if (info.CycleVerification.Count < 5)
                                 {
                                     info.CycleStart = info.TargetCycleEnd();
                                     info.CycleRockCount = 0;
@@ -322,29 +322,18 @@ namespace AoC._2022
                                     info.CycleCount = pendingRocks / info.CycleRockCount;
                                 }
                             }
-
-                            // PrintRocks(usedRocks, new List<LPos2>(), info.CycleStart - info.CycleLen, info.CycleStart - 1);
-                            // DebugWriteLine($"post verified cycle |{cycleDetection[info.CycleLen]}|");
-                            // PrintRocks(usedRocks, new List<LPos2>(), info.CycleStart, info.TargetCycleEnd() - 1);
                         }
-                        // else
-                        // {
-                        //     info.CycleRockCount = 0;
-                        //     info.CycleStart = 0;
-                        //     info.CycleVerification.Clear();
-                        // }
                     }
 
                     if (info.CycleStart == 0 && ys.Max() > 1 && info.RockCount > minCycleCheck && ys.Min() >= jets.Length)
                     {
                         long cycleLen = DetectCycle(cycleDetection, ys, usedRocks, out long yCycle);
-                        if (((jets.Length < 100 && cycleLen > 0) || (cycleLen > 0)) && yCycle > 0)
+                        if (cycleLen > 0 && yCycle > 0)
                         {
-                            info.CycleStart = yCycle + 1;
+                            info.CycleStart = yCycle;
                             info.CycleLen = cycleLen;
                             info.CycleVerification.Clear();
-                            DebugWriteLine($"found cycle {yCycle} |{cycleDetection[yCycle]}| [{cycleLen}]");
-                            // PrintRocks(usedRocks, new List<LPos2>(), yCycle + 1 - cycleLen, yCycle);
+                            DebugWriteLine(Core.Log.ELevel.Debug, $"found cycle {yCycle} |{cycleDetection[yCycle]}| [{cycleLen}]");
                         }
                     }
                 }
@@ -357,10 +346,5 @@ namespace AoC._2022
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, 1000000000000);
-        // 1541449275363 [too low]
-        // 1538773148170 [too low]
-        // 1542343387467 [wrong]
-        // 1542343387470 [wrong]
-        // 1541449275365
     }
 }
