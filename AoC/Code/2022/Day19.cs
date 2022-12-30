@@ -175,12 +175,20 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 GeodeBot geode = new GeodeBot(split[5], split[6]);
                 return new Blueprint(split[0], ore, clay, obsidian, geode);
             }
-
-            public void Cycle(ref Resources r, ref Bots b)
+            
+            public int MaxOreRequired()
             {
-                // if can build, build
+                return Math.Max(OreBot.OreCost, Math.Max(ClayBot.OreCost, Math.Max(ObsidianBot.OreCost, GeodeBot.OreCost)));
+            }
 
-                // nothign to do but mine
+            public int MaxClayRequired()
+            {
+                return ObsidianBot.ClayCost;
+            }
+
+            public int MaxObsidianRequried()
+            {
+                return GeodeBot.ObsidianCost;
             }
         }
 
@@ -247,7 +255,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                     ++_Bots.Geode;
 
                     // once you can build this, there is no point in trying to build anything else
-                    OnlyGeoBots = true;
+                    OnlyGeoBots = !BotOrder.Any();
                     return;
                 }
 
@@ -406,8 +414,12 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
         {
             List<Blueprint> blueprints = inputs.Select(Blueprint.Parse).ToList();
             Dictionary<int, int> maxGeodes = new Dictionary<int, int>();
-            foreach (Blueprint bp in blueprints.OrderByDescending(b => b.Id))
+            foreach (Blueprint bp in blueprints)
             {
+                int maxOre = bp.MaxOreRequired();
+                int maxClay = bp.MaxClayRequired();
+                int maxObs = bp.MaxObsidianRequried();
+
                 HashSet<PossibilityNode> used = new HashSet<PossibilityNode>();
                 DebugWriteLine($"Running blueprint #{bp.Id}");
                 maxGeodes[bp.Id] = int.MinValue;
@@ -441,10 +453,10 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                         //     continue;
                         // }
 
-                        if (op._Resources.Geode > maxGeodes[bp.Id])
-                        {
-                            DebugWriteLine($"{op._Resources.Geode} @ {string.Join(",", cur.Bots.Select(b => b.ToString().Substring(0, 3)))}");
-                        }
+                        // if (op._Resources.Geode > maxGeodes[bp.Id])
+                        // {
+                        //     DebugWriteLine($"{op._Resources.Geode} @ {string.Join(",", cur.Bots.Select(b => b.ToString().Substring(0, 3)))}");
+                        // }
                         cur.MinScore = op._Resources.Geode;
                         maxGeodes[bp.Id] = Math.Max(maxGeodes[bp.Id], op._Resources.Geode);
 
@@ -458,6 +470,21 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                     for (EMaterial material = EMaterial.Obsidian; material >= EMaterial.Ore; --material)
                     {
                         next = new PossibilityNode(cur, material);
+                        if ((next.CurOre + 1) > maxOre)
+                        {
+                            continue;
+                        }
+
+                        if (next.CurClay > maxClay)
+                        {
+                            continue;
+                        }
+
+                        if (next.CurObsidian > maxObs)
+                        {
+                            continue;
+                        }
+
                         if (!used.Contains(next))
                         {
                             botOrderNodes.Enqueue(next, cur.MinScore * -1 + cur.Bots.Count);
