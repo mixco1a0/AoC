@@ -298,11 +298,11 @@ namespace AoC._2022
                         if (ValidateCycle(cycleDetection, usedRocks, ref info))
                         {
                             info.CycleVerification.Add(info.CycleRockCount);
-                            DebugWriteLine(Core.Log.ELevel.Debug, $"verified cycle @ {info.TargetCycleEnd() - 1} [#{info.CycleVerification.Count}] |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
+                            //DebugWriteLine(Core.Log.ELevel.Debug, $"verified cycle @ {info.TargetCycleEnd() - 1} [#{info.CycleVerification.Count}] |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
 
                             if (info.CycleVerification.Distinct().Count() != 1)
                             {
-                                DebugWriteLine(Core.Log.ELevel.Debug, $"verified, but different rock counts!");
+                                //DebugWriteLine(Core.Log.ELevel.Debug, $"verified, but different rock counts!");
                                 info.CycleRockCount = 0;
                                 info.CycleStart = 0;
                                 info.CycleVerification.Clear();
@@ -333,7 +333,7 @@ namespace AoC._2022
                             info.CycleStart = yCycle;
                             info.CycleLen = cycleLen;
                             info.CycleVerification.Clear();
-                            DebugWriteLine(Core.Log.ELevel.Debug, $"found cycle {yCycle} |{cycleDetection[yCycle]}| [{cycleLen}]");
+                            //DebugWriteLine(Core.Log.ELevel.Debug, $"found cycle {yCycle} |{cycleDetection[yCycle]}| [{cycleLen}]");
                         }
                     }
                 }
