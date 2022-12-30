@@ -175,7 +175,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 GeodeBot geode = new GeodeBot(split[5], split[6]);
                 return new Blueprint(split[0], ore, clay, obsidian, geode);
             }
-            
+
             public int MaxOreRequired()
             {
                 return Math.Max(OreBot.OreCost, Math.Max(ClayBot.OreCost, Math.Max(ObsidianBot.OreCost, GeodeBot.OreCost)));
@@ -401,18 +401,26 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
             return allBotOrders;
         }
 
-        private void RunOperation(Blueprint bp, List<EMaterial> botOrder, out Operation op)
+        private void RunOperation(Blueprint bp, List<EMaterial> botOrder, int minutes, out Operation op)
         {
             op = new Operation(bp, botOrder);
-            for (int i = 0; i < 24; ++i)
+            for (int i = 0; i < minutes; ++i)
             {
                 op.Cycle(i);
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int minutes, bool runAllBlueprints)
         {
-            List<Blueprint> blueprints = inputs.Select(Blueprint.Parse).ToList();
+            List<Blueprint> blueprints = null;
+            if (runAllBlueprints)
+            {
+                blueprints = inputs.Select(Blueprint.Parse).ToList();
+            }
+            else
+            {
+                blueprints = inputs.Select(Blueprint.Parse).Take(3).ToList();
+            }
             Dictionary<int, int> maxGeodes = new Dictionary<int, int>();
             foreach (Blueprint bp in blueprints)
             {
@@ -440,7 +448,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                     // only add valid possibilities (ore is a check against 0 because you start with one)
                     if (cur.CurOre >= 0 && cur.CurClay >= 1 && cur.CurObsidian >= 1)
                     {
-                        RunOperation(bp, cur.Bots, out Operation op);
+                        RunOperation(bp, cur.Bots, minutes, out Operation op);
 
                         // this did worse
                         if (op._Resources.Geode < cur.MinScore)
@@ -453,10 +461,10 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                         //     continue;
                         // }
 
-                        // if (op._Resources.Geode > maxGeodes[bp.Id])
-                        // {
-                        //     DebugWriteLine($"{op._Resources.Geode} @ {string.Join(",", cur.Bots.Select(b => b.ToString().Substring(0, 3)))}");
-                        // }
+                        if (op._Resources.Geode > maxGeodes[bp.Id])
+                        {
+                            DebugWriteLine($"{op._Resources.Geode} @ {string.Join(",", cur.Bots.Select(b => b.ToString().Substring(0, 3)))}");
+                        }
                         cur.MinScore = op._Resources.Geode;
                         maxGeodes[bp.Id] = Math.Max(maxGeodes[bp.Id], op._Resources.Geode);
 
@@ -492,13 +500,26 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                     }
                 }
             }
-            return maxGeodes.Select(pair => pair.Key * pair.Value).Sum().ToString();
+
+            if (runAllBlueprints)
+            {
+                return maxGeodes.Select(pair => pair.Key * pair.Value).Sum().ToString();
+            }
+            else
+            {
+                int score = 1;
+                foreach (int val in maxGeodes.Values)
+                {
+                    score *= val;
+                }
+                return score.ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 24, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 32, false);
     }
 }
