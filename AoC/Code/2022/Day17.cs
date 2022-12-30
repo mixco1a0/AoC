@@ -117,7 +117,6 @@ namespace AoC._2022
         {
             yCycle = -1;
             long maxY = ys.Max();
-            //long yCheck = ys.Max();
             foreach (long yCheck in ys)
             {
                 string cycleCheck = cycleDetection[yCheck];
@@ -191,6 +190,7 @@ namespace AoC._2022
             public long CycleLen { get; set; }
             public long CycleRockCount { get; set; }
             public long CycleCount { get; set; }
+            public List<long> CycleVerification { get; set; }
 
             public Info()
             {
@@ -202,6 +202,7 @@ namespace AoC._2022
                 CycleLen = 0;
                 CycleRockCount = 0;
                 CycleCount = 0;
+                CycleVerification = new List<long>();
             }
 
             public long Length()
@@ -242,9 +243,8 @@ namespace AoC._2022
                         ++info.CycleRockCount;
                     }
                     ++info.RockCount;
-                    if (info.Rocks() == maxRockCount)
+                    if (info.Rocks() > maxRockCount)
                     {
-                        // PrintRocks(usedRocks, new List<LPos2>(), info.HighestY - 15, info.HighestY + 1);
                         return info.Length().ToString();
                     }
                     newRockPos = new List<LPos2>();
@@ -297,26 +297,53 @@ namespace AoC._2022
                     {
                         if (ValidateCycle(cycleDetection, usedRocks, ref info))
                         {
-                            --info.CycleRockCount; // remove the starting rock
-                            DebugWriteLine($"verified cycle |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
+                            info.CycleVerification.Add(info.CycleRockCount);
+                            DebugWriteLine($"verified cycle @ {info.TargetCycleEnd() - 1} [#{info.CycleVerification.Count}] |{cycleDetection[info.TargetCycleEnd() - 1]}| [{info.CycleRockCount} rocks]");
+
+                            if (info.CycleVerification.Distinct().Count() != 1)
+                            {
+                                DebugWriteLine($"verified, but different rock counts!");
+                                info.CycleRockCount = 0;
+                                info.CycleStart = 0;
+                                info.CycleVerification.Clear();
+                            }
+                            else
+                            {
+                                if (info.CycleVerification.Count < 20)
+                                {
+                                    info.CycleStart = info.TargetCycleEnd();
+                                    info.CycleRockCount = 0;
+                                }
+                                else
+                                {
+                                    // fast forward
+                                    info.CycleStart = -1;
+                                    long pendingRocks = maxRockCount - info.RockCount;
+                                    info.CycleCount = pendingRocks / info.CycleRockCount;
+                                }
+                            }
+
                             // PrintRocks(usedRocks, new List<LPos2>(), info.CycleStart - info.CycleLen, info.CycleStart - 1);
                             // DebugWriteLine($"post verified cycle |{cycleDetection[info.CycleLen]}|");
                             // PrintRocks(usedRocks, new List<LPos2>(), info.CycleStart, info.TargetCycleEnd() - 1);
-                            // fast forward
-                            info.CycleStart = -1;
-                            long pendingRocks = maxRockCount - info.RockCount;
-                            info.CycleCount = pendingRocks / info.CycleRockCount;
                         }
+                        // else
+                        // {
+                        //     info.CycleRockCount = 0;
+                        //     info.CycleStart = 0;
+                        //     info.CycleVerification.Clear();
+                        // }
                     }
 
-                    if (info.CycleStart == 0 && ys.Max() > 1 && info.RockCount > minCycleCheck)
+                    if (info.CycleStart == 0 && ys.Max() > 1 && info.RockCount > minCycleCheck && ys.Min() >= jets.Length)
                     {
                         long cycleLen = DetectCycle(cycleDetection, ys, usedRocks, out long yCycle);
-                        if (cycleLen > 0 && yCycle > 0)
+                        if (((jets.Length < 100 && cycleLen > 0) || (cycleLen > 0)) && yCycle > 0)
                         {
                             info.CycleStart = yCycle + 1;
                             info.CycleLen = cycleLen;
-                            DebugWriteLine($"found cycle |{cycleDetection[yCycle]}| [{cycleLen}]");
+                            info.CycleVerification.Clear();
+                            DebugWriteLine($"found cycle {yCycle} |{cycleDetection[yCycle]}| [{cycleLen}]");
                             // PrintRocks(usedRocks, new List<LPos2>(), yCycle + 1 - cycleLen, yCycle);
                         }
                     }
@@ -326,12 +353,14 @@ namespace AoC._2022
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 2023);
+            => SharedSolution(inputs, variables, 2022);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, 1000000000000);
-            // 1541449275363 [too low]
-            // 1538773148170 [too low]
-            // 1542343387470 [wrong]
+        // 1541449275363 [too low]
+        // 1538773148170 [too low]
+        // 1542343387467 [wrong]
+        // 1542343387470 [wrong]
+        // 1541449275365
     }
 }
