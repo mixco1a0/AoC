@@ -285,10 +285,10 @@ namespace AoC._2022
             // 1 -> U
             // 2 -> L
             // 3 -> D
-            public int DRight { get { return 0; } }
-            public int DTop { get { return 1; } }
-            public int DLeft { get { return 2; } }
-            public int DDown { get { return 3; } }
+            public const int DRight = 0;
+            public const int DUp = 1;
+            public const int DLeft = 2;
+            public const int DDown = 3;
             public int Direction { get; set; }
             private int MaxDirection { get { return 4; } }
 
@@ -316,7 +316,7 @@ namespace AoC._2022
             {
                 if (int.TryParse(instruction, out int steps))
                 {
-                    int direction = DTop;
+                    int direction = DUp;
                     if (Direction == DDown || Direction == DLeft)
                     {
                         direction = -1;
@@ -432,10 +432,14 @@ namespace AoC._2022
             {
                 if (int.TryParse(instruction, out int steps))
                 {
-                    int direction = DTop;
-                    if (Direction == DDown || Direction == DLeft)
+                    int direction = 1;
+                    if (Direction == DUp || Direction == DLeft)
                     {
                         direction = -1;
+                    }
+                    else if (Direction == DDown || Direction == DRight)
+                    {
+                        direction = 1;
                     }
 
                     if (Direction == DRight || Direction == DLeft)
@@ -481,7 +485,7 @@ namespace AoC._2022
                                             X = Y;
                                             Y = maxX - curX;
                                         }
-                                        Direction = DDown;
+                                        Direction = DUp;
                                         break;
                                     case FaceConfig.EDirection.Left:
                                         if (Direction == DRight)
@@ -503,7 +507,7 @@ namespace AoC._2022
                                         }
                                         else
                                         {
-                                            // do nothing
+                                            X = maxX - X;
                                         }
                                         Direction = DLeft;
                                         break;
@@ -518,10 +522,11 @@ namespace AoC._2022
                                             X = maxY - Y;
                                             Y = curX;
                                         }
-                                        Direction = DTop;
+                                        Direction = DDown;
                                         break;
                                 }
 
+                                Face = targetFace;
                                 if (grid[RealX, RealY] == WallChar)
                                 {
                                     X = tempX;
@@ -530,8 +535,7 @@ namespace AoC._2022
                                     break;
                                 }
 
-                                Face = targetFace;
-                                return (steps - 1).ToString();
+                                return (steps - x).ToString();
                             }
                             else if (grid[GetX(curX), RealY] == WallChar)
                             {
@@ -557,7 +561,7 @@ namespace AoC._2022
                                 // need to swap to a different face
                                 int targetFace = 0;
                                 FaceConfig.EDirection targetDir;
-                                if (Direction == DTop)
+                                if (Direction == DUp)
                                 {
                                     targetFace = FaceConfigs[Face].DirectionIds[(int)FaceConfig.EDirection.Top];
                                     targetDir = FaceConfigs[Face].TargetSide[(int)FaceConfig.EDirection.Top];
@@ -576,7 +580,7 @@ namespace AoC._2022
                                 switch (targetDir)
                                 {
                                     case FaceConfig.EDirection.Top:
-                                        if (Direction == DTop)
+                                        if (Direction == DUp)
                                         {
                                             Y = maxY - Y;
                                             X = maxX - X;
@@ -585,10 +589,10 @@ namespace AoC._2022
                                         {
                                             // do nothing
                                         }
-                                        Direction = DDown;
+                                        Direction = DUp;
                                         break;
                                     case FaceConfig.EDirection.Left:
-                                        if (Direction == DTop)
+                                        if (Direction == DUp)
                                         {
                                             Y = X;
                                             X = maxY - curY;
@@ -601,7 +605,7 @@ namespace AoC._2022
                                         Direction = DRight;
                                         break;
                                     case FaceConfig.EDirection.Right:
-                                        if (Direction == DTop)
+                                        if (Direction == DUp)
                                         {
                                             Y = maxY - X;
                                             X = curY;
@@ -614,7 +618,7 @@ namespace AoC._2022
                                         Direction = DLeft;
                                         break;
                                     case FaceConfig.EDirection.Bottom:
-                                        if (Direction == DTop)
+                                        if (Direction == DUp)
                                         {
                                             // do nothing
                                         }
@@ -623,10 +627,11 @@ namespace AoC._2022
                                             Y = maxY - Y;
                                             X = maxX - X;
                                         }
-                                        Direction = DTop;
+                                        Direction = DDown;
                                         break;
                                 }
 
+                                Face = targetFace;
                                 if (grid[RealX, RealY] == WallChar)
                                 {
                                     X = tempX;
@@ -635,8 +640,7 @@ namespace AoC._2022
                                     break;
                                 }
 
-                                Face = targetFace;
-                                return (steps - 1).ToString();
+                                return (steps - y).ToString();
                             }
                             else if (grid[RealX, GetY(curY)] == WallChar)
                             {
@@ -653,11 +657,41 @@ namespace AoC._2022
                 {
                     if (instruction[0] == 'R')
                     {
-                        Direction = (Direction + 1) % MaxDirection;
+                        switch (Direction)
+                        {
+                            case DRight:
+                                Direction = DDown;
+                                break;
+                            case DUp:
+                                Direction = DRight;
+                                break;
+                            case DLeft:
+                                Direction = DUp;
+                                break;
+                            case DDown:
+                                Direction = DLeft;
+                                break;
+                        }
+                        //Direction = (Direction + 1) % MaxDirection;
                     }
                     else
                     {
-                        Direction = (Direction + MaxDirection - 1) % MaxDirection;
+                        switch (Direction)
+                        {
+                            case DRight:
+                                Direction = DUp;
+                                break;
+                            case DUp:
+                                Direction = DLeft;
+                                break;
+                            case DLeft:
+                                Direction = DDown;
+                                break;
+                            case DDown:
+                                Direction = DRight;
+                                break;
+                        }
+                        //Direction = (Direction + MaxDirection - 1) % MaxDirection;
                     }
                 }
 
@@ -702,13 +736,13 @@ namespace AoC._2022
                                 printGrid[gridState.RealX, gridState.RealY] = '>';
                                 break;
                             case 1:
-                                printGrid[gridState.RealX, gridState.RealY] = 'V';
+                                printGrid[gridState.RealX, gridState.RealY] = '^';
                                 break;
                             case 2:
                                 printGrid[gridState.RealX, gridState.RealY] = '<';
                                 break;
                             case 3:
-                                printGrid[gridState.RealX, gridState.RealY] = '^';
+                                printGrid[gridState.RealX, gridState.RealY] = 'v';
                                 break;
                         }
                     }
