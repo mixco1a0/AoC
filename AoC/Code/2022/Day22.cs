@@ -62,7 +62,7 @@ namespace AoC._2022
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "5031",
                 RawInput =
 @"        ...#
         .#..
@@ -102,6 +102,8 @@ namespace AoC._2022
 
         private int MaxX { get; set; }
         private int MaxY { get; set; }
+        private int FaceX { get; set; }
+        private int FaceY { get; set; }
 
         private class FaceConfig
         {
@@ -189,8 +191,8 @@ namespace AoC._2022
             // cube face size
             string sideSize = inputs[MaxY + 1];
             string[] splitSide = sideSize.Split('x', StringSplitOptions.RemoveEmptyEntries);
-            int faceX = int.Parse(splitSide[0]);
-            int faceY = int.Parse(splitSide[1]);
+            FaceX = int.Parse(splitSide[0]);
+            FaceY = int.Parse(splitSide[1]);
 
             // cube face ids
             List<List<int>> locations = new List<List<int>>();
@@ -231,10 +233,10 @@ namespace AoC._2022
                 }
 
                 FaceConfig curConfig = new FaceConfig(i, curX, curY);
-                curConfig.MinX = curX * faceX;
-                curConfig.MaxX = (curX + 1) * faceX - 1;
-                curConfig.MinY = curY * faceY;
-                curConfig.MaxY = (curY + 1) * faceY - 1;
+                curConfig.MinX = curX * FaceX;
+                curConfig.MaxX = (curX + 1) * FaceX - 1;
+                curConfig.MinY = curY * FaceY;
+                curConfig.MaxY = (curY + 1) * FaceY - 1;
 
                 string faceDirections = inputs.Where(input => input.StartsWith($"{i}|")).First();
                 string[] split = faceDirections.Split("|:,.".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -292,6 +294,14 @@ namespace AoC._2022
 
             public int RealX { get { return X + FaceConfigs[Face].MinX; } }
             public int RealY { get { return Y + FaceConfigs[Face].MinY; } }
+            public int GetX(int localX)
+            {
+                return localX + FaceConfigs[Face].MinX;
+            }
+            public int GetY(int localY)
+            {
+                return localY + FaceConfigs[Face].MinY;
+            }
 
             public GridState(Dictionary<int, FaceConfig> faceConfigs)
             {
@@ -418,7 +428,7 @@ namespace AoC._2022
                 }
             }
 
-            public void MoveCube(char[,] grid, int maxX, int maxY, string instruction)
+            public string MoveCube(char[,] grid, int maxX, int maxY, string instruction)
             {
                 if (int.TryParse(instruction, out int steps))
                 {
@@ -434,41 +444,100 @@ namespace AoC._2022
                         for (int x = 0; x < steps; ++x)
                         {
                             int curX = X + direction;
-                            if (curX < 0 || curX >= maxX || grid[curX, Y] == NoneChar)
+                            if (curX < 0 || curX >= maxX)
                             {
-                                // wrap around
-                                if (curX < 0)
+                                // move to the next face
+                                curX = (curX + maxX) % maxX;
+
+                                // need to swap to a different face
+                                int targetFace = 0;
+                                FaceConfig.EDirection targetDir;
+                                if (Direction == DRight)
                                 {
-                                    curX = maxX - 1;
+                                    targetFace = FaceConfigs[Face].DirectionIds[(int)FaceConfig.EDirection.Right];
+                                    targetDir = FaceConfigs[Face].TargetSide[(int)FaceConfig.EDirection.Right];
                                 }
-                                else if (curX >= maxX)
+                                else
                                 {
-                                    curX = 0;
+                                    targetFace = FaceConfigs[Face].DirectionIds[(int)FaceConfig.EDirection.Left];
+                                    targetDir = FaceConfigs[Face].TargetSide[(int)FaceConfig.EDirection.Left];
                                 }
 
-                                while (grid[curX, Y] == NoneChar)
+                                int tempX = X;
+                                int tempY = Y;
+                                int tempD = Direction;
+
+                                // perform rotations
+                                switch (targetDir)
                                 {
-                                    curX += direction;
-                                    if (curX < 0)
-                                    {
-                                        curX = maxX - 1;
-                                    }
-                                    else if (curX >= maxX)
-                                    {
-                                        curX = 0;
-                                    }
+                                    case FaceConfig.EDirection.Top:
+                                        if (Direction == DRight)
+                                        {
+                                            X = maxY - Y;
+                                            Y = curX;
+                                        }
+                                        else
+                                        {
+                                            X = Y;
+                                            Y = maxX - curX;
+                                        }
+                                        Direction = DDown;
+                                        break;
+                                    case FaceConfig.EDirection.Left:
+                                        if (Direction == DRight)
+                                        {
+                                            // do nothing
+                                        }
+                                        else
+                                        {
+                                            X = maxX - X;
+                                            Y = maxY - Y;
+                                        }
+                                        Direction = DRight;
+                                        break;
+                                    case FaceConfig.EDirection.Right:
+                                        if (Direction == DRight)
+                                        {
+                                            X = maxX - X;
+                                            Y = maxY - Y;
+                                        }
+                                        else
+                                        {
+                                            // do nothing
+                                        }
+                                        Direction = DLeft;
+                                        break;
+                                    case FaceConfig.EDirection.Bottom:
+                                        if (Direction == DRight)
+                                        {
+                                            X = Y;
+                                            Y = maxX - curX;
+                                        }
+                                        else
+                                        {
+                                            X = maxY - Y;
+                                            Y = curX;
+                                        }
+                                        Direction = DTop;
+                                        break;
                                 }
-                                if (grid[curX, Y] == WallChar)
+
+                                if (grid[RealX, RealY] == WallChar)
                                 {
+                                    X = tempX;
+                                    Y = tempY;
+                                    Direction = tempD;
                                     break;
                                 }
-                                X = curX;
+
+                                Face = targetFace;
+                                return (steps - 1).ToString();
                             }
-                            else if (grid[curX, Y] == WallChar)
+                            else if (grid[GetX(curX), RealY] == WallChar)
                             {
                                 break;
                             }
-                            else if (grid[curX, Y] == PathChar)
+                            else if (grid[GetX(curX), RealY] == PathChar)
                             {
                                 X = curX;
                             }
@@ -480,41 +549,100 @@ namespace AoC._2022
                         for (int y = 0; y < steps; ++y)
                         {
                             int curY = Y + direction;
-                            if (curY < 0 || curY >= maxY || grid[X, curY] == NoneChar)
+                            if (curY < 0 || curY >= maxY)
                             {
-                                // wrap around
-                                if (curY < 0)
+                                // move to the next face
+                                curY = (curY + maxY) % maxY;
+
+                                // need to swap to a different face
+                                int targetFace = 0;
+                                FaceConfig.EDirection targetDir;
+                                if (Direction == DTop)
                                 {
-                                    curY = maxY - 1;
+                                    targetFace = FaceConfigs[Face].DirectionIds[(int)FaceConfig.EDirection.Top];
+                                    targetDir = FaceConfigs[Face].TargetSide[(int)FaceConfig.EDirection.Top];
                                 }
-                                else if (curY >= maxY)
+                                else
                                 {
-                                    curY = 0;
+                                    targetFace = FaceConfigs[Face].DirectionIds[(int)FaceConfig.EDirection.Bottom];
+                                    targetDir = FaceConfigs[Face].TargetSide[(int)FaceConfig.EDirection.Bottom];
                                 }
 
-                                while (grid[X, curY] == NoneChar)
+                                int tempX = X;
+                                int tempY = Y;
+                                int tempD = Direction;
+
+                                // perform rotations
+                                switch (targetDir)
                                 {
-                                    curY += direction;
-                                    if (curY < 0)
-                                    {
-                                        curY = maxY - 1;
-                                    }
-                                    else if (curY >= maxY)
-                                    {
-                                        curY = 0;
-                                    }
+                                    case FaceConfig.EDirection.Top:
+                                        if (Direction == DTop)
+                                        {
+                                            Y = maxY - Y;
+                                            X = maxX - X;
+                                        }
+                                        else
+                                        {
+                                            // do nothing
+                                        }
+                                        Direction = DDown;
+                                        break;
+                                    case FaceConfig.EDirection.Left:
+                                        if (Direction == DTop)
+                                        {
+                                            Y = X;
+                                            X = maxY - curY;
+                                        }
+                                        else
+                                        {
+                                            Y = maxY - X;
+                                            X = curY;
+                                        }
+                                        Direction = DRight;
+                                        break;
+                                    case FaceConfig.EDirection.Right:
+                                        if (Direction == DTop)
+                                        {
+                                            Y = maxY - X;
+                                            X = curY;
+                                        }
+                                        else
+                                        {
+                                            Y = X;
+                                            X = maxY - curY;
+                                        }
+                                        Direction = DLeft;
+                                        break;
+                                    case FaceConfig.EDirection.Bottom:
+                                        if (Direction == DTop)
+                                        {
+                                            // do nothing
+                                        }
+                                        else
+                                        {
+                                            Y = maxY - Y;
+                                            X = maxX - X;
+                                        }
+                                        Direction = DTop;
+                                        break;
                                 }
-                                if (grid[X, curY] == WallChar)
+
+                                if (grid[RealX, RealY] == WallChar)
                                 {
+                                    X = tempX;
+                                    Y = tempY;
+                                    Direction = tempD;
                                     break;
                                 }
-                                Y = curY;
+
+                                Face = targetFace;
+                                return (steps - 1).ToString();
                             }
-                            else if (grid[X, curY] == WallChar)
+                            else if (grid[RealX, GetY(curY)] == WallChar)
                             {
                                 break;
                             }
-                            else if (grid[X, curY] == PathChar)
+                            else if (grid[RealX, GetY(curY)] == PathChar)
                             {
                                 Y = curY;
                             }
@@ -532,6 +660,8 @@ namespace AoC._2022
                         Direction = (Direction + MaxDirection - 1) % MaxDirection;
                     }
                 }
+
+                return string.Empty;
             }
 
             public int GetPassword()
@@ -557,39 +687,45 @@ namespace AoC._2022
             gridState.Face = 1;
             printGrid[gridState.RealX, gridState.RealY] = WalkChar;
             //Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
-            foreach (string instruction in instructions)
+            instructions.Reverse();
+            Stack<string> instructionSet = new Stack<string>(instructions);
+            while (instructionSet.Count > 0)
             {
-                if (char.IsDigit(instruction[0]))
-                {
-                    switch (gridState.Direction)
-                    {
-                        case 0:
-                            printGrid[gridState.X, gridState.Y] = '>';
-                            break;
-                        case 1:
-                            printGrid[gridState.X, gridState.Y] = 'V';
-                            break;
-                        case 2:
-                            printGrid[gridState.X, gridState.Y] = '<';
-                            break;
-                        case 3:
-                            printGrid[gridState.X, gridState.Y] = '^';
-                            break;
-                    }
-                }
-                DebugWriteLine($"Running... {instruction}");
+                string instruction = instructionSet.Pop();
                 if (traverseCube)
                 {
-                    gridState.MoveCube(grid, MaxX, MaxY, instruction);
+                    if (char.IsDigit(instruction[0]))
+                    {
+                        switch (gridState.Direction)
+                        {
+                            case 0:
+                                printGrid[gridState.RealX, gridState.RealY] = '>';
+                                break;
+                            case 1:
+                                printGrid[gridState.RealX, gridState.RealY] = 'V';
+                                break;
+                            case 2:
+                                printGrid[gridState.RealX, gridState.RealY] = '<';
+                                break;
+                            case 3:
+                                printGrid[gridState.RealX, gridState.RealY] = '^';
+                                break;
+                        }
+                    }
+                    DebugWriteLine($"Running... {instruction}");
+
+                    string additionalSteps = gridState.MoveCube(grid, FaceX, FaceY, instruction);
+                    if (!string.IsNullOrWhiteSpace(additionalSteps))
+                    {
+                        instructionSet.Push(additionalSteps);
+                    }
+                    printGrid[gridState.RealX, gridState.RealY] = WalkChar;
+                    Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
                 }
                 else
                 {
+                    printGrid[gridState.X, gridState.Y] = WalkChar;
                     gridState.Move(grid, MaxX, MaxY, instruction);
-                }
-                printGrid[gridState.X, gridState.Y] = WalkChar;
-                if (traverseCube)
-                {
-                    Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
                 }
             }
 
