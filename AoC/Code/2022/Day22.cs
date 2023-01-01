@@ -92,6 +92,39 @@ namespace AoC._2022
 
 10R5L5R10L4R5L5"
             });
+//             testData.Add(new Core.TestDatum
+//             {
+//                 TestPart = Core.Part.Two,
+//                 Output = "5031",
+//                 RawInput =
+// @"        ....
+//         .##.
+//         .##.
+//         ....
+// ............
+// .##..##..##.
+// .##..##..##.
+// ............
+//         ........
+//         .##..##.
+//         .##.....
+//         ......#.
+
+// 4x4
+// 0,0,1,0
+// 2,3,4,0
+// 0,0,5,6
+// 0,0,0,0
+
+// 1|T:2.T,L:3.T,R:6.R,B:4.T
+// 2|T:1.T,L:6.B,R:3.L,B:5.B
+// 3|T:1.L,L:2.R,R:4.L,B:5.L
+// 4|T:1.B,L:3.R,R:6.T,B:5.T
+// 5|T:4.B,L:3.B,R:6.L,B:2.B
+// 6|T:4.R,L:5.R,R:1.R,B:2.L
+
+// 10R5L5R10L4R5L5"
+//             });
             return testData;
         }
 
@@ -430,6 +463,8 @@ namespace AoC._2022
 
             public string MoveCube(char[,] grid, int maxX, int maxY, string instruction)
             {
+                int maxXVal = maxX - 1;
+                int maxYVal = maxY - 1;
                 if (int.TryParse(instruction, out int steps))
                 {
                     int direction = 1;
@@ -470,6 +505,7 @@ namespace AoC._2022
                                 int tempX = X;
                                 int tempY = Y;
                                 int tempD = Direction;
+                                int tempF = Face;
 
                                 // perform rotations
                                 switch (targetDir)
@@ -477,37 +513,37 @@ namespace AoC._2022
                                     case FaceConfig.EDirection.Top:
                                         if (Direction == DRight)
                                         {
-                                            X = maxY - Y;
+                                            X = maxYVal - Y;
                                             Y = curX;
                                         }
                                         else
                                         {
                                             X = Y;
-                                            Y = maxX - curX;
+                                            Y = maxXVal - curX;
                                         }
-                                        Direction = DUp;
+                                        Direction = DDown;
                                         break;
                                     case FaceConfig.EDirection.Left:
                                         if (Direction == DRight)
                                         {
-                                            // do nothing
+                                            X = curX;
                                         }
                                         else
                                         {
-                                            X = maxX - X;
-                                            Y = maxY - Y;
+                                            X = maxXVal - curX;
+                                            Y = maxYVal - Y;
                                         }
                                         Direction = DRight;
                                         break;
                                     case FaceConfig.EDirection.Right:
                                         if (Direction == DRight)
                                         {
-                                            X = maxX - X;
-                                            Y = maxY - Y;
+                                            X = maxXVal - curX;
+                                            Y = maxYVal - Y;
                                         }
                                         else
                                         {
-                                            X = maxX - X;
+                                            X = curX;
                                         }
                                         Direction = DLeft;
                                         break;
@@ -515,14 +551,14 @@ namespace AoC._2022
                                         if (Direction == DRight)
                                         {
                                             X = Y;
-                                            Y = maxX - curX;
+                                            Y = maxXVal - curX;
                                         }
                                         else
                                         {
-                                            X = maxY - Y;
+                                            X = maxYVal - Y;
                                             Y = curX;
                                         }
-                                        Direction = DDown;
+                                        Direction = DUp;
                                         break;
                                 }
 
@@ -532,10 +568,11 @@ namespace AoC._2022
                                     X = tempX;
                                     Y = tempY;
                                     Direction = tempD;
+                                    Face = tempF;
                                     break;
                                 }
 
-                                return (steps - x).ToString();
+                                return (steps - x - 1).ToString();
                             }
                             else if (grid[GetX(curX), RealY] == WallChar)
                             {
@@ -575,6 +612,7 @@ namespace AoC._2022
                                 int tempX = X;
                                 int tempY = Y;
                                 int tempD = Direction;
+                                int tempF = Face;
 
                                 // perform rotations
                                 switch (targetDir)
@@ -582,24 +620,24 @@ namespace AoC._2022
                                     case FaceConfig.EDirection.Top:
                                         if (Direction == DUp)
                                         {
-                                            Y = maxY - Y;
-                                            X = maxX - X;
+                                            Y = maxYVal - curY;
+                                            X = maxXVal - X;
                                         }
                                         else
                                         {
-                                            // do nothing
+                                            Y = curY;
                                         }
-                                        Direction = DUp;
+                                        Direction = DDown;
                                         break;
                                     case FaceConfig.EDirection.Left:
                                         if (Direction == DUp)
                                         {
                                             Y = X;
-                                            X = maxY - curY;
+                                            X = maxYVal - curY;
                                         }
                                         else
                                         {
-                                            Y = maxY - X;
+                                            Y = maxYVal - X;
                                             X = curY;
                                         }
                                         Direction = DRight;
@@ -607,27 +645,27 @@ namespace AoC._2022
                                     case FaceConfig.EDirection.Right:
                                         if (Direction == DUp)
                                         {
-                                            Y = maxY - X;
+                                            Y = maxYVal - X;
                                             X = curY;
                                         }
                                         else
                                         {
                                             Y = X;
-                                            X = maxY - curY;
+                                            X = maxYVal - curY;
                                         }
                                         Direction = DLeft;
                                         break;
                                     case FaceConfig.EDirection.Bottom:
                                         if (Direction == DUp)
                                         {
-                                            // do nothing
+                                            Y = curY;
                                         }
                                         else
                                         {
-                                            Y = maxY - Y;
-                                            X = maxX - X;
+                                            Y = maxYVal - curY;
+                                            X = maxXVal - X;
                                         }
-                                        Direction = DDown;
+                                        Direction = DUp;
                                         break;
                                 }
 
@@ -637,10 +675,11 @@ namespace AoC._2022
                                     X = tempX;
                                     Y = tempY;
                                     Direction = tempD;
+                                    Face = tempF;
                                     break;
                                 }
 
-                                return (steps - y).ToString();
+                                return (steps - y - 1).ToString();
                             }
                             else if (grid[RealX, GetY(curY)] == WallChar)
                             {
@@ -698,8 +737,25 @@ namespace AoC._2022
                 return string.Empty;
             }
 
-            public int GetPassword()
+            public int GetPassword(bool useRealValues)
             {
+                if (useRealValues)
+                {
+                    int val = ((RealY + 1) * 1000) + ((RealX + 1) * 4);
+                    if (Direction == DDown)
+                    {
+                        val += 1;
+                    }
+                    else if (Direction == DLeft)
+                    {
+                        val += 2;
+                    }
+                    else if (Direction == DUp)
+                    {
+                        val += 3;
+                    }
+                    return val;
+                }
                 return ((Y + 1) * 1000) + ((X + 1) * 4) + Direction;
             }
         }
@@ -746,7 +802,7 @@ namespace AoC._2022
                                 break;
                         }
                     }
-                    DebugWriteLine($"Running... {instruction}");
+                    // DebugWriteLine($"Running... {instruction}");
 
                     string additionalSteps = gridState.MoveCube(grid, FaceX, FaceY, instruction);
                     if (!string.IsNullOrWhiteSpace(additionalSteps))
@@ -754,7 +810,7 @@ namespace AoC._2022
                         instructionSet.Push(additionalSteps);
                     }
                     printGrid[gridState.RealX, gridState.RealY] = WalkChar;
-                    Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
+                    // Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
                 }
                 else
                 {
@@ -765,9 +821,9 @@ namespace AoC._2022
 
             if (traverseCube)
             {
-                Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
+                // Util.Grid.PrintGrid(printGrid, Core.Log.ELevel.Debug);
             }
-            return gridState.GetPassword().ToString();
+            return gridState.GetPassword(traverseCube).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -775,6 +831,7 @@ namespace AoC._2022
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true);
+            // 148185 [TOO HIGH]
     }
 }
 
