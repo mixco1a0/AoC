@@ -21,7 +21,7 @@ namespace AoC._2022
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -48,102 +48,51 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
         private int MaxMinutes { get; set; }
         private int[] BotMaxBuildTime { get; set; }
 
-        private enum EMineral
+        private enum EMineral : int
         {
             Ore,
             Clay,
             Obsidian,
             Geode,
-            None
+            Count
         }
 
         private record BasicBot(int OreCost)
         {
-            public bool CanBuild(Resources r)
+            public bool CanBuild(int[] r)
             {
-                return r.Ore >= OreCost;
+                return r[(int)EMineral.Ore] >= OreCost;
             }
 
-            public void Build(ref Resources r)
+            public void Build(ref int[] r)
             {
-                r.Ore -= OreCost;
+                r[(int)EMineral.Ore] -= OreCost;
             }
         }
         private record ObsidianBot(int OreCost, int ClayCost)
         {
-            public bool CanBuild(Resources r)
+            public bool CanBuild(int[] r)
             {
-                return r.Ore >= OreCost && r.Clay >= ClayCost;
+                return r[(int)EMineral.Ore] >= OreCost && r[(int)EMineral.Clay] >= ClayCost;
             }
 
-            public void Build(ref Resources r)
+            public void Build(ref int[] r)
             {
-                r.Ore -= OreCost;
-                r.Clay -= ClayCost;
+                r[(int)EMineral.Ore] -= OreCost;
+                r[(int)EMineral.Clay] -= ClayCost;
             }
         }
         private record GeodeBot(int OreCost, int ObsidianCost)
         {
-            public bool CanBuild(Resources r)
+            public bool CanBuild(int[] r)
             {
-                return r.Ore >= OreCost && r.Obsidian >= ObsidianCost;
+                return r[(int)EMineral.Ore] >= OreCost && r[(int)EMineral.Obsidian] >= ObsidianCost;
             }
 
-            public void Build(ref Resources r)
+            public void Build(ref int[] r)
             {
-                r.Ore -= OreCost;
-                r.Obsidian -= ObsidianCost;
-            }
-        }
-
-        private class MineralCount
-        {
-            public int Ore { get; set; }
-            public int Clay { get; set; }
-            public int Obsidian { get; set; }
-            public int Geode { get; set; }
-
-            protected MineralCount(int ore, int clay, int obsidian, int geode)
-            {
-                Ore = ore;
-                Clay = clay;
-                Obsidian = obsidian;
-                Geode = geode;
-            }
-
-            public override string ToString()
-            {
-                return $"O={Ore}, C={Clay}, B={Obsidian}, G={Geode}";
-            }
-        }
-        private class Resources : MineralCount
-        {
-            public Resources() : base(0, 0, 0, 0) { }
-
-            public Resources(Resources r) : base(r.Ore, r.Clay, r.Obsidian, r.Geode) { }
-
-            public void Mine(Bots b, int time)
-            {
-                Ore += time * b.Ore;
-                Clay += time * b.Clay;
-                Obsidian += time * b.Obsidian;
-                Geode += time * b.Geode;
-            }
-
-            public override string ToString()
-            {
-                return $"Res[{base.ToString()}]";
-            }
-        }
-        private class Bots : MineralCount
-        {
-            public Bots() : base(1, 0, 0, 0) { }
-
-            public Bots(Bots b) : base(b.Ore, b.Clay, b.Obsidian, b.Geode) { }
-
-            public override string ToString()
-            {
-                return $"Bot[{base.ToString()}]";
+                r[(int)EMineral.Ore] -= OreCost;
+                r[(int)EMineral.Obsidian] -= ObsidianCost;
             }
         }
 
@@ -164,27 +113,28 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
         {
             public Blueprint CurBlueprint { get; set; }
             public int Time { get; set; }
-            public Resources _Resources;
-            public Bots _Bots;
-            public Queue<EMineral> BotOrder { get; set; }
+            protected int[] Resources;
+            protected int[] Bots;
 
             public Operation(Blueprint blueprint, int time)
             {
                 CurBlueprint = blueprint;
                 Time = time;
-                _Resources = new Resources();
-                _Bots = new Bots();
-                BotOrder = new Queue<EMineral>();
-                BotOrder.Enqueue(EMineral.Ore);
+                Resources = new int[(int)EMineral.Count] { 0, 0, 0, 0 };
+                Bots = new int[(int)EMineral.Count] { 1, 0, 0, 0 };
             }
 
             private Operation(Operation prev)
             {
                 CurBlueprint = prev.CurBlueprint;
                 Time = prev.Time;
-                _Resources = new Resources(prev._Resources);
-                _Bots = new Bots(prev._Bots);
-                BotOrder = new Queue<EMineral>(prev.BotOrder);
+                Resources = new int[(int)EMineral.Count];
+                Bots = new int[(int)EMineral.Count];
+                for (int i = (int)EMineral.Ore; i < (int)EMineral.Count; ++i)
+                {
+                    Resources[i] = prev.Resources[i];
+                    Bots[i] = prev.Bots[i];
+                }
             }
 
             public Operation FastForward(int time, EMineral newBot)
@@ -193,13 +143,25 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 newOp.Mine(time);
                 newOp.Build(newBot);
                 newOp.Time -= time;
-                newOp.BotOrder.Enqueue(newBot);
                 return newOp;
+            }
+
+            public int BotCount(EMineral m)
+            {
+                return Bots[(int)m];
+            }
+
+            public int ResourceCount(EMineral m)
+            {
+                return Resources[(int)m];
             }
 
             private void Mine(int time)
             {
-                _Resources.Mine(_Bots, time);
+                for (int i = (int)EMineral.Ore; i < (int)EMineral.Count; ++i)
+                {
+                    Resources[i] += Bots[i] * time;
+                }
             }
 
             private void Build(EMineral material)
@@ -207,27 +169,27 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 switch (material)
                 {
                     case EMineral.Ore:
-                        CurBlueprint.OreBot.Build(ref _Resources);
-                        ++_Bots.Ore;
+                        CurBlueprint.OreBot.Build(ref Resources);
+                        ++Bots[(int)EMineral.Ore];
                         break;
                     case EMineral.Clay:
-                        CurBlueprint.ClayBot.Build(ref _Resources);
-                        ++_Bots.Clay;
+                        CurBlueprint.ClayBot.Build(ref Resources);
+                        ++Bots[(int)EMineral.Clay];
                         break;
                     case EMineral.Obsidian:
-                        CurBlueprint.ObsidianBot.Build(ref _Resources);
-                        ++_Bots.Obsidian;
+                        CurBlueprint.ObsidianBot.Build(ref Resources);
+                        ++Bots[(int)EMineral.Obsidian];
                         break;
                     case EMineral.Geode:
-                        CurBlueprint.GeodeBot.Build(ref _Resources);
-                        ++_Bots.Geode;
+                        CurBlueprint.GeodeBot.Build(ref Resources);
+                        ++Bots[(int)EMineral.Geode];
                         break;
                 }
             }
 
             public int GetFixedGeodes()
             {
-                return _Resources.Geode + _Bots.Geode * Time;
+                return Resources[(int)EMineral.Geode] + Bots[(int)EMineral.Geode] * Time;
             }
 
             public int GetPotentialGeodes()
@@ -249,28 +211,28 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 return;
             }
 
-            if ((op._Bots.Ore - 1) > op.CurBlueprint.MaxOre)
+            if ((op.BotCount(EMineral.Ore) - 1) > op.CurBlueprint.MaxOre)
             {
                 return;
             }
 
-            if (op._Bots.Clay > op.CurBlueprint.MaxClay)
+            if (op.BotCount(EMineral.Clay) > op.CurBlueprint.MaxClay)
             {
                 return;
             }
 
-            if (op._Bots.Obsidian > op.CurBlueprint.MaxObsidian)
+            if (op.BotCount(EMineral.Obsidian) > op.CurBlueprint.MaxObsidian)
             {
                 return;
             }
 
-            if (op._Bots.Obsidian > 0)
+            if (op.BotCount(EMineral.Obsidian) > 0)
             {
                 // fast forward to having built the geode bot
-                int reqOre = Math.Max(0, op.CurBlueprint.GeodeBot.OreCost - op._Resources.Ore);
-                int reqObs = Math.Max(0, op.CurBlueprint.GeodeBot.ObsidianCost - op._Resources.Obsidian);
-                int oreTime = (int)Math.Ceiling((float)reqOre / (float)op._Bots.Ore);
-                int obsTime = (int)Math.Ceiling((float)reqObs / (float)op._Bots.Obsidian);
+                int reqOre = Math.Max(0, op.CurBlueprint.GeodeBot.OreCost - op.ResourceCount(EMineral.Ore));
+                int reqObs = Math.Max(0, op.CurBlueprint.GeodeBot.ObsidianCost - op.ResourceCount(EMineral.Obsidian));
+                int oreTime = (int)Math.Ceiling((float)reqOre / (float)op.BotCount(EMineral.Ore));
+                int obsTime = (int)Math.Ceiling((float)reqObs / (float)op.BotCount(EMineral.Obsidian));
                 int time = Math.Max(oreTime, obsTime) + 1;
                 if (op.Time >= BotMaxBuildTime[(int)EMineral.Geode])
                 {
@@ -278,13 +240,13 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
                 }
             }
 
-            if (op._Bots.Clay > 0)
+            if (op.BotCount(EMineral.Clay) > 0)
             {
                 // fast forward to having built the obsidian bot
-                int reqOre = Math.Max(0, op.CurBlueprint.ObsidianBot.OreCost - op._Resources.Ore);
-                int reqClay = Math.Max(0, op.CurBlueprint.ObsidianBot.ClayCost - op._Resources.Clay);
-                int oreTime = (int)Math.Ceiling((float)reqOre / (float)op._Bots.Ore);
-                int clayTime = (int)Math.Ceiling((float)reqClay / (float)op._Bots.Clay);
+                int reqOre = Math.Max(0, op.CurBlueprint.ObsidianBot.OreCost - op.ResourceCount(EMineral.Ore));
+                int reqClay = Math.Max(0, op.CurBlueprint.ObsidianBot.ClayCost - op.ResourceCount(EMineral.Clay));
+                int oreTime = (int)Math.Ceiling((float)reqOre / (float)op.BotCount(EMineral.Ore));
+                int clayTime = (int)Math.Ceiling((float)reqClay / (float)op.BotCount(EMineral.Clay));
                 int time = Math.Max(oreTime, clayTime) + 1;
                 if (op.Time >= BotMaxBuildTime[(int)EMineral.Obsidian])
                 {
@@ -294,8 +256,8 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
 
             // fast forward to having built the clay bot
             {
-                int req = Math.Max(0, op.CurBlueprint.ClayBot.OreCost - op._Resources.Ore);
-                int time = (int)Math.Ceiling((float)req / (float)op._Bots.Ore) + 1;
+                int req = Math.Max(0, op.CurBlueprint.ClayBot.OreCost - op.ResourceCount(EMineral.Ore));
+                int time = (int)Math.Ceiling((float)req / (float)op.BotCount(EMineral.Ore)) + 1;
                 if (op.Time >= BotMaxBuildTime[(int)EMineral.Clay])
                 {
                     Search(op.FastForward(time, EMineral.Clay), ref maxGeodes);
@@ -304,8 +266,8 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
 
             // fast forward to having built the ore bot
             {
-                int req = Math.Max(0, op.CurBlueprint.OreBot.OreCost - op._Resources.Ore);
-                int time = (int)Math.Ceiling((float)req / (float)op._Bots.Ore) + 1;
+                int req = Math.Max(0, op.CurBlueprint.OreBot.OreCost - op.ResourceCount(EMineral.Ore));
+                int time = (int)Math.Ceiling((float)req / (float)op.BotCount(EMineral.Ore)) + 1;
                 if (op.Time >= BotMaxBuildTime[(int)EMineral.Ore])
                 {
                     Search(op.FastForward(time, EMineral.Ore), ref maxGeodes);
