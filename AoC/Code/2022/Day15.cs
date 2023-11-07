@@ -13,9 +13,9 @@ namespace AoC._2022
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -77,13 +77,13 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
 
         private class Sensor
         {
-            public Base.LongPosition Pos { get; set; }
-            public Base.LongPosition ClosestBeacon { get; set; }
+            public Base.Pos2L Pos { get; set; }
+            public Base.Pos2L ClosestBeacon { get; set; }
 
             public Sensor()
             {
-                Pos = new Base.LongPosition();
-                ClosestBeacon = new Base.LongPosition();
+                Pos = new Base.Pos2L();
+                ClosestBeacon = new Base.Pos2L();
             }
 
             public long GetManhatten()

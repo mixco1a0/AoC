@@ -13,9 +13,9 @@ namespace AoC._2022
             switch (part)
             {
                 case Core.Part.One:
-                    return "v2";
+                    return "v3";
                 case Core.Part.Two:
-                    return "v2";
+                    return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -91,7 +91,7 @@ abdefghi"
                 {
                     return curNode.Height - 1 <= nextNode.Height;
                 };
-                Util.AStar<Node>.IsEnd isEnd = (Base.Position pos) => { return aStar.Nodes[pos.X, pos.Y].Height == 0; };
+                Util.AStar<Node>.IsEnd isEnd = (Base.Pos2 pos) => { return aStar.Nodes[pos.X, pos.Y].Height == 0; };
                 aStar.Process(canUsedNode, isEnd);
             }
             else
