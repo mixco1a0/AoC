@@ -123,7 +123,7 @@ namespace AoC.Core
 
         public static void WriteSameLine(ELevel level, string message)
         {
-            InternalLogSingleMessage(Console.Write, level, $"{message}", true);
+            InternalLogSingleMessage(Console.Write, level, message, true);
         }
 
         public static void WriteLine(ELevel level, string message)
@@ -171,14 +171,14 @@ namespace AoC.Core
             StringBuilder colorizedMessage = new StringBuilder();
             for (int i = 0; i < split.Length; ++i)
             {
-                if (!string.IsNullOrWhiteSpace(split[i]) && split[i][0] == '^')
+                if (!string.IsNullOrWhiteSpace(split[i]) && split[i][0] == ColorMarker)
                 {
                     string format = GetColorFormat(EPlane.Foreground, colors[colorIndex++]);
-                    colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i].Substring(1, split[i].Length - 2)));
+                    colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i].Substring(1, split[i].Length - 2)).Replace('{', '[').Replace('}', ']'));
                 }
                 else
                 {
-                    colorizedMessage.AppendFormat("\x1b[0m{0}", split[i]);
+                    colorizedMessage.AppendFormat("\x1b[0m{0}", split[i].Replace('{', '[').Replace('}', ']'));
                 }
             }
             InternalLog(logFunc, level, colorizedMessage.ToString());
