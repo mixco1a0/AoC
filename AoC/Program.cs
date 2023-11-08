@@ -448,7 +448,7 @@ namespace AoC
         }
 
         internal class TimeMagnitude : Base.Pair<double, string> { public TimeMagnitude(double d, string s) : base(d, s) { } }
-        internal class ColorRange : Base.Range<float> { public ColorRange(float min, float max) : base(min, max) { } }
+        internal class ColorRange : Base.RangeF { public ColorRange(float min, float max) : base(min, max) { } }
 
         /// <summary>
         /// Print out all the performance information from run data

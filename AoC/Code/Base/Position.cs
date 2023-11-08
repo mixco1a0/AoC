@@ -150,6 +150,75 @@ namespace AoC.Base
         #endregion
     }
 
+    public class Pos2F : IEquatable<Pos2F>
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+
+        public Pos2F()
+        {
+            X = default;
+            Y = default;
+        }
+
+        public Pos2F(float x, float y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public Pos2F(Pos2F other)
+        {
+            X = other.X;
+            Y = other.Y;
+        }
+
+        public static Pos2F operator +(Pos2F a, Pos2F b)
+        {
+            return new Pos2F(a.X + b.X, a.Y + b.Y);
+        }
+
+        public static Pos2F operator -(Pos2F a, Pos2F b)
+        {
+            return new Pos2F(a.X - b.X, a.Y - b.Y);
+        }
+
+        #region Interfaces
+        public bool Equals(Pos2F other)
+        {
+            return X == other.X && Y == other.Y;
+        }
+        #endregion
+
+        #region Overrides
+        public override string ToString()
+        {
+            return $"[{X}, {Y}]";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            Pos2F objAsPos = obj as Pos2F;
+            if (objAsPos == null)
+            {
+                return false;
+            }
+
+            return Equals(objAsPos);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
+        }
+        #endregion
+    }
+
     public class Pos3 : IEquatable<Pos3>
     {
         public int X { get; set; }
