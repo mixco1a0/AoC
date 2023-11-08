@@ -14,9 +14,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Part.One:
-                    return "v1";
+                    return "v2";
                 case Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -52,20 +52,20 @@ namespace AoC._2021
             return testData;
         }
 
-        private List<Base.Point> Movements = new List<Base.Point>
+        private List<Base.Pos2> Movements = new List<Base.Pos2>
         {
-            new Base.Point(-1, 0),
-            new Base.Point(1, 0),
-            new Base.Point(0, 1),
-            new Base.Point(0, -1),
+            new Base.Pos2(-1, 0),
+            new Base.Pos2(1, 0),
+            new Base.Pos2(0, 1),
+            new Base.Pos2(0, -1),
         };
 
         private bool IsLowPoint(int[,] grid, int maxX, int maxY, int x, int y)
         {
-            Base.Point cur = new Base.Point(x, y);
-            foreach (Base.Point movement in Movements)
+            Base.Pos2 cur = new Base.Pos2(x, y);
+            foreach (Base.Pos2 movement in Movements)
             {
-                Base.Point neighbor = cur + movement;
+                Base.Pos2 neighbor = cur + movement;
                 if (neighbor.X < 0 || neighbor.X >= maxX || neighbor.Y < 0 || neighbor.Y >= maxY)
                 {
                     continue;
@@ -81,12 +81,12 @@ namespace AoC._2021
         private int FindBasin(int[,] grid, int maxX, int maxY, int x, int y)
         {
             int basinSize = 0;
-            HashSet<Base.Point> history = new HashSet<Base.Point>();
-            Queue<Base.Point> toCheck = new Queue<Base.Point>();
-            toCheck.Enqueue(new Base.Point(x, y));
+            HashSet<Base.Pos2> history = new HashSet<Base.Pos2>();
+            Queue<Base.Pos2> toCheck = new Queue<Base.Pos2>();
+            toCheck.Enqueue(new Base.Pos2(x, y));
             while (toCheck.Count() > 0)
             {
-                Base.Point coords = toCheck.Dequeue();
+                Base.Pos2 coords = toCheck.Dequeue();
                 if (coords.X < 0 || coords.X >= maxX || coords.Y < 0 || coords.Y >= maxY)
                 {
                     continue;
@@ -102,7 +102,7 @@ namespace AoC._2021
                 ++basinSize;
                 history.Add(coords);
 
-                foreach (Base.Point movement in Movements)
+                foreach (Base.Pos2 movement in Movements)
                 {
                     toCheck.Enqueue(coords + movement);
                 }

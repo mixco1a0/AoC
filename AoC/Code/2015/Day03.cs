@@ -12,9 +12,9 @@ namespace AoC._2015
             switch (part)
             {
                 case Core.Part.One:
-                    return "v2";
+                    return "v3";
                 case Core.Part.Two:
-                    return "v2";
+                    return "v3";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -75,21 +75,21 @@ namespace AoC._2015
         private const char U = '^';
         private const char D = 'v';
 
-        private Dictionary<char, Base.Point> Movements = new Dictionary<char, Base.Point>()
+        private Dictionary<char, Base.Pos2> Movements = new Dictionary<char, Base.Pos2>()
         {
-            {L, new Base.Point(-1, 0)},
-            {R, new Base.Point(1, 0)},
-            {U, new Base.Point(0, 1)},
-            {D, new Base.Point(0, -1)},
+            {L, new Base.Pos2(-1, 0)},
+            {R, new Base.Pos2(1, 0)},
+            {U, new Base.Pos2(0, 1)},
+            {D, new Base.Pos2(0, -1)},
         };
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool usingRobotSanta)
         {
             bool santaMove = true;
-            Base.Point santaCoords = new Base.Point();
-            Base.Point robotCoords = new Base.Point();
+            Base.Pos2 santaCoords = new Base.Pos2();
+            Base.Pos2 robotCoords = new Base.Pos2();
 
-            HashSet<Base.Point> visitedCoords = new HashSet<Base.Point>();
+            HashSet<Base.Pos2> visitedCoords = new HashSet<Base.Pos2>();
             visitedCoords.Add(santaCoords);
             foreach (char c in string.Join(' ', inputs))
             {

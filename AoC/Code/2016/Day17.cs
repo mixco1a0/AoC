@@ -15,9 +15,9 @@ namespace AoC._2016
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -95,17 +95,17 @@ namespace AoC._2016
                 return new DoorStatus(open);
             }
 
-            static public Base.Point[] Directions = new Base.Point[4] { new Base.Point(0, -1), new Base.Point(0, 1), new Base.Point(-1, 0), new Base.Point(1, 0) };
+            static public Base.Pos2[] Directions = new Base.Pos2[4] { new Base.Pos2(0, -1), new Base.Pos2(0, 1), new Base.Pos2(-1, 0), new Base.Pos2(1, 0) };
 
             static public char[] Letters = new char[4] { 'U', 'D', 'L', 'R' };
         }
 
-        private record WalkStatus(string Path, Base.Point Coords) { }
+        private record WalkStatus(string Path, Base.Pos2 Coords) { }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findLongestPath)
         {
             Queue<WalkStatus> pendingWalks = new Queue<WalkStatus>();
-            pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Base.Point(0, 0)));
+            pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Base.Pos2(0, 0)));
             int longestPath = 0;
             while (pendingWalks.Count > 0)
             {
@@ -128,7 +128,7 @@ namespace AoC._2016
                 {
                     if (ds.Status[i])
                     {
-                        Base.Point newCoords = ws.Coords + DoorStatus.Directions[i];
+                        Base.Pos2 newCoords = ws.Coords + DoorStatus.Directions[i];
                         if (newCoords.X >= 0 && newCoords.X <= 3 && newCoords.Y >= 0 && newCoords.Y <= 3)
                         {
                             pendingWalks.Enqueue(new WalkStatus($"{ws.Path}{DoorStatus.Letters[i]}", newCoords));

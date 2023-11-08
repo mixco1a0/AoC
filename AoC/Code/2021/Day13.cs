@@ -14,9 +14,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -64,13 +64,10 @@ fold along x=5"
             return testData;
         }
 
-        private class Point : Base.Point<int>
+        private class Pos2Parse
         {
-            public Point() : base() { }
-            public Point(int x, int y) : base(x, y) { }
-            public Point(Point other) : base(other) { }
 
-            public static Point Parse(string input)
+            public static Base.Pos2 Parse(string input)
             {
                 if (!input.Contains(','))
                 {
@@ -78,7 +75,7 @@ fold along x=5"
                 }
 
                 int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-                return new Point(split[0], split[1]);
+                return new Base.Pos2(split[0], split[1]);
             }
         }
 
@@ -97,10 +94,10 @@ fold along x=5"
             }
         }
 
-        private Point[] Fold(Instruction instruction, Point[] points)
+        private Base.Pos2[] Fold(Instruction instruction, Base.Pos2[] points)
         {
-            List<Point> folded = new List<Point>();
-            foreach (Point point in points)
+            List<Base.Pos2> folded = new List<Base.Pos2>();
+            foreach (Base.Pos2 point in points)
             {
                 if (instruction.XAxis)
                 {
@@ -110,7 +107,7 @@ fold along x=5"
                     }
                     else if (point.X > instruction.Index)
                     {
-                        folded.Add(new Point(instruction.Index - (point.X - instruction.Index), point.Y));
+                        folded.Add(new Base.Pos2(instruction.Index - (point.X - instruction.Index), point.Y));
                     }
                 }
                 else
@@ -121,14 +118,14 @@ fold along x=5"
                     }
                     else if (point.Y > instruction.Index)
                     {
-                        folded.Add(new Point(point.X, instruction.Index - (point.Y - instruction.Index)));
+                        folded.Add(new Base.Pos2(point.X, instruction.Index - (point.Y - instruction.Index)));
                     }
                 }
             }
             return folded.Distinct().ToArray();
         }
 
-        private string[] GetGlyph(Point[] points)
+        private string[] GetGlyph(Base.Pos2[] points)
         {
             List<string> glyph = new List<string>();
             int maxX = points.Max(p => p.X);
@@ -154,7 +151,7 @@ fold along x=5"
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool oneFold)
         {
-            Point[] points = inputs.Select(Point.Parse).Where(p => p != null).ToArray();
+            Base.Pos2[] points = inputs.Select(Pos2Parse.Parse).Where(p => p != null).ToArray();
             Instruction[] instructions = inputs.Where(i => i.Contains("fold")).Select(Instruction.Parse).ToArray();
             foreach (Instruction instruction in instructions)
             {

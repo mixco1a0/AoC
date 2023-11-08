@@ -14,9 +14,9 @@ namespace AoC._2016
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -56,7 +56,7 @@ Filesystem            Size  Used  Avail  Use%
 
         public class Node
         {
-            public Base.Point Coords { get; set; }
+            public Base.Pos2 Coords { get; set; }
             public uint Size { get; set; }
             public uint Used { get; set; }
             public uint Avail { get; set; }
@@ -64,7 +64,7 @@ Filesystem            Size  Used  Avail  Use%
 
             public Node()
             {
-                Coords = new Base.Point();
+                Coords = new Base.Pos2();
                 Size = 0;
                 Used = 0;
                 Avail = 0;
@@ -118,7 +118,7 @@ Filesystem            Size  Used  Avail  Use%
                 node.Name = split[0].Substring(split[0].LastIndexOf('/') + 1);
 
                 string[] coordSplit = split[0].Split("-xy".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).TakeLast(2).ToArray();
-                node.Coords = new Base.Point(int.Parse(coordSplit[0]), int.Parse(coordSplit[1]));
+                node.Coords = new Base.Pos2(int.Parse(coordSplit[0]), int.Parse(coordSplit[1]));
                 node.Size = uint.Parse(split[1]);
                 node.Used = uint.Parse(split[2]);
                 node.Avail = uint.Parse(split[3]);
@@ -179,10 +179,10 @@ Filesystem            Size  Used  Avail  Use%
                     continue;
                 }
 
-                Base.Point[] nextCoords = new Base.Point[] { new Base.Point(0, -1), new Base.Point(-1, 0), new Base.Point(0, 1), new Base.Point(1, 0) };
-                foreach (Base.Point next in nextCoords)
+                Base.Pos2[] nextCoords = new Base.Pos2[] { new Base.Pos2(0, -1), new Base.Pos2(-1, 0), new Base.Pos2(0, 1), new Base.Pos2(1, 0) };
+                foreach (Base.Pos2 next in nextCoords)
                 {
-                    Base.Point nextNodeCoords = nsh.Node.Coords + next;
+                    Base.Pos2 nextNodeCoords = nsh.Node.Coords + next;
                     if (nextNodeCoords.X >= 0 && nextNodeCoords.X <= maxX && nextNodeCoords.Y >= 0 && nextNodeCoords.Y <= maxY)
                     {
                         Node nextNode = nodeGrid[nextNodeCoords.Y][nextNodeCoords.X];
@@ -222,10 +222,10 @@ Filesystem            Size  Used  Avail  Use%
                     return ns.Steps;
                 }
 
-                Base.Point[] nextCoords = new Base.Point[] { new Base.Point(0, -1), new Base.Point(-1, 0), new Base.Point(0, 1), new Base.Point(1, 0) };
-                foreach (Base.Point next in nextCoords)
+                Base.Pos2[] nextCoords = new Base.Pos2[] { new Base.Pos2(0, -1), new Base.Pos2(-1, 0), new Base.Pos2(0, 1), new Base.Pos2(1, 0) };
+                foreach (Base.Pos2 next in nextCoords)
                 {
-                    Base.Point nextNodeCoords = ns.Node.Coords + next;
+                    Base.Pos2 nextNodeCoords = ns.Node.Coords + next;
                     if (nextNodeCoords.X >= 0 && nextNodeCoords.X <= maxX && nextNodeCoords.Y >= 0 && nextNodeCoords.Y <= maxY)
                     {
                         Node nextNode = nodeGrid[nextNodeCoords.Y][nextNodeCoords.X];
@@ -243,7 +243,7 @@ Filesystem            Size  Used  Avail  Use%
             return (uint)int.MaxValue;
         }
 
-        private void PrintGrid(Node[][] nodeGrid, Base.Point start, Base.Point goal, Base.Point empty)
+        private void PrintGrid(Node[][] nodeGrid, Base.Pos2 start, Base.Pos2 goal, Base.Pos2 empty)
         {
             float size = 0;
             uint nodeCount = 0;
@@ -329,7 +329,7 @@ Filesystem            Size  Used  Avail  Use%
                 goalNode = targetNode;
                 ++optimizedSteps;
 
-                //PrintGrid(nodeGrid, nodeGrid[0][0].Base.Point, goalNode.Base.Point, emptyNode.Base.Point);
+                //PrintGrid(nodeGrid, nodeGrid[0][0].Base.Pos2, goalNode.Base.Pos2, emptyNode.Base.Pos2);
             }
             return optimizedSteps.ToString();
         }
