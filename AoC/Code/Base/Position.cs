@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace AoC.Base
 {
@@ -33,6 +34,17 @@ namespace AoC.Base
         public static Pos2 operator -(Pos2 a, Pos2 b)
         {
             return new Pos2(a.X - b.X, a.Y - b.Y);
+        }
+
+        public static Pos2 Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            return new Pos2(split[0], split[1]);
         }
 
         public int Manhattan(Pos2 other)
@@ -107,6 +119,17 @@ namespace AoC.Base
         public static Pos2L operator -(Pos2L a, Pos2L b)
         {
             return new Pos2L(a.X - b.X, a.Y - b.Y);
+        }
+
+        public static Pos2L Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            return new Pos2L(split[0], split[1]);
         }
 
         public long Manhattan(Pos2L other)
@@ -261,6 +284,17 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
+        public static Pos3 Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            return new Pos3(split[0], split[1], split[2]);
+        }
+
         #region Interfaces
         public bool Equals(Pos3 other)
         {
@@ -337,6 +371,17 @@ namespace AoC.Base
         public long Manhattan(Pos3L other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
+        }
+
+        public static Pos3L Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            return new Pos3L(split[0], split[1], split[2]);
         }
 
         #region Interfaces
