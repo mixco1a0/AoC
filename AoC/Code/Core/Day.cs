@@ -30,7 +30,7 @@ namespace AoC.Core
         public virtual string GetSolutionVersion(Part part) => "v0";
         public virtual bool SkipTestData => false;
         protected abstract List<TestDatum> GetTestData();
-        public virtual void RunWarmup() {}
+        public virtual void RunWarmup() { }
         protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
         protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
         #endregion
@@ -45,6 +45,8 @@ namespace AoC.Core
         private string LogID { get; set; }
         private Dictionary<string, List<TestDatum>> TestData { get; set; }
         private Dictionary<Part, Func<List<string>, Dictionary<string, string>, string>> PartSpecificFunctions { get; set; }
+        public IEnumerable<string> Input { get; set; }
+        public IEnumerable<string> Output { get; set; }
 
         protected Day()
         {
@@ -74,16 +76,16 @@ namespace AoC.Core
         public void Run()
         {
             // file input
-            IEnumerable<string> input = GetInputFile();
+            ParseInputFile();
 
-            // file input
-            IEnumerable<string> output = GetOutputFile();
+            // file output
+            ParseOutputFile();
 
             // run part 1
-            RunAll(Part.One, input, output);
+            RunAll(Part.One);
 
             // run part 2
-            RunAll(Part.Two, input, output);
+            RunAll(Part.Two);
 
             // reset logging
             LogID = DefaultLogID;
@@ -91,22 +93,38 @@ namespace AoC.Core
 
         public void RunProblem(Part part)
         {
+            // file input
+            ParseInputFile();
+            
+            // file output
+            ParseOutputFile();
+
             // run part
-            RunAll(part, GetInputFile(), GetOutputFile());
+            RunAll(part);
 
             // reset logging
             LogID = DefaultLogID;
         }
 
-        private IEnumerable<string> GetInputFile()
+        public void ParseInputFile()
         {
+            if (Input != null)
+            {
+                return;
+            }
+
             string fileName = string.Format("{0}.txt", DayName);
             string inputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "In", fileName);
-            return ConvertDayFileToList(File.ReadAllText(inputFile));
+            Input = ConvertDayFileToList(File.ReadAllText(inputFile));
         }
 
-        private IEnumerable<string> GetOutputFile()
+        public void ParseOutputFile()
         {
+            if (Output != null)
+            {
+                return;
+            }
+
             string fileName = string.Format("{0}.txt", DayName);
             string outputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Out", fileName);
             List<string> output;
@@ -119,18 +137,15 @@ namespace AoC.Core
                 output = new List<string>();
             }
             output.AddRange(new string[2] { string.Empty, string.Empty });
-            return output;
+            Output = output;
         }
 
-        private void RunAll(Part part, IEnumerable<string> problemInput, IEnumerable<string> problemOutput)
+        private void RunAll(Part part)
         {
-            // get test data if there is any
-            IEnumerable<TestDatum> partSpecificTestData = TestData[DayName].Where(datum => datum.TestPart == part);
-
             if (!SkipTestData)
             {
                 // run tests if there are any
-                foreach (TestDatum datum in partSpecificTestData)
+                foreach (TestDatum datum in TestData[DayName].Where(datum => datum.TestPart == part))
                 {
                     // make sure the test has an output, and isn't just the default empty test set
                     if (!string.IsNullOrEmpty(datum.Output))
@@ -140,7 +155,7 @@ namespace AoC.Core
                 }
             }
 
-            TimeResults[part] = TimedRun(RunType.Problem, part, problemInput.ToList(), problemOutput.ElementAt(((int)part) - 1), null);
+            TimeResults[part] = TimedRun(RunType.Problem, part, Input.ToList(), Output.ElementAt(((int)part) - 1), null);
             TimeWasted[part] = TimeWaste;
         }
 
@@ -231,9 +246,9 @@ namespace AoC.Core
                 string bigFiller = new string(filler, 5);
                 string smallFiller = new string(filler, 3);
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {bigFiller}{buffer}{bigFiller}");
-                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty }  {smallFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty}  {smallFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {Core.Log.ColorMarker}{answer}{Core.Log.ColorMarker}  {smallFiller}", new List<Color>() { color });
-                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty }  {smallFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty}  {smallFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {bigFiller}{buffer}{bigFiller}");
             }
         }

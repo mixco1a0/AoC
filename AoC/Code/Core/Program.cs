@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
@@ -16,11 +16,9 @@ namespace AoC.Core
 {
     class Program
     {
-        private int m_curProcessor = 0;
-
-        private const long DefaultRecordCount = 1000;
-        private long m_recordCount = DefaultRecordCount;
-        private long RecordCount { get { return m_recordCount; } }
+        private const int DefaultRecordCount = 100;
+        private int m_recordCount = DefaultRecordCount;
+        private int RecordCount { get { return m_recordCount; } }
 
         private const long DefaultMaxPerfTimeoutMs = 3600000;
         private const long MaxPerfTimeoutPerCoreMs = 150000;
@@ -47,7 +45,7 @@ namespace AoC.Core
                 // get the number of records to keep for perf tests
                 if (Args.HasValue(CommandLine.ESupportedArgument.PerfRecordCount))
                 {
-                    m_recordCount = long.Parse(Args[CommandLine.ESupportedArgument.PerfRecordCount]);
+                    m_recordCount = int.Parse(Args[CommandLine.ESupportedArgument.PerfRecordCount]);
                 }
 
                 // get the timeout runs should adhere to
@@ -191,22 +189,18 @@ namespace AoC.Core
         /// <summary>
         /// Force the process to be considered the highest priority
         /// </summary>
-        private void CycleHighPriorityCore()
+        private void SetThreadPriority()
         {
-            if (OperatingSystem.IsWindows())
-            {
-                // use a single core
-                Process.GetCurrentProcess().ProcessorAffinity = new IntPtr((int)Math.Pow(2, m_curProcessor));
-            }
-
             // prevent process interuptions
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
-
-            // prevent thread interuptions
-            Thread.CurrentThread.Priority = ThreadPriority.Highest;
-
-            // cycle through the different processors
-            m_curProcessor = (m_curProcessor + 1) % Environment.ProcessorCount;
+            if (Debugger.IsAttached)
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            }
+            else
+            {
+                // Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+            }
         }
 
         /// <summary>
@@ -214,28 +208,30 @@ namespace AoC.Core
         /// </summary>
         private void RunWarmup()
         {
-            CycleHighPriorityCore();
-
-            Func<long, int, long> Warmup = (long seed, int count) =>
+            Action<long> Work = (long seed) =>
             {
+                const int count = 100000000;
                 long result = seed;
                 for (int i = 0; i < count; ++i)
                 {
                     result ^= i ^ seed;
                 }
-                return result;
             };
 
-            long result = 0;
-            const int count = 100000000;
-            long seed = Environment.TickCount;
-
-            Util.Timer timer = new Util.Timer();
-            timer.Start();
-            while (timer.GetElapsedMs() < 1500)
+            int[] indices = Enumerable.Range(0, Environment.ProcessorCount * 2).ToArray();
+            ParallelOptions options = new()
             {
-                result = Warmup(seed, count);
-            }
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+            Parallel.ForEach(indices, options, (index) =>
+            {
+                Util.Timer timer = new Util.Timer();
+                timer.Start();
+                while (timer.GetElapsedMs() < 500)
+                {
+                    Work(Environment.TickCount);
+                }
+            });
         }
 
         /// <summary>
@@ -245,87 +241,121 @@ namespace AoC.Core
         /// <param name="existingRecords"></param>
         /// <param name="runData"></param>
         /// <returns></returns>
-        private bool RunPerformance(Type dayType, Part part, long existingRecords, ref PerfData runData)
+        private bool RunPerformance(Day day, Part part, int existingRecords, ref PerfData runData)
         {
-            Log.WriteLine(Log.ELevel.Info, $"Running {dayType.Namespace}.{dayType.Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
+            SetThreadPriority();
+            Log.WriteLine(Log.ELevel.Info, $"Running {day.GetType().Namespace}.{day.GetType().Name}.Part{part} Performance [Requires {RecordCount - existingRecords} Runs]");
             Log.WriteLine(Log.ELevel.Info, "...Warming up");
             RunWarmup();
+            day.RunProblem(part);
 
+            Log.WriteLine(Log.ELevel.Info, "Performance starting...");
+
+            // setup
+            int completedDays = 0;
+            int maxDays = RecordCount - existingRecords;
+            Day[] allDays = new Day[maxDays];
+
+            // keep track of progress
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
             DateTime timeout = DateTime.Now.AddMilliseconds(MaxPerfTimeMs);
-            DateTime cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
-            bool cycleCores = false;
-
-            // run two warm up days first
-            long i = -2;
-            long maxI = RecordCount - existingRecords;
-            for (; i < maxI; ++i)
+            Task monitorTask = Task.Factory.StartNew(() =>
             {
-                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, dayType.FullName);
-                if (handle == null)
+                DateTime printTime = Debugger.IsAttached ? DateTime.Now.AddSeconds(5) : DateTime.Now.AddMilliseconds(250);
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    break;
+                    // print 
+                    if (DateTime.Now > printTime)
+                    {
+                        IEnumerable<double> completedDays = allDays.Where(d => d != null && d.TimeResults.ContainsKey(Part.Two)).Select(d => d.TimeResults[part]);
+                        if (completedDays.Any())
+                        {
+                            string timeResultsString = string.Format("[avg={0:00000.000}][min={1:00000.000}][max={2:00000.000}]", completedDays.Average(), completedDays.Min(), completedDays.Max());
+
+                            if (Debugger.IsAttached)
+                            {
+                                Log.WriteLine(Log.ELevel.Info, $"...{completedDays} runs completed");
+                            }
+                            else
+                            {
+                                double percentComplete = (double)completedDays.Count() / (double)(maxDays) * 100.0f;
+                                string timeoutString = (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff");
+                                Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% {1}[timeout in {2}]", percentComplete, timeResultsString, timeoutString));
+                            }
+                        }
+                    }
+
+                    // timeout if needed
+                    if (DateTime.Now > timeout)
+                    {
+                        cancelToken.Cancel();
+                    }
+
+                    // wait again
+                    cancelToken.Token.WaitHandle.WaitOne(25);
                 }
 
-                Day day = (Day)handle.Unwrap();
-                day.RunProblem(part);
-                if (i < 0)
+                // completion logs
+                int trueCompletionCount = allDays.Where(d => d != null).Select(d => d.TimeResults[part]).Count();
+                if (Debugger.IsAttached)
                 {
-                    continue;
+                    Log.WriteLine(Log.ELevel.Info, $"...{trueCompletionCount} runs completed");
                 }
                 else
                 {
-                    runData.AddData(day);
-                }
-
-                if (System.Diagnostics.Debugger.IsAttached)
-                {
-                    Log.WriteLine(Log.ELevel.Spam, $"{day.TimeResults[part]}");
-                    if (i > 0 && i % (RecordCount / 20) == 0)
+                    double percentComplete = (double)trueCompletionCount / (double)(maxDays) * 100.0f;
+                    if (DateTime.Now > timeout)
                     {
-                        Log.WriteLine(Log.ELevel.Info, $"...{i} runs completed");
-                    }
-                }
-                else if (i >= 0)
-                {
-                    if (cycleCores)
-                    {
-                        Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% [core swap in {1}][timeout in {2}]", (double)i / (double)(maxI) * 100.0f, (cycleCore - DateTime.Now).ToString(@"mm\:ss\.fff"), (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                        Log.WriteLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", percentComplete, new string(' ', 65)));
                     }
                     else
                     {
-                        Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timeout in {1}]", (double)i / (double)(maxI) * 100.0f, (timeout - DateTime.Now).ToString(@"hh\:mm\:ss\.fff")));
+                        Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}%{1}\n\r", percentComplete, new string(' ', 75)));
                     }
+                    Log.WriteLine(Log.ELevel.Info, "");
                 }
+            });
 
-                if (DateTime.Now > timeout)
-                {
-                    break;
-                }
-
-                if (cycleCores && DateTime.Now > cycleCore)
-                {
-                    CycleHighPriorityCore();
-                    cycleCore = DateTime.Now.AddMilliseconds(MaxPerfTimeoutPerCoreMs);
-                }
-            }
-
-            if (System.Diagnostics.Debugger.IsAttached)
+            // run all of the days
+            int[] indices = Enumerable.Range(0, maxDays).ToArray();
+            ParallelOptions options = new()
             {
-                Log.WriteLine(Log.ELevel.Info, $"...{maxI} runs completed");
-            }
-            else
+                CancellationToken = cancelToken.Token,
+                MaxDegreeOfParallelism = Environment.ProcessorCount / 4
+            };
+            Parallel.ForEach(indices, options, (index) =>
             {
-                if (DateTime.Now > timeout)
+                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, day.GetType().FullName);
+                if (handle == null)
                 {
-                    Log.WriteLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 50)));
+                    return;
                 }
-                else
+
+                allDays[index] = (Day)handle.Unwrap();
+                allDays[index].Input = day.Input;
+                allDays[index].Output = day.Output;
+                allDays[index].RunProblem(part);
+                Interlocked.Increment(ref completedDays);
+            });
+
+            // cleanup outputs
+            cancelToken.Cancel();
+            monitorTask.Wait();
+
+            // add up times
+            double timeResultsTotal = 0.0;
+            foreach (Day curDay in allDays)
+            {
+                if (curDay == null)
                 {
-                    Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 60)));
+                    continue;
                 }
+
+                runData.AddData(curDay);
+                timeResultsTotal += day.TimeResults[part];
             }
 
-            return i == maxI;
+            return completedDays == maxDays;
         }
 
         /// <summary>
@@ -341,6 +371,7 @@ namespace AoC.Core
             PerfData perfData;
             string runDataFileName;
             LoadPerfData(out runDataFileName, out perfData);
+            LoadPerfRawData(baseNamespace, ref perfData);
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -350,6 +381,8 @@ namespace AoC.Core
                     Day day = (Day)handle.Unwrap();
                     if (day != null)
                     {
+                        // day.ParseInputFile();
+                        // day.ParseOutputFile();
                         for (Part part = Part.One; part <= Part.Two; ++part)
                         {
                             if (day.GetSolutionVersion(part) == "v0")
@@ -360,18 +393,19 @@ namespace AoC.Core
                             PerfStat stats = perfData.Get(day.Year, day.DayName, part, day.GetSolutionVersion(part));
                             if (stats == null)
                             {
-                                RunPerformance(day.GetType(), part, 0, ref perfData);
+                                RunPerformance(day, part, 0, ref perfData);
                             }
                             else if (stats.Count < RecordCount)
                             {
-                                RunPerformance(day.GetType(), part, stats.Count, ref perfData);
+                                RunPerformance(day, part, stats.Count, ref perfData);
                             }
                         }
                     }
                 }
             }
 
-            SaveRunData(runDataFileName, perfData);
+            SavePerfData(runDataFileName, perfData);
+            SavePerfRawData(baseNamespace, perfData);
             PrintPerf(baseNamespace, perfData);
             Day.UseLogs = true;
         }
@@ -389,6 +423,7 @@ namespace AoC.Core
             PerfData perfData;
             string runDataFileName;
             LoadPerfData(out runDataFileName, out perfData);
+            LoadPerfRawData(baseNamespace, ref perfData);
             PrintPerf(baseNamespace, perfData);
             Day.UseLogs = true;
         }
@@ -401,7 +436,7 @@ namespace AoC.Core
         private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
             string workingDir = Core.WorkingDirectory.Get;
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
             }
@@ -422,12 +457,44 @@ namespace AoC.Core
             }
         }
 
+        private void LoadPerfRawData(string baseNamespace, ref PerfData perfData)
+        {
+            Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
+            foreach (string key in days.Keys)
+            {
+                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[key].FullName);
+                if (handle != null)
+                {
+                    Day day = (Day)handle.Unwrap();
+                    if (day != null)
+                    {
+                        for (Part part = Part.One; part <= Part.Two; ++part)
+                        {
+                            string solutionVersion = day.GetSolutionVersion(part);
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, part, solutionVersion);
+                            if (stats == null)
+                            {
+                                continue;
+                            }
+
+                            string fileName = string.Format("{0}.{1}.{2}.txt", day.DayName, part.ToString(), solutionVersion);
+                            string inputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", day.Year, "Perf", fileName);
+                            if (File.Exists(inputFile))
+                            {
+                                stats.Raw = File.ReadAllLines(inputFile).Select(double.Parse).ToList();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Save the current perf data to a specific file
         /// </summary>
         /// <param name="perfDataFileName"></param>
         /// <param name="perfData"></param>
-        private void SaveRunData(string perfDataFileName, PerfData perfData)
+        private void SavePerfData(string perfDataFileName, PerfData perfData)
         {
             Log.WriteLine(Log.ELevel.Info, $"Saving {perfDataFileName}\n");
 
@@ -435,6 +502,42 @@ namespace AoC.Core
             using (StreamWriter sWriter = new StreamWriter(perfDataFileName))
             {
                 sWriter.Write(rawJson);
+            }
+        }
+
+        private void SavePerfRawData(string baseNamespace, PerfData perfData)
+        {
+            Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
+            foreach (string key in days.Keys)
+            {
+                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[key].FullName);
+                if (handle != null)
+                {
+                    Day day = (Day)handle.Unwrap();
+                    if (day != null)
+                    {
+                        for (Part part = Part.One; part <= Part.Two; ++part)
+                        {
+                            string solutionVersion = day.GetSolutionVersion(part);
+                            PerfStat stats = perfData.Get(day.Year, day.DayName, part, solutionVersion);
+                            if (stats == null || stats.Raw.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            stats.Raw.Sort();
+                            string fileName = string.Format("{0}.{1}.{2}.txt", day.DayName, part.ToString().ToLower(), solutionVersion);
+                            string outputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", day.Year, "Perf", fileName);
+                            using (StreamWriter sWriter = new StreamWriter(outputFile, false))
+                            {
+                                foreach (double rawTime in stats.Raw)
+                                {
+                                    sWriter.WriteLine(rawTime);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -526,33 +629,36 @@ namespace AoC.Core
                             }
                             else
                             {
-                                if (min > stats.Avg)
+                                double curAvg = stats.GetAvg();
+                                if (min > curAvg)
                                 {
-                                    min = stats.Avg;
+                                    min = curAvg;
                                     minStr = logLine;
                                 }
 
-                                if (max < stats.Avg)
+                                if (max < curAvg)
                                 {
-                                    max = stats.Avg;
+                                    max = curAvg;
                                     maxStr = logLine;
                                 }
 
-                                mins[part].Add(stats.Min);
-                                avgs[part].Add(stats.Avg);
-                                maxs[part].Add(stats.Max);
+                                double curMin = stats.GetMin();
+                                double curMax = stats.GetMax();
+                                mins[part].Add(curMin);
+                                avgs[part].Add(curAvg);
+                                maxs[part].Add(curMax);
 
                                 if (compactPerf)
                                 {
-                                    TimeMagnitude tm = getTimeMagnitude(stats.Avg);
+                                    TimeMagnitude tm = getTimeMagnitude(curAvg);
                                     avgColors[part].Add(timeUnitColor[tm.Last]);
                                     logLine += string.Format(" Avg={0}{1:000.000}{0} ({0}{2}{0})", Log.ColorMarker, tm.First, tm.Last);
                                 }
                                 else
                                 {
-                                    TimeMagnitude avgTm = getTimeMagnitude(stats.Avg);
-                                    TimeMagnitude minTm = getTimeMagnitude(stats.Min);
-                                    TimeMagnitude maxTm = getTimeMagnitude(stats.Max);
+                                    TimeMagnitude avgTm = getTimeMagnitude(curAvg);
+                                    TimeMagnitude minTm = getTimeMagnitude(curMin);
+                                    TimeMagnitude maxTm = getTimeMagnitude(curMax);
                                     avgColors[part].Add(timeUnitColor[avgTm.Last]);
                                     minColors[part].Add(timeUnitColor[minTm.Last]);
                                     maxColors[part].Add(timeUnitColor[maxTm.Last]);

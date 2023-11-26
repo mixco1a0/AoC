@@ -9,7 +9,10 @@ namespace AoC.Core
         public double Min { get; set; }
         public double Max { get; set; }
         public double Avg { get; set; }
-        public long Count { get; set; }
+        public int Count { get; set; }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public List<double> Raw { get; set; }
 
         public PerfStat()
         {
@@ -17,6 +20,7 @@ namespace AoC.Core
             Max = double.MinValue;
             Avg = 0.0;
             Count = 0;
+            Raw = new List<double>();
         }
 
         public void AddData(double elapsedMs)
@@ -28,6 +32,43 @@ namespace AoC.Core
             avg += elapsedMs;
             ++Count;
             Avg = avg / (double)Count;
+            Raw.Add(elapsedMs);
+        }
+
+        public double GetMin()
+        {
+            if (!Raw.Any())
+            {
+                return Min;
+            }
+
+            int skipCount = Raw.Count / 10;
+            Raw.Sort();
+            return Raw.Skip(skipCount).Min();
+        }
+
+        public double GetMax()
+        {
+            if (!Raw.Any())
+            {
+                return Max;
+            }
+
+            int skipCount = Raw.Count / 10;
+            Raw.Sort();
+            return Raw.SkipLast(skipCount).Max();
+        }
+
+        public double GetAvg()
+        {
+            if (!Raw.Any())
+            {
+                return Avg;
+            }
+
+            int skipCount = Raw.Count / 10;
+            Raw.Sort();
+            return Raw.Skip(skipCount).SkipLast(skipCount).Average();
         }
     }
 
