@@ -277,7 +277,7 @@ namespace AoC.Core
                     runData.AddData(day);
                 }
 
-                if (System.Diagnostics.Debugger.IsAttached)
+                if (Debugger.IsAttached)
                 {
                     Log.WriteLine(Log.ELevel.Spam, $"{day.TimeResults[part]}");
                     if (i > 0 && i % (RecordCount / 20) == 0)
@@ -309,7 +309,7 @@ namespace AoC.Core
                 }
             }
 
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 Log.WriteLine(Log.ELevel.Info, $"...{maxI} runs completed");
             }
@@ -400,15 +400,7 @@ namespace AoC.Core
         /// <param name="perfData"></param>
         private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
-            string workingDir = Core.WorkingDirectory.Get;
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
-            }
-            else
-            {
-                perfDataFileName = Path.Combine(workingDir, "perfdata_cmd.json");
-            }
+            perfDataFileName = Path.Combine(WorkingDirectory.Get, "Data", "perfdata.json");
             if (File.Exists(perfDataFileName))
             {
                 Log.WriteLine(Log.ELevel.Info, $"Loading {perfDataFileName}\n");
