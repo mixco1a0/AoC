@@ -14,13 +14,23 @@ namespace AoC.Base
 
         public KeyVal(KeyVal<TKey, TVal> other) : base(other) { }
 
+        public override bool ShouldSerializeFirst()
+        {
+            return false;
+        }
+
+        public override bool ShouldSerializeLast()
+        {
+            return false;
+        }
+
         public bool Equals(KeyVal<TKey, TVal> other) => base.Equals(other);
 
         public override string ToString()
         {
             return $"[{Key}={Val}]";
         }
-        
+
         public override bool Equals(object obj) => base.Equals(obj);
 
         public override int GetHashCode()

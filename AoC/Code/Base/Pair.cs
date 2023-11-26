@@ -1,7 +1,9 @@
 using System;
+using Newtonsoft.Json;
 
 namespace AoC.Base
 {
+    [JsonObject]
     public class Pair<TFirst, TLast> : IEquatable<Pair<TFirst, TLast>>
     {
         protected TFirst m_first;
@@ -26,6 +28,18 @@ namespace AoC.Base
         {
             First = other.First;
             Last = other.Last;
+        }
+        #endregion
+
+        #region Serialization
+        public virtual bool ShouldSerializeFirst()
+        {
+            return true;
+        }
+
+        public virtual bool ShouldSerializeLast()
+        {
+            return true;
         }
         #endregion
 
