@@ -1,3 +1,3 @@
 dotnet build -c Release
-bin\Release\net7.0\AoC.exe -sl -n 2022 -cp -rp -prc 100 -pt 3600000
+bin\Release\net7.0\AoC.exe -skiplatest -compactperf -runperf -perfrecordcount 100 -perftimeout 3600000 -ignoreconfigfile
 pause
