@@ -23,17 +23,24 @@ namespace AoC.Core
             Invalid,
             Help,
             LogLevel,
+
+            // general options
             Namespace,
             Day,
             RunWarmup,
             SkipLatest,
+
+            // performance options
             ShowPerf,
             RunPerf,
             PerfRecordCount,
             PerfTimeout,
             CompactPerf,
+
+            // config file options
             ConfigFile,
             IgnoreConfigFile,
+
             End
         }
 
