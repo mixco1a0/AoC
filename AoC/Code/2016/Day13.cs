@@ -12,9 +12,9 @@ namespace AoC._2016
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -61,16 +61,16 @@ namespace AoC._2016
             return bits % 2 == 0;
         }
 
-        private record PointWalk(Base.Point Point, uint Distance) { }
+        private record PointWalk(Base.Pos2 Point, uint Distance) { }
 
-        private uint WalkPath(Queue<PointWalk> points, Base.Point target, uint magicNumber, int maxDistance)
+        private uint WalkPath(Queue<PointWalk> points, Base.Pos2 target, uint magicNumber, int maxDistance)
         {
             HashSet<ulong> visited = new HashSet<ulong>();
             uint walkingPoints = 0;
             while (points.Count > 0)
             {
                 PointWalk pointWalk = points.Dequeue();
-                Base.Point point = pointWalk.Point;
+                Base.Pos2 point = pointWalk.Point;
 
                 // check if this is the target
                 if (maxDistance <= 0 && point.X == target.X && point.Y == target.Y)
@@ -102,15 +102,15 @@ namespace AoC._2016
                 }
 
                 // add new points
-                points.Enqueue(new PointWalk(new Base.Point(point.X + 1, point.Y), pointWalk.Distance + 1));
-                points.Enqueue(new PointWalk(new Base.Point(point.X, point.Y + 1), pointWalk.Distance + 1));
+                points.Enqueue(new PointWalk(new Base.Pos2(point.X + 1, point.Y), pointWalk.Distance + 1));
+                points.Enqueue(new PointWalk(new Base.Pos2(point.X, point.Y + 1), pointWalk.Distance + 1));
                 if (point.X > 0)
                 {
-                    points.Enqueue(new PointWalk(new Base.Point(point.X - 1, point.Y), pointWalk.Distance + 1));
+                    points.Enqueue(new PointWalk(new Base.Pos2(point.X - 1, point.Y), pointWalk.Distance + 1));
                 }
                 if (point.Y > 0)
                 {
-                    points.Enqueue(new PointWalk(new Base.Point(point.X, point.Y - 1), pointWalk.Distance + 1));
+                    points.Enqueue(new PointWalk(new Base.Pos2(point.X, point.Y - 1), pointWalk.Distance + 1));
                 }
 
             }
@@ -131,8 +131,8 @@ namespace AoC._2016
 
             uint magicNumber = uint.Parse(inputs.First());
             Queue<PointWalk> points = new Queue<PointWalk>();
-            points.Enqueue(new PointWalk(new Base.Point(1, 1), 0));
-            return WalkPath(points, new Base.Point(targetX, targetY), magicNumber, findMaxLocations ? 50 : 0).ToString();
+            points.Enqueue(new PointWalk(new Base.Pos2(1, 1), 0));
+            return WalkPath(points, new Base.Pos2(targetX, targetY), magicNumber, findMaxLocations ? 50 : 0).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)

@@ -14,9 +14,9 @@ namespace AoC._2016
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -50,7 +50,7 @@ UUUUD"
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Point start)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Pos2 start)
         {
             Base.Range range = new Base.Range(0, numPad.First().Length - 1);
             StringBuilder code = new StringBuilder();
@@ -59,7 +59,7 @@ UUUUD"
             {
                 foreach (char c in input)
                 {
-                    Base.Point old = new Base.Point(x, y);
+                    Base.Pos2 old = new Base.Pos2(x, y);
                     switch (c)
                     {
                         case 'U':
@@ -89,11 +89,11 @@ UUUUD"
         static string[] numberPad1 = { "123", "456", "789" };
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad1, new Base.Point(1, 1));
+            => SharedSolution(inputs, variables, numberPad1, new Base.Pos2(1, 1));
 
         static string[] numberPad2 = { "  1  ", " 234 ", "56789", " ABC ", "  D  " };
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad2, new Base.Point(0, 2));
+            => SharedSolution(inputs, variables, numberPad2, new Base.Pos2(0, 2));
     }
 }

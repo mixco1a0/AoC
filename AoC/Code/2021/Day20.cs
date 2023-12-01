@@ -14,9 +14,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -58,15 +58,15 @@ namespace AoC._2021
 
         static readonly char LightPixel = '#';
         static readonly char DarkPixel = '.';
-        static readonly Base.Point[] PixelCheck = new Base.Point[] { new Base.Point(-1, -1), new Base.Point(0, -1), new Base.Point(1, -1),
-                                                                     new Base.Point(-1, 0), new Base.Point(0, 0), new Base.Point(1, 0),
-                                                                     new Base.Point(-1, 1), new Base.Point(0, 1), new Base.Point(1, 1) };
+        static readonly Base.Pos2[] PixelCheck = new Base.Pos2[] { new Base.Pos2(-1, -1), new Base.Pos2(0, -1), new Base.Pos2(1, -1),
+                                                                     new Base.Pos2(-1, 0), new Base.Pos2(0, 0), new Base.Pos2(1, 0),
+                                                                     new Base.Pos2(-1, 1), new Base.Pos2(0, 1), new Base.Pos2(1, 1) };
 
         private char EnhancePixel(List<string> pixels, string algorithm, int x, int y, char defaultPixel)
         {
             StringBuilder sb = new StringBuilder();
-            Base.Point curPixel = new Base.Point(x, y);
-            foreach (Base.Point gridPixel in PixelCheck.Select(p => curPixel + p))
+            Base.Pos2 curPixel = new Base.Pos2(x, y);
+            foreach (Base.Pos2 gridPixel in PixelCheck.Select(p => curPixel + p))
             {
                 if (gridPixel.Y < 0 || gridPixel.Y >= pixels.Count || gridPixel.X < 0 || gridPixel.X >= pixels[y].Length)
                 {

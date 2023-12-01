@@ -12,9 +12,9 @@ namespace AoC._2016
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -50,14 +50,14 @@ namespace AoC._2016
         private char OpenChar = '.';
         private char StartChar = '0';
 
-        private record Path(Base.Point Coords, int Steps) { }
+        private record Path(Base.Pos2 Coords, int Steps) { }
 
-        private int PathTo(char[][] grid, Base.Point max, Base.Point start, char target)
+        private int PathTo(char[][] grid, Base.Pos2 max, Base.Pos2 start, char target)
         {
             Queue<Path> pendingChecks = new Queue<Path>();
             pendingChecks.Enqueue(new Path(start, 0));
 
-            HashSet<Base.Point> history = new HashSet<Base.Point>();
+            HashSet<Base.Pos2> history = new HashSet<Base.Pos2>();
             history.Add(start);
 
             while (pendingChecks.Count > 0)
@@ -68,10 +68,10 @@ namespace AoC._2016
                     return cur.Steps;
                 }
 
-                Base.Point[] movements = new Base.Point[] { new Base.Point(0, -1), new Base.Point(-1, 0), new Base.Point(0, 1), new Base.Point(1, 0) };
-                foreach (Base.Point movement in movements)
+                Base.Pos2[] movements = new Base.Pos2[] { new Base.Pos2(0, -1), new Base.Pos2(-1, 0), new Base.Pos2(0, 1), new Base.Pos2(1, 0) };
+                foreach (Base.Pos2 movement in movements)
                 {
-                    Base.Point nextMove = cur.Coords + movement;
+                    Base.Pos2 nextMove = cur.Coords + movement;
                     if (nextMove.X >= 0 && nextMove.X < max.X && nextMove.Y >= 0 && nextMove.Y < max.Y)
                     {
                         if (grid[nextMove.Y][nextMove.X] == WallChar || history.Contains(nextMove))
@@ -88,17 +88,17 @@ namespace AoC._2016
             return (int)short.MaxValue;
         }
 
-        private int[] GeneratePaths(char[][] grid, Base.Point max, char target, int totalTargets)
+        private int[] GeneratePaths(char[][] grid, Base.Pos2 max, char target, int totalTargets)
         {
             // get starting position
-            Base.Point start = new Base.Point(-1, -1);
+            Base.Pos2 start = new Base.Pos2(-1, -1);
             for (int y = 0; y < max.Y && start.Y < 0; ++y)
             {
                 for (int x = 0; x < max.X; ++x)
                 {
                     if (grid[y][x] == target)
                     {
-                        start = new Base.Point(x, y);
+                        start = new Base.Pos2(x, y);
                         break;
                     }
                 }
@@ -152,9 +152,9 @@ namespace AoC._2016
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool returnHome)
         {
-            Base.Point max = new Base.Point(inputs[0].Length, inputs.Count);
+            Base.Pos2 max = new Base.Pos2(inputs[0].Length, inputs.Count);
             char[][] grid = new char[inputs.Count][];
-            Base.Point start = new Base.Point();
+            Base.Pos2 start = new Base.Pos2();
             for (int i = 0; i < inputs.Count; ++i)
             {
                 grid[i] = inputs[i].ToCharArray();

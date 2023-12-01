@@ -1,7 +1,9 @@
 using System;
+using Newtonsoft.Json;
 
 namespace AoC.Base
 {
+    [JsonObject]
     public class Pair<TFirst, TLast> : IEquatable<Pair<TFirst, TLast>>
     {
         protected TFirst m_first;
@@ -26,6 +28,18 @@ namespace AoC.Base
         {
             First = other.First;
             Last = other.Last;
+        }
+        #endregion
+
+        #region Serialization
+        public virtual bool ShouldSerializeFirst()
+        {
+            return true;
+        }
+
+        public virtual bool ShouldSerializeLast()
+        {
+            return true;
         }
         #endregion
 
@@ -70,62 +84,4 @@ namespace AoC.Base
         #endregion
     }
     
-    public class CPair<TFirst, TLast> : Pair<TFirst, TLast>, IComparable
-        where TFirst : IComparable
-        where TLast : IComparable
-    {
-        protected bool m_sortByFirst;
-
-        #region Constructors
-        public CPair() : base()
-        {
-            m_sortByFirst = true;
-        }
-
-        public CPair(TFirst one, TLast two) : base(one, two)
-        {
-            m_sortByFirst = true;
-        }
-
-        public CPair(Pair<TFirst, TLast> other) : base(other)
-        {
-            m_sortByFirst = true;
-        }
-        #endregion
-
-        #region Interfaces
-        public int CompareTo(object obj)
-        {
-            if (obj == null)
-            {
-                return 1;
-            }
-
-            CPair<TFirst, TLast> objAsPair = obj as CPair<TFirst, TLast>;
-            if (objAsPair == null)
-            {
-                return 1;
-            }
-
-            int firstSort = m_first.CompareTo(objAsPair.m_first);
-            int lastSort = m_last.CompareTo(objAsPair.m_last);
-            if (m_sortByFirst)
-            {
-                if (firstSort == 0)
-                {
-                    return lastSort;
-                }
-                return firstSort;
-            }
-
-            if (lastSort == 0)
-            {
-                return firstSort;
-            }
-            return lastSort;
-        }
-        #endregion
-    }
-
-
 }

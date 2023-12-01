@@ -1,10 +1,14 @@
 fix color ranges not respecting max and mins of their respective type
+write out entire perf log for days, remove top X% and bottom X%
+
+warm up needs to warm up all cores in a threaded approach
+remove processor restriction
 
 profiler
 separate warm up function
 change warm up script to only run the days
 update the perf runs to cap out at specific times
-have a config file
 have perf always show the latest version if version is 0
 
 have multi threaded versions required for specific days
+have multi threaded versions supported

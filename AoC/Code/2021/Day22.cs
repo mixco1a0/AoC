@@ -13,9 +13,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -123,25 +123,32 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507"
             return testData;
         }
 
+        public class Point : Base.Pos2
+        {
+            public int First { get => X; set => X = value; }
+            public int Last { get => Y; set => Y = value; }
+            public Point(int first, int last) : base(first, last) { }
+        }
+
         public class Cuboid
         {
             public bool On { get; set; }
-            public Base.Point X { get; set; }
-            public Base.Point Y { get; set; }
-            public Base.Point Z { get; set; }
+            public Point X { get; set; }
+            public Point Y { get; set; }
+            public Point Z { get; set; }
             public Cuboid(bool on)
             {
                 On = on;
-                X = new Base.Point(0, 0);
-                Y = new Base.Point(0, 0);
-                Z = new Base.Point(0, 0);
+                X = new Point(0, 0);
+                Y = new Point(0, 0);
+                Z = new Point(0, 0);
             }
             public Cuboid(bool on, int xi, int xa, int yi, int ya, int zi, int za)
             {
                 On = on;
-                X = new Base.Point(xi, xa);
-                Y = new Base.Point(yi, ya);
-                Z = new Base.Point(zi, za);
+                X = new Point(xi, xa);
+                Y = new Point(yi, ya);
+                Z = new Point(zi, za);
             }
 
             public Cuboid GetIntersection(bool on, Cuboid other)

@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,20 +10,10 @@ using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-using AoC.Core;
-
 using Newtonsoft.Json;
 
-namespace AoC
+namespace AoC.Core
 {
-    class EntryPoint
-    {
-        static void Main(string[] args)
-        {
-            new Program(args);
-        }
-    }
-
     class Program
     {
         private int m_curProcessor = 0;
@@ -36,7 +27,7 @@ namespace AoC
         private long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
         private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
-        private CommandLine Args { get; set; }
+        private Config Args { get; set; }
 
         public Program(string[] args)
         {
@@ -45,47 +36,47 @@ namespace AoC
                 Day.UseLogs = true;
 
                 // parse command args
-                Args = ParseCommandLineArgs(args);
+                Args = ParseConfig(args);
 
-                if (Args.Has(CommandLine.ESupportedArgument.Help))
+                if (Args.Has(Config.ESupportedArgument.Help))
                 {
                     Args.PrintHelp();
                     return;
                 }
 
                 // get the number of records to keep for perf tests
-                if (Args.HasValue(CommandLine.ESupportedArgument.PerfRecordCount))
+                if (Args.HasValue(Config.ESupportedArgument.PerfRecordCount))
                 {
-                    m_recordCount = long.Parse(Args[CommandLine.ESupportedArgument.PerfRecordCount]);
+                    m_recordCount = long.Parse(Args[Config.ESupportedArgument.PerfRecordCount]);
                 }
 
                 // get the timeout runs should adhere to
-                if (Args.HasValue(CommandLine.ESupportedArgument.PerfTimeout))
+                if (Args.HasValue(Config.ESupportedArgument.PerfTimeout))
                 {
-                    m_maxPerfTimeoutMs = long.Parse(Args[CommandLine.ESupportedArgument.PerfTimeout]);
+                    m_maxPerfTimeoutMs = long.Parse(Args[Config.ESupportedArgument.PerfTimeout]);
                 }
 
                 // get the namespace to use
                 string baseNamespace = GetLatestNamespace();
-                if (Args.HasValue(CommandLine.ESupportedArgument.Namespace))
+                if (Args.HasValue(Config.ESupportedArgument.Namespace))
                 {
-                    baseNamespace = Args[CommandLine.ESupportedArgument.Namespace];
+                    baseNamespace = Args[Config.ESupportedArgument.Namespace];
                 }
 
                 // run the day specified or the latest day
-                if (Args.HasValue(CommandLine.ESupportedArgument.Day))
+                if (Args.HasValue(Config.ESupportedArgument.Day))
                 {
-                    Day day = RunDay(baseNamespace, Args[CommandLine.ESupportedArgument.Day]);
+                    Day day = RunDay(baseNamespace, Args[Config.ESupportedArgument.Day]);
                     if (day == null)
                     {
-                        Log.WriteLine(Log.ELevel.Error, $"Unable to find {baseNamespace}.{Args[CommandLine.ESupportedArgument.Day]}");
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find {baseNamespace}.{Args[Config.ESupportedArgument.Day]}");
                     }
                     else
                     {
                         Log.WriteLine(Log.ELevel.Info, "");
                     }
                 }
-                else if (!Args.Has(CommandLine.ESupportedArgument.SkipLatest))
+                else if (!Args.Has(Config.ESupportedArgument.SkipLatest))
                 {
                     Day latestDay = RunLatestDay(baseNamespace);
                     if (latestDay == null)
@@ -99,12 +90,12 @@ namespace AoC
                 }
 
                 // show performance
-                if (Args.Has(CommandLine.ESupportedArgument.ShowPerf))
+                if (Args.Has(Config.ESupportedArgument.ShowPerf))
                 {
                     ShowPerformance(baseNamespace);
                 }
                 // run performance tests
-                else if (Args.Has(CommandLine.ESupportedArgument.RunPerf))
+                else if (Args.Has(Config.ESupportedArgument.RunPerf))
                 {
                     RunPerformance(baseNamespace);
                 }
@@ -116,15 +107,15 @@ namespace AoC
         }
 
         /// <summary>
-        /// Parse the command line arguments
+        /// Parse all config options
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        private CommandLine ParseCommandLineArgs(string[] args)
+        private Config ParseConfig(string[] args)
         {
-            CommandLine commandLine = new CommandLine(args);
-            commandLine.Print();
-            return commandLine;
+            Config config = new Config();
+            config.Init(args);
+            return config;
         }
 
         /// <summary>
@@ -175,7 +166,7 @@ namespace AoC
         /// <returns></returns>
         private Day RunDay(string baseNamespace, string dayName)
         {
-            if (Args.Has(CommandLine.ESupportedArgument.RunWarmup))
+            if (Args.Has(Config.ESupportedArgument.RunWarmup))
             {
                 Log.WriteLine(Log.ELevel.Info, "...Warming up\n");
                 RunWarmup();
@@ -286,7 +277,7 @@ namespace AoC
                     runData.AddData(day);
                 }
 
-                if (System.Diagnostics.Debugger.IsAttached)
+                if (Debugger.IsAttached)
                 {
                     Log.WriteLine(Log.ELevel.Spam, $"{day.TimeResults[part]}");
                     if (i > 0 && i % (RecordCount / 20) == 0)
@@ -318,7 +309,7 @@ namespace AoC
                 }
             }
 
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 Log.WriteLine(Log.ELevel.Info, $"...{maxI} runs completed");
             }
@@ -409,15 +400,7 @@ namespace AoC
         /// <param name="perfData"></param>
         private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
-            string workingDir = Core.WorkingDirectory.Get;
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                perfDataFileName = Path.Combine(workingDir, "perfdata_debugger.json");
-            }
-            else
-            {
-                perfDataFileName = Path.Combine(workingDir, "perfdata_cmd.json");
-            }
+            perfDataFileName = Path.Combine(WorkingDirectory.Get, "Data", "perfdata.json");
             if (File.Exists(perfDataFileName))
             {
                 Log.WriteLine(Log.ELevel.Info, $"Loading {perfDataFileName}\n");
@@ -448,7 +431,7 @@ namespace AoC
         }
 
         internal class TimeMagnitude : Base.Pair<double, string> { public TimeMagnitude(double d, string s) : base(d, s) { } }
-        internal class ColorRange : Base.Range<float> { public ColorRange(float min, float max) : base(min, max) { } }
+        internal class ColorRange : Base.RangeF { public ColorRange(float min, float max) : base(min, max) { } }
 
         /// <summary>
         /// Print out all the performance information from run data
@@ -458,7 +441,7 @@ namespace AoC
         private void PrintPerf(string baseNamespace, PerfData perfData)
         {
             Log.WriteLine(Log.ELevel.Info, $"{baseNamespace} Performance Metrics\n");
-            bool compactPerf = Args.Has(CommandLine.ESupportedArgument.CompactPerf);
+            bool compactPerf = Args.Has(Config.ESupportedArgument.CompactPerf);
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;

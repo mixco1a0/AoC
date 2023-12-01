@@ -13,9 +13,9 @@ namespace AoC._2022
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -77,13 +77,13 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
 
         private class Sensor
         {
-            public Base.LongPosition Pos { get; set; }
-            public Base.LongPosition ClosestBeacon { get; set; }
+            public Base.Pos2L Pos { get; set; }
+            public Base.Pos2L ClosestBeacon { get; set; }
 
             public Sensor()
             {
-                Pos = new Base.LongPosition();
-                ClosestBeacon = new Base.LongPosition();
+                Pos = new Base.Pos2L();
+                ClosestBeacon = new Base.Pos2L();
             }
 
             public long GetManhatten()
@@ -103,9 +103,9 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
             }
         }
 
-        private List<Base.LongRange> GetBlockedRanges(List<Sensor> sensors, long row)
+        private List<Base.RangeL> GetBlockedRanges(List<Sensor> sensors, long row)
         {
-            List<Base.LongRange> blockedRanges = new List<Base.LongRange>();
+            List<Base.RangeL> blockedRanges = new List<Base.RangeL>();
             foreach (Sensor sensor in sensors)
             {
                 long manhattan = sensor.GetManhatten();
@@ -115,26 +115,26 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
                     continue;
                 }
 
-                blockedRanges.Add(new Base.LongRange(sensor.Pos.X - (manhattan - distToRow), sensor.Pos.X + (manhattan - distToRow)));
+                blockedRanges.Add(new Base.RangeL(sensor.Pos.X - (manhattan - distToRow), sensor.Pos.X + (manhattan - distToRow)));
             }
-            return blockedRanges.OrderBy(r => r.First).ToList();
+            return blockedRanges.OrderBy(r => r.Min).ToList();
         }
 
-        private List<Base.LongRange> CompressRanges(List<Base.LongRange> blockedRanges, int minX, int maxX)
+        private List<Base.RangeL> CompressRanges(List<Base.RangeL> blockedRanges, int minX, int maxX)
         {
-            List<Base.LongRange> compressed = new List<Base.LongRange>();
-            foreach (Base.LongRange range in blockedRanges)
+            List<Base.RangeL> compressed = new List<Base.RangeL>();
+            foreach (Base.RangeL range in blockedRanges)
             {
                 int matchingIdx = -1;
                 for (int i = 0; i < compressed.Count; ++i)
                 {
-                    Base.LongRange curCompressed = compressed[i];
+                    Base.RangeL curCompressed = compressed[i];
                     if (curCompressed.HasIncOr(range) || range.HasIncOr(curCompressed))
                     {
                         matchingIdx = i;
                         break;
                     }
-                    else if (curCompressed.First == range.Last + 1 || range.First == curCompressed.Last + 1)
+                    else if (curCompressed.Min == range.Max + 1 || range.Min == curCompressed.Max + 1)
                     {
                         matchingIdx = i;
                         break;
@@ -142,12 +142,12 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
                 }
                 if (matchingIdx >= 0)
                 {
-                    compressed[matchingIdx].First = Math.Max(Math.Min(compressed[matchingIdx].First, range.First), minX);
-                    compressed[matchingIdx].Last = Math.Min(Math.Max(compressed[matchingIdx].Last, range.Last), maxX);
+                    compressed[matchingIdx].Min = Math.Max(Math.Min(compressed[matchingIdx].Min, range.Min), minX);
+                    compressed[matchingIdx].Max = Math.Min(Math.Max(compressed[matchingIdx].Max, range.Max), maxX);
                 }
                 else
                 {
-                    compressed.Add(new Base.LongRange(Math.Max(minX, range.Min), Math.Min(maxX, range.Max)));
+                    compressed.Add(new Base.RangeL(Math.Max(minX, range.Min), Math.Min(maxX, range.Max)));
                 }
             }
 
@@ -160,9 +160,9 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
             if (!findBeacon)
             {
                 GetVariable(nameof(_Row), 2000000, variables, out int row);
-                List<Base.LongRange> blockedRanges = GetBlockedRanges(sensors, row);
-                List<Base.LongRange> compressedRanges = CompressRanges(blockedRanges, int.MinValue, int.MaxValue);
-                return compressedRanges.Select(c => c.Last - c.First).Sum().ToString();
+                List<Base.RangeL> blockedRanges = GetBlockedRanges(sensors, row);
+                List<Base.RangeL> compressedRanges = CompressRanges(blockedRanges, int.MinValue, int.MaxValue);
+                return compressedRanges.Select(c => c.Max - c.Min).Sum().ToString();
             }
             else
             {
@@ -170,11 +170,11 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
                 GetVariable(nameof(_MaxY), 4000000, variables, out int maxY);
                 for (long y = maxY; y > 0; --y)
                 {
-                    List<Base.LongRange> blockedRanges = GetBlockedRanges(sensors, y);
-                    List<Base.LongRange> compressedRanges = CompressRanges(blockedRanges, 0, maxX);
-                    if (compressedRanges.Select(c => c.Last - c.First).Sum() != maxX)
+                    List<Base.RangeL> blockedRanges = GetBlockedRanges(sensors, y);
+                    List<Base.RangeL> compressedRanges = CompressRanges(blockedRanges, 0, maxX);
+                    if (compressedRanges.Select(c => c.Max - c.Min).Sum() != maxX)
                     {
-                        return ((compressedRanges[0].Last + 1) * 4000000 + y).ToString();
+                        return ((compressedRanges[0].Max + 1) * 4000000 + y).ToString();
                     }
                 }
             }

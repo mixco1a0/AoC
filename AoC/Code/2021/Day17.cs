@@ -13,9 +13,9 @@ namespace AoC._2021
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -89,7 +89,7 @@ namespace AoC._2021
             return maxHeight;
         }
 
-        private void AdjustVelocity(ref Base.Point position, ref Base.Point velocity)
+        private void AdjustVelocity(ref Base.Pos2 position, ref Base.Pos2 velocity)
         {
             position += velocity;
             if (velocity.X != 0)
@@ -103,8 +103,8 @@ namespace AoC._2021
         {
             for (int x = 1; ; ++x)
             {
-                Base.Point probe = new Base.Point(0, 0);
-                Base.Point velocity = new Base.Point(x, 0);
+                Base.Pos2 probe = new Base.Pos2(0, 0);
+                Base.Pos2 velocity = new Base.Pos2(x, 0);
                 while (velocity.X > 0 && probe.X <= maxX)
                 {
                     AdjustVelocity(ref probe, ref velocity);
@@ -120,19 +120,19 @@ namespace AoC._2021
         private int SolveAll(int startX, List<int> possibleYs, int minX, int maxX, int minY, int maxY)
         {
             possibleYs.AddRange(Enumerable.Range(1, minY * -1).Select(e => e * -1));
-            HashSet<Base.Point> knownLocations = new HashSet<Base.Point>();
+            HashSet<Base.Pos2> knownLocations = new HashSet<Base.Pos2>();
             foreach (int y in possibleYs)
             {
                 for (int x = startX; x <= maxX; ++x)
                 {
-                    Base.Point pos = new Base.Point(0, 0);
-                    Base.Point vel = new Base.Point(x, y);
+                    Base.Pos2 pos = new Base.Pos2(0, 0);
+                    Base.Pos2 vel = new Base.Pos2(x, y);
                     while (pos.X < maxX && pos.Y > minY)
                     {
                         AdjustVelocity(ref pos, ref vel);
                         if (minX <= pos.X && pos.X <= maxX && minY <= pos.Y && pos.Y <= maxY)
                         {
-                            knownLocations.Add(new Base.Point(x, y));
+                            knownLocations.Add(new Base.Pos2(x, y));
                             break;
                         }
                     }

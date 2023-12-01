@@ -30,7 +30,7 @@ namespace AoC.Core
         public virtual string GetSolutionVersion(Part part) => "v0";
         public virtual bool SkipTestData => false;
         protected abstract List<TestDatum> GetTestData();
-        public virtual void RunWarmup() {}
+        public virtual void RunWarmup() { }
         protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
         protected abstract string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables);
         #endregion
@@ -231,9 +231,9 @@ namespace AoC.Core
                 string bigFiller = new string(filler, 5);
                 string smallFiller = new string(filler, 3);
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {bigFiller}{buffer}{bigFiller}");
-                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty }  {smallFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty}  {smallFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {Core.Log.ColorMarker}{answer}{Core.Log.ColorMarker}  {smallFiller}", new List<Color>() { color });
-                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty }  {smallFiller}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty}  {smallFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {bigFiller}{buffer}{bigFiller}");
             }
         }
