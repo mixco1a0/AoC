@@ -29,9 +29,12 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
-                Output = "",
+                Output = "142",
                 RawInput =
-@""
+@"1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet"
             });
             testData.Add(new Core.TestDatum
             {
@@ -43,9 +46,24 @@ namespace AoC._2023
             return testData;
         }
 
+        private class Calibration
+        {
+            public int Digits { get; set; }
+
+            public static Calibration Parse(string input)
+            {
+                Calibration c = new Calibration();
+                IEnumerable<char> chars = input.Where(c => char.IsAsciiDigit(c));
+                string nums = string.Concat(chars.First(), chars.Last());
+                c.Digits = int.Parse(nums);
+                return c;
+            }
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            List<Calibration> calibrations = inputs.Select(Calibration.Parse).ToList();
+            return calibrations.Select(c => c.Digits).Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
