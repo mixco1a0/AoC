@@ -172,7 +172,8 @@ namespace AoC.Core
                 RunWarmup();
             }
 
-            Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace}.{dayName} Advent of Code\n");
+            string paddedDayName = dayName.Length > 1 ? dayName : $"0{dayName}";
+            Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace}.{paddedDayName} Advent of Code\n");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
