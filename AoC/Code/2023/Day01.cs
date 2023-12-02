@@ -15,13 +15,13 @@ namespace AoC._2023
                 case Core.Part.One:
                     return "v1";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => true;
+        public override bool SkipTestData => false;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -57,17 +57,14 @@ zoneight234
             public string AllDigits { get; set; }
             public int Digits { get; set; }
 
-            private static Dictionary<string, int> Convert = new Dictionary<string, int>()
+            private static Dictionary<char, Dictionary<string, int>> Numbers = new Dictionary<char, Dictionary<string, int>>()
             {
-                {"one", 1},
-                {"two", 2},
-                {"three", 3},
-                {"four", 4},
-                {"five", 5},
-                {"six", 6},
-                {"seven", 7},
-                {"eight", 8},
-                {"nine", 9}
+                {'o', new Dictionary<string, int>() {{"one", 1}}},
+                {'t', new Dictionary<string, int>() {{"two", 2}, {"three", 3}}},
+                {'f', new Dictionary<string, int>() {{"four", 4}, {"five", 5}}},
+                {'s', new Dictionary<string, int>() {{"six", 6}, {"seven", 7}}},
+                {'e', new Dictionary<string, int>() {{"eight", 8}}},
+                {'n', new Dictionary<string, int>() {{"nine", 9}}}
             };
 
             public static Calibration Parse(string input)
@@ -84,40 +81,30 @@ zoneight234
                 Calibration c = new Calibration();
                 List<int> curDigits = new List<int>();
                 List<string> curTextDigitPossibilities = new List<string>();
-                foreach (char i in input)
+                for (int i = 0; i < input.Length; ++i)
                 {
-                    if (char.IsAsciiDigit(i))
+                    char curI = input[i];
+                    if (char.IsAsciiDigit(curI))
                     {
-                        curTextDigitPossibilities.Clear();
-                        curDigits.Add(int.Parse($"{i}"));
-                    }
-                    else if (char.IsAsciiLetter(i))
-                    {
-                        for (int j = 0; j < curTextDigitPossibilities.Count; ++j)
-                        {
-                            curTextDigitPossibilities[j] = $"{curTextDigitPossibilities[j]}{i}";
-                        }
-                        curTextDigitPossibilities.Add(i.ToString());
-                        int foundNum = -1;
-                        foreach (string pos in curTextDigitPossibilities)
-                        {
-                            if (Convert.ContainsKey(pos))
-                            {
-                                foundNum = Convert[pos];
-                                break;
-                            }
-                        }
-
-                        if (foundNum != -1)
-                        {
-                            curDigits.Add(foundNum);
-                        }
+                        curDigits.Add(int.Parse(curI.ToString()));
                     }
                     else
                     {
-                        curTextDigitPossibilities.Clear();
+                        if (Numbers.ContainsKey(curI))
+                        {
+                            string curStart = input.Substring(i);
+                            foreach (var pair in Numbers[curI])
+                            {
+                                string fullNumName = pair.Key;
+                                if (curStart.Length >= fullNumName.Length && curStart.Substring(0, fullNumName.Length).Equals(fullNumName))
+                                {
+                                    curDigits.Add(pair.Value);
+                                }
+                            }
+                        }
                     }
                 }
+
                 foreach (int d in curDigits)
                 {
                     c.AllDigits += d.ToString();
