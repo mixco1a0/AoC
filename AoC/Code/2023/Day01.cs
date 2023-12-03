@@ -80,7 +80,6 @@ zoneight234
             {
                 Calibration c = new Calibration();
                 List<int> curDigits = new List<int>();
-                List<string> curTextDigitPossibilities = new List<string>();
                 for (int i = 0; i < input.Length; ++i)
                 {
                     char curI = input[i];
