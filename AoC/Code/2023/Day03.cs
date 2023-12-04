@@ -93,7 +93,7 @@ namespace AoC._2023
 
                     int prevNumIndex = 0;
                     Base.Range curRange = new Base.Range();
-                    string curNum = string.Empty;
+                    string curNum = string.Empty; // convert to string builder
                     foreach (Parser parser in split)
                     {
                         if (char.IsAsciiDigit(parser.Character))
