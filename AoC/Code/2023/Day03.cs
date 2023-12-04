@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2023
 {
@@ -13,15 +14,15 @@ namespace AoC._2023
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => true;
+        public override bool SkipTestData => false;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -93,39 +94,41 @@ namespace AoC._2023
 
                     int prevNumIndex = 0;
                     Base.Range curRange = new Base.Range();
-                    string curNum = string.Empty; // convert to string builder
+                    StringBuilder sb = new StringBuilder();
+                    Action updateParts = () =>
+                    {
+                        Parts.Add(new Part { Number = int.Parse(sb.ToString()), Rows = new Base.Range(curRange), Col = curRow });
+                        sb.Clear();
+                    };
                     foreach (Parser parser in split)
                     {
                         if (char.IsAsciiDigit(parser.Character))
                         {
-                            if (!string.IsNullOrWhiteSpace(curNum) && prevNumIndex + 1 != parser.Index)
+                            if (sb.Length > 0 && prevNumIndex + 1 != parser.Index)
                             {
-                                Parts.Add(new Part { Number = int.Parse(curNum), Rows = new Base.Range(curRange), Col = curRow });
-                                curNum = string.Empty;
+                                updateParts();
                             }
 
-                            if (string.IsNullOrWhiteSpace(curNum))
+                            if (sb.Length == 0)
                             {
                                 curRange.Min = parser.Index;
                             }
-                            curNum += parser.Character;
+                            sb.Append(parser.Character);
                             curRange.Max = parser.Index;
                             prevNumIndex = parser.Index;
                         }
                         else
                         {
-                            if (!string.IsNullOrWhiteSpace(curNum))
+                            if (sb.Length > 0)
                             {
-                                Parts.Add(new Part { Number = int.Parse(curNum), Rows = new Base.Range(curRange), Col = curRow });
-                                curNum = string.Empty;
+                                updateParts();
                             }
                             Symbols.Add(new Symbol(new Base.Pos2(parser.Index, curRow), parser.Character));
                         }
                     }
-                    if (!string.IsNullOrWhiteSpace(curNum))
+                    if (sb.Length > 0)
                     {
-                        Parts.Add(new Part { Number = int.Parse(curNum), Rows = new Base.Range(curRange), Col = curRow });
-                        curNum = string.Empty;
+                        updateParts();
                     }
                     ++curRow;
                 }
