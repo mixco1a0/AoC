@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace AoC.Base
 {
-    public class Pos2 : IEquatable<Pos2>
+    public class Pos2 : IEquatable<Pos2>, IComparable<Pos2>, IComparable
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -57,9 +57,30 @@ namespace AoC.Base
         {
             return X == other.X && Y == other.Y;
         }
+
+        public virtual int CompareTo(Pos2 other)
+        {
+            int xCompare = X.CompareTo(other.X);
+            if (xCompare != 0)
+            {
+                return xCompare;
+            }
+            return Y.CompareTo(other.Y);
+        }
+
+        public int CompareTo(object other)
+        {
+            Pos2 otherAsPos2 = other as Pos2;
+            if (otherAsPos2 == null)
+            {
+                return -1;
+            }
+            return otherAsPos2.CompareTo(other);
+        }
         #endregion
 
         #region Overrides
+
         public override string ToString()
         {
             return $"[{X}, {Y}]";
@@ -88,7 +109,7 @@ namespace AoC.Base
         #endregion
     }
 
-    public class Pos2L : IEquatable<Pos2L>
+    public class Pos2L : IEquatable<Pos2L>, IComparable<Pos2>, IComparable
     {
         public long X { get; set; }
         public long Y { get; set; }
@@ -141,6 +162,26 @@ namespace AoC.Base
         public bool Equals(Pos2L other)
         {
             return X == other.X && Y == other.Y;
+        }
+
+        public virtual int CompareTo(Pos2 other)
+        {
+            int xCompare = X.CompareTo(other.X);
+            if (xCompare != 0)
+            {
+                return xCompare;
+            }
+            return Y.CompareTo(other.Y);
+        }
+
+        public int CompareTo(object other)
+        {
+            Pos2 otherAsPos2 = other as Pos2;
+            if (otherAsPos2 == null)
+            {
+                return -1;
+            }
+            return otherAsPos2.CompareTo(other);
         }
         #endregion
 
