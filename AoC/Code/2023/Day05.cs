@@ -12,16 +12,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -141,7 +141,7 @@ humidity-to-location map:
                 TempMap = new List<Base.KeyVal<Base.RangeL, long>>();
                 HumidityMap = new List<Base.KeyVal<Base.RangeL, long>>();
                 LocMap = new List<Base.KeyVal<Base.RangeL, long>>();
-                PrintFunc = (_) => { };
+                // PrintFunc = (_) => { };
 
                 Mapping mapping = Mapping.Seed;
                 foreach (string input in inputs)
@@ -253,7 +253,7 @@ humidity-to-location map:
 
                             Base.RangeL preConvertedRange = new Base.RangeL(curNumber, curNumber + maxCount);
                             Base.RangeL convertedRange = new Base.RangeL(convertedValue, convertedValue + maxCount);
-                            PrintFunc($"[{mapping.ToString()}] | [key found] converted [{preConvertedRange}] -> {convertedRange}");
+                            // PrintFunc($"[{mapping.ToString()}] | [key found] converted [{preConvertedRange}] -> {convertedRange}");
                             converted.Add(convertedRange);
                             curNumber += maxCount;
                         }
@@ -265,12 +265,12 @@ humidity-to-location map:
                                 long maxValue = Math.Min(minKeys.Min() - 1, range.Max);
                                 converted.Add(new Base.RangeL(curNumber, maxValue));
                                 curNumber = maxValue;
-                                PrintFunc($"[{mapping.ToString()}] | [partial unfound] converted [{converted.Last()}] -> {converted.Last()}");
+                                // PrintFunc($"[{mapping.ToString()}] | [partial unfound] converted [{converted.Last()}] -> {converted.Last()}");
                             }
                             else
                             {
                                 converted.Add(new Base.RangeL(curNumber, range.Max));
-                                PrintFunc($"[{mapping.ToString()}] | [complete unfound] converted [{converted.Last()}] -> {converted.Last()}");
+                                // PrintFunc($"[{mapping.ToString()}] | [complete unfound] converted [{converted.Last()}] -> {converted.Last()}");
                                 break;
                             }
                         }
