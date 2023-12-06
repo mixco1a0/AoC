@@ -37,9 +37,10 @@ Distance:  9  40  200"
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "71503",
                 RawInput =
-@""
+@"Time:      7  15   30
+Distance:  9  40  200"
             });
             return testData;
         }
@@ -58,10 +59,26 @@ Distance:  9  40  200"
             return solutions;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool oneRace)
         {
-            List<long> times = inputs[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(long.Parse).ToList();
-            List<long> distances = inputs[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(long.Parse).ToList();
+            List<long> times;
+            List<long> distances;
+            if (oneRace)
+            {
+                times = new List<long>
+                {
+                    long.Parse(string.Join("", inputs[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)))
+                };
+                distances = new List<long>
+                {
+                    long.Parse(string.Join("", inputs[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)))
+                };
+            }
+            else
+            {
+                times = inputs[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(long.Parse).ToList();
+                distances = inputs[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(long.Parse).ToList();
+            }
             long answer = 1;
             for (int i = 0; i < times.Count; ++i)
             {
@@ -71,9 +88,9 @@ Distance:  9  40  200"
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
