@@ -37,25 +37,16 @@ KK677 28
 KTJJT 220
 QQQJA 483"
             });
-//             testData.Add(new Core.TestDatum
-//             {
-//                 TestPart = Core.Part.One,
-//                 Output = "6440",
-//                 RawInput =
-// @"23456 1
-// 22345 2
-// 22446 3
-// 22256 4
-// 22255 5
-// 22226 6
-// 22222 7"
-//             });
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "5905",
                 RawInput =
-@""
+@"32T3K 765
+T55J5 684
+KK677 28
+KTJJT 220
+QQQJA 483"
             });
             return testData;
         }
@@ -74,9 +65,13 @@ QQQJA 483"
                 Invalid
             }
 
+            public static bool UseJokers { get; set; }
+
             public Strength OverallStrength { get; set; }
+            public Strength JokerStrength { get; set; }
             public string RawHand { get; set; }
-            public string ConvertedHand { get; set; }
+            public string ComparableHand { get; set; }
+            public string SortedHand { get; set; }
             public long Bid { get; set; }
 
             private static Dictionary<char, char> EasyCompare = new Dictionary<char, char>()
@@ -96,11 +91,29 @@ QQQJA 483"
                 {'A', 'm'},
             };
 
+            private static Dictionary<char, char> JokerCompare = new Dictionary<char, char>()
+            {
+                {'J', 'a'},
+                {'2', 'b'},
+                {'3', 'c'},
+                {'4', 'd'},
+                {'5', 'e'},
+                {'6', 'f'},
+                {'7', 'g'},
+                {'8', 'h'},
+                {'9', 'i'},
+                {'T', 'j'},
+                {'Q', 'k'},
+                {'K', 'l'},
+                {'A', 'm'},
+            };
+
             public Hand()
             {
                 OverallStrength = Strength.Invalid;
+                JokerStrength = Strength.Invalid;
                 RawHand = string.Empty;
-                ConvertedHand = string.Empty;
+                ComparableHand = string.Empty;
                 Bid = 0;
             }
 
@@ -109,9 +122,21 @@ QQQJA 483"
                 Hand hand = new Hand();
                 string[] split = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 hand.RawHand = split[0];
-                hand.ConvertedHand = string.Join("", hand.RawHand.Select(rh => EasyCompare[rh]));
+                if (UseJokers)
+                {
+                    hand.ComparableHand = string.Join("", hand.RawHand.Select(rh => JokerCompare[rh]));
+                }
+                else
+                {
+                    hand.ComparableHand = string.Join("", hand.RawHand.Select(rh => EasyCompare[rh]));
+                }
+                hand.SortedHand = string.Concat(hand.RawHand.OrderBy(c => c));
                 hand.Bid = long.Parse(split[1]);
                 hand.SetOverallStrength();
+                if (UseJokers)
+                {
+                    hand.SetJokerStrength();
+                }
                 return hand;
             }
 
@@ -154,41 +179,102 @@ QQQJA 483"
                 }
             }
 
+            private void SetJokerStrength()
+            {
+                if (!UseJokers)
+                {
+                    JokerStrength = Strength.Invalid;
+                    return;
+                }
+
+                if (!RawHand.Contains('J'))
+                {
+                    JokerStrength = OverallStrength;
+                    return;
+                }
+
+                int jokerCount = RawHand.Where(card => card == 'J').Count();
+                Dictionary<char, int> chars = RawHand.Where(card => card != 'J').Select(_ => _).Distinct().ToDictionary(card => card, card => RawHand.Where(c => c == card).Count());
+                switch (chars.Count)
+                {
+                    case 4:
+                        // overall strength -> high card
+                        JokerStrength = Strength.OnePair;
+                        break;
+                    case 3:
+                        // overall strength -> pair (joker), pair (non joker)
+                        JokerStrength = Strength.ThreeOfKind;
+                        break;
+                    case 2:
+                        if (jokerCount == 1)
+                        {
+                            if (chars.Values.Max() == 2)
+                            {
+                                JokerStrength = Strength.FullHouse;
+                            }
+                            else
+                            {
+                                JokerStrength = Strength.FourOfKind;
+                            }
+                        }
+                        else
+                        {
+                            JokerStrength = Strength.FourOfKind;
+                        }
+                        break;
+                    case 1:
+                        // n non jokers
+                        JokerStrength = Strength.FiveOfKind;
+                        break;
+                    case 0:
+                        // 5 jokers
+                        JokerStrength = Strength.FiveOfKind;
+                        break;
+                }
+            }
+
             int IComparable<Hand>.CompareTo(Hand other)
             {
-                if (OverallStrength == other.OverallStrength)
+                Strength s = UseJokers ? JokerStrength : OverallStrength;
+                Strength os = UseJokers ? other.JokerStrength : other.OverallStrength;
+                if (s == os)
                 {
-                    for (int i = 0; i < ConvertedHand.Length; ++i)
+                    for (int i = 0; i < ComparableHand.Length; ++i)
                     {
-                        if (ConvertedHand[i] == other.ConvertedHand[i])
+                        if (ComparableHand[i] == other.ComparableHand[i])
                         {
                             continue;
                         }
-                        return ConvertedHand[i].CompareTo(other.ConvertedHand[i]);
+                        return ComparableHand[i].CompareTo(other.ComparableHand[i]);
                     }
                 }
 
-                return other.OverallStrength.CompareTo(OverallStrength);
+                return os.CompareTo(s);
             }
 
             public override string ToString()
             {
-                return $"{RawHand} -> {OverallStrength}";
+                if (UseJokers)
+                {
+                    string noJokers = string.Concat(SortedHand.Where(s => s != 'J'));
+                    return $"{noJokers} -> {JokerStrength}";
+                }
+                return $"{SortedHand} -> {OverallStrength}";
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useJokers)
         {
+            Hand.UseJokers = useJokers;
             List<Hand> hands = inputs.Select(Hand.Parse).ToList();
             hands.Sort();
             return hands.Select((card, index) => card.Bid * (long)(index + 1)).Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
-            // 251029672 [too low]
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
