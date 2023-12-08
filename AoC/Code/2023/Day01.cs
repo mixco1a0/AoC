@@ -123,11 +123,6 @@ zoneight234
             else
             {
                 calibrations = inputs.Select(Calibration.ComplexParse).ToList();
-
-                // for (int i = 0; i < inputs.Count; ++i)
-                // {
-                //     DebugWriteLine($"{inputs[i]} => {calibrations[i].AllDigits}");
-                // }
             }
             return calibrations.Select(c => c.Digits).Sum().ToString();
         }

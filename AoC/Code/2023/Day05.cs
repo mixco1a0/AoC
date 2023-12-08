@@ -129,7 +129,6 @@ humidity-to-location map:
             public List<Base.KeyVal<Base.RangeL, long>> TempMap { get; set; }
             public List<Base.KeyVal<Base.RangeL, long>> HumidityMap { get; set; }
             public List<Base.KeyVal<Base.RangeL, long>> LocMap { get; set; }
-            public Action<string> PrintFunc { get; set; }
 
             public Almanac(List<string> inputs, bool simpleParse)
             {
@@ -141,7 +140,6 @@ humidity-to-location map:
                 TempMap = new List<Base.KeyVal<Base.RangeL, long>>();
                 HumidityMap = new List<Base.KeyVal<Base.RangeL, long>>();
                 LocMap = new List<Base.KeyVal<Base.RangeL, long>>();
-                // PrintFunc = (_) => { };
 
                 Mapping mapping = Mapping.Seed;
                 foreach (string input in inputs)
@@ -253,7 +251,6 @@ humidity-to-location map:
 
                             Base.RangeL preConvertedRange = new Base.RangeL(curNumber, curNumber + maxCount);
                             Base.RangeL convertedRange = new Base.RangeL(convertedValue, convertedValue + maxCount);
-                            // PrintFunc($"[{mapping.ToString()}] | [key found] converted [{preConvertedRange}] -> {convertedRange}");
                             converted.Add(convertedRange);
                             curNumber += maxCount;
                         }
@@ -265,12 +262,10 @@ humidity-to-location map:
                                 long maxValue = Math.Min(minKeys.Min() - 1, range.Max);
                                 converted.Add(new Base.RangeL(curNumber, maxValue));
                                 curNumber = maxValue;
-                                // PrintFunc($"[{mapping.ToString()}] | [partial unfound] converted [{converted.Last()}] -> {converted.Last()}");
                             }
                             else
                             {
                                 converted.Add(new Base.RangeL(curNumber, range.Max));
-                                // PrintFunc($"[{mapping.ToString()}] | [complete unfound] converted [{converted.Last()}] -> {converted.Last()}");
                                 break;
                             }
                         }
@@ -283,7 +278,6 @@ humidity-to-location map:
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool simpleParse)
         {
             Almanac almanac = new Almanac(inputs, simpleParse);
-            // almanac.PrintFunc = DebugWriteLine;
             return almanac.GetLowestLocation().ToString();
         }
 
