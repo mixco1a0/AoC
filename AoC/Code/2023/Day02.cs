@@ -71,11 +71,11 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
             public static BagOfCubes Parse(string input)
             {
                 BagOfCubes boc = new BagOfCubes();
-                string[] inputs = input.Split(":;".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToArray();
+                string[] inputs = Util.String.Split(input, ":;");
                 boc.Id = int.Parse(string.Join("", inputs[0].Skip(5)));
                 foreach (string curI in inputs.Skip(1))
                 {
-                    string[] curISplits = curI.Split(" ,;".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    string[] curISplits = Util.String.Split(curI, " ,;");
                     int count = 0;
                     foreach (string curISplit in curISplits)
                     {

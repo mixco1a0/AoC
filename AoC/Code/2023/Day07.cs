@@ -120,7 +120,7 @@ QQQJA 483"
             public static Hand Parse(string input)
             {
                 Hand hand = new Hand();
-                string[] split = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string[] split = Util.String.Split(input, ' ');
                 hand.RawHand = split[0];
                 if (UseJokers)
                 {

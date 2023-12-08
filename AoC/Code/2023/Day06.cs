@@ -67,17 +67,18 @@ Distance:  9  40  200"
             {
                 times = new List<long>
                 {
-                    long.Parse(string.Join("", inputs[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)))
+                    
+                    long.Parse(string.Join("", Util.Number.SplitL(inputs[0], ' ')))
                 };
                 distances = new List<long>
                 {
-                    long.Parse(string.Join("", inputs[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)))
+                    long.Parse(string.Join("", Util.Number.SplitL(inputs[1], ' ')))
                 };
             }
             else
             {
-                times = inputs[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(long.Parse).ToList();
-                distances = inputs[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(long.Parse).ToList();
+                times = Util.Number.SplitL(inputs[0], ' ').ToList();
+                distances = Util.Number.SplitL(inputs[1], ' ').ToList();
             }
             long answer = 1;
             for (int i = 0; i < times.Count; ++i)

@@ -90,10 +90,10 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
             public static ScratchCard Parse(string input)
             {
                 ScratchCard sc = new ScratchCard();
-                string[] split = input.Split(":|".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                sc.Id = int.Parse(split[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Last());
-                sc.Win = split[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
-                sc.Have = split[2].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).Order().ToList();
+                string[] split = Util.String.Split(input, ":|");
+                sc.Id = int.Parse(Util.String.Split(split[0], ' ').Last());
+                sc.Win = Util.Number.Split(split[1], ' ').ToList();
+                sc.Have = Util.Number.Split(split[2], ' ').ToList();
                 return sc;
             }
         }
