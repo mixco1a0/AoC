@@ -102,6 +102,10 @@ namespace AoC.Core
         {
             string fileName = string.Format("{0}.txt", DayName);
             string inputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "In", fileName);
+            if (!File.Exists(inputFile))
+            {
+                using (File.Create(inputFile)) { }
+            }
             return ConvertDayFileToList(File.ReadAllText(inputFile));
         }
 
@@ -110,13 +114,14 @@ namespace AoC.Core
             string fileName = string.Format("{0}.txt", DayName);
             string outputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Out", fileName);
             List<string> output;
-            if (File.Exists(outputFile))
+            if (!File.Exists(outputFile))
             {
-                output = ConvertDayFileToList(File.ReadAllText(outputFile)).ToList();
+                using (File.Create(outputFile)) { }
+                output = new List<string>();
             }
             else
             {
-                output = new List<string>();
+                output = ConvertDayFileToList(File.ReadAllText(outputFile)).ToList();
             }
             output.AddRange(new string[2] { string.Empty, string.Empty });
             return output;
