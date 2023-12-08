@@ -8,5 +8,10 @@ namespace AoC.Util
         {
             return input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         }
+
+        public static string[] Split(string input, char seperator)
+        {
+            return input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
     }
 }
