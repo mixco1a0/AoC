@@ -6,6 +6,59 @@ namespace AoC.Util
 {
     public static class Number
     {
+        /// <summary>
+        /// Call split on a string and then parse it into ints
+        /// </summary>
+        /// <param name="input">string of separated ints</param>
+        /// <param name="seperator">characters used as seperators</param>
+        /// <returns></returns>
+        public static IEnumerable<int> Split(string input, string seperator)
+        {
+            string[] split = input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return split.Where(s => int.TryParse(s, out int result)).Select(int.Parse);
+        }
+
+        /// <summary>
+        /// Call split on a string and then parse it into ints
+        /// </summary>
+        /// <param name="input">string of separated ints</param>
+        /// <param name="seperator">character used as seperator</param>
+        /// <returns></returns>
+        public static IEnumerable<int> Split(string input, char seperator)
+        {
+            string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return split.Where(s => int.TryParse(s, out int result)).Select(int.Parse);
+        }
+
+        /// <summary>
+        /// Call split on a string and then parse it into longs
+        /// </summary>
+        /// <param name="input">string of separated longs</param>
+        /// <param name="seperator">characters used as seperators</param>
+        /// <returns></returns>
+        public static IEnumerable<long> SplitL(string input, string seperator)
+        {
+            string[] split = input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return split.Where(s => long.TryParse(s, out long result)).Select(long.Parse);
+        }
+
+        /// <summary>
+        /// Call split on a string and then parse it into longs
+        /// </summary>
+        /// <param name="input">string of separated longs</param>
+        /// <param name="seperator">character used as seperator</param>
+        /// <returns></returns>
+        public static IEnumerable<long> SplitL(string input, char seperator)
+        {
+            string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return split.Where(s => long.TryParse(s, out long result)).Select(long.Parse);
+        }
+
+        /// <summary>
+        /// Get a list of prime factors for a number
+        /// </summary>
+        /// <param name="number">source number</param>
+        /// <param name="primeFactors">all prime factors</param>
         public static void PrimeFactors(long number, out List<long> primeFactors)
         {
             primeFactors = new List<long>();
@@ -30,6 +83,11 @@ namespace AoC.Util
             }
         }
 
+        /// <summary>
+        /// Get a list of prime factors for a number 
+        /// </summary>
+        /// <param name="number">source number</param>
+        /// <param name="primeFactors">prime factors and their quantities found</param>
         public static void PrimeFactors(long number, out Dictionary<long, int> primeFactors)
         {
             PrimeFactors(number, out List<long> primeFactorsList);
