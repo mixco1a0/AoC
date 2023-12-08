@@ -142,7 +142,7 @@ QQQJA 483"
 
             private void SetOverallStrength()
             {
-                Dictionary<char, int> chars = RawHand.Select(_ => _).Distinct().ToDictionary(card => card, card => RawHand.Where(c => c == card).Count());
+                Dictionary<char, int> chars = RawHand.Distinct().ToDictionary(card => card, card => RawHand.Where(c => c == card).Count());
                 switch (chars.Count)
                 {
                     case 5:
@@ -194,7 +194,7 @@ QQQJA 483"
                 }
 
                 int jokerCount = RawHand.Where(card => card == 'J').Count();
-                Dictionary<char, int> chars = RawHand.Where(card => card != 'J').Select(_ => _).Distinct().ToDictionary(card => card, card => RawHand.Where(c => c == card).Count());
+                Dictionary<char, int> chars = RawHand.Where(card => card != 'J').Distinct().ToDictionary(card => card, card => RawHand.Where(c => c == card).Count());
                 switch (chars.Count)
                 {
                     case 4:
