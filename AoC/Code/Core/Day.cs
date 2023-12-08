@@ -41,6 +41,7 @@ namespace AoC.Core
         public Dictionary<Part, double> TimeResults { get; private set; }
         public Dictionary<Part, double> TimeWasted { get; private set; }
         private double TimeWaste { get; set; }
+        private bool m_forceTests;
 
         private string LogID { get; set; }
         private Dictionary<string, List<TestDatum>> TestData { get; set; }
@@ -71,8 +72,10 @@ namespace AoC.Core
             }
         }
 
-        public void Run()
+        public void Run(bool forceTests = false)
         {
+            m_forceTests = forceTests;
+
             // file input
             IEnumerable<string> input = GetInputFile();
 
@@ -91,6 +94,8 @@ namespace AoC.Core
 
         public void RunProblem(Part part)
         {
+            m_forceTests = false;
+
             // run part
             RunAll(part, GetInputFile(), GetOutputFile());
 
@@ -132,7 +137,7 @@ namespace AoC.Core
             // get test data if there is any
             IEnumerable<TestDatum> partSpecificTestData = TestData[DayName].Where(datum => datum.TestPart == part);
 
-            if (!SkipTestData)
+            if (!SkipTestData || m_forceTests)
             {
                 // run tests if there are any
                 foreach (TestDatum datum in partSpecificTestData)

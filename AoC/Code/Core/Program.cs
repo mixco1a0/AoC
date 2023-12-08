@@ -182,7 +182,7 @@ namespace AoC.Core
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();
-                    day.Run();
+                    day.Run(Args.Has(Config.ESupportedArgument.ForceTests));
                     return day;
                 }
             }
