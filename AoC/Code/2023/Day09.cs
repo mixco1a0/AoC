@@ -38,9 +38,11 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "2",
                 RawInput =
-@""
+@"0 3 6 9 12 15
+1 3 6 10 15 21
+10 13 16 21 30 45"
             });
             return testData;
         }
@@ -49,12 +51,15 @@ namespace AoC._2023
         {
             public List<long> Values { get; set; }
             public long NextValue { get; set; }
+            public long PrevValue { get; set; }
             public Action<string> PrintFunc { get; set; }
 
             public Oasis()
             {
-                PrintFunc = (_) => {};
+                PrintFunc = (_) => { };
                 Values = new List<long>();
+                NextValue = 0;
+                PrevValue = 0;
             }
 
             public static Oasis Parse(string input)
@@ -64,11 +69,17 @@ namespace AoC._2023
 
             public void AddNextValue()
             {
-                NextValue = WorkDown(Values);
+                NextValue = WorkDown(Values, true);
                 PrintFunc($"{string.Join(',', Values)} -> {NextValue}");
             }
 
-            public long WorkDown(List<long> prevHistory)
+            public void AddPrevValue()
+            {
+                PrevValue = WorkDown(Values, false);
+                PrintFunc($"{PrevValue} -> {string.Join(',', Values)}");
+            }
+
+            private long WorkDown(List<long> prevHistory, bool isNext)
             {
                 List<long> curHistory = new List<long>();
                 for (int i = 0; i < prevHistory.Count - 1; ++i)
@@ -79,14 +90,29 @@ namespace AoC._2023
                 IEnumerable<long> distinctValues = curHistory.Distinct();
                 if (distinctValues.Count() == 1 && distinctValues.First() == 0)
                 {
-                    PrintFunc($"{string.Join(',', curHistory)} -> 0");
-                    return prevHistory.Last();
+                    PrintFunc($"0 -> {string.Join(',', curHistory)}");
+                    if (isNext)
+                    {
+                        return prevHistory.Last();
+                    }
+                    else
+                    {
+                        return prevHistory.First();
+                    }
                 }
                 else
                 {
-                    long nextValue = WorkDown(curHistory);
-                    PrintFunc($"{string.Join(',', curHistory)} -> {nextValue}");
-                    return nextValue + prevHistory.Last();
+                    long value = WorkDown(curHistory, isNext);
+                    if (isNext)
+                    {
+                        PrintFunc($"{string.Join(',', curHistory)} -> {value}");
+                        return value + prevHistory.Last();
+                    }
+                    else
+                    {
+                        PrintFunc($"{value} -> {string.Join(',', curHistory)}");
+                        return prevHistory.First() - value;
+                    }
                 }
             }
 
@@ -96,21 +122,28 @@ namespace AoC._2023
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool isNext)
         {
             List<Oasis> allOasis = inputs.Select(Oasis.Parse).ToList();
             foreach (Oasis oasis in allOasis)
             {
-                //oasis.PrintFunc = DebugWriteLine;
-                oasis.AddNextValue();
+                if (isNext)
+                {
+                    oasis.AddNextValue();
+                }
+                else
+                {
+                    // oasis.PrintFunc = DebugWriteLine;
+                    oasis.AddPrevValue();
+                }
             }
-            return allOasis.Select(o => o.NextValue).Sum().ToString();
+            return allOasis.Select(o => isNext ? o.NextValue : o.PrevValue).Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
