@@ -18,7 +18,7 @@ namespace AoC.Core
         private const char LogCorrect = '#';
         private const char LogUnknown = '?';
         private const char LogIncorrect = '!';
-        private readonly string DefaultLogID = new string('.', 27);
+        private static readonly string DefaultLogID = new string('.', 27);
 
         private enum RunType
         {
@@ -163,6 +163,8 @@ namespace AoC.Core
 
         private double TimedRun(RunType runType, Part part, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
         {
+            TempLog.WriteLine = (s) => Log(s);
+            TempLog.WriteFile = (s) => LogFile(s);
             LogFiller();
 
             TimeWaste = 0.0f;
@@ -171,6 +173,7 @@ namespace AoC.Core
             RunPart(runType, part, inputs, expectedOuput, variables);
             timer.Stop();
 
+            TempLog.Reset();
             Log(Core.Log.ELevel.Info, $"{timer.Print()}");
             return timer.GetElapsedMs();
         }
@@ -223,11 +226,34 @@ namespace AoC.Core
             TimeWaste += timer.GetElapsedMs();
         }
 
-        private void Log(Core.Log.ELevel logLevel, string log)
+        protected void Log(Core.Log.ELevel logLevel, string log)
         {
             if (UseLogs)
             {
                 Core.Log.WriteLine(logLevel, $"[{LogID}] {log}");
+            }
+        }
+
+        protected void Log(string log)
+        {
+            if (UseLogs)
+            {
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"[{LogID}] \t{log}");
+            }
+        }
+
+        protected void LogFile(string log)
+        {
+            if (UseLogs)
+            {
+                if (!File.Exists(m_debugFile))
+                {
+                    using (FileStream fs = File.Create(m_debugFile)) { }
+                }
+                using (StreamWriter sw = File.AppendText(m_debugFile))
+                {
+                    sw.WriteLine($"[{LogID}] \t{log}");
+                }
             }
         }
 
@@ -252,45 +278,6 @@ namespace AoC.Core
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {Core.Log.ColorMarker}{answer}{Core.Log.ColorMarker}  {smallFiller}", new List<Color>() { color });
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty}  {smallFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {bigFiller}{buffer}{bigFiller}");
-            }
-        }
-
-        protected void DebugWrite(Log.ELevel level, string log)
-        {
-            if (UseLogs)
-            {
-                Core.Log.WriteLine(level, $"[{LogID}] \t{log}");
-            }
-        }
-
-        protected void DebugWriteLine(Log.ELevel level, string log)
-        {
-            if (UseLogs)
-            {
-                Core.Log.WriteLine(level, $"[{LogID}] \t{log}");
-            }
-        }
-
-        protected void DebugWriteLine(string log)
-        {
-            if (UseLogs)
-            {
-                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] \t{log}");
-            }
-        }
-
-        protected void DebugFileWriteLine(string log)
-        {
-            if (UseLogs)
-            {
-                if (!File.Exists(m_debugFile))
-                {
-                    using (FileStream fs = File.Create(m_debugFile)) { }
-                }
-                using (StreamWriter sw = File.AppendText(m_debugFile))
-                {
-                    sw.WriteLine($"[{LogID}] \t{log}");
-                }
             }
         }
 

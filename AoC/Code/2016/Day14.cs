@@ -122,7 +122,7 @@ namespace AoC._2016
                             if (extendedMatches.Contains(cur.Match))
                             {
                                 verifiedKeys.Add(new HashCheck(cur.Match, cur.Start, i, cur.Raw));
-                                DebugWriteLine(Core.Log.ELevel.Spam, $"\'{cur.Match}\' @ {cur.Raw} [Idx {cur.Start,5}] [{encoded}]");
+                                Log(Core.Log.ELevel.Spam, $"\'{cur.Match}\' @ {cur.Raw} [Idx {cur.Start,5}] [{encoded}]");
                                 pendingKeys.RemoveAt(j);
                             }
                             else
@@ -147,7 +147,7 @@ namespace AoC._2016
             {
                 foreach (var key in verifiedKeys)
                 {
-                    DebugWriteLine(Core.Log.ELevel.Spam, $"{key}");
+                    Log(Core.Log.ELevel.Spam, $"{key}");
                 }
             }
             return verifiedKeys[MaxKeys - 1].Start.ToString();

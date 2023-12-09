@@ -257,7 +257,7 @@ Filesystem            Size  Used  Avail  Use%
             }
             size = (size * 2.0f) / (float)nodeCount;
 
-            DebugWriteLine(Core.Log.ELevel.Spam, "Grid Printout");
+            Log(Core.Log.ELevel.Spam, "Grid Printout");
             uint colIdx = 1;
             foreach (Node[] cols in nodeGrid)
             {
@@ -291,7 +291,7 @@ Filesystem            Size  Used  Avail  Use%
                     }
                     sb.Append(node);
                 }
-                DebugWriteLine(Core.Log.ELevel.Spam, sb.ToString());
+                Log(Core.Log.ELevel.Spam, sb.ToString());
             }
         }
 

@@ -266,7 +266,7 @@ hmdt: 32"
                 monkeys.Enqueue(monkey);
             }
 
-            DebugWriteLine($"{root.Others[0]} [{values[root.Others[0]]}] =?= {root.Others[1]} [{values[root.Others[1]]}]");
+            Log($"{root.Others[0]} [{values[root.Others[0]]}] =?= {root.Others[1]} [{values[root.Others[1]]}]");
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool needsHumanInput)

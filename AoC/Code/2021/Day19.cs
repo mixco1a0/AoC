@@ -716,8 +716,8 @@ namespace AoC._2021
             //localScanners = localScanners.OrderByDescending(s => s).ToList();
             Queue<IScanner> pendingScanners = new Queue<IScanner>(localScanners);
 
-            DebugWriteLine(Core.Log.ELevel.Debug, $"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
-            DebugWriteLine(Core.Log.ELevel.Debug, $"Matching scanner [{pendingScanners.Peek().Id,2}]");
+            Log(Core.Log.ELevel.Debug, $"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
+            Log(Core.Log.ELevel.Debug, $"Matching scanner [{pendingScanners.Peek().Id,2}]");
             combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
 
             CombinedScanner currentCombinedScanner = combinedScanners.First();
@@ -802,7 +802,7 @@ namespace AoC._2021
                 {
                     currentCombinedScanner.AddScanner(pendingScanner, rotationToBase, localToGlobalId);
                     localScanners.RemoveAll(ls => ls.Id == pendingScanner.Id);
-                    DebugWriteLine(Core.Log.ELevel.Debug, $"\tAdding scanner [{pendingScanner.Id,2}] to scanner {currentCombinedScanner.Id} [{currentCombinedScanner.Beacons.Count} total beacons]");
+                    Log(Core.Log.ELevel.Debug, $"\tAdding scanner [{pendingScanner.Id,2}] to scanner {currentCombinedScanner.Id} [{currentCombinedScanner.Beacons.Count} total beacons]");
 
                     skippedScanners.Clear();
                 }
@@ -814,40 +814,40 @@ namespace AoC._2021
 
                         if (pendingScanners.Count == 0 && combinedScanners.Count > 1)
                         {
-                            DebugWriteLine(Core.Log.ELevel.Debug, "");
-                            DebugWriteLine(Core.Log.ELevel.Debug, "******************");
-                            DebugWriteLine(Core.Log.ELevel.Debug, "*** VectorDump ***");
-                            DebugWriteLine(Core.Log.ELevel.Debug, "******************");
+                            Log(Core.Log.ELevel.Debug, "");
+                            Log(Core.Log.ELevel.Debug, "******************");
+                            Log(Core.Log.ELevel.Debug, "*** VectorDump ***");
+                            Log(Core.Log.ELevel.Debug, "******************");
                             foreach (CombinedScanner combined in combinedScanners.OrderBy(cs => cs.Beacons.Count))
                             {
                                 combined.ResetBeacons();
-                                combined.GetAllScannerPos(DebugWriteLine);
+                                combined.GetAllScannerPos(Log);
                                 pendingScanners.Enqueue(combined);
                             }
-                            DebugWriteLine(Core.Log.ELevel.Debug, "******************");
-                            DebugWriteLine(Core.Log.ELevel.Debug, "*** VectorDump ***");
-                            DebugWriteLine(Core.Log.ELevel.Debug, "******************");
+                            Log(Core.Log.ELevel.Debug, "******************");
+                            Log(Core.Log.ELevel.Debug, "*** VectorDump ***");
+                            Log(Core.Log.ELevel.Debug, "******************");
 
                             combinedScanners.Clear();
                             combinedScanners.Add(new CombinedScanner(pendingScanners.Dequeue()));
-                            DebugWriteLine(Core.Log.ELevel.Debug, "");
-                            DebugWriteLine(Core.Log.ELevel.Debug, ".");
-                            DebugWriteLine(Core.Log.ELevel.Debug, $"All scanner combinations completed. Restarting process.");
-                            DebugWriteLine(Core.Log.ELevel.Debug, $"Starting new match process. [{pendingScanners.Count + 1,2} pending...]");
-                            DebugWriteLine(Core.Log.ELevel.Debug, "");
+                            Log(Core.Log.ELevel.Debug, "");
+                            Log(Core.Log.ELevel.Debug, ".");
+                            Log(Core.Log.ELevel.Debug, $"All scanner combinations completed. Restarting process.");
+                            Log(Core.Log.ELevel.Debug, $"Starting new match process. [{pendingScanners.Count + 1,2} pending...]");
+                            Log(Core.Log.ELevel.Debug, "");
                         }
                         else
                         {
-                            DebugWriteLine(Core.Log.ELevel.Debug, "");
-                            DebugWriteLine(Core.Log.ELevel.Debug, $"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
+                            Log(Core.Log.ELevel.Debug, "");
+                            Log(Core.Log.ELevel.Debug, $"Starting new scanner combinations [{pendingScanners.Count + 1,2} pending...]");
                         }
                         currentCombinedScanner = combinedScanners.Last();
                         skippedScanners.Clear();
-                        DebugWriteLine(Core.Log.ELevel.Debug, $"Matching scanner [{currentCombinedScanner.Id,2}]");
+                        Log(Core.Log.ELevel.Debug, $"Matching scanner [{currentCombinedScanner.Id,2}]");
                     }
                     else
                     {
-                        DebugWriteLine(Core.Log.ELevel.Debug, $"\t\t[skipping scanner [{pendingScanner.Id,2}]]");
+                        Log(Core.Log.ELevel.Debug, $"\t\t[skipping scanner [{pendingScanner.Id,2}]]");
                         skippedScanners.Add(pendingScanner.Id);
                         pendingScanners.Enqueue(pendingScanner);
                     }

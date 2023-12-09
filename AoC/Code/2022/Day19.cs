@@ -293,11 +293,11 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
             Dictionary<int, int> maxGeodes = new Dictionary<int, int>();
             foreach (Blueprint bp in blueprints)
             {
-                DebugWriteLine(Core.Log.ELevel.Debug, $"Running blueprint #{bp.Id}");
+                Log(Core.Log.ELevel.Debug, $"Running blueprint #{bp.Id}");
                 int maxGeodeForBlueprint = int.MinValue;
                 Search(new Operation(bp, minutes), ref maxGeodeForBlueprint);
                 maxGeodes[bp.Id] = maxGeodeForBlueprint;
-                DebugWriteLine(Core.Log.ELevel.Debug, $"   Max={maxGeodes[bp.Id]}");
+                Log(Core.Log.ELevel.Debug, $"   Max={maxGeodes[bp.Id]}");
             }
 
             if (runAllBlueprints)

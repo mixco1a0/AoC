@@ -370,7 +370,7 @@ mod w 2"
                 }
                 foreach (Instruction instruction in instructions)
                 {
-                    instruction.Execute(ref registers, ref registerInput, DebugWriteLine);
+                    instruction.Execute(ref registers, ref registerInput, Log);
                 }
                 if (registers['z'] == 0)
                 {
@@ -386,7 +386,7 @@ mod w 2"
                 }
                 foreach (Instruction instruction in instructions)
                 {
-                    instruction.Execute(ref registers, ref registerInput, DebugWriteLine);
+                    instruction.Execute(ref registers, ref registerInput, Log);
                 }
             }
 

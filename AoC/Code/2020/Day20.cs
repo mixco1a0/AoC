@@ -826,10 +826,10 @@ Tile 3079:
 
         private void PrintTile(Tile tile)
         {
-            DebugWriteLine($"Tile: #{tile.ID}");
+            Log($"Tile: #{tile.ID}");
             foreach (string raw in tile.Raw)
             {
-                DebugWriteLine($"   {raw}");
+                Log($"   {raw}");
             }
         }
     }

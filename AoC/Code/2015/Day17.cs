@@ -96,7 +96,7 @@ namespace AoC._2015
                         {
                             ++solutionCount[used];
                         }
-                        DebugWriteLine(Core.Log.ELevel.Spam, $"VALID: {string.Join(',', bools.Select((b, i) => new { b = b, i = i }).Where(pair => pair.b).Select(pair => $"{inputs[pair.i]}[#{pair.i}]"))}");
+                        Log(Core.Log.ELevel.Spam, $"VALID: {string.Join(',', bools.Select((b, i) => new { b = b, i = i }).Where(pair => pair.b).Select(pair => $"{inputs[pair.i]}[#{pair.i}]"))}");
                         bools[i] = false;
                         total -= inputs[i];
                         ++count;

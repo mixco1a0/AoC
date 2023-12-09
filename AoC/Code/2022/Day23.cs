@@ -240,7 +240,7 @@ namespace AoC._2022
             int maxY = ys.Max() + 1;
 
             StringBuilder sb = new StringBuilder();
-            DebugWriteLine("Elves:");
+            Log("Elves:");
             for (int y = minY; y <= maxY; ++y)
             {
                 sb.Clear();
@@ -257,10 +257,10 @@ namespace AoC._2022
                         sb.Append('.');
                     }
                 }
-                DebugWriteLine(sb.ToString());
+                Log(sb.ToString());
             }
-            DebugWriteLine(".");
-            DebugWriteLine("..");
+            Log(".");
+            Log("..");
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int rounds, bool dontStop)
