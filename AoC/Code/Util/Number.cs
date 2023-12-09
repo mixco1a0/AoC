@@ -55,6 +55,39 @@ namespace AoC.Util
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="longs"></param>
+        /// <returns></returns>
+        public static long LeastCommonMultiple(IEnumerable<long> longs)
+        {
+            Dictionary<long, int> primeFactors = new Dictionary<long, int>();
+            foreach (long l in longs)
+            {
+                PrimeFactors(l, out Dictionary<long, int> pfs);
+                foreach (long pf in pfs.Keys)
+                {
+                    if (primeFactors.ContainsKey(pf))
+                    {
+                        primeFactors[pf] = Math.Max(primeFactors[pf], pfs[pf]);
+                    }
+                    else
+                    {
+                        primeFactors[pf] = pfs[pf];
+                    }
+                }
+            }
+
+            long lcm = 1;
+            IEnumerable<long> lcms = primeFactors.Select(pair => (long)Math.Pow(pair.Key, pair.Value));
+            foreach (long l in lcms)
+            {
+                lcm *= l;
+            }
+            return lcm;
+        }
+
+        /// <summary>
         /// Get a list of prime factors for a number
         /// </summary>
         /// <param name="number">source number</param>

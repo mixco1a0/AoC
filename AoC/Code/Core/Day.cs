@@ -42,6 +42,7 @@ namespace AoC.Core
         public Dictionary<Part, double> TimeWasted { get; private set; }
         private double TimeWaste { get; set; }
         private bool m_forceTests;
+        private string m_debugFile;
 
         private string LogID { get; set; }
         private Dictionary<string, List<TestDatum>> TestData { get; set; }
@@ -65,6 +66,12 @@ namespace AoC.Core
                     {Part.One, RunPart1Solution},
                     {Part.Two, RunPart2Solution}
                 };
+
+                m_debugFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, $"debug_{DayName}.log");
+                if (File.Exists(m_debugFile))
+                {
+                    File.Delete(m_debugFile);
+                }
             }
             catch (Exception e)
             {
@@ -269,6 +276,21 @@ namespace AoC.Core
             if (UseLogs)
             {
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] \t{log}");
+            }
+        }
+
+        protected void DebugFileWriteLine(string log)
+        {
+            if (UseLogs)
+            {
+                if (!File.Exists(m_debugFile))
+                {
+                    using (FileStream fs = File.Create(m_debugFile)) { }
+                }
+                using (StreamWriter sw = File.AppendText(m_debugFile))
+                {
+                    sw.WriteLine($"[{LogID}] \t{log}");
+                }
             }
         }
 
