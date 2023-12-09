@@ -12,16 +12,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -52,11 +52,9 @@ namespace AoC._2023
             public List<long> Values { get; set; }
             public long NextValue { get; set; }
             public long PrevValue { get; set; }
-            public Action<string> PrintFunc { get; set; }
 
             public Oasis()
             {
-                PrintFunc = (_) => { };
                 Values = new List<long>();
                 NextValue = 0;
                 PrevValue = 0;
@@ -70,13 +68,11 @@ namespace AoC._2023
             public void AddNextValue()
             {
                 NextValue = WorkDown(Values, true);
-                PrintFunc($"{string.Join(',', Values)} -> {NextValue}");
             }
 
             public void AddPrevValue()
             {
                 PrevValue = WorkDown(Values, false);
-                PrintFunc($"{PrevValue} -> {string.Join(',', Values)}");
             }
 
             private long WorkDown(List<long> prevHistory, bool isNext)
@@ -90,7 +86,6 @@ namespace AoC._2023
                 IEnumerable<long> distinctValues = curHistory.Distinct();
                 if (distinctValues.Count() == 1 && distinctValues.First() == 0)
                 {
-                    PrintFunc($"0 -> {string.Join(',', curHistory)}");
                     if (isNext)
                     {
                         return prevHistory.Last();
@@ -105,12 +100,10 @@ namespace AoC._2023
                     long value = WorkDown(curHistory, isNext);
                     if (isNext)
                     {
-                        PrintFunc($"{string.Join(',', curHistory)} -> {value}");
                         return value + prevHistory.Last();
                     }
                     else
                     {
-                        PrintFunc($"{value} -> {string.Join(',', curHistory)}");
                         return prevHistory.First() - value;
                     }
                 }
@@ -133,7 +126,6 @@ namespace AoC._2023
                 }
                 else
                 {
-                    // oasis.PrintFunc = DebugWriteLine;
                     oasis.AddPrevValue();
                 }
             }
