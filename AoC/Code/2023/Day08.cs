@@ -13,9 +13,9 @@ namespace AoC._2023
             switch (part)
             {
                 case Core.Part.One:
-                    return "v1";
+                    return "v2";
                 case Core.Part.Two:
-                    return "v1";
+                    return "v2";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -146,7 +146,7 @@ XXX = (XXX, XXX)"
                         string finalNode = new string(endNode);
                         long stepCount = Walk(startNode, 0, ref finalNode);
                         InitialWalks.Add(new InitialWalk(startNode, finalNode, stepCount));
-                        PrintFunc($"{startNode} -> {endNode} in {stepCount} steps");
+                        // PrintFunc($"{startNode} -> {endNode} in {stepCount} steps");
                     }
                 }
             }
@@ -178,22 +178,9 @@ XXX = (XXX, XXX)"
                 return stepCount;
             }
 
-            public long Cycle()
+            public long Get()
             {
-                Dictionary<string, long> cycles = new Dictionary<string, long>();
-                long totalStep = 1;
-                foreach (InitialWalk initialWalk in InitialWalks)
-                {
-                    string finalNode = new string(initialWalk.End);
-                    long stepCount = 0;
-                    do
-                    {
-                        stepCount = Walk(finalNode, initialWalk.StepCount + stepCount, ref finalNode) - initialWalk.StepCount;
-                    } while (stepCount < 0 || stepCount % Instructions.Length != 0);
-                    totalStep *= (stepCount / Instructions.Length);
-                    PrintFunc($"{initialWalk.Start} -[{initialWalk.StepCount}]-> {initialWalk.End} --[{stepCount}]--> [{initialWalk.End}] | cycle={stepCount / Instructions.Length}");
-                }
-                return totalStep * Instructions.Length;
+                return Util.Number.LeastCommonMultiple(InitialWalks.Select(iw => iw.StepCount));
             }
         }
 
@@ -204,7 +191,7 @@ XXX = (XXX, XXX)"
             if (ghostWalk)
             {
                 map.GenerateInitialWalks((id) => id.EndsWith('A'), (id) => id.EndsWith('Z'));
-                return map.Cycle().ToString();
+                return map.Get().ToString();
             }
             else
             {
