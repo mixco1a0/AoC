@@ -65,17 +65,16 @@ namespace AoC.Util
             List<string> newGrid = new List<string>();
             if (right)
             {
-                for (int i = 0; i < grid.Count(); ++i)
+                for (int i = 0; i < grid[0].Length; ++i)
                 {
                     newGrid.Add(string.Join("", grid.Select(r => r.ElementAt(i)).Reverse()));
                 }
             }
             else
             {
-                int gridCount = grid.Count - 1;
-                for (int i = 0; i < grid.Count; ++i)
+                for (int i = grid[0].Length - 1; i >= 0; --i)
                 {
-                    newGrid.Add(string.Join("", grid.Select(r => r.ElementAt(gridCount - i))));
+                    newGrid.Add(string.Join("", grid.Select(r => r.ElementAt(i))));
                 }
             }
             grid = newGrid;
