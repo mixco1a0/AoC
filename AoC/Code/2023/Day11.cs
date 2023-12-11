@@ -45,37 +45,71 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Variables = new Dictionary<string, string> { { nameof(_ExpansionMultiplier), "10" } },
+                Output = "1030",
                 RawInput =
-@""
+@"...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#....."
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Variables = new Dictionary<string, string> { { nameof(_ExpansionMultiplier), "100" } },
+                Output = "8410",
+                RawInput =
+@"...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#....."
             });
             return testData;
         }
 
-        private char[][] ExpandUniverse(List<string> inputs)
+        private int _ExpansionMultiplier { get; }
+
+        private char[][] ExpandUniverse(List<string> inputs, out HashSet<int> emptyRows, out HashSet<int> emptyCols)
         {
+            emptyRows = new HashSet<int>();
+            emptyCols = new HashSet<int>();
+
             List<string> expandedY = new List<string>();
+            int i = 0;
             foreach (string input in inputs)
             {
                 expandedY.Add(input);
                 if (!input.Contains('#'))
                 {
-                    expandedY.Add(input);
+                    emptyRows.Add(i);
                 }
+                ++i;
             }
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, expandedY);
             Util.Grid.RotateGrid(true, ref expandedY);
             List<string> expandedX = new List<string>();
+            i = 0;
             foreach (string input in expandedY)
             {
                 expandedX.Add(input);
                 if (!input.Contains('#'))
                 {
-                    expandedX.Add(input);
+                    emptyCols.Add(i);
                 }
+                ++i;
             }
             Util.Grid.RotateGrid(false, ref expandedX);
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, expandedX);
             return expandedX.Select(e => e.ToCharArray()).ToArray();
         }
 
@@ -98,25 +132,48 @@ namespace AoC._2023
             return galaxies.ToArray();
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int expansionMultiplier)
         {
-            char[][] universe = ExpandUniverse(inputs);
+            char[][] universe = ExpandUniverse(inputs, out HashSet<int> emptyRows, out HashSet<int> emptyCols);
             Galaxy[] galaxies = GetGalaxies(universe);
-            int shortestPath = 0;
-            for (int i = 0; i < galaxies.Length; ++i)
+
+            GetVariable(nameof(_ExpansionMultiplier), expansionMultiplier, variables, out int expansionCount);
+
+            long shortestPath = 0;
+            for (long i = 0; i < galaxies.Length; ++i)
             {
-                for (int j = i + 1; j < galaxies.Length; ++j)
+                for (long j = i + 1; j < galaxies.Length; ++j)
                 {
                     shortestPath += galaxies[i].Pos.Manhattan(galaxies[j].Pos);
+
+                    int minX = Math.Min(galaxies[i].Pos.X, galaxies[j].Pos.X);
+                    int maxX = Math.Max(galaxies[i].Pos.X, galaxies[j].Pos.X);
+                    for (int x = minX; x < maxX; ++x)
+                    {
+                        if (emptyCols.Contains(x))
+                        {
+                            shortestPath += (expansionCount - 1);
+                        }
+                    }
+
+                    int minY = Math.Min(galaxies[i].Pos.Y, galaxies[j].Pos.Y);
+                    int maxY = Math.Max(galaxies[i].Pos.Y, galaxies[j].Pos.Y);
+                    for (int y = minY; y < maxY; ++y)
+                    {
+                        if (emptyRows.Contains(y))
+                        {
+                            shortestPath += (expansionCount - 1);
+                        }
+                    }
                 }
             }
             return shortestPath.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 2);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 1000000);
     }
 }
