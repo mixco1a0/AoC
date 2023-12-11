@@ -13,16 +13,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -50,22 +50,22 @@ F|..|.
 .|L-J|
 .L---J"
             });
-            //             testData.Add(new Core.TestDatum
-            //             {
-            //                 TestPart = Core.Part.Two,
-            //                 Output = "8",
-            //                 RawInput =
-            // @".F----7F7F7F7F-7....
-            // .|F--7||||||||FJ....
-            // .||.FJ||||||||L7....
-            // FJL7L7LJLJ||LJ.L-7..
-            // L--J.L7...LJS7F-7L7.
-            // ....F-J..F7FJ|L7L7L7
-            // ....L7.F7||L7|.L7L7|
-            // .....|FJLJ|FJ|F7|.LJ
-            // ....FJL-7.||.||||...
-            // ....L---J.LJ.LJLJ..."
-            //             });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Output = "8",
+                RawInput =
+@".F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ..."
+            });
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
@@ -210,7 +210,7 @@ L7JLJL-JLJLJL--JLJ.L"
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findEnd)
         {
             char[][] grid = inputs.Select(i => i.ToCharArray()).ToArray();
-            char[][] grid2 = inputs.Select(i => i.ToCharArray()).ToArray();
+            char[][] gridSimple = inputs.Select(i => i.ToCharArray()).ToArray();
             int startX = 0, startY = 0;
             for (int y = 0; y < grid.Length; ++y)
             {
@@ -226,13 +226,12 @@ L7JLJL-JLJLJL--JLJ.L"
             }
 
             grid[startY][startX] = GetStartingPipe(grid, startX, startY);
-            grid2[startY][startX] = grid[startY][startX];
+            gridSimple[startY][startX] = grid[startY][startX];
 
             PriorityQueue<Step, int> priorityQueue = new PriorityQueue<Step, int>();
             Dictionary<Base.Pos2, int> visited = new Dictionary<Base.Pos2, int>();
             priorityQueue.Enqueue(new Step(new Base.Pos2(startX, startY), 0), 0);
             int maxSteps = 0;
-            char[][] visual = inputs.Select(i => i.ToCharArray()).ToArray();
             while (priorityQueue.Count > 0)
             {
                 Step cur = priorityQueue.Dequeue();
@@ -241,6 +240,7 @@ L7JLJL-JLJLJL--JLJ.L"
                     continue;
                 }
 
+                gridSimple[cur.Pos.Y][cur.Pos.X] = '#';
                 maxSteps = Math.Max(maxSteps, cur.Steps);
                 visited[cur.Pos] = cur.Steps;
                 foreach (Base.Pos2 pos2 in NextDirections[grid[cur.Pos.Y][cur.Pos.X]])
@@ -251,8 +251,6 @@ L7JLJL-JLJLJL--JLJ.L"
                         priorityQueue.Enqueue(new Step(next, cur.Steps + 1), cur.Steps + 1);
                     }
                 }
-                visual[cur.Pos.Y][cur.Pos.X] = '#';
-                grid2[cur.Pos.Y][cur.Pos.X] = '#';
             }
 
             if (findEnd)
@@ -260,238 +258,85 @@ L7JLJL-JLJLJL--JLJ.L"
                 return maxSteps.ToString();
             }
 
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
-            // char[][] visual = Expand(grid);
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
-            // visual[startY][startX] = grid[startY][startX];
-            Util.Grid.PrintGrid(Core.Log.ELevel.Debug, visual);
-
-            Queue<Base.Pos2> queue = new Queue<Base.Pos2>();
-            for (int x = 0; x < visual[0].Length; ++x)
-            {
-                if (visual[0][x] == '.')
-                {
-                    queue.Enqueue(new Base.Pos2(x, 0));
-                }
-                if (visual[visual.Length - 1][x] == '.')
-                {
-                    queue.Enqueue(new Base.Pos2(x, visual.Length - 1));
-                }
-            }
-            for (int y = 0; y < visual.Length; ++y)
-            {
-                if (visual[y][0] == '.')
-                {
-                    queue.Enqueue(new Base.Pos2(0, y));
-                }
-                if (visual[y][visual[y].Length - 1] == '.')
-                {
-                    queue.Enqueue(new Base.Pos2(visual[y].Length - 1, y));
-                }
-            }
-
-            //Neighbors
-            while (queue.Count > 0)
-            {
-                // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, visual);
-                Base.Pos2 cur = queue.Dequeue();
-                if (visual[cur.Y][cur.X] == '#')
-                {
-                    continue;
-                }
-
-                visual[cur.Y][cur.X] = '#';
-                foreach (Base.Pos2 neighbor in Neighbors)
-                {
-                    Base.Pos2 next = neighbor + cur;
-                    if (next.X >= 0 && next.Y >= 0 && next.X < visual[0].Length && next.Y < visual.Length && visual[next.Y][next.X] != '#')
-                    {
-                        queue.Enqueue(next);
-                    }
-                }
-            }
-
-            return string.Join("", visual.SelectMany(s => s)).Where(c => c != '#').Count().ToString();
-        }
-
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            char[][] grid = inputs.Select(i => i.ToCharArray()).ToArray();
-            int startX = 0, startY = 0;
+            // simplify all non path pieces to .
             for (int y = 0; y < grid.Length; ++y)
             {
                 for (int x = 0; x < grid[y].Length; ++x)
                 {
-                    if (grid[y][x] == 'S')
-                    {
-                        startX = x;
-                        startY = y;
-                        break;
-                    }
-                }
-            }
-
-            grid[startY][startX] = GetStartingPipe(grid, startX, startY);
-
-            PriorityQueue<Step, int> priorityQueue = new PriorityQueue<Step, int>();
-            Dictionary<Base.Pos2, int> visited = new Dictionary<Base.Pos2, int>();
-            priorityQueue.Enqueue(new Step(new Base.Pos2(startX, startY), 0), 0);
-            int maxSteps = 0;
-            while (priorityQueue.Count > 0)
-            {
-                Step cur = priorityQueue.Dequeue();
-                if (visited.ContainsKey(cur.Pos))
-                {
-                    continue;
-                }
-
-                maxSteps = Math.Max(maxSteps, cur.Steps);
-                visited[cur.Pos] = cur.Steps;
-                foreach (Base.Pos2 pos2 in NextDirections[grid[cur.Pos.Y][cur.Pos.X]])
-                {
-                    Base.Pos2 next = cur.Pos + pos2;
-                    if (next.X >= 0 && next.Y >= 0 && next.X < grid[0].Length && next.Y < grid.Length)
-                    {
-                        priorityQueue.Enqueue(new Step(next, cur.Steps + 1), cur.Steps + 1);
-                    }
-                }
-            }
-            return maxSteps.ToString();
-        }
-
-        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            char[][] grid = inputs.Select(i => i.ToCharArray()).ToArray();
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
-            char[][] grid2 = inputs.Select(i => i.ToCharArray()).ToArray();
-            char[][] grid3 = inputs.Select(i => i.ToCharArray()).ToArray();
-            {
-                int startX = 0, startY = 0;
-                for (int y = 0; y < grid.Length; ++y)
-                {
-                    for (int x = 0; x < grid[y].Length; ++x)
-                    {
-                        if (grid[y][x] == 'S')
-                        {
-                            startX = x;
-                            startY = y;
-                            break;
-                        }
-                    }
-                }
-
-                grid[startY][startX] = GetStartingPipe(grid, startX, startY);
-                grid3[startY][startX] = grid[startY][startX];
-
-                PriorityQueue<Step, int> priorityQueue = new PriorityQueue<Step, int>();
-                Dictionary<Base.Pos2, int> visited = new Dictionary<Base.Pos2, int>();
-                priorityQueue.Enqueue(new Step(new Base.Pos2(startX, startY), 0), 0);
-                int maxSteps = 0;
-                while (priorityQueue.Count > 0)
-                {
-                    Step cur = priorityQueue.Dequeue();
-                    if (visited.ContainsKey(cur.Pos))
-                    {
-                        continue;
-                    }
-
-                    grid3[cur.Pos.Y][cur.Pos.X] = '#';
-                    maxSteps = Math.Max(maxSteps, cur.Steps);
-                    visited[cur.Pos] = cur.Steps;
-                    foreach (Base.Pos2 pos2 in NextDirections[grid[cur.Pos.Y][cur.Pos.X]])
-                    {
-                        Base.Pos2 next = cur.Pos + pos2;
-                        if (next.X >= 0 && next.Y >= 0 && next.X < grid[0].Length && next.Y < grid.Length)
-                        {
-                            priorityQueue.Enqueue(new Step(next, cur.Steps + 1), cur.Steps + 1);
-                        }
-                    }
-                }
-            }
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid3);
-
-
-            for (int y = 0; y < grid.Length; ++y)
-            {
-                for (int x = 0; x < grid[y].Length; ++x)
-                {
-                    if (grid3[y][x] != '#')
+                    if (gridSimple[y][x] != '#')
                     {
                         grid[y][x] = '.';
                     }
                 }
             }
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
 
-            grid2 = Expand(grid);
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid2);
-
+            // expand the grid
+            char[][] gridExpanded = Expand(grid);
             Queue<Base.Pos2> queue = new Queue<Base.Pos2>();
             Func<char, bool> check = (c) => c != '#';
-            for (int x = 0; x < grid2[0].Length; ++x)
+            for (int x = 0; x < gridExpanded[0].Length; ++x)
             {
-                if (check(grid2[0][x]))
+                if (check(gridExpanded[0][x]))
                 {
                     queue.Enqueue(new Base.Pos2(x, 0));
                 }
-                if (check(grid2[grid2.Length - 1][x]))
+                if (check(gridExpanded[gridExpanded.Length - 1][x]))
                 {
-                    queue.Enqueue(new Base.Pos2(x, grid2.Length - 1));
+                    queue.Enqueue(new Base.Pos2(x, gridExpanded.Length - 1));
                 }
             }
-            for (int y = 0; y < grid2.Length; ++y)
+            for (int y = 0; y < gridExpanded.Length; ++y)
             {
-                if (check(grid2[y][0]))
+                if (check(gridExpanded[y][0]))
                 {
                     queue.Enqueue(new Base.Pos2(0, y));
                 }
-                if (check(grid2[y][grid2[y].Length - 1]))
+                if (check(gridExpanded[y][gridExpanded[y].Length - 1]))
                 {
-                    queue.Enqueue(new Base.Pos2(grid2[y].Length - 1, y));
+                    queue.Enqueue(new Base.Pos2(gridExpanded[y].Length - 1, y));
                 }
             }
 
-            //Neighbors
+            // flood fill
             while (queue.Count > 0)
             {
                 Base.Pos2 cur = queue.Dequeue();
-                if (grid2[cur.Y][cur.X] == '#')
+                if (gridExpanded[cur.Y][cur.X] == '#')
                 {
                     continue;
                 }
 
-                grid2[cur.Y][cur.X] = '#';
-                // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid2);
-                // Log("");
+                gridExpanded[cur.Y][cur.X] = '#';
                 foreach (Base.Pos2 neighbor in Neighbors)
                 {
                     Base.Pos2 next = neighbor + cur;
-                    if (next.X >= 0 && next.Y >= 0 && next.X < grid2[0].Length && next.Y < grid2.Length && grid2[next.Y][next.X] == '.')
+                    if (next.X >= 0 && next.Y >= 0 && next.X < gridExpanded[0].Length && next.Y < gridExpanded.Length && gridExpanded[next.Y][next.X] == '.')
                     {
                         queue.Enqueue(next);
                     }
                 }
             }
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid2);
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
-            grid = Shrink(grid2);
+
+            // shrink it back down
+            grid = Shrink(gridExpanded);
             for (int y = 0; y < grid.Length; ++y)
             {
                 for (int x = 0; x < grid[y].Length; ++x)
                 {
-                    if (grid3[y][x] == '#')
+                    if (gridSimple[y][x] == '#')
                     {
                         grid[y][x] = '#';
                     }
                 }
             }
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
 
-            return string.Join("", grid.SelectMany(s => s)).Where(c => c != '#').Count().ToString();
+            return string.Join("", grid.SelectMany(s => s)).Where(c => c == '.').Count().ToString();
         }
-        // 5283 too high
-        // 789 too high
-        // 774 too high
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true);
+
+        protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, false);
     }
 }
