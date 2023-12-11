@@ -172,46 +172,12 @@ L7JLJL-JLJLJL--JLJ.L"
             return '-';
         }
 
-        private record Step(Base.Pos2 Pos, int Steps);
-
-        private char[][] Expand(char[][] source)
+        private void GetGrid(List<string> inputs, out char[][] grid, out char[][] gridSimple, out int startX, out int startY)
         {
-            List<string> expanded = new List<string>();
-            for (int y = 0; y < source.Length; ++y)
-            {
-                StringBuilder row1 = new StringBuilder(), row2 = new StringBuilder(), row3 = new StringBuilder();
-                for (int x = 0; x < source[y].Length; ++x)
-                {
-                    row1.Append(Expanded[source[y][x]][0]);
-                    row2.Append(Expanded[source[y][x]][1]);
-                    row3.Append(Expanded[source[y][x]][2]);
-                }
-                expanded.Add(row1.ToString());
-                expanded.Add(row2.ToString());
-                expanded.Add(row3.ToString());
-            }
-            return expanded.Select(s => s.ToCharArray()).ToArray();
-        }
-
-        private char[][] Shrink(char[][] source)
-        {
-            List<string> source2 = source.Select(s => string.Join("", s)).ToList();
-            List<string> shrunk = new List<string>();
-            for (int i = 0; i < source2.Count; ++i)
-            {
-                if (i % 3 == 1)
-                {
-                    shrunk.Add(string.Join("", source2[i].Select((c, index) => new { c, index }).Where(obj => obj.index % 3 == 1).Select(obj => obj.c)));
-                }
-            }
-            return shrunk.Select(s => s.ToCharArray()).ToArray();
-        }
-
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findEnd)
-        {
-            char[][] grid = inputs.Select(i => i.ToCharArray()).ToArray();
-            char[][] gridSimple = inputs.Select(i => i.ToCharArray()).ToArray();
-            int startX = 0, startY = 0;
+            grid = inputs.Select(i => i.ToCharArray()).ToArray();
+            gridSimple = inputs.Select(i => i.ToCharArray()).ToArray();
+            startX = 0;
+            startY = 0;
             for (int y = 0; y < grid.Length; ++y)
             {
                 for (int x = 0; x < grid[y].Length; ++x)
@@ -227,7 +193,12 @@ L7JLJL-JLJLJL--JLJ.L"
 
             grid[startY][startX] = GetStartingPipe(grid, startX, startY);
             gridSimple[startY][startX] = grid[startY][startX];
+        }
 
+        private record Step(Base.Pos2 Pos, int Steps);
+
+        private int StepThroughPipes(ref char[][] grid, ref char[][] gridSimple, int startX, int startY)
+        {
             PriorityQueue<Step, int> priorityQueue = new PriorityQueue<Step, int>();
             Dictionary<Base.Pos2, int> visited = new Dictionary<Base.Pos2, int>();
             priorityQueue.Enqueue(new Step(new Base.Pos2(startX, startY), 0), 0);
@@ -252,12 +223,7 @@ L7JLJL-JLJLJL--JLJ.L"
                     }
                 }
             }
-
-            if (findEnd)
-            {
-                return maxSteps.ToString();
-            }
-
+            
             // simplify all non path pieces to .
             for (int y = 0; y < grid.Length; ++y)
             {
@@ -270,8 +236,30 @@ L7JLJL-JLJLJL--JLJ.L"
                 }
             }
 
-            // expand the grid
-            char[][] gridExpanded = Expand(grid);
+            return maxSteps;
+        }
+
+        private char[][] Expand(char[][] source)
+        {
+            List<string> expanded = new List<string>();
+            for (int y = 0; y < source.Length; ++y)
+            {
+                StringBuilder row1 = new StringBuilder(), row2 = new StringBuilder(), row3 = new StringBuilder();
+                for (int x = 0; x < source[y].Length; ++x)
+                {
+                    row1.Append(Expanded[source[y][x]][0]);
+                    row2.Append(Expanded[source[y][x]][1]);
+                    row3.Append(Expanded[source[y][x]][2]);
+                }
+                expanded.Add(row1.ToString());
+                expanded.Add(row2.ToString());
+                expanded.Add(row3.ToString());
+            }
+            return expanded.Select(s => s.ToCharArray()).ToArray();
+        }
+
+        private void FloodFill(ref char[][] gridExpanded)
+        {
             Queue<Base.Pos2> queue = new Queue<Base.Pos2>();
             Func<char, bool> check = (c) => c != '#';
             for (int x = 0; x < gridExpanded[0].Length; ++x)
@@ -316,9 +304,35 @@ L7JLJL-JLJLJL--JLJ.L"
                     }
                 }
             }
+        }
 
-            // shrink it back down
+        private char[][] Shrink(char[][] source)
+        {
+            List<string> source2 = source.Select(s => string.Join("", s)).ToList();
+            List<string> shrunk = new List<string>();
+            for (int i = 0; i < source2.Count; ++i)
+            {
+                if (i % 3 == 1)
+                {
+                    shrunk.Add(string.Join("", source2[i].Select((c, index) => new { c, index }).Where(obj => obj.index % 3 == 1).Select(obj => obj.c)));
+                }
+            }
+            return shrunk.Select(s => s.ToCharArray()).ToArray();
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findEnd)
+        {
+            GetGrid(inputs, out char[][] grid, out char[][] gridSimple, out int startX, out int startY);
+            int maxSteps = StepThroughPipes(ref grid, ref gridSimple, startX, startY);
+            if (findEnd)
+            {
+                return maxSteps.ToString();
+            }
+
+            char[][] gridExpanded = Expand(grid);
+            FloodFill(ref gridExpanded);
             grid = Shrink(gridExpanded);
+            
             for (int y = 0; y < grid.Length; ++y)
             {
                 for (int x = 0; x < grid[y].Length; ++x)
