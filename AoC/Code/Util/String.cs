@@ -11,7 +11,7 @@ namespace AoC.Util
 
         public static string[] Split(string input, char seperator)
         {
-            return input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return Split(input, seperator.ToString());
         }
     }
 }
