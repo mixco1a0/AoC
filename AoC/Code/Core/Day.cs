@@ -67,7 +67,7 @@ namespace AoC.Core
                     {Part.Two, RunPart2Solution}
                 };
 
-                m_debugFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, $"debug_{DayName}.log");
+                m_debugFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Debug", $"{DayName}", $"{Path.GetRandomFileName().Replace(".", "")}.log");
                 if (File.Exists(m_debugFile))
                 {
                     File.Delete(m_debugFile);
@@ -238,7 +238,7 @@ namespace AoC.Core
         {
             if (UseLogs)
             {
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"[{LogID}] \t{log}");
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] \t{log}");
             }
         }
 
@@ -248,6 +248,11 @@ namespace AoC.Core
             {
                 if (!File.Exists(m_debugFile))
                 {
+                    string path = Path.GetDirectoryName(m_debugFile);
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
                     using (FileStream fs = File.Create(m_debugFile)) { }
                 }
                 using (StreamWriter sw = File.AppendText(m_debugFile))
