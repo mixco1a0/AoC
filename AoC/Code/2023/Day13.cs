@@ -12,16 +12,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -70,9 +70,6 @@ namespace AoC._2023
             });
             return testData;
         }
-
-        private const char Ash = '.';
-        private const char Rock = '#';
 
         private bool IsReflected(List<string> pattern, int index, bool fixSmudge)
         {
@@ -140,7 +137,7 @@ namespace AoC._2023
                     return (i + 1);
                 }
             }
-            
+
             return 0;
         }
 

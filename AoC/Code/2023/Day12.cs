@@ -13,16 +13,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -71,9 +71,6 @@ namespace AoC._2023
         public const char Operational = '.';
         public const char Damaged = '#';
         public const char Unknown = '?';
-
-        public static readonly string SingleOperational = $"{Operational}";
-        public static readonly string DoubleOperational = $"{Operational}{Operational}";
 
         private class Pattern
         {
