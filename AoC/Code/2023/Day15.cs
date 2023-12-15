@@ -29,9 +29,9 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
-                Output = "",
+                Output = "1320",
                 RawInput =
-@""
+@"rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"
             });
             testData.Add(new Core.TestDatum
             {
@@ -43,9 +43,36 @@ namespace AoC._2023
             return testData;
         }
 
+        private class Sequence
+        {
+            public string Raw { get; set; }
+
+            public static Sequence Parse(string input)
+            {
+                Sequence sequence = new Sequence();
+                sequence.Raw = input;
+                return sequence;
+            }
+
+            public long Hash()
+            {
+                long hash = 0;
+                foreach (char raw in Raw)
+                {
+                    hash += (int)raw;
+                    hash *= 17;
+                    hash %= 256;
+                }
+                return hash;
+            }
+
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            List<Sequence> sequences = Util.String.Split(inputs.First(), ',').Select(Sequence.Parse).ToList();
+            return sequences.Select(s => s.Hash()).Sum().ToString();
+            //return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
