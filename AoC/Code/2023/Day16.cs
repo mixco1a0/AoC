@@ -46,9 +46,18 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "51",
                 RawInput =
-@""
+@".|...\....
+|.-.\.....
+.....|-...
+........|.
+..........
+.........\
+..../.\\..
+.-.-/..|..
+.|....-|.\
+..//.|...."
             });
             return testData;
         }
@@ -232,17 +241,14 @@ namespace AoC._2023
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private int GetEnergizedCount(Node[,] nodes, Base.Pos2 startPos, Dir startDir)
         {
-            ParseInput(inputs, out Node[,] nodes);
-            PrintGrid(nodes);
-
             int xMax = nodes.GetLength(0);
             int yMax = nodes.GetLength(1);
 
             HashSet<Target> visited = new HashSet<Target>();
             Stack<Target> targets = new Stack<Target>();
-            targets.Push(new Target(new Base.Pos2(), Dir.East));
+            targets.Push(new Target(startPos, startDir));
             while (targets.Count > 0)
             {
                 Target target = targets.Pop();
@@ -263,13 +269,41 @@ namespace AoC._2023
                     }
                 }
             }
-            return visited.Select(t => t.Pos).Distinct().Count().ToString();
+            return visited.Select(t => t.Pos).Distinct().Count();
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkAllEdges)
+        {
+            ParseInput(inputs, out Node[,] nodes);
+            if (checkAllEdges)
+            {
+                int maxEnergy = 0;
+                for (int x = 0; x < nodes.GetLength(0); ++x)
+                {
+                    int topEnergy = GetEnergizedCount(nodes, new Base.Pos2(x, 0), Dir.South);
+                    maxEnergy = Math.Max(maxEnergy, topEnergy);
+                    int bottomEnergy = GetEnergizedCount(nodes, new Base.Pos2(x, nodes.GetLength(1) - 1), Dir.North);
+                    maxEnergy = Math.Max(maxEnergy, bottomEnergy);
+                }
+                for (int y = 0; y < nodes.GetLength(1); ++y)
+                {
+                    int leftEnergy = GetEnergizedCount(nodes, new Base.Pos2(0, y), Dir.East);
+                    maxEnergy = Math.Max(maxEnergy, leftEnergy);
+                    int rightEnergy = GetEnergizedCount(nodes, new Base.Pos2(nodes.GetLength(0) - 1, y), Dir.West);
+                    maxEnergy = Math.Max(maxEnergy, rightEnergy);
+                }
+                return maxEnergy.ToString();
+            }
+            else
+            {
+                return GetEnergizedCount(nodes, new Base.Pos2(), Dir.East).ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
