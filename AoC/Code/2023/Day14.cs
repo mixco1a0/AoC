@@ -2,7 +2,6 @@ using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AoC.Core;
 
 namespace AoC._2023
 {
@@ -67,23 +66,23 @@ O.#..O.#.#
         private const char Square = '#';
         private const char Empty = '.';
 
-        private int[,] ConvertInput(List<string> inputs)
+        private char[,] ConvertInput(List<string> inputs)
         {
-            int[,] converted = new int[inputs[0].Length, inputs.Count()];
+            char[,] converted = new char[inputs[0].Length, inputs.Count()];
             for (int x = 0; x < inputs[0].Length; ++x)
             {
                 for (int y = 0; y < inputs.Count; ++y)
                 {
-                    switch (inputs[x][y])
+                    switch (inputs[y][x])
                     {
                         case Round:
-                            converted[x, y] = 1;
+                            converted[x, y] = Round;
                             break;
                         case Square:
-                            converted[x, y] = 0;
+                            converted[x, y] = Square;
                             break;
                         case Empty:
-                            converted[x, y] = -1;
+                            converted[x, y] = Empty;
                             break;
                     }
                 }
@@ -91,128 +90,169 @@ O.#..O.#.#
             return converted;
         }
 
-        private void PrintGrid(int[,] grid)
+        private void ShiftNS(int yStart, int yEnd, Func<int, int> yFunc, ref char[,] grid)
         {
-            Core.TempLog.WriteLine("Grid: ");
             for (int x = 0; x < grid.GetLength(0); ++x)
             {
-                StringBuilder sb = new StringBuilder();
-                for (int y = 0; y < grid.GetLength(1); ++y)
+                int yEmpty = -1;
+                for (int y = yStart; y != yEnd; y = yFunc(y))
                 {
                     switch (grid[x, y])
                     {
-                        case 1:
-                            sb.Append(Round);
-                            break;
-                        case 0:
-                            sb.Append(Square);
-                            break;
-                        case -1:
-                            sb.Append(Empty);
-                            break;
-                    }
-                }
-                Core.TempLog.WriteLine(sb.ToString());
-            }
-        }
-
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int fullCycleCount)
-        {
-            Util.Grid.PrintGrid(Core.Log.ELevel.Debug, inputs);
-            int[,] newGrid = ConvertInput(inputs);
-            PrintGrid(newGrid);
-
-
-            List<string> grid = new List<string>(inputs);
-            Util.Grid.RotateGrid(false, ref grid);
-            int load = grid.Count();
-            int totalLoad = 0;
-            if (fullCycleCount == 0)
-            {
-                ShiftNorth(grid, grid.Count(), ref totalLoad);
-            }
-            else
-            {
-                // Core.TempLog.WriteLine("Before");
-                // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, inputs);
-                for (int c = 0; c < fullCycleCount; ++c)
-                {
-                    // move north
-                    grid = ShiftNorth(grid, load, ref totalLoad);
-                    Util.Grid.RotateGrid(true, ref grid);
-
-                    // move west
-                    grid = ShiftNorth(grid, load, ref totalLoad);
-                    Util.Grid.RotateGrid(true, ref grid);
-
-                    // move south
-                    grid = ShiftNorth(grid, load, ref totalLoad);
-                    Util.Grid.RotateGrid(true, ref grid);
-
-                    // move east
-                    grid = ShiftNorth(grid, load, ref totalLoad);
-                    Util.Grid.RotateGrid(true, ref grid);
-
-                    // Core.TempLog.WriteLine($"After {c} cycle(s)");
-                    Util.Grid.RotateGrid(true, ref grid);
-                    // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
-                    // Util.Grid.RotateGrid(false, ref grid);
-                }
-            }
-            // Util.Grid.RotateGrid(true, ref shifted);
-            // Util.Grid.PrintGrid(Core.Log.ELevel.Debug, shifted);
-            return totalLoad.ToString();
-        }
-
-        private List<string> ShiftNorth(List<string> grid, int load, ref int totalLoad)
-        {
-            totalLoad = 0;
-            List<string> shifted = new List<string>();
-            foreach (string g in grid)
-            {
-                // Core.TempLog.WriteLine($"before: {g}");
-                StringBuilder sb = new StringBuilder(g);
-                int emptyMove = -1;
-                // int curSquare = -1;
-                for (int i = 0; i < sb.Length; ++i)
-                {
-                    switch (sb[i])
-                    {
                         case Round:
-                            if (emptyMove >= 0)
+                            if (yEmpty >= 0)
                             {
-                                sb[emptyMove] = Round;
-                                sb[i] = Empty;
-                                totalLoad += (load - emptyMove);
-                                emptyMove++;
-                            }
-                            else
-                            {
-                                totalLoad += (load - i);
+                                grid[x, yEmpty] = Round;
+                                grid[x, y] = Empty;
+                                yEmpty = yFunc(yEmpty);
                             }
                             break;
                         case Square:
-                            // curSquare = i;
-                            emptyMove = -1;
+                            yEmpty = -1;
                             break;
                         case Empty:
-                            if (emptyMove == -1)
+                            if (yEmpty == -1)
                             {
-                                emptyMove = i;
+                                yEmpty = y;
                             }
                             break;
                     }
                 }
-                // Core.TempLog.WriteLine($"after:  {sb.ToString()}");
-                shifted.Add(sb.ToString());
             }
-            return shifted;
+        }
+
+        private void ShiftEW(int xStart, int xEnd, Func<int, int> xFunc, ref char[,] grid)
+        {
+            for (int y = 0; y < grid.GetLength(1); ++y)
+            {
+                int xEmpty = -1;
+                for (int x = xStart; x != xEnd; x = xFunc(x))
+                {
+                    switch (grid[x, y])
+                    {
+                        case Round:
+                            if (xEmpty >= 0)
+                            {
+                                grid[xEmpty, y] = Round;
+                                grid[x, y] = Empty;
+                                xEmpty = xFunc(xEmpty);
+                            }
+                            break;
+                        case Square:
+                            xEmpty = -1;
+                            break;
+                        case Empty:
+                            if (xEmpty == -1)
+                            {
+                                xEmpty = x;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void Cycle(ref char[,] grid, ref int totalLoad, int xLoad, int yLoad)
+        {
+            ShiftNS(0, yLoad, (y) => y + 1, ref grid);
+            ShiftEW(0, xLoad, (x) => x + 1, ref grid);
+            ShiftNS(yLoad - 1, -1, (y) => y - 1, ref grid);
+            ShiftEW(xLoad - 1, -1, (x) => x - 1, ref grid);
+            GetTotalLoad(grid, ref totalLoad);
+        }
+
+        private void GetTotalLoad(char[,] grid, ref int totalLoad)
+        {
+            int yLoad = grid.GetLength(1);
+            totalLoad = 0;
+            for (int x = 0; x < grid.GetLength(0); ++x)
+            {
+                for (int y = 0; y < yLoad; ++y)
+                {
+                    switch (grid[x, y])
+                    {
+                        case Round:
+                            totalLoad += yLoad - y;
+                            break;
+                        case Square:
+                            break;
+                        case Empty:
+                            break;
+                    }
+                }
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool fullCycle)
+        {
+            char[,] grid = ConvertInput(inputs);
+            int totalLoad = 0;
+            int xLoad = grid.GetLength(0), yLoad = grid.GetLength(1);
+
+            List<int> hashCycle = new List<int>();
+            int nonCycleIntro = 0;
+            int cycleLength = -1;
+            bool verifyCycle = false;
+            Queue<int> verifyQueue = new Queue<int>();
+            bool doHash = true;
+
+            if (fullCycle)
+            {
+                int prevLoad = 0;
+                int max = 1000000000;
+                for (int i = 0; i < max; ++i)
+                {
+                    Cycle(ref grid, ref totalLoad, xLoad, yLoad);
+                    if (!doHash)
+                    {
+                        continue;
+                    }
+
+                    int hash = HashCode.Combine(prevLoad, totalLoad);
+                    if (verifyCycle)
+                    {
+                        // verify the new hashes align with the old ones
+                        if (verifyQueue.Count == 0 || verifyQueue.Peek() != hash)
+                        {
+                            hashCycle.Clear();
+                            verifyQueue.Clear();
+                            verifyCycle = false;
+                        }
+                        else
+                        {
+                            verifyQueue.Dequeue();
+                            doHash = verifyQueue.Count != 0;
+                            max = (max - nonCycleIntro) % cycleLength + cycleLength * 2 + nonCycleIntro;
+                        }
+                    }
+                    else if (!hashCycle.Contains(hash))
+                    {
+                        hashCycle.Add(hash);
+                        nonCycleIntro = i;
+                    }
+                    else
+                    {
+                        int cycleStartIndex = hashCycle.Select((hc, index) => new { hc, index }).Where(pair => pair.hc == hash).Select(pair => pair.index).Last();
+                        cycleLength = hashCycle.Count - cycleStartIndex;
+                        verifyQueue = new Queue<int>(hashCycle.TakeLast(cycleLength - 1));
+                        cycleStartIndex = i;
+                        verifyCycle = true;
+                    }
+                    prevLoad = totalLoad;
+                }
+            }
+            else
+            {
+                ShiftNS(0, yLoad, (y) => y + 1, ref grid);
+                GetTotalLoad(grid, ref totalLoad);
+            }
+            return totalLoad.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 0);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, 1000000000);
+            => SharedSolution(inputs, variables, true);
     }
 }
