@@ -1,3 +1,5 @@
+using System;
+
 namespace AoC.Base
 {
     public class Segment
@@ -14,6 +16,24 @@ namespace AoC.Base
         public Segment Flip()
         {
             return new Segment(B, A);
+        }
+
+        public bool Includes(Pos2 pos)
+        {
+            int xMin = Math.Min(A.X, B.X);
+            int xMax = Math.Max(A.X, B.X);
+            int yMin = Math.Min(A.Y, B.Y);
+            int yMax = Math.Max(A.Y, B.Y);
+
+            if (pos.X == A.X && A.X == B.X)
+            {
+                return pos.Y >= yMin && pos.Y <= yMax;
+            }
+            else if (pos.Y == A.Y && A.Y == B.Y)
+            {
+                return pos.X >= xMin && pos.X <= xMax;
+            }
+            return false;
         }
 
         public Pos2 GetIntersection(Segment other)
@@ -42,6 +62,11 @@ namespace AoC.Base
             }
             // no other way to get intersection currently
             return null;
+        }
+
+        public override string ToString()
+        {
+            return $"{A} -> {B}";
         }
     }
 }
