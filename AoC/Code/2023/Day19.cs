@@ -82,16 +82,38 @@ hdj{m>838:A,pv}
         private const int MinRating = 1;
         private const int MaxRating = 4000;
 
-        private enum Part
+        public enum Part
         {
             None,
             X = 'x',
             M = 'm',
             A = 'a',
-            S = 's'
+            S = 's',
+            Invalid
         }
 
-        private enum Op
+        private Part NextPart(Part part)
+        {
+            if (part == Part.None)
+            {
+                return Part.X;
+            }
+            else if (part == Part.X)
+            {
+                return Part.M;
+            }
+            else if (part == Part.M)
+            {
+                return Part.A;
+            }
+            else if (part == Part.A)
+            {
+                return Part.S;
+            }
+            return Part.Invalid;
+        }
+
+        public enum Op
         {
             LessThan = '<',
             MoreThan = '>',
@@ -100,7 +122,7 @@ hdj{m>838:A,pv}
             MoreThanE = ']'
         }
 
-        private record Rule(Part Part, Op Op, int Value, string Target)
+        public record Rule(Part Part, Op Op, int Value, string Target)
         {
             public override string ToString()
             {
@@ -203,14 +225,14 @@ hdj{m>838:A,pv}
             partRatings = rawPartRatings.Select(PartRating.Parse).ToList();
         }
 
-        private record Range(Part Part, Base.RangeL Values)
+        public record Range(Part Part, Base.RangeL Values, bool Inclusive)
         {
             public long Get()
             {
                 return Math.Abs(Values.Max - Values.Min);
             }
 
-            public static Range Convert(Rule rule)
+            public static Range Convert(Rule rule, bool inclusive)
             {
                 Base.RangeL range = new Base.RangeL();
                 switch (rule.Op)
@@ -236,12 +258,216 @@ hdj{m>838:A,pv}
                         range.Max = MaxRating;
                         break;
                 }
-                return new Range(rule.Part, range);
+                return new Range(rule.Part, range, inclusive);
+            }
+
+            public static Range Flip(Rule rule)
+            {
+                Base.RangeL range = new Base.RangeL();
+                switch (rule.Op)
+                {
+                    case Op.LessThan:
+                        // range.Min = MinRating;
+                        // range.Max = rule.Value - 1;
+                        range.Min = rule.Value;
+                        range.Max = MaxRating;
+                        break;
+                    case Op.MoreThan:
+                        // range.Min = rule.Value + 1;
+                        // range.Max = MaxRating;
+                        range.Min = 0;
+                        range.Max = rule.Value;
+                        break;
+                    case Op.True:
+                        range.Min = MinRating;
+                        range.Max = MaxRating;
+                        break;
+                    case Op.LessThanE:
+                        break;
+                    case Op.MoreThanE:
+                        break;
+                }
+                return new Range(rule.Part, range, false);
             }
 
             public override string ToString()
             {
-                return $"{(char)Part} -> {Values}";
+                char i = Inclusive ? 'O' : 'X';
+                return $"{(char)Part} -> ({i}){Values}";
+            }
+        }
+
+        public record MultiRange(Part Part, List<Base.RangeL> Values, List<bool> Inclusive)
+        {
+
+            private record Helper(Base.RangeL RangeL, bool Inclusive)
+            {
+                public override string ToString()
+                {
+                char i = Inclusive ? 'O' : 'X';
+                return $"({i}){RangeL}";
+                }
+            }
+
+            public MultiRange GetCopy()
+            {
+                return new MultiRange(Part, Values.ToList(), Inclusive.ToList());
+            }
+
+            public void Compress()
+            {
+                List<Helper> helpers = new List<Helper>();
+                for (int i = 0; i < Values.Count; ++i)
+                {
+                    helpers.Add(new Helper(Values[i], Inclusive[i]));
+                }
+
+                List<Base.RangeL> list = Values.ToList();
+                Compress(helpers, true, out List<Base.RangeL> inclusive);
+                Compress(helpers, false, out List<Base.RangeL> exclusive);
+                if (inclusive.Count > 0 && exclusive.Count > 0)
+                {
+                    while (Compress(inclusive, exclusive, out List<Base.RangeL> newInclusives))
+                    {
+                        helpers = new List<Helper>();
+                        for (int i = 0; i < newInclusives.Count; ++i)
+                        {
+                            helpers.Add(new Helper(newInclusives[i], true));
+                        }
+                        Compress(helpers, true, out inclusive);
+                    }
+                }
+
+                Values.Clear();
+                Values.AddRange(inclusive);
+            }
+
+            private void Compress(List<Helper> helpers, bool inclusive, out List<Base.RangeL> ranges)
+            {
+                List<Base.RangeL> list = helpers.Where(h => h.Inclusive == inclusive).Select(h => h.RangeL).ToList();
+                for (int i = 0; i < list.Count() && list.Count() > 1;)
+                {
+                    Base.RangeL cur = list[i];
+                    Base.RangeL compressed = new Base.RangeL(long.MaxValue, long.MinValue);
+                    IEnumerable<Base.RangeL> rangeLs = list.Where(l => l.HasIncOr(cur));
+                    int rangeLsCount = rangeLs.Count();
+                    foreach (Base.RangeL rangeL in rangeLs)
+                    {
+                        compressed.Min = Math.Min(compressed.Min, rangeL.Min);
+                        compressed.Max = Math.Max(compressed.Max, rangeL.Max);
+                    }
+                    list.RemoveAll(l => l.HasIncOr(compressed));
+
+                    if (rangeLsCount > 1)
+                    {
+                        list.Add(compressed);
+                        i = 0;
+                    }
+                    else
+                    {
+                        ++i;
+                    }
+                }
+                ranges = list;
+            }
+
+            private bool Compress(List<Base.RangeL> inclusive, List<Base.RangeL> exclusive, out List<Base.RangeL> newInclusives)
+            {
+                newInclusives = new List<Base.RangeL>();
+                bool compressed = false;
+                foreach (Base.RangeL i in inclusive)
+                {
+                    foreach (Base.RangeL e in exclusive)
+                    {
+                        if (i.HasIncOr(e))
+                        {
+                            compressed = true;
+                            if (i.Max >= e.Max && i.Min <= e.Min)
+                            {
+                                // split
+                                newInclusives.Add(new Base.RangeL(i.Min, e.Min - 1));
+                                newInclusives.Add(new Base.RangeL(e.Max + 1, i.Max));
+                            }
+                            else if (i.Max > e.Max)
+                            {
+                                newInclusives.Add(new Base.RangeL(e.Max + 1, i.Max));
+                            }
+                            else
+                            {
+                                newInclusives.Add(new Base.RangeL(i.Min, e.Min - 1));
+                            }
+                        }
+                    }
+                }
+                return compressed;
+            }
+
+            public override string ToString()
+            {
+                List<Helper> helpers = new List<Helper>();
+                for (int i = 0; i < Values.Count; ++i)
+                {
+                    helpers.Add(new Helper(Values[i], Inclusive[i]));
+                }
+                return $"{(char)Part} -> {string.Join(" | ", helpers)}";
+            }
+        }
+
+        public class WorkflowState
+        {
+            public MultiRange X;
+            public MultiRange M;
+            public MultiRange A;
+            public MultiRange S;
+
+            public WorkflowState()
+            {
+                X = null;
+                M = null;
+                A = null;
+                S = null;
+            }
+
+            public WorkflowState(MultiRange x, MultiRange m, MultiRange a, MultiRange s)
+            {
+                X = x;
+                M = m;
+                A = a;
+                S = s;
+            }
+
+            public static WorkflowState Default()
+            {
+                MultiRange x = new MultiRange(Part.X, new List<Base.RangeL>(), new List<bool>());
+                MultiRange m = new MultiRange(Part.M, new List<Base.RangeL>(), new List<bool>());
+                MultiRange a = new MultiRange(Part.A, new List<Base.RangeL>(), new List<bool>());
+                MultiRange s = new MultiRange(Part.S, new List<Base.RangeL>(), new List<bool>());
+                return new WorkflowState(x, m, a, s);
+            }
+
+            public WorkflowState GetCopy()
+            {
+                return new WorkflowState(X.GetCopy(), M.GetCopy(), A.GetCopy(), S.GetCopy());
+            }
+
+            public long Get()
+            {
+                return Get(X) * Get(M) * Get(A) * Get(S);
+            }
+
+            private long Get(MultiRange multiRange)
+            {
+                if (multiRange.Values.Count == 0)
+                {
+                    return MaxRating;
+                }
+
+                long count = 0;
+                foreach (Base.RangeL r in multiRange.Values)
+                {
+                    count += r.Max - r.Min + 1;
+                }
+                return count;
             }
         }
 
@@ -251,71 +477,75 @@ hdj{m>838:A,pv}
             // RatingState ratingState = new RatingState();
             List<List<Range>> accepted = new List<List<Range>>();
             List<List<Range>> rejected = new List<List<Range>>();
-            CollapseWorkflow(Initial, workflowDictionary, new List<Range>(), ref accepted, ref rejected);
-            CollapseAccepted(accepted, out List<List<Range>> collapsed);
-            long allCombinations = 0;
-            foreach (List<Range> ranges in accepted)
-            {
-                long curRangeCombinations = 1;
-                foreach (Range range in ranges)
-                {
-                    curRangeCombinations *= range.Get();
-                }
-                allCombinations += curRangeCombinations;
-            }
-            return allCombinations;
+            long allCombos = WalkWorkflows(Initial, workflowDictionary, new List<Range>(), WorkflowState.Default());
+            return allCombos;
         }
 
-        private void CollapseWorkflow(string workflowId, Dictionary<string, List<Rule>> workflowDictionary, List<Range> preReqs, ref List<List<Range>> accepted, ref List<List<Range>> rejected)
+        private long WalkWorkflows(string workflowId, Dictionary<string, List<Rule>> workflowDictionary, List<Range> preReqs, WorkflowState workflowState)
         {
+            long count = 0;
             List<Rule> rules = workflowDictionary[workflowId];
+            List<Range> opposites = new List<Range>();
             foreach (Rule rule in rules)
             {
+                WorkflowState next = workflowState.GetCopy();
+
                 List<Range> reqs = new List<Range>();
                 reqs.AddRange(preReqs);
+                reqs.AddRange(opposites);
                 if (rule.Op != Op.True)
                 {
-                    Range newRange = Range.Convert(rule);
+                    Range newRange = Range.Convert(rule, true);
                     reqs.Add(newRange);
                 }
 
                 if (rule.Target == Accept)
                 {
-                    accepted.Add(reqs);
+                    CollapseRanges(reqs, ref next);
+                    long c = next.Get();
+                    // Log($"accepted => [{c}] {string.Join(" | ", reqs)}");
+                    count += c;
                 }
                 else if (rule.Target == Reject)
                 {
-                    rejected.Add(reqs);
+                    CollapseRanges(reqs, ref next);
+                    long c = next.Get();
+                    // Log($"rejected => [{c}] {string.Join(" | ", reqs)}");
+                    // count -= c;
                 }
                 else
                 {
-                    CollapseWorkflow(rule.Target, workflowDictionary, reqs, ref accepted, ref rejected);
+                    CollapseRanges(reqs, ref next);
+                    count += WalkWorkflows(rule.Target, workflowDictionary, reqs, next);
                 }
+
+                opposites.Add(Range.Convert(rule, false));
             }
+            return count;
         }
 
-
-        // private class RatingState
-        // {
-        //     List<Base.Range> XStates { get; set; }
-        //     List<Base.Range> MStates { get; set; }
-        //     List<Base.Range> AStates { get; set; }
-        //     List<Base.Range> SStates { get; set; }
-
-        //     public RatingState()
-        //     {
-        //         XStates = new List<Base.Range>();
-        //         MStates = new List<Base.Range>();
-        //         AStates = new List<Base.Range>();
-        //         SStates = new List<Base.Range>();
-        //     }
-        // }
-        
-        private void CollapseAccepted(List<List<Range>> accepted, out List<List<Range>> collapsed)
+        private void CollapseRanges(List<Range> reqs, ref WorkflowState workflowState)
         {
-            // flatten shared ranges
-            // include missing letters
-            collapsed = new List<List<Range>>();
+            CollapseRanges(reqs, ref workflowState.X);
+            CollapseRanges(reqs, ref workflowState.M);
+            CollapseRanges(reqs, ref workflowState.A);
+            CollapseRanges(reqs, ref workflowState.S);
+        }
+
+        private void CollapseRanges(List<Range> reqs, ref MultiRange multiRange)
+        {
+            Part part = multiRange.Part;
+            multiRange = new MultiRange(part, new List<Base.RangeL>(), new List<bool>());
+            IEnumerable<Range> subset = reqs.Where(l => l.Part == part);
+            if (subset.Count() > 0)
+            {
+                foreach (Range range in subset)
+                {
+                    multiRange.Values.Add(new Base.RangeL(range.Values));
+                    multiRange.Inclusive.Add(range.Inclusive);
+                }
+                multiRange.Compress();
+            }
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findAll)
