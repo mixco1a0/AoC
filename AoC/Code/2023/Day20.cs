@@ -26,17 +26,17 @@ namespace AoC._2023
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
-            //             testData.Add(new Core.TestDatum
-            //             {
-            //                 TestPart = Core.Part.One,
-            //                 Output = "32000000",
-            //                 RawInput =
-            // @"%a -> b
-            // broadcaster -> a, b, c
-            // %b -> c
-            // %c -> inv
-            // &inv -> a"
-            //             });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
+                Output = "32000000",
+                RawInput =
+@"%a -> b
+broadcaster -> a, b, c
+%b -> c
+%c -> inv
+&inv -> a"
+            });
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
@@ -57,6 +57,8 @@ namespace AoC._2023
             });
             return testData;
         }
+
+        private static string Rx = "rx";
 
         enum EType
         {
@@ -180,14 +182,16 @@ namespace AoC._2023
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, long maxIterations)
         {
             ParseInput(inputs, out List<Module> modules);
             Dictionary<string, Module> moduleMap = modules.ToDictionary(m => m.Id, m => m);
             Dictionary<string, bool> moduleStates = new Dictionary<string, bool>();
             Queue<Pulse> pulses = new Queue<Pulse>();
             long lowCount = 0, highCount = 0;
-            for (int i = 0; i < 1000; ++i)
+            string mainId = modules.Where(m => m.Targets.Contains(Rx)).FirstOrDefault()?.Id;
+            Dictionary<string, long> cycleModules = modules.Where(m => m.Targets.Contains(mainId)).Select(m => m.Id).ToDictionary(id => id, id => (long)0);
+            for (long i = 0; i < maxIterations; ++i)
             {
                 pulses.Enqueue(new Pulse("button", "broadcaster", false));
                 while (pulses.Count > 0)
@@ -201,18 +205,39 @@ namespace AoC._2023
                     {
                         ++lowCount;
                     }
-                    // Log($"{pulse} | {lowCount} | {highCount}");
+
+                    if (maxIterations == long.MaxValue)
+                    {
+                        if (pulse.High && cycleModules.ContainsKey(pulse.Source) && cycleModules[pulse.Source] == 0)
+                        {
+                            cycleModules[pulse.Source] = i + 1;
+                        }
+                    }
+
                     moduleMap[pulse.Target].Receive(moduleMap, pulse, ref pulses);
                 }
+
+                if (maxIterations == long.MaxValue)
+                {
+                    long cycles = 1;
+                    foreach (var pair in cycleModules)
+                    {
+                        cycles *= pair.Value;
+                    }
+                    if (cycles != 0)
+                    {
+                        return cycles.ToString();
+                    }
+                }
             }
-            // Log($"{lowCount} | {highCount}");
+
             return (highCount * lowCount).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, 1000);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, long.MaxValue);
     }
 }
