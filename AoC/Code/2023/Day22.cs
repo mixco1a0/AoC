@@ -72,7 +72,7 @@ namespace AoC._2023
                 {
                     axis = Axis.Y;
                 }
-                else if (split[2] != split[5])
+                else
                 {
                     axis = Axis.Z;
                 }
