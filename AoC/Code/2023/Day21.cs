@@ -47,9 +47,56 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Variables = new Dictionary<string, string> { { nameof(_Steps), "6" } },
+                Output = "16",
                 RawInput =
-@""
+@"...........
+.....###.#.
+.###.##..#.
+..#.#...#..
+....#.#....
+.##..S####.
+.##..#...#.
+.......##..
+.##.#.####.
+.##..##.##.
+..........."
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Variables = new Dictionary<string, string> { { nameof(_Steps), "10" } },
+                Output = "50",
+                RawInput =
+@"...........
+.....###.#.
+.###.##..#.
+..#.#...#..
+....#.#....
+.##..S####.
+.##..#...#.
+.......##..
+.##.#.####.
+.##..##.##.
+..........."
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.Two,
+                Variables = new Dictionary<string, string> { { nameof(_Steps), "50" } },
+                Output = "1594",
+                RawInput =
+@"...........
+.....###.#.
+.###.##..#.
+..#.#...#..
+....#.#....
+.##..S####.
+.##..#...#.
+.......##..
+.##.#.####.
+.##..##.##.
+..........."
             });
             return testData;
         }
@@ -81,11 +128,11 @@ namespace AoC._2023
             yMax = grid.GetLength(1);
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool infinite, int maxSteps)
         {
             ParseInput(inputs, out char[,] grid, out Base.Pos2L start, out int xMax, out int yMax);
             // Util.Grid.PrintGrid(grid);
-            GetVariable(nameof(_Steps), 64, variables, out int stepCount);
+            GetVariable(nameof(_Steps), maxSteps, variables, out int stepCount);
             HashSet<Base.Pos2L> plots = new HashSet<Base.Pos2L>() { start };
             for (int i = 0; i < stepCount; ++i)
             {
@@ -110,9 +157,9 @@ namespace AoC._2023
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false, 64);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true, 26501365);
     }
 }
