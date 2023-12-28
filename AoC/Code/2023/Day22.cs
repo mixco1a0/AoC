@@ -42,9 +42,15 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "7",
                 RawInput =
-@""
+@"1,0,1~1,2,1
+0,0,2~2,0,2
+0,2,3~2,2,3
+0,0,4~0,2,4
+2,0,5~2,2,5
+0,1,6~2,1,6
+1,1,8~1,1,9"
             });
             return testData;
         }
@@ -97,23 +103,23 @@ namespace AoC._2023
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private int SettleBricks(List<Brick> bricks, out Dictionary<int, List<BrickSpace>> brickOccupiedSpaces, out List<Brick> settledBricks, out Dictionary<int, HashSet<int>> supports)
         {
-            List<Brick> bricks = inputs.Select(Brick.Parse).ToList();
-            bricks.Sort((a, b) => { return a.Start.Z.CompareTo(b.Start.Z); });
-            Dictionary<int, List<BrickSpace>> settled = new Dictionary<int, List<BrickSpace>>();
-            Dictionary<int, HashSet<int>> supports = new Dictionary<int, HashSet<int>>();
+            int settledBrickCount = 0;
+            brickOccupiedSpaces = new Dictionary<int, List<BrickSpace>>();
+            settledBricks = new List<Brick>();
 
-            Action<Brick, IEnumerable<BrickSpace>> AddSupport = (brick, potential) =>
+            Dictionary<int, HashSet<int>> localSupports = new Dictionary<int, HashSet<int>>();
+            Action<Brick, IEnumerable<BrickSpace>> addSupport = (brick, potential) =>
             {
                 foreach (BrickSpace bs in potential)
                 {
-                    if (!supports.ContainsKey(bs.Owner))
+                    if (!localSupports.ContainsKey(bs.Owner))
                     {
-                        supports[bs.Owner] = new HashSet<int>();
+                        localSupports[bs.Owner] = new HashSet<int>();
                     }
-                    supports[bs.Owner].Add(brick.Id);
-                    Log($"Brick {bs.Owner} is supporting {brick.Id}");
+                    localSupports[bs.Owner].Add(brick.Id);
+                    // Log($"Brick {bs.Owner} is supporting {brick.Id}");
                 }
             };
 
@@ -128,7 +134,7 @@ namespace AoC._2023
                     {
                         canFall = false;
                     }
-                    else if (settled.ContainsKey(actualZ))
+                    else if (brickOccupiedSpaces.ContainsKey(actualZ))
                     {
                         switch (brick.Axis)
                         {
@@ -136,10 +142,10 @@ namespace AoC._2023
                                 {
                                     for (int x = brick.Start.X; x <= brick.End.X; ++x)
                                     {
-                                        IEnumerable<BrickSpace> potential = settled[actualZ].Where(bs => bs.Space.X == x && bs.Space.Y == brick.Start.Y);
+                                        IEnumerable<BrickSpace> potential = brickOccupiedSpaces[actualZ].Where(bs => bs.Space.X == x && bs.Space.Y == brick.Start.Y);
                                         if (potential.Count() > 0)
                                         {
-                                            AddSupport(brick, potential);
+                                            addSupport(brick, potential);
                                             canFall = false;
                                         }
                                     }
@@ -149,10 +155,10 @@ namespace AoC._2023
                                 {
                                     for (int y = brick.Start.Y; y <= brick.End.Y; ++y)
                                     {
-                                        IEnumerable<BrickSpace> potential = settled[actualZ].Where(bs => bs.Space.Y == y && bs.Space.X == brick.Start.X);
+                                        IEnumerable<BrickSpace> potential = brickOccupiedSpaces[actualZ].Where(bs => bs.Space.Y == y && bs.Space.X == brick.Start.X);
                                         if (potential.Count() > 0)
                                         {
-                                            AddSupport(brick, potential);
+                                            addSupport(brick, potential);
                                             canFall = false;
                                         }
                                     }
@@ -160,43 +166,61 @@ namespace AoC._2023
                                 break;
                             case Axis.Z:
                                 {
-                                    IEnumerable<BrickSpace> potential = settled[actualZ].Where(bs => bs.Space.X == brick.Start.X && bs.Space.Y == brick.Start.Y);
+                                    IEnumerable<BrickSpace> potential = brickOccupiedSpaces[actualZ].Where(bs => bs.Space.X == brick.Start.X && bs.Space.Y == brick.Start.Y);
                                     if (potential.Count() > 0)
                                     {
-                                        AddSupport(brick, potential);
+                                        addSupport(brick, potential);
                                         canFall = false;
                                     }
                                 }
                                 break;
                         }
-
                     }
                 }
 
                 if (brick.Start.Z > 1)
                 {
                     ++actualZ;
+                    settledBricks.Add(new Brick(brick.Id, new Base.Pos3(brick.Start.X, brick.Start.Y, actualZ), new Base.Pos3(brick.End.X, brick.End.Y, brick.End.Z - (brick.Start.Z - actualZ)), brick.Axis));
+                    if (actualZ != brick.Start.Z)
+                    {
+                        ++settledBrickCount;
+                    }
+                }
+                else
+                {
+                    settledBricks.Add(brick);
                 }
 
                 for (int z = actualZ; z <= brick.End.Z - (brick.Start.Z - actualZ); ++z)
                 {
-                    if (!settled.ContainsKey(z))
+                    if (!brickOccupiedSpaces.ContainsKey(z))
                     {
-                        settled[z] = new List<BrickSpace>();
+                        brickOccupiedSpaces[z] = new List<BrickSpace>();
                     }
 
                     for (int y = brick.Start.Y; y <= brick.End.Y; ++y)
                     {
                         for (int x = brick.Start.X; x <= brick.End.X; ++x)
                         {
-                            settled[z].Add(new BrickSpace(brick.Id, new Base.Pos3(x, y, z)));
+                            brickOccupiedSpaces[z].Add(new BrickSpace(brick.Id, new Base.Pos3(x, y, z)));
                         }
                     }
                 }
             }
 
+            supports = localSupports;
+            return settledBrickCount;
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool disintegrateBlocks)
+        {
+            List<Brick> originalBricks = inputs.Select(Brick.Parse).ToList();
+            originalBricks.Sort((a, b) => { return a.Start.Z.CompareTo(b.Start.Z); });
+            SettleBricks(originalBricks, out Dictionary<int, List<BrickSpace>> brickOccupiedSpaces, out List<Brick> settledBricks, out Dictionary<int, HashSet<int>> supports);
+
             int safeToDestroy = 0;
-            // IEnumerable<int> supportedIds = supports.SelectMany(s => s.Value);
+            HashSet<int> supportBricks = new HashSet<int>();
             foreach (var pair in supports)
             {
                 bool canBreak = true;
@@ -212,18 +236,32 @@ namespace AoC._2023
                 {
                     ++safeToDestroy;
                 }
+                else
+                {
+                    supportBricks.Add(pair.Key);
+                }
             }
 
-            safeToDestroy += (bricks.Count(b => !supports.ContainsKey(b.Id)));
+            if (!disintegrateBlocks)
+            {
+                safeToDestroy += (originalBricks.Count(b => !supports.ContainsKey(b.Id)));
+                return safeToDestroy.ToString();
+            }
 
-            return safeToDestroy.ToString();
+            int settleCount = 0;
+            foreach (int supportBrick in supportBricks)
+            {
+                List<Brick> leftOvers = settledBricks.Where(b => b.Id != supportBrick).ToList();
+                settleCount += SettleBricks(leftOvers, out Dictionary<int, List<BrickSpace>> bos, out List<Brick> sb, out Dictionary<int, HashSet<int>> s);
+            }
+
+            return settleCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
-            // 454 => TOO HIGH
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
