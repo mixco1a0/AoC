@@ -60,6 +60,20 @@ namespace AoC.Util
             }
         }
 
+        static public void ParseInput(List<string> inputs, out char[,] grid, out int xMax, out int yMax)
+        {
+            grid = new char[inputs[0].Length, inputs.Count()];
+            for (int x = 0; x < inputs[0].Length; ++x)
+            {
+                for (int y = 0; y < inputs.Count; ++y)
+                {
+                    grid[x, y] = inputs[y][x];
+                }
+            }
+            xMax = grid.GetLength(0);
+            yMax = grid.GetLength(1);
+        }
+
         static public void RotateGrid(bool right, ref List<string> grid)
         {
             List<string> newGrid = new List<string>();
