@@ -27,29 +27,29 @@ namespace AoC._2023
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
-//             testData.Add(new Core.TestDatum
-//             {
-//                 TestPart = Core.Part.One,
-//                 Output = "9",
-//                 RawInput =
-// @"#.#####
-// #.....#
-// #v#.#.#
-// #.....#
-// #####.#"
-//             });
-//             testData.Add(new Core.TestDatum
-//             {
-//                 TestPart = Core.Part.One,
-//                 Output = "9",
-//                 RawInput =
-// @"#.####
-// #.>..#
-// #.##.#
-// #.#..#
-// #...##
-// ###.##"
-//             });
+            //             testData.Add(new Core.TestDatum
+            //             {
+            //                 TestPart = Core.Part.One,
+            //                 Output = "9",
+            //                 RawInput =
+            // @"#.#####
+            // #.....#
+            // #v#.#.#
+            // #.....#
+            // #####.#"
+            //             });
+            //             testData.Add(new Core.TestDatum
+            //             {
+            //                 TestPart = Core.Part.One,
+            //                 Output = "9",
+            //                 RawInput =
+            // @"#.####
+            // #.>..#
+            // #.##.#
+            // #.#..#
+            // #...##
+            // ###.##"
+            //             });
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
@@ -82,9 +82,31 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "154",
                 RawInput =
-@""
+@"#.#####################
+#.......#########...###
+#######.#########.#.###
+###.....#.>.>.###.#.###
+###v#####.#v#.###.#.###
+###.>...#.#.#.....#...#
+###v###.#.#.#########.#
+###...#.#.#.......#...#
+#####.#.#.#######.#.###
+#.....#.#.#.......#...#
+#.#####.#.#.#########v#
+#.#...#...#...###...>.#
+#.#.#v#######v###.###v#
+#...#.>.#...>.>.#.###.#
+#####v#.#.###v#.#.###.#
+#.....#...#...#.#.#...#
+#.#########.###.#.#.###
+#...###...#...#...#.###
+###.###.#.###v#####v###
+#...#...#.#.>.>.#.>.###
+#.###.###.#.###.#.#v###
+#.....###...###...#...#
+#####################.#"
             });
             return testData;
         }
@@ -102,9 +124,23 @@ namespace AoC._2023
             {'v',  new Base.Pos2[] { new Base.Pos2(0, 1)  }},
         };
 
-        private void ParseInput(List<string> inputs, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax)
+        private void ParseInput(List<string> inputs, bool slippery, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax)
         {
             Util.Grid.ParseInput(inputs, out grid, out xMax, out yMax);
+
+            if (!slippery)
+            {
+                for (int x = 0; x < xMax; ++x)
+                {
+                    for (int y = 0; y < yMax; ++y)
+                    {
+                        if (grid[x, y] != Path && grid[x, y] != Forest)
+                        {
+                            grid[x, y] = Path;
+                        }
+                    }
+                }
+            }
 
             start = new Base.Pos2();
             end = new Base.Pos2();
@@ -372,9 +408,9 @@ namespace AoC._2023
             return longestTrail;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool slippery)
         {
-            ParseInput(inputs, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax);
+            ParseInput(inputs, slippery, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax);
             Dictionary<Base.Pos2, Trail> trails = new Dictionary<Base.Pos2, Trail>();
             trails[start] = new Trail() { Pos = start };
             GenerateTrails(grid, start, start, end, xMax, yMax, ref trails);
@@ -383,9 +419,10 @@ namespace AoC._2023
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
+            // 6747 TOO HIGH
     }
 }
