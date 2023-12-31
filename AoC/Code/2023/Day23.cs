@@ -30,7 +30,18 @@ namespace AoC._2023
 //             testData.Add(new Core.TestDatum
 //             {
 //                 TestPart = Core.Part.One,
-//                 Output = "6",
+//                 Output = "9",
+//                 RawInput =
+// @"#.#####
+// #.....#
+// #v#.#.#
+// #.....#
+// #####.#"
+//             });
+//             testData.Add(new Core.TestDatum
+//             {
+//                 TestPart = Core.Part.One,
+//                 Output = "9",
 //                 RawInput =
 // @"#.####
 // #.>..#
@@ -123,45 +134,58 @@ namespace AoC._2023
 
             public override string ToString()
             {
-                return $"{Pos} -> {Paths}";
+                StringBuilder stringBuilder = new StringBuilder();
+                if (Paths.Count > 0)
+                {
+                    foreach (var pair in Paths)
+                    {
+                        stringBuilder.Append($"{pair.Key} -> {pair.Value} | ");
+                    }
+                    stringBuilder.Length -= 3;
+                    return $"{Pos} -> | {stringBuilder}";
+                }
+                return $"{Pos}";
             }
         }
 
         private class Node
         {
+            public Base.Pos2 Pos { get; set; }
             public Base.Pos2 Prev { get; set; }
             public bool Done { get; set; }
-            public long Path { get; set; }
-            public HashSet<Base.Pos2> History { get; set; }
+            public int Path { get; set; }
+            public List<Base.Pos2> History { get; set; }
 
-            public Node()
+            public Node(Base.Pos2 pos)
             {
+                Pos = pos;
                 Prev = null;
                 Done = false;
-                Path = 0;
-                History = new HashSet<Base.Pos2>();
+                Path = -1;
+                History = new List<Base.Pos2>();
             }
 
             public override string ToString()
             {
-                return Done ? $"{Path,4}" : $"????";
+                string path = Done ? $"{Path,4}" : $"????";
+                return $"{path} | {string.Join(',', History)}";
             }
         }
 
-        private void GetNodes(char[,] grid, int xMax, int yMax, Base.Pos2 start, out Node[,] nodes)
-        {
-            nodes = new Node[xMax, yMax];
-            for (int x = 0; x < xMax; ++x)
-            {
-                for (int y = 0; y < yMax; ++y)
-                {
-                    nodes[x, y] = new Node();
-                }
-            }
+        // private void GetNodes(char[,] grid, int xMax, int yMax, Base.Pos2 start, out Node[,] nodes)
+        // {
+        //     nodes = new Node[xMax, yMax];
+        //     for (int x = 0; x < xMax; ++x)
+        //     {
+        //         for (int y = 0; y < yMax; ++y)
+        //         {
+        //             nodes[x, y] = new Node();
+        //         }
+        //     }
 
-            nodes[start.X, start.Y].Path = 0;
-            nodes[start.X, start.Y].Prev = start;
-        }
+        //     nodes[start.X, start.Y].Path = 0;
+        //     nodes[start.X, start.Y].Prev = start;
+        // }
 
         private void PrintNodes(char[,] grid, Node[,] nodes)
         {
@@ -260,16 +284,16 @@ namespace AoC._2023
 
         private void GenerateTrails(char[,] grid, Base.Pos2 start, Base.Pos2 curPos, Base.Pos2 end, int xMax, int yMax, ref Dictionary<Base.Pos2, Trail> trails)
         {
-            Log($"Checking {start}");
+            // Log($"Checking {start}");
             HashSet<Base.Pos2> visited = new HashSet<Base.Pos2>() { start };
             HashSet<Base.Pos2> split = new HashSet<Base.Pos2>();
             int length = start.Manhattan(curPos);
             while (true)
             {
                 char path = grid[curPos.X, curPos.Y];
-                grid[curPos.X, curPos.Y] = '@';
-                Util.Grid.PrintGrid(grid);
-                grid[curPos.X, curPos.Y] = path;
+                // grid[curPos.X, curPos.Y] = '@';
+                // Util.Grid.PrintGrid(grid);
+                // grid[curPos.X, curPos.Y] = path;
 
                 if (curPos.Equals(end))
                 {
@@ -331,15 +355,31 @@ namespace AoC._2023
             }
         }
 
+        private int GetLongestTrail(Dictionary<Base.Pos2, Trail> trails, Base.Pos2 start, Base.Pos2 end, HashSet<Base.Pos2> history)
+        {
+            history.Add(start);
+            // Log($"checking {string.Join(',', history)}");
+            int longestTrail = 0;
+            foreach (var pair in trails[start].Paths)
+            {
+                if (!history.Contains(pair.Key))
+                {
+                    int curPath = pair.Value + GetLongestTrail(trails, pair.Key, end, new HashSet<Base.Pos2>(history));
+                    longestTrail = Math.Max(curPath, longestTrail);
+                }
+            }
+            // Log($"{string.Join(',', history)} -> {longestTrail}");
+            return longestTrail;
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
             ParseInput(inputs, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax);
             Dictionary<Base.Pos2, Trail> trails = new Dictionary<Base.Pos2, Trail>();
             trails[start] = new Trail() { Pos = start };
             GenerateTrails(grid, start, start, end, xMax, yMax, ref trails);
-            // GetNodes(grid, xMax, yMax, start, out Node[,] nodes);
-            // GetLongestPath(grid, nodes, xMax, yMax, start, end, new HashSet<Base.Pos2>());
-            return string.Empty;
+            trails[end] = new Trail() { Pos = end };
+            return GetLongestTrail(trails, start, end, new HashSet<Base.Pos2>()).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
