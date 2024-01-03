@@ -27,29 +27,6 @@ namespace AoC._2023
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
-            //             testData.Add(new Core.TestDatum
-            //             {
-            //                 TestPart = Core.Part.One,
-            //                 Output = "9",
-            //                 RawInput =
-            // @"#.#####
-            // #.....#
-            // #v#.#.#
-            // #.....#
-            // #####.#"
-            //             });
-            //             testData.Add(new Core.TestDatum
-            //             {
-            //                 TestPart = Core.Part.One,
-            //                 Output = "9",
-            //                 RawInput =
-            // @"#.####
-            // #.>..#
-            // #.##.#
-            // #.#..#
-            // #...##
-            // ###.##"
-            //             });
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
@@ -184,140 +161,6 @@ namespace AoC._2023
             }
         }
 
-        private class Node
-        {
-            public Base.Pos2 Pos { get; set; }
-            public Base.Pos2 Prev { get; set; }
-            public bool Done { get; set; }
-            public int Path { get; set; }
-            public List<Base.Pos2> History { get; set; }
-
-            public Node(Base.Pos2 pos)
-            {
-                Pos = pos;
-                Prev = null;
-                Done = false;
-                Path = -1;
-                History = new List<Base.Pos2>();
-            }
-
-            public override string ToString()
-            {
-                string path = Done ? $"{Path,4}" : $"????";
-                return $"{path} | {string.Join(',', History)}";
-            }
-        }
-
-        // private void GetNodes(char[,] grid, int xMax, int yMax, Base.Pos2 start, out Node[,] nodes)
-        // {
-        //     nodes = new Node[xMax, yMax];
-        //     for (int x = 0; x < xMax; ++x)
-        //     {
-        //         for (int y = 0; y < yMax; ++y)
-        //         {
-        //             nodes[x, y] = new Node();
-        //         }
-        //     }
-
-        //     nodes[start.X, start.Y].Path = 0;
-        //     nodes[start.X, start.Y].Prev = start;
-        // }
-
-        private void PrintNodes(char[,] grid, Node[,] nodes)
-        {
-            for (int y = 0; y < nodes.GetLength(1); ++y)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append($"{y,3} | ");
-                for (int x = 0; x < nodes.GetLength(0); ++x)
-                {
-                    if (grid[x, y] == Forest)
-                    {
-                        sb.Append($"{Forest}{Forest}{Forest}");
-                    }
-                    else if (nodes[x, y].Done)
-                    {
-                        sb.Append($"{grid[x, y]}{nodes[x, y].Path,2}");
-                    }
-                    else
-                    {
-                        sb.Append($"?{nodes[x, y].Path,2}");
-                    }
-                }
-                Log(sb.ToString());
-            }
-        }
-
-        private int GetLongestPath(char[,] grid, Node[,] nodes, int xMax, int yMax, Base.Pos2 start, Base.Pos2 end, HashSet<Base.Pos2> history)
-        {
-            // Stack<Base.Pos2> queue = new Stack<Base.Pos2>();
-            // queue.Push(start);
-            // while (queue.Count > 0)
-            // {
-            //     Base.Pos2 pos2 = queue.Pop();
-            //     Node node = nodes[pos2.X, pos2.Y];
-            //     if (node.Done)
-            //     {
-            //         continue;
-            //     }
-            //     node.Done = true;
-
-            //     Node prev = nodes[node.Prev.X, node.Prev.Y];
-            //     node.Path = prev.Path + 1;
-
-            //     PrintNodes(grid, nodes);
-
-            //     if (pos2.Equals(end))
-            //     {
-            //         continue;
-            //     }
-
-            //     char path = grid[pos2.X, pos2.Y];
-            //     List<Base.Pos2> potentials = new List<Base.Pos2>();
-            //     foreach (Base.Pos2 movePos2 in SpecialMoves[path])
-            //     {
-            //         Base.Pos2 nextPos2 = pos2 + movePos2;
-            //         if (nextPos2.X >= 0 && nextPos2.X < xMax && nextPos2.Y >= 0 && nextPos2.Y < yMax && grid[nextPos2.X, nextPos2.Y] != Forest)
-            //         {
-            //             potentials.Add(nextPos2);
-            //         }
-            //     }
-
-            //     if (potentials.Count == 0)
-            //     {
-            //         return -1;
-            //     }
-
-            //     if (potentials.Count == 1)
-            //     {
-            //         // add and continue
-            //     }
-
-            //     if (potentials.Count > 1)
-            //     {
-            //         Node next = nodes[nextPos2.X, nextPos2.Y];
-            //         if (next.Path <= node.Path)
-            //         // if (!next.Done)
-            //         {
-            //             if (next.Prev != null)
-            //             {
-            //                 Node last = nodes[next.Prev.X, next.Prev.Y];
-            //                 if (node.Path > last.Path)
-            //                 {
-            //                     next.Prev = pos2;
-            //                 }
-            //             }
-            //             else
-            //             {
-            //                 next.Prev = pos2;
-            //             }
-            //         }
-            //         queue.Push(nextPos2);
-            //     }
-            // }
-            return 0;
-        }
-
         private void GenerateTrails(char[,] grid, Base.Pos2 start, Base.Pos2 curPos, Base.Pos2 end, int xMax, int yMax, ref Dictionary<Base.Pos2, Trail> trails)
         {
             // Log($"Checking {start}");
@@ -391,21 +234,30 @@ namespace AoC._2023
             }
         }
 
-        private int GetLongestTrail(Dictionary<Base.Pos2, Trail> trails, Base.Pos2 start, Base.Pos2 end, HashSet<Base.Pos2> history)
+        private bool GetLongestTrail(Dictionary<Base.Pos2, Trail> trails, Base.Pos2 start, Base.Pos2 end, HashSet<Base.Pos2> history, out int longestTrail)
         {
             history.Add(start);
-            // Log($"checking {string.Join(',', history)}");
-            int longestTrail = 0;
+            longestTrail = 0;
+            if (start.Equals(end))
+            {
+                return true;
+            }
+
+            bool anyValid = false;
             foreach (var pair in trails[start].Paths)
             {
                 if (!history.Contains(pair.Key))
                 {
-                    int curPath = pair.Value + GetLongestTrail(trails, pair.Key, end, new HashSet<Base.Pos2>(history));
-                    longestTrail = Math.Max(curPath, longestTrail);
+                    bool valid = GetLongestTrail(trails, pair.Key, end, new HashSet<Base.Pos2>(history), out int curLongest);
+                    anyValid |= valid;
+                    if (valid)
+                    {
+                        int curPath = pair.Value + curLongest;
+                        longestTrail = Math.Max(curPath, longestTrail);
+                    }
                 }
             }
-            // Log($"{string.Join(',', history)} -> {longestTrail}");
-            return longestTrail;
+            return anyValid;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool slippery)
@@ -415,7 +267,8 @@ namespace AoC._2023
             trails[start] = new Trail() { Pos = start };
             GenerateTrails(grid, start, start, end, xMax, yMax, ref trails);
             trails[end] = new Trail() { Pos = end };
-            return GetLongestTrail(trails, start, end, new HashSet<Base.Pos2>()).ToString();
+            GetLongestTrail(trails, start, end, new HashSet<Base.Pos2>(), out int longestTrail);
+            return longestTrail.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
@@ -423,6 +276,5 @@ namespace AoC._2023
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, false);
-            // 6747 TOO HIGH
     }
 }
