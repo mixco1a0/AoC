@@ -320,6 +320,11 @@ namespace AoC.Base
             return new Pos3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
+        public static Pos3 operator *(Pos3 a, int mult)
+        {
+            return new Pos3(a.X * mult, a.Y * mult, a.Z * mult);
+        }
+
         public int Manhattan(Pos3 other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
@@ -465,4 +470,108 @@ namespace AoC.Base
         }
         #endregion
     }
+
+    public class Pos3F : IEquatable<Pos3F>
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+
+        public Pos3F()
+        {
+            X = default;
+            Y = default;
+            Z = default;
+        }
+
+        public Pos3F(float x, float y, float z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public Pos3F(Pos3F other)
+        {
+            X = other.X;
+            Y = other.Y;
+            Z = other.Z;
+        }
+
+        public static Pos3F operator +(Pos3F a, Pos3F b)
+        {
+            return new Pos3F(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        }
+
+        public static Pos3F operator -(Pos3F a, Pos3F b)
+        {
+            return new Pos3F(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        }
+
+        public static Pos3F operator *(Pos3F a, float mult)
+        {
+            return new Pos3F(a.X * mult, a.Y * mult, a.Z * mult);
+        }
+
+        public static Pos3F operator /(Pos3F a, float mult)
+        {
+            if (mult == 0.0f)
+            {
+                return new Pos3F();
+            }
+            return new Pos3F(a.X / mult, a.Y / mult, a.Z / mult);
+        }
+
+        public float Manhattan(Pos3F other)
+        {
+            return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
+        }
+
+        public static Pos3F Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
+            return new Pos3F(split[0], split[1], split[2]);
+        }
+
+        #region Interfaces
+        public bool Equals(Pos3F other)
+        {
+            return X == other.X && Y == other.Y && Z == other.Z;
+        }
+        #endregion
+
+        #region Overrides
+        public override string ToString()
+        {
+            return string.Format("[{0:00.000}, {1:00.000}, {2:00.000}]", X, Y, Z);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            Pos3L objAsPos = obj as Pos3L;
+            if (objAsPos == null)
+            {
+                return false;
+            }
+
+            return Equals(objAsPos);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y, Z);
+        }
+        #endregion
+    }
+
 }
