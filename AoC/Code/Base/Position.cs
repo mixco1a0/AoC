@@ -409,6 +409,11 @@ namespace AoC.Base
             return new Pos3L(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
+        public static Pos3L operator *(Pos3L a, long mult)
+        {
+            return new Pos3L(a.X * mult, a.Y * mult, a.Z * mult);
+        }
+
         public long Manhattan(Pos3L other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);

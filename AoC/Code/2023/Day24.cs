@@ -53,12 +53,12 @@ namespace AoC._2023
         private long _MinRange { get; }
         private long _MaxRange { get; }
 
-        public record HailStone(Pos3 Pos, Pos3 Vel)
+        public record HailStone(Pos3L Pos, Pos3L Vel)
         {
             public static HailStone Parse(string input)
             {
-                int[] split = Number.Split(input, ", @").ToArray();
-                return new HailStone(new Pos3(split[0], split[1], split[2]), new Pos3(split[3], split[4], split[5]));
+                long[] split = Number.SplitL(input, ", @").ToArray();
+                return new HailStone(new Pos3L(split[0], split[1], split[2]), new Pos3L(split[3], split[4], split[5]));
             }
 
             public override string ToString()
@@ -67,17 +67,11 @@ namespace AoC._2023
             }
         }
 
-        public record Limits(Pos3 Min, Pos3 Max)
+        public record Limits(Pos3L Min, Pos3L Max)
         {
             public static Limits Convert(HailStone hailStone, long min, long max)
             {
-                // need to start closest to the test area
-                // if outside of test area, move it to border
-                // if inside, use starting point
-                // then add second point at the edge of the test area
-
-
-                Pos3 start = hailStone.Pos;
+                Pos3L start = hailStone.Pos;
                 if (start.X >= max && hailStone.Vel.X > 0)
                 {
                     return null;
@@ -95,18 +89,56 @@ namespace AoC._2023
                     return null;
                 }
 
+                // need to start closest to the test area
+                // if outside of test area, move it to border
+                // if inside, use starting point
+                // then add second point at the edge of the test area
+                Func<long, long, long> getStartMult = (startN, velN) =>
+                {
+                    long mult = 0;
+                    if (velN != 0)
+                    {
+                        if (startN - max > 0)
+                        {
+                            mult = (startN - max) / velN;
+                        }
+                        else if (min - startN > 0)
+                        {
+                            mult = (min - startN) / velN;
+                        }
+                    }
+                    return mult;
+                };
 
-                Pos3 posA = start;
-                while (posA.X > min && posA.X < max && posA.Y > min && posA.Y < max)
+                long multX = getStartMult(start.X, hailStone.Vel.X);
+                long multY = getStartMult(start.Y, hailStone.Vel.Y);
+                long mult = Math.Max(multX, multY);
+                start += (hailStone.Vel * mult);
+
+                Pos3L end = new Pos3L(start + hailStone.Vel);
+                Func<long, long, long> getEndMult = (endN, velN) =>
                 {
-                    posA += hailStone.Vel;
-                }
-                Pos3 posB = start;
-                while (posB.X > min && posB.X < max && posB.Y > min && posB.Y < max)
-                {
-                    posB -= hailStone.Vel;
-                }
-                return new Limits(posA, posB);
+                    long mult = 0;
+                    if (velN > 0)
+                    {
+                        mult = (max - endN) / velN;
+                    }
+                    else if (velN < 0)
+                    {
+                        mult = (endN - min) / velN;
+                    }
+                    return mult;
+                };
+                multX = getEndMult(end.X, hailStone.Vel.X);
+                multY = getEndMult(end.Y, hailStone.Vel.Y);
+                mult = Math.Min(Math.Abs(multX), Math.Abs(multY));
+                end += (hailStone.Vel * mult);
+
+                // while (end.X > min && end.X < max && end.Y > min && end.Y < max)
+                // {
+                //     end += hailStone.Vel;
+                // }
+                return new Limits(start, end);
             }
 
             public override string ToString()
@@ -115,7 +147,7 @@ namespace AoC._2023
             }
         }
 
-        public bool OnSegment(Pos3 a, Pos3 b, Pos3 c)
+        public bool OnSegment(Pos3L a, Pos3L b, Pos3L c)
         {
             if (b.X <= Math.Max(a.X, c.X) && b.X >= Math.Min(a.X, c.X) &&
                 b.Y <= Math.Max(a.Y, c.Y) && b.Y >= Math.Min(a.Y, c.Y))
@@ -125,9 +157,9 @@ namespace AoC._2023
             return false;
         }
 
-        public int GetOrientation(Pos3 a, Pos3 b, Pos3 c)
+        public long GetOrientation(Pos3L a, Pos3L b, Pos3L c)
         {
-            int val = (b.Y - a.Y) * (c.X - b.X) - (b.X - a.X) * (c.Y - b.Y);
+            long val = (b.Y - a.Y) * (c.X - b.X) - (b.X - a.X) * (c.Y - b.Y);
             if (val == 0)
             {
                 return 0;
@@ -137,10 +169,15 @@ namespace AoC._2023
 
         public bool DoesIntersect(Limits l1, Limits l2)
         {
-            int o1 = GetOrientation(l1.Min, l1.Max, l2.Min);
-            int o2 = GetOrientation(l1.Min, l1.Max, l2.Max);
-            int o3 = GetOrientation(l2.Min, l2.Max, l1.Min);
-            int o4 = GetOrientation(l2.Min, l2.Max, l1.Max);
+            if (l1 == null || l2 == null)
+            {
+                return false;
+            }
+
+            long o1 = GetOrientation(l1.Min, l1.Max, l2.Min);
+            long o2 = GetOrientation(l1.Min, l1.Max, l2.Max);
+            long o3 = GetOrientation(l2.Min, l2.Max, l1.Min);
+            long o4 = GetOrientation(l2.Min, l2.Max, l1.Max);
 
             if (o1 != o2 && o3 != o4)
             {
@@ -176,6 +213,8 @@ namespace AoC._2023
             GetVariable(nameof(_MaxRange), 400_000_000_000_000, variables, out long maxRange);
             List<HailStone> hailstones = inputs.Select(HailStone.Parse).ToList();
             List<Limits> limits = hailstones.Select(hs => Limits.Convert(hs, minRange, maxRange)).ToList();
+            Log("Limits:");
+            limits.Where(l => l != null).ToList().ForEach(l => Log(l.ToString()));
             long count = 0;
             for (int i = 0; i < limits.Count; ++i)
             {
@@ -192,6 +231,7 @@ namespace AoC._2023
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
+            // 12024 [TOO LOW]
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
