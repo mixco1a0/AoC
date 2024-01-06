@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using AoC.Base;
 using AoC.Util;
 
@@ -31,6 +32,15 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
+                Output = "2",
+                RawInput =
+@"184964585341884, 113631924395348, 401845630841620 @ 61, 469, -390
+263775277465044, 418701236136888, 52607746821705 @ 105, -170, 307
+331877282121819, 365938348079363, 314507465806130 @ 46, -106, 24"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
                 Variables = new Dictionary<string, string> { { nameof(_MinRange), "7" }, { nameof(_MaxRange), "27" } },
                 Output = "2",
                 RawInput =
@@ -53,12 +63,12 @@ namespace AoC._2023
         private long _MinRange { get; }
         private long _MaxRange { get; }
 
-        public record HailStone(Pos3L Pos, Pos3L Vel)
+        public record HailStone(Pos3BI Pos, Pos3BI Vel)
         {
             public static HailStone Parse(string input)
             {
-                long[] split = Number.SplitL(input, ", @").ToArray();
-                return new HailStone(new Pos3L(split[0], split[1], split[2]), new Pos3L(split[3], split[4], split[5]));
+                BigInteger[] split = Number.SplitBI(input, ", @").ToArray();
+                return new HailStone(new Pos3BI(split[0], split[1], split[2]), new Pos3BI(split[3], split[4], split[5]));
             }
 
             public override string ToString()
@@ -67,11 +77,11 @@ namespace AoC._2023
             }
         }
 
-        public record Limits(Pos3L Min, Pos3L Max)
+        public record Limits(Pos3BI Min, Pos3BI Max)
         {
             public static Limits Convert(HailStone hailStone, long min, long max)
             {
-                Pos3L start = hailStone.Pos;
+                Pos3BI start = hailStone.Pos;
                 if (start.X >= max && hailStone.Vel.X > 0)
                 {
                     return null;
@@ -93,9 +103,9 @@ namespace AoC._2023
                 // if outside of test area, move it to border
                 // if inside, use starting point
                 // then add second point at the edge of the test area
-                Func<long, long, long> getStartMult = (startN, velN) =>
+                Func<BigInteger, BigInteger, BigInteger> getStartMult = (startN, velN) =>
                 {
-                    long mult = 0;
+                    BigInteger mult = 0;
                     if (velN != 0)
                     {
                         if (startN - max > 0)
@@ -110,15 +120,15 @@ namespace AoC._2023
                     return mult;
                 };
 
-                long multX = getStartMult(start.X, hailStone.Vel.X);
-                long multY = getStartMult(start.Y, hailStone.Vel.Y);
-                long mult = Math.Max(multX, multY);
+                BigInteger multX = getStartMult(start.X, hailStone.Vel.X);
+                BigInteger multY = getStartMult(start.Y, hailStone.Vel.Y);
+                BigInteger mult = Number.Max(Number.Abs(multX), Number.Abs(multY));
                 start += (hailStone.Vel * mult);
 
-                Pos3L end = new Pos3L(start + hailStone.Vel);
-                Func<long, long, long> getEndMult = (endN, velN) =>
+                Pos3BI end = new Pos3BI(start + hailStone.Vel);
+                Func<BigInteger, BigInteger, BigInteger> getEndMult = (endN, velN) =>
                 {
-                    long mult = 0;
+                    BigInteger mult = 0;
                     if (velN > 0)
                     {
                         mult = (max - endN) / velN;
@@ -131,7 +141,7 @@ namespace AoC._2023
                 };
                 multX = getEndMult(end.X, hailStone.Vel.X);
                 multY = getEndMult(end.Y, hailStone.Vel.Y);
-                mult = Math.Min(Math.Abs(multX), Math.Abs(multY));
+                mult = Number.Min(Number.Abs(multX), Number.Abs(multY));
                 end += (hailStone.Vel * mult);
 
                 // while (end.X > min && end.X < max && end.Y > min && end.Y < max)
@@ -147,19 +157,19 @@ namespace AoC._2023
             }
         }
 
-        public bool OnSegment(Pos3L a, Pos3L b, Pos3L c)
+        public bool OnSegment(Pos3BI a, Pos3BI b, Pos3BI c)
         {
-            if (b.X <= Math.Max(a.X, c.X) && b.X >= Math.Min(a.X, c.X) &&
-                b.Y <= Math.Max(a.Y, c.Y) && b.Y >= Math.Min(a.Y, c.Y))
+            if (b.X <= Number.Max(a.X, c.X) && b.X >= Number.Min(a.X, c.X) &&
+                b.Y <= Number.Max(a.Y, c.Y) && b.Y >= Number.Min(a.Y, c.Y))
             {
                 return true;
             }
             return false;
         }
 
-        public long GetOrientation(Pos3L a, Pos3L b, Pos3L c)
+        public long GetOrientation(Pos3BI a, Pos3BI b, Pos3BI c)
         {
-            long val = (b.Y - a.Y) * (c.X - b.X) - (b.X - a.X) * (c.Y - b.Y);
+            BigInteger val = (b.Y - a.Y) * (c.X - b.X) - (b.X - a.X) * (c.Y - b.Y);
             if (val == 0)
             {
                 return 0;
@@ -232,6 +242,9 @@ namespace AoC._2023
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
             // 12024 [TOO LOW]
+            // 12065 [TOO LOW]
+            // 14965 [TOO HIGH]
+            // 13918 [NOT RIGHT]
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables);
