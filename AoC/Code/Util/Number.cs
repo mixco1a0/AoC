@@ -1,11 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace AoC.Util
 {
     public static class Number
     {
+        public static BigInteger Abs(BigInteger bigInteger)
+        {
+            if (bigInteger >= 0)
+            {
+                return bigInteger;
+            }
+            return bigInteger * -1;
+        }
+
+        public static BigInteger Max(BigInteger bigIntegerA, BigInteger bigIntegerB)
+        {
+            return bigIntegerA >= bigIntegerB ? bigIntegerA : bigIntegerB;
+        }
+
+        public static BigInteger Min(BigInteger bigIntegerA, BigInteger bigIntegerB)
+        {
+            return bigIntegerA <= bigIntegerB ? bigIntegerA : bigIntegerB;
+        }
+
         /// <summary>
         /// Call split on a string and then parse it into ints
         /// </summary>
@@ -52,6 +72,30 @@ namespace AoC.Util
         {
             string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             return split.Where(s => long.TryParse(s, out long result)).Select(long.Parse);
+        }
+
+        /// <summary>
+        /// Call split on a string and then parse it into BigIntegers
+        /// </summary>
+        /// <param name="input">string of separated BigIntegers</param>
+        /// <param name="seperator">characters used as seperators</param>
+        /// <returns></returns>
+        public static IEnumerable<BigInteger> SplitBI(string input, string seperator)
+        {
+            string[] split = input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return split.Where(s => BigInteger.TryParse(s, out BigInteger result)).Select(BigInteger.Parse);
+        }
+
+        /// <summary>
+        /// Call split on a string and then parse it into BigIntegers
+        /// </summary>
+        /// <param name="input">string of separated BigIntegers</param>
+        /// <param name="seperator">character used as seperator</param>
+        /// <returns></returns>
+        public static IEnumerable<BigInteger> SplitBI(string input, char seperator)
+        {
+            string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return split.Where(s => BigInteger.TryParse(s, out BigInteger result)).Select(BigInteger.Parse);
         }
 
         /// <summary>
