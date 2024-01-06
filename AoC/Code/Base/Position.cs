@@ -275,6 +275,20 @@ namespace AoC.Base
             return new Pos2BI(a.X - b.X, a.Y - b.Y);
         }
 
+        public static Pos2BI operator *(Pos2BI a, BigInteger mult)
+        {
+            return new Pos2BI(a.X * mult, a.Y * mult);
+        }
+
+        public static Pos2BI operator /(Pos2BI a, BigInteger mult)
+        {
+            if (mult == 0)
+            {
+                return new Pos2BI();
+            }
+            return new Pos2BI(a.X / mult, a.Y / mult);
+        }
+
         public BigInteger Manhattan(Pos2BI other)
         {
             return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y);
