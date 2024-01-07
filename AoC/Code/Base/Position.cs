@@ -27,6 +27,17 @@ namespace AoC.Base
             Y = other.Y;
         }
 
+        public static Pos2 Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            return new Pos2(split[0], split[1]);
+        }
+
         public static Pos2 operator +(Pos2 a, Pos2 b)
         {
             return new Pos2(a.X + b.X, a.Y + b.Y);
@@ -54,17 +65,6 @@ namespace AoC.Base
         public int Manhattan(Pos2 other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
-        }
-
-        public static Pos2 Parse(string input)
-        {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-            return new Pos2(split[0], split[1]);
         }
 
         #region Interfaces
@@ -146,6 +146,17 @@ namespace AoC.Base
             Y = other.Y;
         }
 
+        public static Pos2L Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            return new Pos2L(split[0], split[1]);
+        }
+
         public static Pos2L operator +(Pos2L a, Pos2L b)
         {
             return new Pos2L(a.X + b.X, a.Y + b.Y);
@@ -173,17 +184,6 @@ namespace AoC.Base
         public long Manhattan(Pos2L other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
-        }
-
-        public static Pos2L Parse(string input)
-        {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
-            return new Pos2L(split[0], split[1]);
         }
 
         #region Interfaces
@@ -265,6 +265,17 @@ namespace AoC.Base
             Y = other.Y;
         }
 
+        public static Pos2BI Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            BigInteger[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(BigInteger.Parse).ToArray();
+            return new Pos2BI(split[0], split[1]);
+        }
+
         public static Pos2BI operator +(Pos2BI a, Pos2BI b)
         {
             return new Pos2BI(a.X + b.X, a.Y + b.Y);
@@ -292,17 +303,6 @@ namespace AoC.Base
         public BigInteger Manhattan(Pos2BI other)
         {
             return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y);
-        }
-
-        public static Pos2BI Parse(string input)
-        {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            BigInteger[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(BigInteger.Parse).ToArray();
-            return new Pos2BI(split[0], split[1]);
         }
 
         #region Interfaces
@@ -384,6 +384,17 @@ namespace AoC.Base
             Y = other.Y;
         }
 
+        public static Pos2F Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
+            return new Pos2F(split[0], split[1]);
+        }
+
         public static Pos2F operator +(Pos2F a, Pos2F b)
         {
             return new Pos2F(a.X + b.X, a.Y + b.Y);
@@ -411,17 +422,6 @@ namespace AoC.Base
         public float Manhattan(Pos2F other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
-        }
-
-        public static Pos2F Parse(string input)
-        {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
-            return new Pos2F(split[0], split[1]);
         }
 
         #region Interfaces
@@ -480,6 +480,125 @@ namespace AoC.Base
         #endregion
     }
 
+    public class Pos2D : IEquatable<Pos2D>, IComparable<Pos2D>, IComparable
+    {
+        public decimal X { get; set; }
+        public decimal Y { get; set; }
+
+        public Pos2D()
+        {
+            X = default;
+            Y = default;
+        }
+
+        public Pos2D(decimal x, decimal y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public Pos2D(Pos2D other)
+        {
+            X = other.X;
+            Y = other.Y;
+        }
+
+        public static Pos2D Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            decimal[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(decimal.Parse).ToArray();
+            return new Pos2D(split[0], split[1]);
+        }
+
+        public static Pos2D operator +(Pos2D a, Pos2D b)
+        {
+            return new Pos2D(a.X + b.X, a.Y + b.Y);
+        }
+
+        public static Pos2D operator -(Pos2D a, Pos2D b)
+        {
+            return new Pos2D(a.X - b.X, a.Y - b.Y);
+        }
+
+        public static Pos2D operator *(Pos2D a, decimal mult)
+        {
+            return new Pos2D(a.X * mult, a.Y * mult);
+        }
+
+        public static Pos2D operator /(Pos2D a, decimal mult)
+        {
+            if (mult == decimal.Zero)
+            {
+                return new Pos2D();
+            }
+            return new Pos2D(a.X / mult, a.Y / mult);
+        }
+
+        public decimal Manhattan(Pos2D other)
+        {
+            return decimal.Abs(X - other.X) + decimal.Abs(Y - other.Y);
+        }
+
+        #region Interfaces
+        public bool Equals(Pos2D other)
+        {
+            return X == other.X && Y == other.Y;
+        }
+
+        public virtual int CompareTo(Pos2D other)
+        {
+            int xCompare = X.CompareTo(other.X);
+            if (xCompare != 0)
+            {
+                return xCompare;
+            }
+            return Y.CompareTo(other.Y);
+        }
+
+        public int CompareTo(object other)
+        {
+            Pos2D otherAsPos2D = other as Pos2D;
+            if (otherAsPos2D == null)
+            {
+                return -1;
+            }
+            return otherAsPos2D.CompareTo(other);
+        }
+        #endregion
+
+        #region Overrides
+        public override string ToString()
+        {
+            return $"[{X}, {Y}]";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            Pos2D objAsPos2D = obj as Pos2D;
+            if (objAsPos2D == null)
+            {
+                return false;
+            }
+
+            return Equals(objAsPos2D);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
+        }
+        #endregion
+    }
+
     public class Pos3 : IEquatable<Pos3>
     {
         public int X { get; set; }
@@ -505,6 +624,17 @@ namespace AoC.Base
             X = other.X;
             Y = other.Y;
             Z = other.Z;
+        }
+
+        public static Pos3 Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            return new Pos3(split[0], split[1], split[2]);
         }
 
         public static Pos3 operator +(Pos3 a, Pos3 b)
@@ -536,15 +666,9 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
-        public static Pos3 Parse(string input)
+        public Pos2 DropZ()
         {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-            return new Pos3(split[0], split[1], split[2]);
+            return new Pos2(X, Y);
         }
 
         #region Interfaces
@@ -610,6 +734,17 @@ namespace AoC.Base
             Z = other.Z;
         }
 
+        public static Pos3L Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            return new Pos3L(split[0], split[1], split[2]);
+        }
+
         public static Pos3L operator +(Pos3L a, Pos3L b)
         {
             return new Pos3L(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -639,15 +774,9 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
-        public static Pos3L Parse(string input)
+        public Pos2L DropZ()
         {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
-            return new Pos3L(split[0], split[1], split[2]);
+            return new Pos2L(X, Y);
         }
 
         #region Interfaces
@@ -713,6 +842,17 @@ namespace AoC.Base
             Z = other.Z;
         }
 
+        public static Pos3BI Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            BigInteger[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(BigInteger.Parse).ToArray();
+            return new Pos3BI(split[0], split[1], split[2]);
+        }
+
         public static Pos3BI operator +(Pos3BI a, Pos3BI b)
         {
             return new Pos3BI(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -742,15 +882,9 @@ namespace AoC.Base
             return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y) + Util.Number.Abs(Z - other.Z);
         }
 
-        public static Pos3BI Parse(string input)
+        public Pos2BI DropZ()
         {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            BigInteger[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(BigInteger.Parse).ToArray();
-            return new Pos3BI(split[0], split[1], split[2]);
+            return new Pos2BI(X, Y);
         }
 
         #region Interfaces
@@ -816,6 +950,17 @@ namespace AoC.Base
             Z = other.Z;
         }
 
+        public static Pos3F Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
+            return new Pos3F(split[0], split[1], split[2]);
+        }
+
         public static Pos3F operator +(Pos3F a, Pos3F b)
         {
             return new Pos3F(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -845,15 +990,9 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
-        public static Pos3F Parse(string input)
+        public Pos2F DropZ()
         {
-            if (!input.Contains(','))
-            {
-                return null;
-            }
-
-            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
-            return new Pos3F(split[0], split[1], split[2]);
+            return new Pos2F(X, Y);
         }
 
         #region Interfaces
