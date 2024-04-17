@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using AoC.Base;
-using AoC.Util;
 
 namespace AoC._2023
 {
@@ -69,17 +67,17 @@ namespace AoC._2023
                 for (int j = i + 1; j < h2d.Count; ++j)
                 {
                     Vec2L jH = h2d[j];
-                    Base.Vector.Intersection type = iH.GetIntersection(jH, out Pos2L pos2);
+                    Vec.Intersection2D type = iH.GetIntersection(jH, out Pos2L pos2);
                     switch (type)
                     {
-                        case Base.Vector.Intersection.Parallel:
+                        case Vec.Intersection2D.Parallel:
                             // Log($"{iH} is parallel to {jH}");
                             break;
-                        case Base.Vector.Intersection.Overlap:
+                        case Vec.Intersection2D.Overlap:
                             // Log($"{iH} overlaps {jH}");
                             ++count;
                             break;
-                        case Base.Vector.Intersection.SinglePoint:
+                        case Vec.Intersection2D.SinglePoint:
                             // char inside = 'X';
                             // char whenPath = 'P';
                             if (pos2.X >= minRange && pos2.X <= maxRange && pos2.Y >= minRange && pos2.Y <= maxRange)

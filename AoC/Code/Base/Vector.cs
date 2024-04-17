@@ -4,15 +4,16 @@ using System.Numerics;
 
 namespace AoC.Base
 {
-    public static class Vector
+    public static class Vec
     {
-        public enum Intersection
+        public enum Intersection2D
         {
             Parallel,
             Overlap,
             SinglePoint
         }
     }
+
     public class Vec2 : IEquatable<Vec2>
     {
         public Pos2 Pos { get; set; }
@@ -83,7 +84,7 @@ namespace AoC.Base
             return FromVel(new Pos2(split[0], split[1]), new Pos2(split[3], split[4]));
         }
 
-        public Vector.Intersection GetIntersection(Vec2 other, out Pos2 intersection)
+        public Vec.Intersection2D GetIntersection(Vec2 other, out Pos2 intersection)
         {
             intersection = new Pos2();
             // A1x + B1y = C1
@@ -116,20 +117,27 @@ namespace AoC.Base
             // ----------------------------------
             if (A == other.A && B == other.B)
             {
-                return Vector.Intersection.Overlap;
+                return Vec.Intersection2D.Overlap;
             }
 
             long denominator = A * other.B - other.A * B;
             if (denominator == 0)
             {
-                return Vector.Intersection.Parallel;
+                return Vec.Intersection2D.Parallel;
             }
 
             long x = (other.B * C - B * other.C) / denominator;
             long y = -1 * (other.A * C - A * other.C) / denominator;
             intersection = new Pos2((int)x, (int)y);
 
-            return Vector.Intersection.SinglePoint;
+            return Vec.Intersection2D.SinglePoint;
+        }
+
+        public int GetLength()
+        {
+            double squares = Math.Pow(Pos.X - Next.X, 2) + Math.Pow(Pos.Y - Next.Y, 2);
+            double root = Math.Sqrt(squares);
+            return (int)root;
         }
 
         #region Interfaces
@@ -234,25 +242,32 @@ namespace AoC.Base
             return FromPos(new Pos2L(split[0], split[1]), new Pos2L(split[2], split[3]));
         }
 
-        public Vector.Intersection GetIntersection(Vec2L other, out Pos2L intersection)
+        public Vec.Intersection2D GetIntersection(Vec2L other, out Pos2L intersection)
         {
             intersection = new Pos2L();
             if (A == other.A && B == other.B)
             {
-                return Vector.Intersection.Overlap;
+                return Vec.Intersection2D.Overlap;
             }
 
             BigInteger denominator = A * other.B - other.A * B;
             if (denominator == 0)
             {
-                return Vector.Intersection.Parallel;
+                return Vec.Intersection2D.Parallel;
             }
 
             BigInteger x = (other.B * C - B * other.C) / denominator;
             BigInteger y = -1 * (other.A * C - A * other.C) / denominator;
             intersection = new Pos2L((long)x, (long)y);
 
-            return Vector.Intersection.SinglePoint;
+            return Vec.Intersection2D.SinglePoint;
+        }
+
+        public long GetLength()
+        {
+            double squares = Math.Pow(Pos.X - Next.X, 2) + Math.Pow(Pos.Y - Next.Y, 2);
+            double root = Math.Sqrt(squares);
+            return (long)root;
         }
 
         #region Interfaces
@@ -338,9 +353,16 @@ namespace AoC.Base
             return FromVel(new Pos3(split[0], split[1], split[2]), new Pos3(split[3], split[4], split[5]));
         }
 
+        public int GetLength()
+        {
+            double squares = Math.Pow(Pos.X - Next.X, 2) + Math.Pow(Pos.Y - Next.Y, 2) + Math.Pow(Pos.Z - Next.Z, 2);
+            double root = Math.Sqrt(squares);
+            return (int)root;
+        }
+
         public Vec2 DropZ()
         {
-            return new Vec2() { Pos = Pos.DropZ(), Vel = Vel.DropZ()};
+            return new Vec2() { Pos = Pos.DropZ(), Vel = Vel.DropZ() };
         }
 
         #region Interfaces
@@ -378,7 +400,6 @@ namespace AoC.Base
         }
         #endregion
     }
-
 
     public class Vec3L : IEquatable<Vec3L>
     {
@@ -427,9 +448,16 @@ namespace AoC.Base
             return FromVel(new Pos3L(split[0], split[1], split[2]), new Pos3L(split[3], split[4], split[5]));
         }
 
+        public long GetLength()
+        {
+            double squares = Math.Pow(Pos.X - Next.X, 2) + Math.Pow(Pos.Y - Next.Y, 2) + Math.Pow(Pos.Z - Next.Z, 2);
+            double root = Math.Sqrt(squares);
+            return (long)root;
+        }
+
         public Vec2L DropZ()
         {
-            return new Vec2L() { Pos = Pos.DropZ(), Vel = Vel.DropZ()};
+            return new Vec2L() { Pos = Pos.DropZ(), Vel = Vel.DropZ() };
         }
 
         #region Interfaces
