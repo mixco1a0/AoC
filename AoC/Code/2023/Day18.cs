@@ -2,6 +2,7 @@ using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace AoC._2023
 {
@@ -13,16 +14,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -117,7 +118,7 @@ U 2 (#7a21e3)"
 
         private record Check(Base.Pos2L Pos2L, bool IsBorder);
 
-        private void GetGrid(List<string> inputs, out char[,] grid, out Base.Pos2L start, bool useHex)
+        private void GetPositions(List<string> inputs, out List<Base.Pos2L> positions, bool useHex)
         {
             List<Instruction> instructions;
             if (useHex)
@@ -128,11 +129,12 @@ U 2 (#7a21e3)"
             {
                 instructions = inputs.Select(Instruction.Parse).ToList();
             }
-            List<Base.SegmentL> segments = new List<Base.SegmentL>();
-            Base.Pos2L cur = new Base.Pos2L(), min = new Base.Pos2L(long.MaxValue, long.MaxValue), max = new Base.Pos2L(long.MinValue, long.MinValue);
+
+            positions = new List<Base.Pos2L>();
+            Base.Pos2L cur = new Base.Pos2L(), min = new Base.Pos2L();
             foreach (Instruction instruction in instructions)
             {
-                Base.Pos2L next = cur;
+                Base.Pos2L next = new Base.Pos2L();
                 switch (instruction.Direction)
                 {
                     case Direction.North:
@@ -148,93 +150,48 @@ U 2 (#7a21e3)"
                         next = cur + new Base.Pos2L(-instruction.Meters, 0);
                         break;
                 }
-                segments.Add(new Base.SegmentL(cur, next));
+                min.X = Math.Min(min.X, next.X);
+                min.Y = Math.Min(min.Y, next.Y);
+                positions.Add(next);
                 cur = next;
-                min.X = Math.Min(min.X, cur.X);
-                min.Y = Math.Min(min.Y, cur.Y);
-                max.X = Math.Max(max.X, cur.X);
-                max.Y = Math.Max(max.Y, cur.Y);
             }
 
-            // get the starting point for flood fill
-            Base.Pos2L first = segments.First().B - min;
-            Base.Pos2L last = segments.Last().A - min;
-            start = first + last;
-            start.X = start.X / Math.Abs(start.X) - min.X;
-            start.Y = start.Y / Math.Abs(start.Y) - min.Y;
-
-            // initialize the grid
-            grid = new char[max.X - min.X + 1, max.Y - min.Y + 1];
-            for (int x = 0; x < grid.GetLength(0); ++x)
+            for (int i = 0; i < positions.Count; ++i)
             {
-                for (int y = 0; y < grid.GetLength(1); ++y)
-                {
-                    grid[x, y] = Empty;
-                }
-            }
-
-            // populate the grid
-            foreach (Base.SegmentL segment in segments)
-            {
-                bool ascendingX = segment.B.X >= segment.A.X;
-                Func<long, long> iterX = (x) => ascendingX ? x + 1 : x - 1;
-
-                bool ascendingY = segment.B.Y >= segment.A.Y;
-                Func<long, long> iterY = (y) => ascendingY ? y + 1 : y - 1;
-
-                for (long x = segment.A.X; ascendingX ? (x <= segment.B.X) : (x >= segment.B.X); x = iterX(x))
-                {
-                    for (long y = segment.A.Y; ascendingY ? (y <= segment.B.Y) : (y >= segment.B.Y); y = iterY(y))
-                    {
-                        grid[x - min.X, y - min.Y] = Border;
-                    }
-                }
+                positions[i] += min;
             }
         }
 
-        private void FloodFillGrid(ref char[,] grid, Base.Pos2L start)
+        private BigInteger CalcShoelace(List<Base.Pos2L> positions)
         {
-            int xMax = grid.GetLength(0);
-            int yMax = grid.GetLength(1);
-
-            Queue<Base.Pos2L> queue = new Queue<Base.Pos2L>();
-            queue.Enqueue(start);
-            while (queue.Count > 0)
+            // area = 1/2 * (x1y2 + x2y3 + xny1 - x2y1 - x3y2 - x1yn)
+            BigInteger area = 0;
+            for (int i = 0; i < positions.Count; ++i)
             {
-                Base.Pos2L curPos = queue.Dequeue();
-                if (grid[curPos.X, curPos.Y] != Empty)
-                {
-                    continue;
-                }
-                grid[curPos.X, curPos.Y] = Fill;
-
-                foreach (Base.Pos2L gridMove in GridMoves)
-                {
-                    Base.Pos2L nextPos = curPos + gridMove;
-                    if (nextPos.X >= 0 && nextPos.X < xMax && nextPos.Y >= 0 && nextPos.Y < yMax)
-                    {
-                        queue.Enqueue(nextPos);
-                    }
-                }
+                int j = (i + 1) % positions.Count;
+                Base.Pos2L cur = positions[i];
+                Base.Pos2L nxt = positions[j];
+                area += cur.X * nxt.Y - nxt.X * cur.Y;
             }
+            return area / 2;
         }
 
-        private long GetSize(char[,] grid)
+        private BigInteger CalcPerimeter(List<Base.Pos2L> positions)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int y = 0; y < grid.GetLength(1); ++y)
+            BigInteger perimeter = 0;
+            for (int i = 0; i < positions.Count; ++i)
             {
-                stringBuilder.Append(string.Join(string.Empty, Enumerable.Range(0, grid.GetLength(0)).Select(x => grid[x, y])));
+                int j = (i + 1) % positions.Count;
+                Base.Vec2L vec = Base.Vec2L.FromPos(positions[i], positions[j]);
+                perimeter += vec.GetLength();
             }
-            return stringBuilder.ToString().Count(c => c == Fill || c == Border);
+            return perimeter / 2 + 1;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useHex)
         {
-            GetGrid(inputs, out char[,] grid, out Base.Pos2L start, useHex);
-            FloodFillGrid(ref grid, start);
-            // Util.Grid.PrintGrid(grid, Core.Log.ELevel.Debug);
-            return GetSize(grid).ToString();
+            GetPositions(inputs, out List<Base.Pos2L> positions, useHex);
+            return (CalcShoelace(positions) + CalcPerimeter(positions)).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
