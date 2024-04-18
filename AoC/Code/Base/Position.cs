@@ -9,6 +9,20 @@ namespace AoC.Base
         public int X { get; set; }
         public int Y { get; set; }
 
+        private static Pos2 _zero;
+        public static Pos2 Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos2();
+                return _zero;
+            }
+        }
+
         public Pos2()
         {
             X = default;
@@ -127,6 +141,20 @@ namespace AoC.Base
     {
         public long X { get; set; }
         public long Y { get; set; }
+
+        private static Pos2L _zero;
+        public static Pos2L Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos2L();
+                return _zero;
+            }
+        }
 
         public Pos2L()
         {
@@ -247,6 +275,20 @@ namespace AoC.Base
         public BigInteger X { get; set; }
         public BigInteger Y { get; set; }
 
+        private static Pos2BI _zero;
+        public static Pos2BI Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos2BI();
+                return _zero;
+            }
+        }
+
         public Pos2BI()
         {
             X = default;
@@ -366,6 +408,20 @@ namespace AoC.Base
         public float X { get; set; }
         public float Y { get; set; }
 
+        private static Pos2F _zero;
+        public static Pos2F Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos2F();
+                return _zero;
+            }
+        }
+
         public Pos2F()
         {
             X = default;
@@ -484,6 +540,20 @@ namespace AoC.Base
     {
         public decimal X { get; set; }
         public decimal Y { get; set; }
+
+        private static Pos2D _zero;
+        public static Pos2D Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos2D();
+                return _zero;
+            }
+        }
 
         public Pos2D()
         {
@@ -605,6 +675,20 @@ namespace AoC.Base
         public int Y { get; set; }
         public int Z { get; set; }
 
+        private static Pos3 _zero;
+        public static Pos3 Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos3();
+                return _zero;
+            }
+        }
+
         public Pos3()
         {
             X = default;
@@ -712,6 +796,20 @@ namespace AoC.Base
         public long X { get; set; }
         public long Y { get; set; }
         public long Z { get; set; }
+
+        private static Pos3L _zero;
+        public static Pos3L Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos3L();
+                return _zero;
+            }
+        }
 
         public Pos3L()
         {
@@ -821,6 +919,20 @@ namespace AoC.Base
         public BigInteger Y { get; set; }
         public BigInteger Z { get; set; }
 
+        private static Pos3BI _zero;
+        public static Pos3BI Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos3BI();
+                return _zero;
+            }
+        }
+
         public Pos3BI()
         {
             X = default;
@@ -928,6 +1040,20 @@ namespace AoC.Base
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
+
+        private static Pos3F _zero;
+        public static Pos3F Zero
+        {
+            get
+            {
+                if (_zero != null)
+                {
+                    return _zero;
+                }
+                _zero = new Pos3F();
+                return _zero;
+            }
+        }
 
         public Pos3F()
         {

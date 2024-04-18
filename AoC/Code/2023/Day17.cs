@@ -30,6 +30,15 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.One,
+                Output = "11",
+                RawInput =
+@"9111111
+2211251
+3344552"
+            });
+            testData.Add(new Core.TestDatum
+            {
+                TestPart = Core.Part.One,
                 Output = "102",
                 RawInput =
 @"2413432311323
@@ -98,26 +107,71 @@ namespace AoC._2023
             }
         }
 
-        private record Movement(Base.Pos2 Pos, Direction Direction, int Line, int HeatLoss, List<Base.Pos2> History);
+        private record Movement(Base.Pos2 Pos, Direction Direction, int Steps, int HeatLoss, Base.Pos2 Prev);
 
         private class Node
         {
             public long Weight { get; set; }
-            public Base.Pos2 Prev { get; set; }
-            public bool Done { get; set; }
-            public long Path { get; set; }
+            public int[] Steps { get; set; }
+            public Base.Pos2[] Prev { get; set; }
+            public bool[] Done { get; set; }
+            public long[] Path { get; set; }
 
             public Node(long weight)
             {
+                int count = (int)Direction.None;
                 Weight = weight;
-                Prev = null;
-                Done = false;
-                Path = long.MaxValue;
+                Steps = new int[count];
+                Prev = new Base.Pos2[count];
+                Done = new bool[count];
+                Path = new long[count];
+                for (Direction dir = Direction.North; dir != Direction.None; ++dir)
+                {
+                    Steps[(int)dir] = 0;
+                    Prev[(int)dir] = null;
+                    Done[(int)dir] = false;
+                    Path[(int)dir] = long.MaxValue;
+                }
             }
 
             public override string ToString()
             {
-                return Done ? $"{Path,4}" : $"?{Weight,2}?";
+                StringBuilder sb = new StringBuilder();
+                for (Direction d = Direction.North; d != Direction.None; ++d)
+                {
+                    sb.Append($"{d.ToString()[0]}:");
+
+                    int i = (int)d;
+                    if (Done[i])
+                    {
+                        sb.Append($"{Path[i],3}");
+                    }
+                    else
+                    {
+                        sb.Append($"???");
+                    }
+                    sb.Append($"|");
+                }
+                return sb.ToString();
+            }
+
+            public Base.Pos2 BestPrev()
+            {
+                Base.Pos2 prev = null;
+                long min = long.MaxValue;
+                for (Direction d = Direction.North; d != Direction.None; ++d)
+                {
+                    int i = (int)d;
+                    if (Done[i])
+                    {
+                        if (min > Path[i])
+                        {
+                            min = Path[i];
+                            prev = Prev[i];
+                        }
+                    }
+                }
+                return prev;
             }
         }
 
@@ -135,163 +189,159 @@ namespace AoC._2023
             }
 
             // reset first state
-            nodes[0, 0].Path = 0;
-            nodes[0, 0].Weight = 0;
-            nodes[0, 0].Prev = new Base.Pos2();
+            for (Direction dir = Direction.North; dir != Direction.None; ++dir)
+            {
+                nodes[0, 0].Path[(int)dir] = 0;
+                nodes[0, 0].Path[(int)dir] = 0;
+                nodes[0, 0].Prev[(int)dir] = Base.Pos2.Zero;
+            }
         }
 
         private void PrintNodes(Node[,] nodes)
         {
+            Log("-------------------------");
             for (int y = 0; y < nodes.GetLength(1); ++y)
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append($"{y,3} | ");
                 for (int x = 0; x < nodes.GetLength(0); ++x)
                 {
-                    sb.Append($"{nodes[x, y].Weight,1}");
+                    if (x == 0 && y == 0)
+                    {
+                        sb.Append($"S");
+                        continue;
+                    }
+
+                    long shortest = long.MaxValue;
+                    Direction best = Direction.None;
+                    for (Direction d = Direction.North; d != Direction.None; ++d)
+                    {
+                        if (nodes[x, y].Done[(int)d])
+                        {
+                            if (nodes[x, y].Path[(int)d] <= shortest)
+                            {
+                                shortest = nodes[x, y].Path[(int)d];
+                                best = d;
+                            }
+                        }
+                    }
+                    char c = '?';
+                    switch (best)
+                    {
+                        case Direction.North:
+                            c = '^';
+                            break;
+                        case Direction.South:
+                            c = 'v';
+                            break;
+                        case Direction.East:
+                            c = '>';
+                            break;
+                        case Direction.West:
+                            c = '<';
+                            break;
+                    }
+                    sb.Append($"{c,1}");
                 }
                 Log(sb.ToString());
             }
         }
 
-        private void PrintHistory(int[,] grid, List<Base.Pos2> history)
+        private void PrintSolution(Node[,] nodes)
         {
-            for (int y = 0; y < grid.GetLength(1); ++y)
+            int xMax = nodes.GetLength(0);
+            int yMax = nodes.GetLength(1);
+            char[,] printout = new char[xMax, yMax];
+            for (int y = 0; y < yMax; ++y)
             {
-                StringBuilder stringBuilder = new StringBuilder();
-                for (int x = 0; x < grid.GetLength(0); ++x)
+                for (int x = 0; x < xMax; ++x)
                 {
-                    Base.Pos2 pos = new Base.Pos2(x, y);
-                    if (history.Contains(pos))
-                    {
-                        stringBuilder.Append('*');
-                    }
-                    else
-                    {
-                        stringBuilder.Append(grid[x, y]);
-                    }
+                    printout[x, y] = (char)(nodes[x, y].Weight + '0');
                 }
-                Core.Log.WriteLine(Core.Log.ELevel.Debug, stringBuilder.ToString());
+            }
+
+            Base.Pos2 end = new Base.Pos2(xMax - 1, yMax - 1);
+            Base.Pos2 cur = Base.Pos2.Zero;
+            while (cur != end)
+            {
+                printout[cur.X, cur.Y] = '*';
+                cur = nodes[cur.X, cur.Y].BestPrev();
+            }
+
+            Log("-------------------------");
+            for (int y = 0; y < nodes.GetLength(1); ++y)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append($"{y,3} | ");
+                for (int x = 0; x < nodes.GetLength(0); ++x)
+                {
+                    sb.Append(printout[x, y]);
+                }
+                Log(sb.ToString());
             }
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            // ParseInput(inputs, out Node[,] nodes);
-            // // PrintNodes(nodes);
-            // int xMax = nodes.GetLength(0);
-            // int yMax = nodes.GetLength(1);
-            // Base.Pos2 end = new Base.Pos2(xMax - 1, yMax - 1);
-
-            // PriorityQueue<Movement, long> gridWalker = new PriorityQueue<Movement, long>();
-            // gridWalker.Enqueue(new Movement(new Base.Pos2(), Direction.None, 0, 0, new List<Base.Pos2>() { new Base.Pos2() }), 0);
-            // while (gridWalker.Count > 0)
-            // {
-            //     Movement movement = gridWalker.Dequeue();
-            //     Base.Pos2 curPos = movement.Pos;
-
-            //     Node curNode = nodes[curPos.X, curPos.Y];
-            //     if (curNode.Done)
-            //     {
-            //         continue;
-            //     }
-            //     curNode.Done = true;
-
-            //     Node prevNode = nodes[curNode.Prev.X, curNode.Prev.Y];
-            //     curNode.Path = prevNode.Path + curNode.Weight;
-
-            //     if (curPos.Equals(end))
-            //     {
-            //         break;
-            //     }
-
-            //     foreach (var pair in Next)
-            //     {
-            //         bool sameDirection = pair.Key == movement.Direction;
-            //         if (sameDirection && movement.Line == 3)
-            //         {
-            //             continue;
-            //         }
-
-            //         if (movement.Direction == Backtrack[pair.Key])
-            //         {
-            //             continue;
-            //         }
-
-            //         Base.Pos2 nextPos = curPos + pair.Value;
-            //         if (nextPos.X >= 0 && nextPos.X < xMax && nextPos.Y >= 0 && nextPos.Y < yMax)
-            //         {
-            //             Node nextNode = nodes[nextPos.X, nextPos.Y];
-            //             if (!nextNode.Done)
-            //             {
-            //                 if (nextNode.Prev != null)
-            //                 {
-            //                     Node existing = nodes[nextNode.Prev.X, nextNode.Prev.Y];
-            //                     if (curNode.Path < existing.Path)
-            //                     {
-            //                         nextNode.Prev = curPos;
-            //                     }
-            //                 }
-            //                 else
-            //                 {
-            //                     nextNode.Prev = curPos;
-            //                 }
-
-            //                 gridWalker.Enqueue(new Movement(nextPos, pair.Key, (sameDirection ? movement.Line + 1 : 0), 0, null), curNode.Path + nextNode.Weight);
-            //             }
-            //         }
-            //     }
-            // }
-
-            // return nodes[xMax - 1, yMax - 1].Path.ToString();
-
-
-
             ParseInput(inputs, out int[,] grid);
-            PrintGrid(grid);
-
-            Base.Pos2 start = new Base.Pos2();
-            Base.Pos2 end = new Base.Pos2(grid.GetLength(0) - 1, grid.GetLength(1) - 1);
-
-            PriorityQueue<Movement, long> priorityQueue = new PriorityQueue<Movement, long>();
-            priorityQueue.Enqueue(new Movement(new Base.Pos2(), Direction.None, 0, 0, new List<Base.Pos2>() { start }), 0);
-            while (priorityQueue.Count > 0)
+            // PrintGrid(grid);
+            ParseInput(inputs, out Node[,] nodes);
+            PriorityQueue<Movement, int> toCheck = new PriorityQueue<Movement, int>();
+            toCheck.Enqueue(new Movement(Base.Pos2.Zero, Direction.East, 0, 0, Base.Pos2.Zero), 0);
+            toCheck.Enqueue(new Movement(Base.Pos2.Zero, Direction.South, 0, 0, Base.Pos2.Zero), 0);
+            while (toCheck.Count != 0)
             {
-                Movement movement = priorityQueue.Dequeue();
-                if (movement.Pos == end)
+                Movement cur = toCheck.Dequeue();
+                int curDir = (int)cur.Direction;
+                Node curNode = nodes[cur.Pos.X, cur.Pos.Y];
+                if (curNode.Done[curDir])
                 {
-                    return movement.HeatLoss.ToString();
+                    int steps = curNode.Steps[curDir];
+                    if (cur.HeatLoss <= curNode.Path[curDir])
+                    {
+                        curNode.Path[curDir] = cur.HeatLoss;
+                        curNode.Prev[curDir] = cur.Prev;
+                        curNode.Steps[curDir] = cur.Steps;
+                    }
+
+                    if (cur.Steps >= steps)
+                    {
+                        continue;
+                    }
                 }
 
-                foreach (var pair in Next)
+                curNode.Path[curDir] = cur.HeatLoss;
+                curNode.Prev[curDir] = cur.Prev;
+                curNode.Steps[curDir] = cur.Steps;
+                curNode.Done[curDir] = true;
+
+                if (cur.Pos.X == grid.GetLength(0) - 1 && cur.Pos.Y == grid.GetLength(1) - 1)
                 {
-                    bool sameDirection = pair.Key == movement.Direction;
-                    if (sameDirection && movement.Line == 3)
+                    // PrintNodes(nodes);
+                    // PrintSolution(nodes);
+                    return cur.HeatLoss.ToString();
+                }
+
+                for (Direction d = Direction.North; d != Direction.None; ++d)
+                {
+                    if (d == Backtrack[cur.Direction])
                     {
                         continue;
                     }
-
-                    if (movement.Direction == Backtrack[pair.Key])
+                    else if (d == cur.Direction && cur.Steps >= 3)
                     {
                         continue;
                     }
-
-                    Base.Pos2 nextPos = movement.Pos + pair.Value;
-                    if (nextPos.X >= 0 && nextPos.X <= end.X && nextPos.Y >= 0 && nextPos.Y <= end.X && !movement.History.Contains(nextPos))
+                    Base.Pos2 next = cur.Pos + Next[d];
+                    if (next.X < 0 || next.X >= grid.GetLength(0) || next.Y < 0 || next.Y >= grid.GetLength(1))
                     {
-                        int nextHeatLoss = movement.HeatLoss + grid[nextPos.X, nextPos.Y];
-                        List<Base.Pos2> posHistory = new List<Base.Pos2>(movement.History);
-                        posHistory.Add(nextPos);
-                        // double avg = 0;
-                        // posHistory.ForEach((p) => { avg += p.Manhattan(end); });
-                        // avg /= posHistory.Count;
-                        // posHistory.ForEach((p) => {avg += grid[p.X, p.Y]; });
-                        // double avg = (double)nextHeatLoss / (double)posHistory.Count;
-                        priorityQueue.Enqueue(new Movement(nextPos, pair.Key, movement.Line + (sameDirection ? 1 : 0), nextHeatLoss, posHistory), nextHeatLoss);
+                        continue;
                     }
+                    int steps = (d == cur.Direction) ? cur.Steps + 1 : 1;
+                    int heatLoss = cur.HeatLoss + grid[next.X, next.Y];
+                    toCheck.Enqueue(new Movement(next, d, steps, heatLoss, cur.Pos), heatLoss);
                 }
             }
-
             return string.Empty;
         }
 
