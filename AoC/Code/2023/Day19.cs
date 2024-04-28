@@ -284,10 +284,6 @@ hdj{m>838:A,pv}
                     // do nothing
                     break;
             }
-
-            // // state splits here
-            // trueState[rule.Part] = truePos;
-            // falseState[rule.Part] = falsePos;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findAll)
