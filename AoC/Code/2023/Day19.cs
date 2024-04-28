@@ -12,16 +12,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -79,9 +79,6 @@ hdj{m>838:A,pv}
         private const string Reject = "R";
         private const string Initial = "in";
 
-        private const int MinRating = 1;
-        private const int MaxRating = 4000;
-
         public enum Part
         {
             None,
@@ -90,27 +87,6 @@ hdj{m>838:A,pv}
             A = 'a',
             S = 's',
             Invalid
-        }
-
-        private Part NextPart(Part part)
-        {
-            if (part == Part.None)
-            {
-                return Part.X;
-            }
-            else if (part == Part.X)
-            {
-                return Part.M;
-            }
-            else if (part == Part.M)
-            {
-                return Part.A;
-            }
-            else if (part == Part.A)
-            {
-                return Part.S;
-            }
-            return Part.Invalid;
         }
 
         public enum Op
@@ -225,327 +201,93 @@ hdj{m>838:A,pv}
             partRatings = rawPartRatings.Select(PartRating.Parse).ToList();
         }
 
-        public record Range(Part Part, Base.RangeL Values, bool Inclusive)
-        {
-            public long Get()
-            {
-                return Math.Abs(Values.Max - Values.Min);
-            }
-
-            public static Range Convert(Rule rule, bool inclusive)
-            {
-                Base.RangeL range = new Base.RangeL();
-                switch (rule.Op)
-                {
-                    case Op.LessThan:
-                        range.Min = MinRating;
-                        range.Max = rule.Value - 1;
-                        break;
-                    case Op.MoreThan:
-                        range.Min = rule.Value + 1;
-                        range.Max = MaxRating;
-                        break;
-                    case Op.True:
-                        range.Min = MinRating;
-                        range.Max = MaxRating;
-                        break;
-                    case Op.LessThanE:
-                        range.Min = 0;
-                        range.Max = rule.Value;
-                        break;
-                    case Op.MoreThanE:
-                        range.Min = rule.Value;
-                        range.Max = MaxRating;
-                        break;
-                }
-                return new Range(rule.Part, range, inclusive);
-            }
-
-            public static Range Flip(Rule rule)
-            {
-                Base.RangeL range = new Base.RangeL();
-                switch (rule.Op)
-                {
-                    case Op.LessThan:
-                        // range.Min = MinRating;
-                        // range.Max = rule.Value - 1;
-                        range.Min = rule.Value;
-                        range.Max = MaxRating;
-                        break;
-                    case Op.MoreThan:
-                        // range.Min = rule.Value + 1;
-                        // range.Max = MaxRating;
-                        range.Min = 0;
-                        range.Max = rule.Value;
-                        break;
-                    case Op.True:
-                        range.Min = MinRating;
-                        range.Max = MaxRating;
-                        break;
-                    case Op.LessThanE:
-                        break;
-                    case Op.MoreThanE:
-                        break;
-                }
-                return new Range(rule.Part, range, false);
-            }
-
-            public override string ToString()
-            {
-                char i = Inclusive ? 'O' : 'X';
-                return $"{(char)Part} -> ({i}){Values}";
-            }
-        }
-
-        public record MultiRange(Part Part, List<Base.RangeL> Values, List<bool> Inclusive)
-        {
-
-            private record Helper(Base.RangeL RangeL, bool Inclusive)
-            {
-                public override string ToString()
-                {
-                char i = Inclusive ? 'O' : 'X';
-                return $"({i}){RangeL}";
-                }
-            }
-
-            public MultiRange GetCopy()
-            {
-                return new MultiRange(Part, Values.ToList(), Inclusive.ToList());
-            }
-
-            public void Compress()
-            {
-                List<Helper> helpers = new List<Helper>();
-                for (int i = 0; i < Values.Count; ++i)
-                {
-                    helpers.Add(new Helper(Values[i], Inclusive[i]));
-                }
-
-                List<Base.RangeL> list = Values.ToList();
-                Compress(helpers, true, out List<Base.RangeL> inclusive);
-                Compress(helpers, false, out List<Base.RangeL> exclusive);
-                if (inclusive.Count > 0 && exclusive.Count > 0)
-                {
-                    while (Compress(inclusive, exclusive, out List<Base.RangeL> newInclusives))
-                    {
-                        helpers = new List<Helper>();
-                        for (int i = 0; i < newInclusives.Count; ++i)
-                        {
-                            helpers.Add(new Helper(newInclusives[i], true));
-                        }
-                        Compress(helpers, true, out inclusive);
-                    }
-                }
-
-                Values.Clear();
-                Values.AddRange(inclusive);
-            }
-
-            private void Compress(List<Helper> helpers, bool inclusive, out List<Base.RangeL> ranges)
-            {
-                List<Base.RangeL> list = helpers.Where(h => h.Inclusive == inclusive).Select(h => h.RangeL).ToList();
-                for (int i = 0; i < list.Count() && list.Count() > 1;)
-                {
-                    Base.RangeL cur = list[i];
-                    Base.RangeL compressed = new Base.RangeL(long.MaxValue, long.MinValue);
-                    IEnumerable<Base.RangeL> rangeLs = list.Where(l => l.HasIncOr(cur));
-                    int rangeLsCount = rangeLs.Count();
-                    foreach (Base.RangeL rangeL in rangeLs)
-                    {
-                        compressed.Min = Math.Min(compressed.Min, rangeL.Min);
-                        compressed.Max = Math.Max(compressed.Max, rangeL.Max);
-                    }
-                    list.RemoveAll(l => l.HasIncOr(compressed));
-
-                    if (rangeLsCount > 1)
-                    {
-                        list.Add(compressed);
-                        i = 0;
-                    }
-                    else
-                    {
-                        ++i;
-                    }
-                }
-                ranges = list;
-            }
-
-            private bool Compress(List<Base.RangeL> inclusive, List<Base.RangeL> exclusive, out List<Base.RangeL> newInclusives)
-            {
-                newInclusives = new List<Base.RangeL>();
-                bool compressed = false;
-                foreach (Base.RangeL i in inclusive)
-                {
-                    foreach (Base.RangeL e in exclusive)
-                    {
-                        if (i.HasIncOr(e))
-                        {
-                            compressed = true;
-                            if (i.Max >= e.Max && i.Min <= e.Min)
-                            {
-                                // split
-                                newInclusives.Add(new Base.RangeL(i.Min, e.Min - 1));
-                                newInclusives.Add(new Base.RangeL(e.Max + 1, i.Max));
-                            }
-                            else if (i.Max > e.Max)
-                            {
-                                newInclusives.Add(new Base.RangeL(e.Max + 1, i.Max));
-                            }
-                            else
-                            {
-                                newInclusives.Add(new Base.RangeL(i.Min, e.Min - 1));
-                            }
-                        }
-                    }
-                }
-                return compressed;
-            }
-
-            public override string ToString()
-            {
-                List<Helper> helpers = new List<Helper>();
-                for (int i = 0; i < Values.Count; ++i)
-                {
-                    helpers.Add(new Helper(Values[i], Inclusive[i]));
-                }
-                return $"{(char)Part} -> {string.Join(" | ", helpers)}";
-            }
-        }
-
-        public class WorkflowState
-        {
-            public MultiRange X;
-            public MultiRange M;
-            public MultiRange A;
-            public MultiRange S;
-
-            public WorkflowState()
-            {
-                X = null;
-                M = null;
-                A = null;
-                S = null;
-            }
-
-            public WorkflowState(MultiRange x, MultiRange m, MultiRange a, MultiRange s)
-            {
-                X = x;
-                M = m;
-                A = a;
-                S = s;
-            }
-
-            public static WorkflowState Default()
-            {
-                MultiRange x = new MultiRange(Part.X, new List<Base.RangeL>(), new List<bool>());
-                MultiRange m = new MultiRange(Part.M, new List<Base.RangeL>(), new List<bool>());
-                MultiRange a = new MultiRange(Part.A, new List<Base.RangeL>(), new List<bool>());
-                MultiRange s = new MultiRange(Part.S, new List<Base.RangeL>(), new List<bool>());
-                return new WorkflowState(x, m, a, s);
-            }
-
-            public WorkflowState GetCopy()
-            {
-                return new WorkflowState(X.GetCopy(), M.GetCopy(), A.GetCopy(), S.GetCopy());
-            }
-
-            public long Get()
-            {
-                return Get(X) * Get(M) * Get(A) * Get(S);
-            }
-
-            private long Get(MultiRange multiRange)
-            {
-                if (multiRange.Values.Count == 0)
-                {
-                    return MaxRating;
-                }
-
-                long count = 0;
-                foreach (Base.RangeL r in multiRange.Values)
-                {
-                    count += r.Max - r.Min + 1;
-                }
-                return count;
-            }
-        }
-
         private long GetDistinctCombinations(List<Workflow> workflows)
         {
             Dictionary<string, List<Rule>> workflowDictionary = workflows.ToDictionary(w => w.Id, w => w.Rules);
-            // RatingState ratingState = new RatingState();
-            List<List<Range>> accepted = new List<List<Range>>();
-            List<List<Range>> rejected = new List<List<Range>>();
-            long allCombos = WalkWorkflows(Initial, workflowDictionary, new List<Range>(), WorkflowState.Default());
-            return allCombos;
+            // TODO: don't use Pos2, needs a range or something else
+            Dictionary<Part, Base.Pos2> completeState = new Dictionary<Part, Base.Pos2>()
+            {
+                {Part.X, new Base.Pos2(1, 4000)},
+                {Part.M, new Base.Pos2(1, 4000)},
+                {Part.A, new Base.Pos2(1, 4000)},
+                {Part.S, new Base.Pos2(1, 4000)}
+            };
+            return WalkWorkflows(Initial, workflowDictionary, completeState);
         }
 
-        private long WalkWorkflows(string workflowId, Dictionary<string, List<Rule>> workflowDictionary, List<Range> preReqs, WorkflowState workflowState)
+        private long WalkWorkflows(string workflowId, Dictionary<string, List<Rule>> workflowDictionary, Dictionary<Part, Base.Pos2> state)
         {
-            long count = 0;
+            if (workflowId == Accept)
+            {
+                // return state amount
+                long mult = 1;
+                foreach (var pair in state)
+                {
+                    mult *= pair.Value.Y - pair.Value.X + 1;
+                }
+                // Log(Core.Log.ELevel.Spam, $"Accepting... {mult}");
+                return mult;
+            }
+            else if (workflowId == Reject)
+            {
+                // doesn't matter
+                return 0;
+            }
+
             List<Rule> rules = workflowDictionary[workflowId];
-            List<Range> opposites = new List<Range>();
+            // Log(Core.Log.ELevel.Spam, $"Checking '{workflowId}'");
+
+            long count = 0;
             foreach (Rule rule in rules)
             {
-                WorkflowState next = workflowState.GetCopy();
-
-                List<Range> reqs = new List<Range>();
-                reqs.AddRange(preReqs);
-                reqs.AddRange(opposites);
-                if (rule.Op != Op.True)
-                {
-                    Range newRange = Range.Convert(rule, true);
-                    reqs.Add(newRange);
-                }
-
-                if (rule.Target == Accept)
-                {
-                    CollapseRanges(reqs, ref next);
-                    long c = next.Get();
-                    // Log($"accepted => [{c}] {string.Join(" | ", reqs)}");
-                    count += c;
-                }
-                else if (rule.Target == Reject)
-                {
-                    CollapseRanges(reqs, ref next);
-                    long c = next.Get();
-                    // Log($"rejected => [{c}] {string.Join(" | ", reqs)}");
-                    // count -= c;
-                }
-                else
-                {
-                    CollapseRanges(reqs, ref next);
-                    count += WalkWorkflows(rule.Target, workflowDictionary, reqs, next);
-                }
-
-                opposites.Add(Range.Convert(rule, false));
+                GetNextStates(rule, state, out Dictionary<Part, Base.Pos2> trueState, out Dictionary<Part, Base.Pos2> falseState);
+                count += WalkWorkflows(rule.Target, workflowDictionary, trueState);
+                state = falseState;
             }
             return count;
         }
 
-        private void CollapseRanges(List<Range> reqs, ref WorkflowState workflowState)
+        private void GetNextStates(Rule rule, Dictionary<Part, Base.Pos2> state, out Dictionary<Part, Base.Pos2> trueState, out Dictionary<Part, Base.Pos2> falseState)
         {
-            CollapseRanges(reqs, ref workflowState.X);
-            CollapseRanges(reqs, ref workflowState.M);
-            CollapseRanges(reqs, ref workflowState.A);
-            CollapseRanges(reqs, ref workflowState.S);
-        }
+            // duplicate of current state
+            trueState = state.ToDictionary(pair => pair.Key, pair => new Base.Pos2(pair.Value));
+            falseState = state.ToDictionary(pair => pair.Key, pair => new Base.Pos2(pair.Value));
 
-        private void CollapseRanges(List<Range> reqs, ref MultiRange multiRange)
-        {
-            Part part = multiRange.Part;
-            multiRange = new MultiRange(part, new List<Base.RangeL>(), new List<bool>());
-            IEnumerable<Range> subset = reqs.Where(l => l.Part == part);
-            if (subset.Count() > 0)
+            if (rule.Part == Part.None)
             {
-                foreach (Range range in subset)
-                {
-                    multiRange.Values.Add(new Base.RangeL(range.Values));
-                    multiRange.Inclusive.Add(range.Inclusive);
-                }
-                multiRange.Compress();
+                return;
             }
+
+            // determine true state vs false state
+            Base.Pos2 truePos = trueState[rule.Part];
+            Base.Pos2 falsePos = falseState[rule.Part];
+
+            switch (rule.Op)
+            {
+                case Op.LessThan:
+                    truePos.Y = rule.Value - 1;
+                    falsePos.X = rule.Value;
+                    break;
+                case Op.LessThanE:
+                    truePos.Y = rule.Value;
+                    falsePos.X = rule.Value + 1;
+                    break;
+                case Op.MoreThan:
+                    truePos.X = rule.Value + 1;
+                    falsePos.Y = rule.Value;
+                    break;
+                case Op.MoreThanE:
+                    truePos.X = rule.Value;
+                    falsePos.Y = rule.Value - 1;
+                    break;
+                case Op.True:
+                    // do nothing
+                    break;
+            }
+
+            // // state splits here
+            // trueState[rule.Part] = truePos;
+            // falseState[rule.Part] = falsePos;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findAll)
