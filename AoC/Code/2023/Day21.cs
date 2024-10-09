@@ -103,34 +103,12 @@ namespace AoC._2023
         private int _Steps { get; }
 
         private static char Plot = '.';
+        private static char Rock = '#';
         private static char Start = 'S';
         private static char Step = 'O';
 
         private enum Direction : int { North = 0, East = 1, South = 2, West = 3 }
         static readonly Base.Pos2L[] GridMoves = new Base.Pos2L[] { new Base.Pos2L(0, 1), new Base.Pos2L(1, 0), new Base.Pos2L(0, -1), new Base.Pos2L(-1, 0) };
-
-        private record SpawnState(Base.Pos2L Direction, HashSet<Base.Pos2L> StartSteps);
-
-        private class StepState
-        {
-            public bool Solved { get; set; }
-            public Base.Pos2L Pos { get; set; }
-            public int StartStep { get; set; }
-            public List<HashSet<Base.Pos2L>> PlotStates { get; set; }
-            public HashSet<Base.Pos2L> StartPlots { get; set; }
-
-            public StepState(Base.Pos2L pos, int startStep, char[,] blankGrid, HashSet<Base.Pos2L> startPlots)
-            {
-                Solved = false;
-                Pos = pos;
-                StartStep = startStep;
-                StartPlots = new HashSet<Base.Pos2L>(startPlots);
-                PlotStates = new List<HashSet<Base.Pos2L>>
-                {
-                    new HashSet<Base.Pos2L>(startPlots)
-                };
-            }
-        }
 
         private void ParseInput(List<string> inputs, out char[,] blankGrid, out Base.Pos2L start, out int xMax, out int yMax)
         {
@@ -152,94 +130,88 @@ namespace AoC._2023
             yMax = blankGrid.GetLength(1);
         }
 
-        private void PrintStepState(bool all, char[,] grid, StepState stepState)
+        private void PrintStepsTo(Dictionary<Base.Pos2L, int> stepsTo, char[,] grid, Base.Pos2L start, int maxSteps)
         {
             char[,] temp = (char[,])grid.Clone();
-            if (all)
+            foreach (var pair in stepsTo)
             {
-
-            }
-            else
-            {
-                foreach (Base.Pos2L pos in stepState.PlotStates.Last())
+                if (pair.Value <= maxSteps)
                 {
-                    temp[pos.X, pos.Y] = Step;
+                    if (pair.Value % 2 == 0)
+                    {
+                        temp[pair.Key.X, pair.Key.Y] = 'e';
+                    }
+                    else
+                    {
+                        temp[pair.Key.X, pair.Key.Y] = 'o';
+                    }
                 }
-                Util.Grid.PrintGrid(temp);
             }
+            temp[start.X, start.Y] = Start;
+            Util.Grid.PrintGrid(temp);
         }
 
-        private List<SpawnState> RunStep(bool infinite, char[,] grid, ref StepState state, int xMax, int yMax)
+        private record StepCheck(Base.Pos2L Pos, int Steps);
+
+        private void PopulateSteps(ref Dictionary<Base.Pos2L, int> stepsTo, Base.Pos2L start, int xMax, int yMax, char[,] grid)
         {
-            List<SpawnState> spawnStates = new List<SpawnState>();
-            HashSet<Base.Pos2L> newPlots = new HashSet<Base.Pos2L>();
-            // todo: cycle detect
-            foreach (Base.Pos2L plot in state.PlotStates.Last())
+            PriorityQueue<StepCheck, int> checkNext = new();
+            checkNext.Enqueue(new StepCheck(start, 0), 0);
+            stepsTo[start] = 0;
+            while (checkNext.Count > 0)
             {
-                foreach (Base.Pos2L gridMove in GridMoves)
+                StepCheck stepCheck = checkNext.Dequeue();
+                foreach (Base.Pos2L pos2L in GridMoves)
                 {
-                    Base.Pos2L newPlot = plot + gridMove;
-                    if (newPlot.X >= 0 && newPlot.X < xMax && newPlot.Y >= 0 && newPlot.Y < yMax)
+                    Base.Pos2L next = stepCheck.Pos + pos2L;
+                    if (next.X < 0 || next.X >= xMax || next.Y < 0 || next.Y >= yMax)
                     {
-                        if (grid[newPlot.X, newPlot.Y] == Plot)
+                        continue;
+                    }
+
+                    if (grid[next.X, next.Y] == Rock)
+                    {
+                        continue;
+                    }
+
+                    int nextSteps = stepCheck.Steps + 1;
+                    if (stepsTo.TryGetValue(next, out int value))
+                    {
+                        if (value <= nextSteps)
                         {
-                            newPlots.Add(newPlot);
+                            continue;
                         }
                     }
-                    else if (infinite)
+                    else
                     {
-                        if (newPlot.X < 0)
-                        {
-                            spawnStates.Add(new SpawnState(GridMoves[(int)Direction.West], new HashSet<Base.Pos2L>()));
-                            spawnStates.Last().StartSteps.Add(new Base.Pos2L(xMax - 1, newPlot.Y));
-                        }
-                        else if (newPlot.X >= xMax)
-                        {
-                            spawnStates.Add(new SpawnState(GridMoves[(int)Direction.East], new HashSet<Base.Pos2L>()));
-                            spawnStates.Last().StartSteps.Add(new Base.Pos2L(0, newPlot.Y));
-                        }
-                        else if (newPlot.Y < 0)
-                        {
-                            spawnStates.Add(new SpawnState(GridMoves[(int)Direction.South], new HashSet<Base.Pos2L>()));
-                            spawnStates.Last().StartSteps.Add(new Base.Pos2L(newPlot.X, yMax - 1));
-                        }
-                        else if (newPlot.Y >= yMax)
-                        {
-                            spawnStates.Add(new SpawnState(GridMoves[(int)Direction.East], new HashSet<Base.Pos2L>()));
-                            spawnStates.Last().StartSteps.Add(new Base.Pos2L(newPlot.X, 0));
-                        }
+                        stepsTo[next] = nextSteps;
                     }
+
+                    checkNext.Enqueue(new StepCheck(next, nextSteps), nextSteps);
                 }
             }
-            state.PlotStates.Add(newPlots);
-            PrintStepState(false, grid, state);
-            return spawnStates;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool infinite, int maxSteps)
         {
-            ParseInput(inputs, out char[,] blankGrid, out Base.Pos2L start, out int xMax, out int yMax);
+            ParseInput(inputs, out char[,] grid, out Base.Pos2L start, out int xMax, out int yMax);
             GetVariable(nameof(_Steps), maxSteps, variables, out int stepCount);
 
-            Dictionary<int, StepState> knownStepStates = new Dictionary<int, StepState>();
-            StepState startStepState = new StepState(Base.Pos2L.Zero, 0, blankGrid, new HashSet<Base.Pos2L> { start });
-            knownStepStates[startStepState.StartPlots.GetHashCode()] = startStepState;
-            PrintStepState(false, blankGrid, knownStepStates.First().Value);
-            for (int i = 0; i < stepCount; ++i)
+            Dictionary<Base.Pos2L, int> stepsTo = new();
+            PrintStepsTo(stepsTo, grid, start, 0);
+            PopulateSteps(ref stepsTo, start, xMax, yMax, grid);
+
+            if (!infinite)
             {
-                foreach (int key in knownStepStates.Keys)
-                {
-                    StepState stepState = knownStepStates[key];
-                    List<SpawnState> spawnStates = RunStep(infinite, blankGrid, ref stepState, xMax, yMax);
-                    // TODO spawnStates
-                }
+                int stepCompare = stepCount % 2;
+                return stepsTo.Where(pair => pair.Value <= stepCount && pair.Value % 2 == stepCompare).Count().ToString();
             }
+
             return "";
-            // return plots.Count.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => "skip!"; //SharedSolution(inputs, variables, false, 64);
+            => SharedSolution(inputs, variables, false, 64);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true, 26501365);
