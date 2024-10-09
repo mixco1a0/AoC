@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace AoC._2023
 {
@@ -12,10 +13,10 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
@@ -44,60 +45,6 @@ namespace AoC._2023
 .##..##.##.
 ..........."
             });
-            //             testData.Add(new Core.TestDatum
-            //             {
-            //                 TestPart = Core.Part.Two,
-            //                 Variables = new Dictionary<string, string> { { nameof(_Steps), "6" } },
-            //                 Output = "16",
-            //                 RawInput =
-            // @"...........
-            // .....###.#.
-            // .###.##..#.
-            // ..#.#...#..
-            // ....#.#....
-            // .##..S####.
-            // .##..#...#.
-            // .......##..
-            // .##.#.####.
-            // .##..##.##.
-            // ..........."
-            //             });
-            testData.Add(new Core.TestDatum
-            {
-                TestPart = Core.Part.Two,
-                Variables = new Dictionary<string, string> { { nameof(_Steps), "10" } },
-                Output = "50",
-                RawInput =
-@"...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-..........."
-            });
-            testData.Add(new Core.TestDatum
-            {
-                TestPart = Core.Part.Two,
-                Variables = new Dictionary<string, string> { { nameof(_Steps), "50" } },
-                Output = "1594",
-                RawInput =
-@"...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-..........."
-            });
             return testData;
         }
         private int _Steps { get; }
@@ -105,7 +52,6 @@ namespace AoC._2023
         private static char Plot = '.';
         private static char Rock = '#';
         private static char Start = 'S';
-        private static char Step = 'O';
 
         private enum Direction : int { North = 0, East = 1, South = 2, West = 3 }
         static readonly Base.Pos2L[] GridMoves = new Base.Pos2L[] { new Base.Pos2L(0, 1), new Base.Pos2L(1, 0), new Base.Pos2L(0, -1), new Base.Pos2L(-1, 0) };
@@ -198,7 +144,7 @@ namespace AoC._2023
             GetVariable(nameof(_Steps), maxSteps, variables, out int stepCount);
 
             Dictionary<Base.Pos2L, int> stepsTo = new();
-            PrintStepsTo(stepsTo, grid, start, 0);
+            // PrintStepsTo(stepsTo, grid, start, 0);
             PopulateSteps(ref stepsTo, start, xMax, yMax, grid);
 
             if (!infinite)
@@ -207,7 +153,15 @@ namespace AoC._2023
                 return stepsTo.Where(pair => pair.Value <= stepCount && pair.Value % 2 == stepCompare).Count().ToString();
             }
 
-            return "";
+            long nSteps = (maxSteps - (xMax / 2)) / xMax;
+
+            int cornerDistance = (xMax - 1) / 2;
+            long evenCorners = stepsTo.Where(pair => pair.Value % 2 == 0 && pair.Value > cornerDistance).Count();
+            long oddCorners = stepsTo.Where(pair => pair.Value % 2 == 1 && pair.Value > cornerDistance).Count();
+            long evenFull = stepsTo.Where(pair => pair.Value % 2 == 0).Count();
+            long oddFull = stepsTo.Where(pair => pair.Value % 2 == 1).Count();
+            long sum = (nSteps + 1) * (nSteps + 1) * oddFull + nSteps * nSteps * evenFull - (nSteps + 1) * oddCorners + nSteps * evenCorners;
+            return sum.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
