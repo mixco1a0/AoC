@@ -103,94 +103,75 @@ namespace AoC._2023
             return count.ToString();
         }
 
-        private void GetHailstoneXYValues(Vec3L h1, Vec3L h2, out List<decimal> values)
+        private void GetHailstoneXYValues(Vec3L h1, Vec3L h2, out List<double> values)
         {
             values = new()
             {
-                (decimal)h2.Pos.X - (decimal)h1.Pos.X,
-                (decimal)h1.Pos.Y - (decimal)h2.Pos.Y,
-                (decimal)h1.Vel.X - (decimal)h2.Vel.X,
-                (decimal)h2.Vel.Y - (decimal)h1.Vel.Y,
-                (decimal)h2.Pos.X * (decimal)h2.Vel.Y - (decimal)h2.Pos.Y * (decimal)h2.Vel.X - (decimal)h1.Pos.X * (decimal)h1.Vel.Y + (decimal)h1.Pos.Y * (decimal)h1.Vel.X
+                (double)h2.Pos.X - (double)h1.Pos.X,
+                (double)h1.Pos.Y - (double)h2.Pos.Y,
+                (double)h1.Vel.X - (double)h2.Vel.X,
+                (double)h2.Vel.Y - (double)h1.Vel.Y,
+                (double)h2.Pos.X * (double)h2.Vel.Y - (double)h2.Pos.Y * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Y + (double)h1.Pos.Y * (double)h1.Vel.X
             };
         }
 
-        private decimal[] Solve(decimal[,] a)
+        private void GetHailstoneZValues(Vec3L h1, Vec3L h2, out List<double> values)
+        {
+            values = new()
+            {
+                (double)h2.Pos.X - (double)h1.Pos.X,
+                (double)h1.Pos.Z - (double)h2.Pos.Z,
+                (double)h2.Pos.X * (double)h2.Vel.Y - (double)h2.Pos.Y * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Y + (double)h1.Pos.Y * (double)h1.Vel.X
+            };
+        }
+
+        private static double[] Solve(double[,] a)
         {
             int m = a.GetLength(0);
             int n = a.GetLength(1);
-            Pivot(a, m, n);
-            return BackSubstitue(a, m, n);
+            return GaussianElimination(a, m, n);
         }
 
-        private static void Pivot(decimal[,] a, int m, int n)
+        private static double[] GaussianElimination(double[,] a, int rMax, int cMax)
         {
-            int h = 0;
-            int k = 0;
-            while (h < m && k < n)
+            int r = 0;
+            int c = 0;
+            while (r < rMax && c < cMax)
             {
-                Core.TempLog.WriteLine("Processing...");
-                Print(a);
-                Core.TempLog.WriteLine(".");
-                Core.TempLog.WriteLine("..");
-                Core.TempLog.WriteLine("...");
-                int iMax = h;
-                for (int i = h + 1; i < m; ++i)
+                for (int _c = c + 1; _c < cMax; ++_c)
                 {
-                    if (decimal.Abs(a[i, k]) > decimal.Abs(a[iMax, k]))
+                    a[r, _c] /= a[r, c];
+                }
+                a[r, c] = 1;
+
+                for (int _r = 0; _r < rMax; ++_r)
+                {
+                    if (_r == r)
                     {
-                        iMax = i;
+                        continue;
+                    }
+
+                    double factor = a[_r, c] * -1;
+                    a[_r, c] = 0;
+                    for (int _c = c + 1; _c < cMax; ++_c)
+                    {
+                        a[_r, _c] += a[r, _c] * factor;
                     }
                 }
 
-                if (a[iMax, k] == 0)
-                {
-                    ++k;
-                }
-                else
-                {
-                    if (iMax != h)
-                    {
-                        for (int _n = 0; _n < n; ++_n)
-                        {
-                            (a[h, _n], a[iMax, _n]) = (a[iMax, _n], a[h, _n]);
-                        }
-                    }
-
-                    for (int i = h + 1; i < m; ++i)
-                    {
-                        decimal f = a[i, k] / a[h, k];
-                        a[i, k] = 0;
-                        for (int j = k + 1; j < n; ++j)
-                        {
-                            a[i, j] -= a[h, j] * f;
-                        }
-                    }
-
-                    ++h;
-                    ++k;
-                }
+                ++r;
+                ++c;
             }
-            Print(a);
-        }
 
-        private decimal[] BackSubstitue(decimal[,] a, int m, int n)
-        {
-            decimal[] solve = new decimal[m];
-            for (int i = m - 1; i >= 0; --i)
+            double[] solve = new double[rMax];
+            for (int _r = 0; _r < rMax; ++_r)
             {
-                decimal sum = decimal.Zero;
-                for (int j = i + 1; j < m; ++j)
-                {
-                    sum += a[i, j] * solve[j];
-                }
-
-                solve[i] = (a[i, m] - sum) / a[i, i];
+                solve[_r] = a[_r, cMax - 1];
             }
             return solve;
         }
 
-        private static void Print(decimal[,] a)
+        private static void Print(double[,] a)
         {
             int maxLen = 0;
             for (int i = 0; i < a.GetLength(dimension: 0); ++i)
@@ -210,12 +191,12 @@ namespace AoC._2023
                 StringBuilder sb = new($"a[{i}] = ");
                 for (int j = 0; j < a.GetLength(dimension: 1); ++j)
                 {
-                    if (a[i,j] >= 0)
+                    if (a[i, j] >= 0)
                     {
                         sb.Append(' ');
                     }
                     string tmp = $"0:{format}.00";
-                    sb.Append(string.Format("   {" + tmp + "}", a[i,j]));
+                    sb.Append(string.Format("   {" + tmp + "}", a[i, j]));
                 }
                 Core.TempLog.WriteLine(sb.ToString());
             }
@@ -254,11 +235,11 @@ namespace AoC._2023
 
             // solve for X, Y, DX, DY
             // generate 4 equations to solve the 4 unknowns
-            decimal[,] aXY = new decimal[4, 5];
-            List<List<decimal>> equations = new();
+            double[,] aXY = new double[4, 5];
+            List<List<double>> equations = new();
             for (int h1 = 0; h1 < 4; ++h1)
             {
-                GetHailstoneXYValues(hailstones[h1], hailstones[h1 + 1], out List<decimal> curEquationVals);
+                GetHailstoneXYValues(hailstones[h1], hailstones[h1 + 1], out List<double> curEquationVals);
                 equations.Add(curEquationVals);
             }
             // 4 equations with unknowns
@@ -270,8 +251,16 @@ namespace AoC._2023
                     aXY[x, y] = equations[x][y];
                 }
             }
-            Print(aXY);
-            Solve(aXY);
+
+            // at this point we have solved for x, y, dx, and dy
+            double[] xydxdy = Solve(aXY);
+
+            // get a reduced version of equations using x and z
+            // X(dz'- dz) + Z(dx - dx') + DX(z - z') + DZ(x' - x) = x'dz' - y'dz' - xdz + zdx
+            // Z(dx - dx') + DZ(x' - x) = x'dz' - y'dz' - xdz + zdx - X(dz'- dz) - DX(z - z')
+
+            // solve for Z and DZ
+            // generate 2 equations to solve 2 unknowns
 
             return string.Empty;
         }
