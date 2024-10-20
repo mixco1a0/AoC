@@ -107,21 +107,21 @@ namespace AoC._2023
         {
             values = new()
             {
-                (double)h2.Pos.X - (double)h1.Pos.X,
-                (double)h1.Pos.Y - (double)h2.Pos.Y,
-                (double)h1.Vel.X - (double)h2.Vel.X,
-                (double)h2.Vel.Y - (double)h1.Vel.Y,
+                (double)h2.Vel.Y - (double)h1.Vel.Y, // X
+                (double)h1.Vel.X - (double)h2.Vel.X, // Y
+                (double)h1.Pos.Y - (double)h2.Pos.Y, // DX
+                (double)h2.Pos.X - (double)h1.Pos.X, // DY
                 (double)h2.Pos.X * (double)h2.Vel.Y - (double)h2.Pos.Y * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Y + (double)h1.Pos.Y * (double)h1.Vel.X
             };
         }
 
-        private void GetHailstoneZValues(Vec3L h1, Vec3L h2, out List<double> values)
+        private void GetHailstoneZValues(Vec3L h1, Vec3L h2, double[] xydxdy, out List<double> values)
         {
             values = new()
             {
-                (double)h2.Pos.X - (double)h1.Pos.X,
-                (double)h1.Pos.Z - (double)h2.Pos.Z,
-                (double)h2.Pos.X * (double)h2.Vel.Y - (double)h2.Pos.Y * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Y + (double)h1.Pos.Y * (double)h1.Vel.X
+                (double)h1.Vel.X - (double)h2.Vel.X, // Z
+                (double)h2.Pos.Z - (double)h1.Pos.Z, // DZ
+                (double)h2.Pos.X * (double)h2.Vel.Z - (double)h2.Pos.Z * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Z + (double)h1.Pos.Z * (double)h1.Vel.X - xydxdy[0] * (double)(h2.Vel.Z - h1.Vel.Z) - xydxdy[2] * (double)(h1.Pos.Z - h2.Pos.Z)
             };
         }
 
@@ -261,8 +261,26 @@ namespace AoC._2023
 
             // solve for Z and DZ
             // generate 2 equations to solve 2 unknowns
+            equations = new();
+            for (int h1 = 0; h1 < 2; ++h1)
+            {
+                GetHailstoneZValues(hailstones[h1], hailstones[h1 + 1], xydxdy, out List<double> curEquationVals);
+                equations.Add(curEquationVals);
+            }
 
-            return string.Empty;
+            double[,] aZ = new double[2, 3];
+            for (int y = 0; y < equations[0].Count; ++y)
+            {
+                for (int x = 0; x < equations.Count; ++x)
+                {
+                    aZ[x, y] = equations[x][y];
+                }
+            }
+
+            double[] zdz = Solve(aZ);
+
+            // 277 - too low
+            return ((int)xydxdy[0] + (int)xydxdy[2] + (int)zdz[0]).ToString();
         }
     }
 }
