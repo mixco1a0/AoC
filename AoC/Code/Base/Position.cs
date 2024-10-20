@@ -4,6 +4,7 @@ using System.Numerics;
 
 namespace AoC.Base
 {
+    #region Pos2
     public class Pos2 : IEquatable<Pos2>, IComparable<Pos2>, IComparable
     {
         public int X { get; set; }
@@ -136,7 +137,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos2L
     public class Pos2L : IEquatable<Pos2L>, IComparable<Pos2L>, IComparable
     {
         public long X { get; set; }
@@ -269,7 +273,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos2BI
     public class Pos2BI : IEquatable<Pos2BI>, IComparable<Pos2BI>, IComparable
     {
         public BigInteger X { get; set; }
@@ -402,7 +409,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos2F
     public class Pos2F : IEquatable<Pos2F>, IComparable<Pos2F>, IComparable
     {
         public float X { get; set; }
@@ -535,7 +545,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos2D
     public class Pos2D : IEquatable<Pos2D>, IComparable<Pos2D>, IComparable
     {
         public decimal X { get; set; }
@@ -668,7 +681,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
+    
 
+    #region Pos3
     public class Pos3 : IEquatable<Pos3>
     {
         public int X { get; set; }
@@ -790,7 +806,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos2L
     public class Pos3L : IEquatable<Pos3L>
     {
         public long X { get; set; }
@@ -912,7 +931,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos3BI
     public class Pos3BI : IEquatable<Pos3BI>
     {
         public BigInteger X { get; set; }
@@ -1034,7 +1056,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Pos3F
     public class Pos3F : IEquatable<Pos3F>
     {
         public float X { get; set; }
@@ -1156,5 +1181,5 @@ namespace AoC.Base
         }
         #endregion
     }
-
+    #endregion
 }

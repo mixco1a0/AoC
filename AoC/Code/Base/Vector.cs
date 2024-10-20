@@ -14,6 +14,7 @@ namespace AoC.Base
         }
     }
 
+    #region Vec2
     public class Vec2 : IEquatable<Vec2>
     {
         public Pos2 Pos { get; set; }
@@ -175,7 +176,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Vec2L
     public class Vec2L : IEquatable<Vec2L>
     {
         public Pos2L Pos { get; set; }
@@ -305,7 +309,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Vec3
     public class Vec3 : IEquatable<Vec3>
     {
         public Pos3 Pos { get; set; }
@@ -400,7 +407,10 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 
+
+    #region Vec3L
     public class Vec3L : IEquatable<Vec3L>
     {
         public Pos3L Pos { get; set; }
@@ -495,4 +505,5 @@ namespace AoC.Base
         }
         #endregion
     }
+    #endregion
 }
