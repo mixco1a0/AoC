@@ -237,9 +237,9 @@ namespace AoC._2023
             // generate 4 equations to solve the 4 unknowns
             double[,] aXY = new double[4, 5];
             List<List<double>> equations = new();
-            for (int h1 = 0; h1 < 4; ++h1)
+            for (int h = 0; h < 4; ++h)
             {
-                GetHailstoneXYValues(hailstones[h1], hailstones[h1 + 1], out List<double> curEquationVals);
+                GetHailstoneXYValues(hailstones[h], hailstones[h + 1], out List<double> curEquationVals);
                 equations.Add(curEquationVals);
             }
             // 4 equations with unknowns
@@ -262,9 +262,9 @@ namespace AoC._2023
             // solve for Z and DZ
             // generate 2 equations to solve 2 unknowns
             equations = new();
-            for (int h1 = 0; h1 < 2; ++h1)
+            for (int h = 0; h < 2; ++h)
             {
-                GetHailstoneZValues(hailstones[h1], hailstones[h1 + 1], xydxdy, out List<double> curEquationVals);
+                GetHailstoneZValues(hailstones[h], hailstones[h + 1], xydxdy, out List<double> curEquationVals);
                 equations.Add(curEquationVals);
             }
 
@@ -279,8 +279,14 @@ namespace AoC._2023
 
             double[] zdz = Solve(aZ);
 
+            Core.TempLog.WriteLine($"X={xydxdy[0]}");
+            Core.TempLog.WriteLine($"Y={xydxdy[1]}");
+            Core.TempLog.WriteLine($"Z={zdz[0]}");
+
             // 277 - too low
-            return ((int)xydxdy[0] + (int)xydxdy[2] + (int)zdz[0]).ToString();
+            // 1210438009750217 - too high
+            // -9222974158435048377 - wrong
+            return ((long)xydxdy[0] + (long)xydxdy[1] + (long)zdz[0]).ToString();
         }
     }
 }
