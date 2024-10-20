@@ -1,4 +1,4 @@
-change VecX -> VelX
+change VecX -> RayX
 change PosX -> VecX
 
 add versioning to perf data based on core changes that would affect
