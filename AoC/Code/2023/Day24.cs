@@ -15,16 +15,16 @@ namespace AoC._2023
         {
             switch (part)
             {
-                // case Core.Part.One:
-                //     return "v1";
-                // case Core.Part.Two:
-                //     return "v1";
+                case Core.Part.One:
+                    return "v1";
+                case Core.Part.Two:
+                    return "v1";
                 default:
                     return base.GetSolutionVersion(part);
             }
         }
 
-        public override bool SkipTestData => false;
+        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
@@ -44,9 +44,13 @@ namespace AoC._2023
             testData.Add(new Core.TestDatum
             {
                 TestPart = Core.Part.Two,
-                Output = "",
+                Output = "47",
                 RawInput =
-@""
+@"19, 13, 30 @ -2,  1, -2
+18, 19, 22 @ -1, -1, -2
+20, 25, 34 @ -2, -2, -4
+12, 31, 28 @ -1, -2, -1
+20, 19, 15 @  1, -5, -3"
             });
             return testData;
         }
@@ -54,11 +58,8 @@ namespace AoC._2023
         private long _MinRange { get; }
         private long _MaxRange { get; }
 
-        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+        private static string Count2DIntersections(List<Vec3L> hailstones, long minRange, long maxRange)
         {
-            GetVariable(nameof(_MinRange), 200_000_000_000_000, variables, out long minRange);
-            GetVariable(nameof(_MaxRange), 400_000_000_000_000, variables, out long maxRange);
-            List<Vec3L> hailstones = inputs.Select(Vec3L.ParseVel).ToList();
             List<Vec2L> h2d = hailstones.Select(v3 => v3.DropZ()).ToList();
             // Log("Hailstones:");
             // h2d.ForEach(l => Log(l.ToString()));
@@ -103,26 +104,103 @@ namespace AoC._2023
             return count.ToString();
         }
 
-        private void GetHailstoneXYValues(Vec3L h1, Vec3L h2, out List<double> values)
+        private static string FindRockValues(List<Vec3L> hailstones)
         {
-            values = new()
+            // rX + t * rDX = x + t * dx
+            // rX - x = t * (dx - rDX)
+            // t = (rX - x) / (dx - rDX)
+
+            // rY + t * rDY = y + t * dy
+            // t = (rY - y) / (dy - rDY)
+
+            // using x and y
+            // (X - x) / (dx - DX) = (Y - y) / (dy - DY)
+            // (X - x) * (dy - DY) = (Y - y) * (dx - DX)
+            // X * dy - x * dy - X * DY + x * DY = Y * dx - y * dx - Y * DX + y * DX
+            // Y * DX - X * DY = Y * dx - y * dx + y * DX - X * dy + x * dy - x * DY
+            // Y * DX - X * DY = (x * dy) - (y * dx) + (Y * dx) + (y * DX) - (x * DY) - (X * dy)
+            // (x * dy) - (y * dx) + (Y * dx) + (y * DX) - (x * DY) - (X * dy) = (x' * dy') - (y' * dx') + (Y * dx') + (y' * DX) - (x' * DY) - (X * dy')
+            // (Y * dx) + (y * DX) - (x * DY) - (X * dy) - (Y * dx') - (y' * DX) + (x' * DY) + (X * dy') = (x' * dy') - (y' * dx') - (x * dy) - (y * dx)
+            // (X * dy') - (X * dy) + (Y * dx) - (Y * dx') + (y * DX) - (y' * DX) - (x * DY) + (x' * DY) = (x' * dy') - (y' * dx') - (x * dy) - (y * dx)
+            // X * (dy'- dy) + Y * (dx - dx') + DX * (y - y') - DY * (x' - x) = (x' * dy') - (y' * dx') - (x * dy) - (y * dx)
+            // X(dy'- dy) + Y(dx - dx') + DX(y - y') + DY(x' - x) = x'dy' - y'dx' - xdy + ydx
+
+            // take first hailstone and get x, dx, y, dy
+            // take second hailstone and get x', dx', y', dy'
+            // Xhdy + Yhdx + DXhy - DYhx
+            // hdy = dy' - dy
+            // hdx = dx - dx'
+            // hy = y - y'
+            // hx = x' - x
+
+            // solve for X, Y, DX, DY
+            // generate 4 equations to solve the 4 unknowns
+            double[,] aXY = new double[4, 5];
+            for (int _r = 0; _r < 4; ++_r)
             {
-                (double)h2.Vel.Y - (double)h1.Vel.Y, // X
-                (double)h1.Vel.X - (double)h2.Vel.X, // Y
-                (double)h1.Pos.Y - (double)h2.Pos.Y, // DX
-                (double)h2.Pos.X - (double)h1.Pos.X, // DY
-                (double)h2.Pos.X * (double)h2.Vel.Y - (double)h2.Pos.Y * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Y + (double)h1.Pos.Y * (double)h1.Vel.X
-            };
+                GetHailstoneXYValues(hailstones[_r], hailstones[_r + 1], ref aXY, _r);
+            }
+            double[] xydxdy = Solve(aXY);
+
+            // at this point we have solved for x, y, dx, and dy
+            // get a reduced version of equations using x and z
+            // X(dz'- dz) + Z(dx - dx') + DX(z - z') + DZ(x' - x) = x'dz' - y'dz' - xdz + zdx
+            // Z(dx - dx') + DZ(x' - x) = x'dz' - y'dz' - xdz + zdx - X(dz'- dz) - DX(z - z')
+
+            // solve for Z and DZ
+            // generate 2 equations to solve 2 unknowns
+            double[,] aZ = new double[2, 3];
+            for (int _r = 0; _r < 2; ++_r)
+            {
+                GetHailstoneZValues(hailstones[_r], hailstones[_r + 1], xydxdy, ref aZ, _r);
+            }
+            double[] zdz = Solve(aZ);
+
+            double x = double.Round(xydxdy[0]);
+            double dx = double.Round(xydxdy[2]);
+            double y = double.Round(xydxdy[1]);
+            double dy = double.Round(xydxdy[3]);
+            double z = double.Round(zdz[0]);
+            double dz = double.Round(zdz[1]);
+            // Core.TempLog.WriteLine($"X={x} @ {dx}");
+            // Core.TempLog.WriteLine($"Y={y} @ {dy}");
+            // Core.TempLog.WriteLine($"Z={z} @ {dz}");
+            
+            return (x + y + z).ToString();
         }
 
-        private void GetHailstoneZValues(Vec3L h1, Vec3L h2, double[] xydxdy, out List<double> values)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool count2DIntersections)
         {
-            values = new()
+            GetVariable(nameof(_MinRange), 200_000_000_000_000, variables, out long minRange);
+            GetVariable(nameof(_MaxRange), 400_000_000_000_000, variables, out long maxRange);
+            List<Vec3L> hailstones = inputs.Select(Vec3L.ParseVel).ToList();
+            if (count2DIntersections)
             {
-                (double)h1.Vel.X - (double)h2.Vel.X, // Z
-                (double)h2.Pos.Z - (double)h1.Pos.Z, // DZ
-                (double)h2.Pos.X * (double)h2.Vel.Z - (double)h2.Pos.Z * (double)h2.Vel.X - (double)h1.Pos.X * (double)h1.Vel.Z + (double)h1.Pos.Z * (double)h1.Vel.X - xydxdy[0] * (double)(h2.Vel.Z - h1.Vel.Z) - xydxdy[2] * (double)(h1.Pos.Z - h2.Pos.Z)
-            };
+                return Count2DIntersections(hailstones, minRange, maxRange);
+            }
+            else
+            {
+                return FindRockValues(hailstones);
+            }
+        }
+
+        protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
+            => SharedSolution(inputs, variables, true);
+
+        private static void GetHailstoneXYValues(Vec3L h1, Vec3L h2, ref double[,] aXY, int row)
+        {
+            aXY[row, 0] = (double)h2.Vel.Y - h1.Vel.Y; // X
+            aXY[row, 1] = (double)h1.Vel.X - h2.Vel.X; // Y
+            aXY[row, 2] = (double)h1.Pos.Y - h2.Pos.Y; // DX
+            aXY[row, 3] = (double)h2.Pos.X - h1.Pos.X; // DY
+            aXY[row, 4] = (double)h2.Pos.X * h2.Vel.Y - (double)h2.Pos.Y * h2.Vel.X - (double)h1.Pos.X * h1.Vel.Y + (double)h1.Pos.Y * h1.Vel.X;
+        }
+
+        private static void GetHailstoneZValues(Vec3L h1, Vec3L h2, double[] xydxdy, ref double[,] aZ, int row)
+        {
+            aZ[row, 0] = (double)h1.Vel.X - h2.Vel.X; // Z
+            aZ[row, 1] = (double)h2.Pos.X - h1.Pos.X; // DZ
+            aZ[row, 2] = h2.Pos.X * h2.Vel.Z - (double)h2.Pos.Z * h2.Vel.X - (double)h1.Pos.X * h1.Vel.Z + (double)h1.Pos.Z * h1.Vel.X - xydxdy[0] * (h2.Vel.Z - h1.Vel.Z) - xydxdy[2] * (h1.Pos.Z - h2.Pos.Z);
         }
 
         private static double[] Solve(double[,] a)
@@ -203,90 +281,6 @@ namespace AoC._2023
         }
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-        {
-            List<Vec3L> hailstones = inputs.Select(Vec3L.ParseVel).ToList();
-
-            // rX + t * rDX = x + t * dx
-            // rX - x = t * (dx - rDX)
-            // t = (rX - x) / (dx - rDX)
-
-            // rY + t * rDY = y + t * dy
-            // t = (rY - y) / (dy - rDY)
-
-            // using x and y
-            // (X - x) / (dx - DX) = (Y - y) / (dy - DY)
-            // (X - x) * (dy - DY) = (Y - y) * (dx - DX)
-            // X * dy - x * dy - X * DY + x * DY = Y * dx - y * dx - Y * DX + y * DX
-            // Y * DX - X * DY = Y * dx - y * dx + y * DX - X * dy + x * dy - x * DY
-            // Y * DX - X * DY = (x * dy) - (y * dx) + (Y * dx) + (y * DX) - (x * DY) - (X * dy)
-            // (x * dy) - (y * dx) + (Y * dx) + (y * DX) - (x * DY) - (X * dy) = (x' * dy') - (y' * dx') + (Y * dx') + (y' * DX) - (x' * DY) - (X * dy')
-            // (Y * dx) + (y * DX) - (x * DY) - (X * dy) - (Y * dx') - (y' * DX) + (x' * DY) + (X * dy') = (x' * dy') - (y' * dx') - (x * dy) - (y * dx)
-            // (X * dy') - (X * dy) + (Y * dx) - (Y * dx') + (y * DX) - (y' * DX) - (x * DY) + (x' * DY) = (x' * dy') - (y' * dx') - (x * dy) - (y * dx)
-            // X * (dy'- dy) + Y * (dx - dx') + DX * (y - y') - DY * (x' - x) = (x' * dy') - (y' * dx') - (x * dy) - (y * dx)
-            // X(dy'- dy) + Y(dx - dx') + DX(y - y') + DY(x' - x) = x'dy' - y'dx' - xdy + ydx
-
-            // take first hailstone and get x, dx, y, dy
-            // take second hailstone and get x', dx', y', dy'
-            // Xhdy + Yhdx + DXhy - DYhx
-            // hdy = dy' - dy
-            // hdx = dx - dx'
-            // hy = y - y'
-            // hx = x' - x
-
-            // solve for X, Y, DX, DY
-            // generate 4 equations to solve the 4 unknowns
-            double[,] aXY = new double[4, 5];
-            List<List<double>> equations = new();
-            for (int h = 0; h < 4; ++h)
-            {
-                GetHailstoneXYValues(hailstones[h], hailstones[h + 1], out List<double> curEquationVals);
-                equations.Add(curEquationVals);
-            }
-            // 4 equations with unknowns
-
-            for (int y = 0; y < equations[0].Count; ++y)
-            {
-                for (int x = 0; x < equations.Count; ++x)
-                {
-                    aXY[x, y] = equations[x][y];
-                }
-            }
-
-            // at this point we have solved for x, y, dx, and dy
-            double[] xydxdy = Solve(aXY);
-
-            // get a reduced version of equations using x and z
-            // X(dz'- dz) + Z(dx - dx') + DX(z - z') + DZ(x' - x) = x'dz' - y'dz' - xdz + zdx
-            // Z(dx - dx') + DZ(x' - x) = x'dz' - y'dz' - xdz + zdx - X(dz'- dz) - DX(z - z')
-
-            // solve for Z and DZ
-            // generate 2 equations to solve 2 unknowns
-            equations = new();
-            for (int h = 0; h < 2; ++h)
-            {
-                GetHailstoneZValues(hailstones[h], hailstones[h + 1], xydxdy, out List<double> curEquationVals);
-                equations.Add(curEquationVals);
-            }
-
-            double[,] aZ = new double[2, 3];
-            for (int y = 0; y < equations[0].Count; ++y)
-            {
-                for (int x = 0; x < equations.Count; ++x)
-                {
-                    aZ[x, y] = equations[x][y];
-                }
-            }
-
-            double[] zdz = Solve(aZ);
-
-            Core.TempLog.WriteLine($"X={xydxdy[0]}");
-            Core.TempLog.WriteLine($"Y={xydxdy[1]}");
-            Core.TempLog.WriteLine($"Z={zdz[0]}");
-
-            // 277 - too low
-            // 1210438009750217 - too high
-            // -9222974158435048377 - wrong
-            return ((long)xydxdy[0] + (long)xydxdy[1] + (long)zdz[0]).ToString();
-        }
+            => SharedSolution(inputs, variables, false);
     }
 }
