@@ -1,10 +1,10 @@
 namespace AoC
 {
-    class EntryPoint
+    internal class EntryPoint
     {
         static void Main(string[] args)
         {
-            new Core.Program(args);
+            _ = new Core.Program(args);
         }
     }
 }
