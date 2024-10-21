@@ -90,9 +90,9 @@ namespace AoC._2022
                         sb.Append('.');
                     }
                 }
-                DebugWriteLine(sb.ToString());
+                Log(sb.ToString());
             }
-            DebugWriteLine("  0 - +-------+");
+            Log("  0 - +-------+");
         }
 
         private bool CanMove(HashSet<LPos2> usedPoints, ref List<LPos2> rock, LPos2 movement)

@@ -1,3 +1,5 @@
+using System;
+
 namespace AoC.Base
 {
     public class Segment
@@ -14,6 +16,24 @@ namespace AoC.Base
         public Segment Flip()
         {
             return new Segment(B, A);
+        }
+
+        public bool Includes(Pos2 pos)
+        {
+            int xMin = Math.Min(A.X, B.X);
+            int xMax = Math.Max(A.X, B.X);
+            int yMin = Math.Min(A.Y, B.Y);
+            int yMax = Math.Max(A.Y, B.Y);
+
+            if (pos.X == A.X && A.X == B.X)
+            {
+                return pos.Y >= yMin && pos.Y <= yMax;
+            }
+            else if (pos.Y == A.Y && A.Y == B.Y)
+            {
+                return pos.X >= xMin && pos.X <= xMax;
+            }
+            return false;
         }
 
         public Pos2 GetIntersection(Segment other)
@@ -42,6 +62,51 @@ namespace AoC.Base
             }
             // no other way to get intersection currently
             return null;
+        }
+
+        public override string ToString()
+        {
+            return $"{A} -> {B}";
+        }
+    }
+
+    public class SegmentL
+    {
+        public Pos2L A { get; set; }
+        public Pos2L B { get; set; }
+
+        public SegmentL(Pos2L a, Pos2L b)
+        {
+            A = a;
+            B = b;
+        }
+
+        public SegmentL Flip()
+        {
+            return new SegmentL(B, A);
+        }
+
+        public bool Includes(Pos2L pos)
+        {
+            long xMin = Math.Min(A.X, B.X);
+            long xMax = Math.Max(A.X, B.X);
+            long yMin = Math.Min(A.Y, B.Y);
+            long yMax = Math.Max(A.Y, B.Y);
+
+            if (pos.X == A.X && A.X == B.X)
+            {
+                return pos.Y >= yMin && pos.Y <= yMax;
+            }
+            else if (pos.Y == A.Y && A.Y == B.Y)
+            {
+                return pos.X >= xMin && pos.X <= xMax;
+            }
+            return false;
+        }
+
+        public override string ToString()
+        {
+            return $"{A} -> {B}";
         }
     }
 }

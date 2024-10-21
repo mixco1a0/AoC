@@ -154,7 +154,7 @@ namespace AoC._2021
                 {
                     sb.Append($"{nodes[x, y].Weight,1}");
                 }
-                DebugWriteLine(sb.ToString());
+                Log(sb.ToString());
             }
         }
 

@@ -172,7 +172,8 @@ namespace AoC.Core
                 RunWarmup();
             }
 
-            Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace}.{dayName} Advent of Code\n");
+            string paddedDayName = dayName.Length > 1 ? dayName : $"0{dayName}";
+            Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace}.{paddedDayName} Advent of Code\n");
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
@@ -181,7 +182,7 @@ namespace AoC.Core
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();
-                    day.Run();
+                    day.Run(Args.Has(Config.ESupportedArgument.ForceTests));
                     return day;
                 }
             }
@@ -267,7 +268,7 @@ namespace AoC.Core
                 }
 
                 Day day = (Day)handle.Unwrap();
-                day.RunProblem(part);
+                day.Run(part);
                 if (i < 0)
                 {
                     continue;

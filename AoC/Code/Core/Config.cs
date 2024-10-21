@@ -29,6 +29,7 @@ namespace AoC.Core
             Day,
             RunWarmup,
             SkipLatest,
+            ForceTests,
 
             // performance options
             ShowPerf,

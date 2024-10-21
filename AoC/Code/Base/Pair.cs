@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace AoC.Base
 {
     [JsonObject]
-    public class Pair<TFirst, TLast> : IEquatable<Pair<TFirst, TLast>>
+    public class Pair<TFirst, TLast> : IEquatable<Pair<TFirst, TLast>>, IComparable<Pair<TFirst, TLast>>
     {
         protected TFirst m_first;
         public TFirst First { get => m_first; set => m_first = value; }
@@ -52,6 +52,22 @@ namespace AoC.Base
             }
 
             return m_first.Equals(other.m_first) && m_last.Equals(other.m_last);
+        }
+
+        public int CompareTo(Pair<TFirst, TLast> other)
+        {
+            if (other == null)
+            {
+                return -1;
+            }
+
+            Pair<TFirst, TLast> otherAsPair = other as Pair<TFirst, TLast>;
+            if (otherAsPair == null)
+            {
+                return -1;
+            }
+
+            return GetHashCode().CompareTo(otherAsPair.GetHashCode());
         }
         #endregion
 

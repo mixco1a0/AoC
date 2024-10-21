@@ -110,10 +110,10 @@ namespace AoC._2021
                         sb.Append($".");
                     }
                 }
-                DebugWriteLine(sb.ToString());
+                Log(sb.ToString());
                 sb.Clear();
             }
-            DebugWriteLine(string.Empty);
+            Log(string.Empty);
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkDiagonals)

@@ -7,6 +7,22 @@ using System.Text.RegularExpressions;
 
 namespace AoC.Core
 {
+
+    public static class TempLog
+    {
+        public static Action<string> WriteLine { get; set; }
+        public static Action<string> WriteFile { get; set; }
+        static TempLog()
+        {
+            Reset();
+        }
+        public static void Reset()
+        {
+            WriteLine = (_) => { };
+            WriteFile = (_) => { };
+        }
+    }
+
     public static class Log
     {
         private static readonly int STD_OUTPUT_HANDLE = -11;

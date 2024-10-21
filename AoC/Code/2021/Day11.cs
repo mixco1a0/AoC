@@ -100,9 +100,9 @@ namespace AoC._2021
                 {
                     sb.Append(grid[x, y]);
                 }
-                DebugWriteLine(sb.ToString());
+                Log(sb.ToString());
             }
-            DebugWriteLine(string.Empty);
+            Log(string.Empty);
         }
 
         private int Step(ref int[,] grid, int maxX, int maxY)

@@ -254,13 +254,13 @@ The fourth floor contains nothing relevant."
 
         private record BuildingState(Floor[] Floors, Elevator Elevator, int Steps, string ID)
         {
-            public void Print(Action<Core.Log.ELevel, string> PrintFunc)
+            public void Print()
             {
                 StringBuilder sb = new StringBuilder();
                 List<string> ids = new List<string>();
                 Floors.ToList().ForEach(f => ids.AddRange(f.Generators.Union(f.Microchips)));
                 HashSet<string> pairedIds = ids.ToHashSet();
-                PrintFunc(Core.Log.ELevel.Spam, $"[{ID}] @ {Steps}");
+                Core.TempLog.WriteLine($"[{ID}] @ {Steps}");
                 foreach (Floor floor in Floors.Reverse())
                 {
                     sb.AppendFormat("F{0} {1}", floor.ID + 1, Elevator.Current == floor.ID ? "E  " : ".  ");
@@ -268,10 +268,10 @@ The fourth floor contains nothing relevant."
                     {
                         sb.AppendFormat("{0}{1}", floor.Generators.Contains(pid) ? $"{pid.First()}G " : ".  ", floor.Microchips.Contains(pid) ? $"{pid.First()}M " : ".  ");
                     }
-                    PrintFunc(Core.Log.ELevel.Spam, sb.ToString());
+                    Core.TempLog.WriteLine(sb.ToString());
                     sb.Clear();
                 }
-                PrintFunc(Core.Log.ELevel.Spam, "");
+                Core.TempLog.WriteLine("");
             }
         }
 
@@ -300,7 +300,7 @@ The fourth floor contains nothing relevant."
                 }
                 if (complete)
                 {
-                    bs.Print(DebugWriteLine);
+                    bs.Print();
                     return stepCount;
                 }
 
