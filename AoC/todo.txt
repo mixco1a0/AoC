@@ -1,6 +1,8 @@
 change VecX -> RayX
 change PosX -> VecX
 
+breakout linear solver from d24 2023
+
 add versioning to perf data based on core changes that would affect
 all code that is run
 
