@@ -268,7 +268,7 @@ namespace AoC.Core
                 }
 
                 Day day = (Day)handle.Unwrap();
-                day.RunProblem(part);
+                day.Run(part);
                 if (i < 0)
                 {
                     continue;
