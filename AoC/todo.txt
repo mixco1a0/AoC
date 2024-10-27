@@ -1,10 +1,18 @@
 change VecX -> RayX
 change PosX -> VecX
 
+add quick way to run through all the days
+
+remove Day.SkipTestData
+
 breakout linear solver from d24 2023
 
+clean up performance logging
+
+clean up all of the utils
+
 add versioning to perf data based on core changes that would affect
-all code that is run
+all code that is run (core version?)
 
 fix color ranges not respecting max and mins of their respective type
 write out entire perf log for days, remove top X% and bottom X%
