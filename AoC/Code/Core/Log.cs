@@ -160,7 +160,7 @@ namespace AoC.Core
 
         public static void WriteException(Exception e)
         {
-            List<Color> exceptionColor = new List<Color>() { Negative };
+            List<Color> exceptionColor = [Negative];
             WriteLine(ELevel.Fatal, $"{Core.Log.ColorMarker}{e.Message}{Core.Log.ColorMarker}", exceptionColor);
             foreach (string st in e.StackTrace.Split("\n"))
             {
@@ -184,7 +184,7 @@ namespace AoC.Core
         {
             string[] split = Regex.Split(message, ColorRegex);
             int colorIndex = 0;
-            StringBuilder colorizedMessage = new StringBuilder();
+            StringBuilder colorizedMessage = new();
             for (int i = 0; i < split.Length; ++i)
             {
                 if (!string.IsNullOrWhiteSpace(split[i]) && split[i][0] == ColorMarker)
@@ -217,7 +217,7 @@ namespace AoC.Core
 
             if (level >= LogLevel)
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 if (sameLine)
                 {
                     sb.Append('\r');
@@ -237,7 +237,7 @@ namespace AoC.Core
 
         public static string GetLogTimeStamp()
         {
-            return $"|{DateTime.Now.ToString("hh:mm:ss.fff")}| ";
+            return $"|{DateTime.Now:hh:mm:ss.fff}| ";
         }
     }
 }

@@ -12,7 +12,7 @@ namespace AoC.Core
         public Dictionary<string, Base.KeyVal<bool, string>> Values { get; set; }
         public ConfigFile()
         {
-            Values = new Dictionary<string, Base.KeyVal<bool, string>>();
+            Values = [];
         }
     }
 
@@ -45,24 +45,26 @@ namespace AoC.Core
             End
         }
 
-        private Dictionary<ESupportedArgument, List<string>> SupportedArgs;
+        private readonly Dictionary<ESupportedArgument, List<string>> SupportedArgs;
         private List<string> DuplicateArgs { get; set; }
         private List<string> InvalidArgs { get; set; }
         private List<string> IgnoredArgs { get; set; }
-        private string Tab => "     ";
+        private static string Tab => "     ";
 
         public Config()
         {
             SupportedArgs = new Dictionary<ESupportedArgument, List<string>>();
             for (ESupportedArgument arg = ESupportedArgument.Help; arg != ESupportedArgument.End; ++arg)
             {
-                SupportedArgs[arg] = new List<string>();
-                SupportedArgs[arg].Add(string.Join("", arg.ToString().Where(a => char.IsUpper(a))).ToLower());
-                SupportedArgs[arg].Add(arg.ToString().ToLower());
+                SupportedArgs[arg] =
+                [
+                    string.Join("", arg.ToString().Where(char.IsUpper)).ToLower(),
+                    arg.ToString().ToLower(),
+                ];
             }
             SupportedArgs[ESupportedArgument.Help].Add("?");
-            DuplicateArgs = new List<string>();
-            InvalidArgs = new List<string>();
+            DuplicateArgs = [];
+            InvalidArgs = [];
         }
 
         /// <summary>
@@ -73,7 +75,7 @@ namespace AoC.Core
         {
             ParseCommandLine(args, out Dictionary<ESupportedArgument, string> cliArgs);
 
-            Dictionary<ESupportedArgument, string> cfgArgs = new Dictionary<ESupportedArgument, string>();
+            Dictionary<ESupportedArgument, string> cfgArgs = [];
             if (!cliArgs.ContainsKey(ESupportedArgument.IgnoreConfigFile))
             {
                 // add cfg args
@@ -157,7 +159,7 @@ namespace AoC.Core
         /// <param name="usedArgs"></param>
         private void ParseCommandLine(string[] args, out Dictionary<ESupportedArgument, string> usedArgs)
         {
-            usedArgs = new Dictionary<ESupportedArgument, string>();
+            usedArgs = [];
 
             ESupportedArgument curSupportedArg = ESupportedArgument.Invalid;
             foreach (string arg in args)
@@ -196,9 +198,9 @@ namespace AoC.Core
             }
 
             // make sure the config file can be used
-            if (usedArgs.ContainsKey(ESupportedArgument.ConfigFile))
+            if (usedArgs.TryGetValue(ESupportedArgument.ConfigFile, out string value))
             {
-                this[ESupportedArgument.ConfigFile] = usedArgs[ESupportedArgument.ConfigFile];
+                this[ESupportedArgument.ConfigFile] = value;
             }
         }
 
@@ -213,7 +215,7 @@ namespace AoC.Core
                 Log.WriteLine(Log.ELevel.Info, "Command line arguments");
                 foreach (KeyValuePair<ESupportedArgument, string> argPair in this)
                 {
-                    string cfg = cfgArgs.ContainsKey(argPair.Key) && cfgArgs[argPair.Key] == argPair.Value ? "cfg" : "cli";
+                    string cfg = cfgArgs.TryGetValue(argPair.Key, out string value) && value == argPair.Value ? "cfg" : "cli";
                     Log.WriteLine(Log.ELevel.Info, $"{Tab}[{cfg}] -{string.Format("{0,-3}", SupportedArgs[argPair.Key].Last())} {argPair.Value}");
                 }
             }
