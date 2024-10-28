@@ -410,11 +410,11 @@ namespace AoC.Base
     #region Ray3L
     public class Ray3L : IEquatable<Ray3L>
     {
-        public Pos3L Pos { get; set; }
-        public Pos3L Vel { get; set; }
+        public Vec3L Pos { get; set; }
+        public Vec3L Vel { get; set; }
 
-        private Pos3L _next;
-        private Pos3L Next
+        private Vec3L _next;
+        private Vec3L Next
         {
             get
             {
@@ -433,12 +433,12 @@ namespace AoC.Base
             Vel = new();
         }
 
-        public static Ray3L FromPos(Pos3L pos, Pos3L next)
+        public static Ray3L FromPos(Vec3L pos, Vec3L next)
         {
             return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Ray3L FromVel(Pos3L pos, Pos3L vel)
+        public static Ray3L FromVel(Vec3L pos, Vec3L vel)
         {
             return new() { Pos = pos, Vel = vel };
         }
@@ -487,12 +487,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Ray3L objAsVec3)
+            if (obj is not Ray3L objAsRay3L)
             {
                 return false;
             }
 
-            return Equals(objAsVec3);
+            return Equals(objAsRay3L);
         }
 
         public override int GetHashCode()

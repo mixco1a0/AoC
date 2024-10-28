@@ -809,95 +809,83 @@ namespace AoC.Base
     #endregion
 
 
-    #region Pos2L
-    public class Pos3L : IEquatable<Pos3L>
+    #region Vec3L
+    public class Vec3L : IEquatable<Vec3L>
     {
         public long X { get; set; }
         public long Y { get; set; }
         public long Z { get; set; }
 
-        private static Pos3L _zero;
-        public static Pos3L Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos3L();
-                return _zero;
-            }
-        }
+        public static readonly Vec3L Zero = new();
 
-        public Pos3L()
+        public Vec3L()
         {
             X = default;
             Y = default;
             Z = default;
         }
 
-        public Pos3L(long x, long y, long z)
+        public Vec3L(long x, long y, long z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public Pos3L(Pos3L other)
+        public Vec3L(Vec3L other)
         {
             X = other.X;
             Y = other.Y;
             Z = other.Z;
         }
 
-        public static Pos3L Parse(string input)
+        public static Vec3L Parse(string input)
         {
             if (!input.Contains(','))
             {
                 return null;
             }
 
-            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
-            return new Pos3L(split[0], split[1], split[2]);
+            long[] split = Util.String.Split(input, ',').Select(long.Parse).ToArray();
+            return new(split[0], split[1], split[2]);
         }
 
-        public static Pos3L operator +(Pos3L a, Pos3L b)
+        public static Vec3L operator +(Vec3L a, Vec3L b)
         {
-            return new Pos3L(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+            return new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         }
 
-        public static Pos3L operator -(Pos3L a, Pos3L b)
+        public static Vec3L operator -(Vec3L a, Vec3L b)
         {
-            return new Pos3L(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+            return new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
-        public static Pos3L operator *(Pos3L a, long mult)
+        public static Vec3L operator *(Vec3L a, long mult)
         {
-            return new Pos3L(a.X * mult, a.Y * mult, a.Z * mult);
+            return new(a.X * mult, a.Y * mult, a.Z * mult);
         }
 
-        public static Pos3L operator /(Pos3L a, long mult)
+        public static Vec3L operator /(Vec3L a, long mult)
         {
             if (mult == 0)
             {
-                return new Pos3L();
+                return new();
             }
-            return new Pos3L(a.X / mult, a.Y / mult, a.Z / mult);
+            return new(a.X / mult, a.Y / mult, a.Z / mult);
         }
 
-        public long Manhattan(Pos3L other)
+        public long Manhattan(Vec3L other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
         public Pos2L DropZ()
         {
-            return new Pos2L(X, Y);
+            return new(X, Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos3L other)
+        public bool Equals(Vec3L other)
         {
             return X == other.X && Y == other.Y && Z == other.Z;
         }
@@ -916,13 +904,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos3L objAsPos3L = obj as Pos3L;
-            if (objAsPos3L == null)
+            if (obj is not Vec3L objAsVec3L)
             {
                 return false;
             }
 
-            return Equals(objAsPos3L);
+            return Equals(objAsVec3L);
         }
 
         public override int GetHashCode()
@@ -941,19 +928,7 @@ namespace AoC.Base
         public BigInteger Y { get; set; }
         public BigInteger Z { get; set; }
 
-        private static Vec3BI _zero;
-        public static Vec3BI Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new();
-                return _zero;
-            }
-        }
+        public static readonly Vec3BI Zero = new();
 
         public Vec3BI()
         {
