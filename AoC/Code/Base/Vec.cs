@@ -412,91 +412,79 @@ namespace AoC.Base
     #endregion
 
 
-    #region Pos2F
-    public class Pos2F : IEquatable<Pos2F>, IComparable<Pos2F>, IComparable
+    #region Vec2F
+    public class Vec2F : IEquatable<Vec2F>, IComparable<Vec2F>, IComparable
     {
         public float X { get; set; }
         public float Y { get; set; }
 
-        private static Pos2F _zero;
-        public static Pos2F Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos2F();
-                return _zero;
-            }
-        }
+        public static readonly Vec2F Zero = new();
 
-        public Pos2F()
+        public Vec2F()
         {
             X = default;
             Y = default;
         }
 
-        public Pos2F(float x, float y)
+        public Vec2F(float x, float y)
         {
             X = x;
             Y = y;
         }
 
-        public Pos2F(Pos2F other)
+        public Vec2F(Vec2F other)
         {
             X = other.X;
             Y = other.Y;
         }
 
-        public static Pos2F Parse(string input)
+        public static Vec2F Parse(string input)
         {
             if (!input.Contains(','))
             {
                 return null;
             }
 
-            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
-            return new Pos2F(split[0], split[1]);
+            float[] split = Util.String.Split(input, ',').Select(float.Parse).ToArray();
+            return new(split[0], split[1]);
         }
 
-        public static Pos2F operator +(Pos2F a, Pos2F b)
+        public static Vec2F operator +(Vec2F a, Vec2F b)
         {
-            return new Pos2F(a.X + b.X, a.Y + b.Y);
+            return new(a.X + b.X, a.Y + b.Y);
         }
 
-        public static Pos2F operator -(Pos2F a, Pos2F b)
+        public static Vec2F operator -(Vec2F a, Vec2F b)
         {
-            return new Pos2F(a.X - b.X, a.Y - b.Y);
+            return new(a.X - b.X, a.Y - b.Y);
         }
 
-        public static Pos2F operator *(Pos2F a, float mult)
+        public static Vec2F operator *(Vec2F a, float mult)
         {
-            return new Pos2F(a.X * mult, a.Y * mult);
+            return new(a.X * mult, a.Y * mult);
         }
 
-        public static Pos2F operator /(Pos2F a, float mult)
+        public static Vec2F operator /(Vec2F a, float mult)
         {
             if (mult == 0.0f)
             {
-                return new Pos2F();
+                return new();
             }
-            return new Pos2F(a.X / mult, a.Y / mult);
+            return new(a.X / mult, a.Y / mult);
         }
 
-        public float Manhattan(Pos2F other)
+        public float Manhattan(Vec2F other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos2F other)
+        public bool Equals(Vec2F other)
         {
             return X == other.X && Y == other.Y;
         }
 
-        public virtual int CompareTo(Pos2F other)
+        public virtual int CompareTo(Vec2F other)
         {
             int xCompare = X.CompareTo(other.X);
             if (xCompare != 0)
@@ -508,12 +496,11 @@ namespace AoC.Base
 
         public int CompareTo(object other)
         {
-            Pos2F otherAsPos2F = other as Pos2F;
-            if (otherAsPos2F == null)
+            if (other is not Vec2F otherAsVec)
             {
                 return -1;
             }
-            return otherAsPos2F.CompareTo(other);
+            return otherAsVec.CompareTo(other);
         }
         #endregion
 
@@ -530,13 +517,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos2F objAsPos2F = obj as Pos2F;
-            if (objAsPos2F == null)
+            if (obj is not Vec2F objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsPos2F);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -1077,7 +1063,7 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
-        public Pos2F DropZ()
+        public Vec2F DropZ()
         {
             return new(X, Y);
         }

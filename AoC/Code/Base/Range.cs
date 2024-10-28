@@ -84,7 +84,7 @@ namespace AoC.Base
         }
     }
 
-    public class RangeF : Pos2F
+    public class RangeF : Vec2F
     {
         public float Min { get => X; set => X = value; }
         public float Max { get => Y; set => Y = value; }
