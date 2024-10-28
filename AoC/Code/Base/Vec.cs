@@ -684,95 +684,83 @@ namespace AoC.Base
     #endregion
     
 
-    #region Pos3
-    public class Pos3 : IEquatable<Pos3>
+    #region Vec3
+    public class Vec3 : IEquatable<Vec3>
     {
         public int X { get; set; }
         public int Y { get; set; }
         public int Z { get; set; }
 
-        private static Pos3 _zero;
-        public static Pos3 Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos3();
-                return _zero;
-            }
-        }
+        public static readonly Vec3 Zero = new();
 
-        public Pos3()
+        public Vec3()
         {
             X = default;
             Y = default;
             Z = default;
         }
 
-        public Pos3(int x, int y, int z)
+        public Vec3(int x, int y, int z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public Pos3(Pos3 other)
+        public Vec3(Vec3 other)
         {
             X = other.X;
             Y = other.Y;
             Z = other.Z;
         }
 
-        public static Pos3 Parse(string input)
+        public static Vec3 Parse(string input)
         {
             if (!input.Contains(','))
             {
                 return null;
             }
 
-            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-            return new Pos3(split[0], split[1], split[2]);
+            int[] split = Util.String.Split(input, ',').Select(int.Parse).ToArray();
+            return new(split[0], split[1], split[2]);
         }
 
-        public static Pos3 operator +(Pos3 a, Pos3 b)
+        public static Vec3 operator +(Vec3 a, Vec3 b)
         {
-            return new Pos3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+            return new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         }
 
-        public static Pos3 operator -(Pos3 a, Pos3 b)
+        public static Vec3 operator -(Vec3 a, Vec3 b)
         {
-            return new Pos3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+            return new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
-        public static Pos3 operator *(Pos3 a, int mult)
+        public static Vec3 operator *(Vec3 a, int mult)
         {
-            return new Pos3(a.X * mult, a.Y * mult, a.Z * mult);
+            return new(a.X * mult, a.Y * mult, a.Z * mult);
         }
 
-        public static Pos3 operator /(Pos3 a, int mult)
+        public static Vec3 operator /(Vec3 a, int mult)
         {
             if (mult == 0)
             {
-                return new Pos3();
+                return new();
             }
-            return new Pos3(a.X / mult, a.Y / mult, a.Z / mult);
+            return new(a.X / mult, a.Y / mult, a.Z / mult);
         }
 
-        public int Manhattan(Pos3 other)
+        public int Manhattan(Vec3 other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
         public Pos2 DropZ()
         {
-            return new Pos2(X, Y);
+            return new(X, Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos3 other)
+        public bool Equals(Vec3 other)
         {
             return X == other.X && Y == other.Y && Z == other.Z;
         }
@@ -791,13 +779,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos3 objAsPos3 = obj as Pos3;
-            if (objAsPos3 == null)
+            if (obj is not Vec3 objAsVec3)
             {
                 return false;
             }
 
-            return Equals(objAsPos3);
+            return Equals(objAsVec3);
         }
 
         public override int GetHashCode()

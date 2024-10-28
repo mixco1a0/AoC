@@ -63,7 +63,7 @@ namespace AoC._2023
             Z
         }
 
-        private record Brick(int Id, Base.Pos3 Start, Base.Pos3 End, Axis Axis)
+        private record Brick(int Id, Base.Vec3 Start, Base.Vec3 End, Axis Axis)
         {
             private static int s_id = 0;
             public static Brick Parse(string input)
@@ -82,7 +82,7 @@ namespace AoC._2023
                 {
                     axis = Axis.Z;
                 }
-                return new Brick(++s_id, new Base.Pos3(split[0], split[1], split[2]), new Base.Pos3(split[3], split[4], split[5]), axis);
+                return new Brick(++s_id, new Base.Vec3(split[0], split[1], split[2]), new Base.Vec3(split[3], split[4], split[5]), axis);
             }
 
             public override string ToString()
@@ -94,12 +94,12 @@ namespace AoC._2023
         private class BrickSpace
         {
             public int Owner { get; set; }
-            public Base.Pos3 Space { get; set; }
+            public Base.Vec3 Space { get; set; }
 
-            public BrickSpace(int owner, Base.Pos3 space)
+            public BrickSpace(int owner, Base.Vec3 space)
             {
                 Owner = owner;
-                Space = new Base.Pos3(space);
+                Space = new Base.Vec3(space);
             }
         }
 
@@ -181,7 +181,7 @@ namespace AoC._2023
                 if (brick.Start.Z > 1)
                 {
                     ++actualZ;
-                    settledBricks.Add(new Brick(brick.Id, new Base.Pos3(brick.Start.X, brick.Start.Y, actualZ), new Base.Pos3(brick.End.X, brick.End.Y, brick.End.Z - (brick.Start.Z - actualZ)), brick.Axis));
+                    settledBricks.Add(new Brick(brick.Id, new Base.Vec3(brick.Start.X, brick.Start.Y, actualZ), new Base.Vec3(brick.End.X, brick.End.Y, brick.End.Z - (brick.Start.Z - actualZ)), brick.Axis));
                     if (actualZ != brick.Start.Z)
                     {
                         ++settledBrickCount;
@@ -203,7 +203,7 @@ namespace AoC._2023
                     {
                         for (int x = brick.Start.X; x <= brick.End.X; ++x)
                         {
-                            brickOccupiedSpaces[z].Add(new BrickSpace(brick.Id, new Base.Pos3(x, y, z)));
+                            brickOccupiedSpaces[z].Add(new BrickSpace(brick.Id, new Base.Vec3(x, y, z)));
                         }
                     }
                 }

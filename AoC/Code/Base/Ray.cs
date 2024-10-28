@@ -313,11 +313,11 @@ namespace AoC.Base
     #region Ray3
     public class Ray3 : IEquatable<Ray3>
     {
-        public Pos3 Pos { get; set; }
-        public Pos3 Vel { get; set; }
+        public Vec3 Pos { get; set; }
+        public Vec3 Vel { get; set; }
 
-        private Pos3 _next;
-        private Pos3 Next
+        private Vec3 _next;
+        private Vec3 Next
         {
             get
             {
@@ -336,12 +336,12 @@ namespace AoC.Base
             Vel = new();
         }
 
-        public static Ray3 FromPos(Pos3 pos, Pos3 next)
+        public static Ray3 FromPos(Vec3 pos, Vec3 next)
         {
             return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Ray3 FromVel(Pos3 pos, Pos3 vel)
+        public static Ray3 FromVel(Vec3 pos, Vec3 vel)
         {
             return new() { Pos = pos, Vel = vel };
         }
@@ -390,12 +390,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Ray3 objAsVec3)
+            if (obj is not Ray3 objAsRay3)
             {
                 return false;
             }
 
-            return Equals(objAsVec3);
+            return Equals(objAsRay3);
         }
 
         public override int GetHashCode()
