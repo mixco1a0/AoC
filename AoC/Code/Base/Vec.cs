@@ -276,45 +276,33 @@ namespace AoC.Base
     #endregion
 
 
-    #region Pos2BI
-    public class Pos2BI : IEquatable<Pos2BI>, IComparable<Pos2BI>, IComparable
+    #region Vec2BI
+    public class Vec2BI : IEquatable<Vec2BI>, IComparable<Vec2BI>, IComparable
     {
         public BigInteger X { get; set; }
         public BigInteger Y { get; set; }
 
-        private static Pos2BI _zero;
-        public static Pos2BI Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos2BI();
-                return _zero;
-            }
-        }
+        public static readonly Vec2BI Zero = new();
 
-        public Pos2BI()
+        public Vec2BI()
         {
             X = default;
             Y = default;
         }
 
-        public Pos2BI(BigInteger x, BigInteger y)
+        public Vec2BI(BigInteger x, BigInteger y)
         {
             X = x;
             Y = y;
         }
 
-        public Pos2BI(Pos2BI other)
+        public Vec2BI(Vec2BI other)
         {
             X = other.X;
             Y = other.Y;
         }
 
-        public static Pos2BI Parse(string input)
+        public static Vec2BI Parse(string input)
         {
             if (!input.Contains(','))
             {
@@ -322,45 +310,45 @@ namespace AoC.Base
             }
 
             BigInteger[] split = Util.String.Split(input, ',').Select(BigInteger.Parse).ToArray();
-            return new Pos2BI(split[0], split[1]);
+            return new(split[0], split[1]);
         }
 
-        public static Pos2BI operator +(Pos2BI a, Pos2BI b)
+        public static Vec2BI operator +(Vec2BI a, Vec2BI b)
         {
-            return new Pos2BI(a.X + b.X, a.Y + b.Y);
+            return new(a.X + b.X, a.Y + b.Y);
         }
 
-        public static Pos2BI operator -(Pos2BI a, Pos2BI b)
+        public static Vec2BI operator -(Vec2BI a, Vec2BI b)
         {
-            return new Pos2BI(a.X - b.X, a.Y - b.Y);
+            return new(a.X - b.X, a.Y - b.Y);
         }
 
-        public static Pos2BI operator *(Pos2BI a, BigInteger mult)
+        public static Vec2BI operator *(Vec2BI a, BigInteger mult)
         {
-            return new Pos2BI(a.X * mult, a.Y * mult);
+            return new(a.X * mult, a.Y * mult);
         }
 
-        public static Pos2BI operator /(Pos2BI a, BigInteger mult)
+        public static Vec2BI operator /(Vec2BI a, BigInteger mult)
         {
             if (mult == 0)
             {
-                return new Pos2BI();
+                return new();
             }
-            return new Pos2BI(a.X / mult, a.Y / mult);
+            return new(a.X / mult, a.Y / mult);
         }
 
-        public BigInteger Manhattan(Pos2BI other)
+        public BigInteger Manhattan(Vec2BI other)
         {
             return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos2BI other)
+        public bool Equals(Vec2BI other)
         {
             return X == other.X && Y == other.Y;
         }
 
-        public virtual int CompareTo(Pos2BI other)
+        public virtual int CompareTo(Vec2BI other)
         {
             int xCompare = X.CompareTo(other.X);
             if (xCompare != 0)
@@ -372,12 +360,11 @@ namespace AoC.Base
 
         public int CompareTo(object other)
         {
-            Pos2BI otherAsPos2BI = other as Pos2BI;
-            if (otherAsPos2BI == null)
+            if (other is not Vec2BI otherAsVec)
             {
                 return -1;
             }
-            return otherAsPos2BI.CompareTo(other);
+            return otherAsVec.CompareTo(other);
         }
         #endregion
 
@@ -394,13 +381,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos2BI objAsPos2BI = obj as Pos2BI;
-            if (objAsPos2BI == null)
+            if (obj is not Vec2BI objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsPos2BI);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -951,7 +937,7 @@ namespace AoC.Base
             return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y) + Util.Number.Abs(Z - other.Z);
         }
 
-        public Pos2BI DropZ()
+        public Vec2BI DropZ()
         {
             return new(X, Y);
         }
