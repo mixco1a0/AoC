@@ -779,12 +779,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Vec3 objAsVec3)
+            if (obj is not Vec3 objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsVec3);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -891,12 +891,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Vec3L objAsVec3L)
+            if (obj is not Vec3L objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsVec3L);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -1003,12 +1003,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Vec3BI objAsVec3BI)
+            if (obj is not Vec3BI objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsVec3BI);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -1115,12 +1115,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Vec3F objAsVec3F)
+            if (obj is not Vec3F objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsVec3F);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
