@@ -934,15 +934,15 @@ namespace AoC.Base
     #endregion
 
 
-    #region Pos3BI
-    public class Pos3BI : IEquatable<Pos3BI>
+    #region Vec3BI
+    public class Vec3BI : IEquatable<Vec3BI>
     {
         public BigInteger X { get; set; }
         public BigInteger Y { get; set; }
         public BigInteger Z { get; set; }
 
-        private static Pos3BI _zero;
-        public static Pos3BI Zero
+        private static Vec3BI _zero;
+        public static Vec3BI Zero
         {
             get
             {
@@ -950,79 +950,79 @@ namespace AoC.Base
                 {
                     return _zero;
                 }
-                _zero = new Pos3BI();
+                _zero = new();
                 return _zero;
             }
         }
 
-        public Pos3BI()
+        public Vec3BI()
         {
             X = default;
             Y = default;
             Z = default;
         }
 
-        public Pos3BI(BigInteger x, BigInteger y, BigInteger z)
+        public Vec3BI(BigInteger x, BigInteger y, BigInteger z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public Pos3BI(Pos3BI other)
+        public Vec3BI(Vec3BI other)
         {
             X = other.X;
             Y = other.Y;
             Z = other.Z;
         }
 
-        public static Pos3BI Parse(string input)
+        public static Vec3BI Parse(string input)
         {
             if (!input.Contains(','))
             {
                 return null;
             }
 
-            BigInteger[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(BigInteger.Parse).ToArray();
-            return new Pos3BI(split[0], split[1], split[2]);
+            BigInteger[] split = Util.String.Split(input, ',').Select(BigInteger.Parse).ToArray();
+            return new(split[0], split[1], split[2]);
         }
 
-        public static Pos3BI operator +(Pos3BI a, Pos3BI b)
+        public static Vec3BI operator +(Vec3BI a, Vec3BI b)
         {
-            return new Pos3BI(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+            return new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         }
 
-        public static Pos3BI operator -(Pos3BI a, Pos3BI b)
+        public static Vec3BI operator -(Vec3BI a, Vec3BI b)
         {
-            return new Pos3BI(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+            return new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
-        public static Pos3BI operator *(Pos3BI a, BigInteger mult)
+        public static Vec3BI operator *(Vec3BI a, BigInteger mult)
         {
-            return new Pos3BI(a.X * mult, a.Y * mult, a.Z * mult);
+            return new(a.X * mult, a.Y * mult, a.Z * mult);
         }
 
-        public static Pos3BI operator /(Pos3BI a, BigInteger mult)
+        public static Vec3BI operator /(Vec3BI a, BigInteger mult)
         {
             if (mult == 0)
             {
-                return new Pos3BI();
+                return new();
             }
-            return new Pos3BI(a.X / mult, a.Y / mult, a.Z / mult);
+            return new(a.X / mult, a.Y / mult, a.Z / mult);
         }
 
-        public BigInteger Manhattan(Pos3BI other)
+        public BigInteger Manhattan(Vec3BI other)
         {
             return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y) + Util.Number.Abs(Z - other.Z);
         }
 
         public Pos2BI DropZ()
         {
-            return new Pos2BI(X, Y);
+            return new(X, Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos3BI other)
+        public bool Equals(Vec3BI other)
         {
             return X == other.X && Y == other.Y && Z == other.Z;
         }
@@ -1041,13 +1041,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos3BI objAsPos3BI = obj as Pos3BI;
-            if (objAsPos3BI == null)
+            if (obj is not Vec3BI objAsVec3BI)
             {
                 return false;
             }
 
-            return Equals(objAsPos3BI);
+            return Equals(objAsVec3BI);
         }
 
         public override int GetHashCode()
@@ -1096,7 +1095,7 @@ namespace AoC.Base
                 return null;
             }
 
-            float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
+            float[] split = Util.String.Split(input, ',').Select(float.Parse).ToArray();
             return new(split[0], split[1], split[2]);
         }
 
@@ -1154,12 +1153,12 @@ namespace AoC.Base
                 return false;
             }
 
-            if (obj is not Vec3F objAsPos3F)
+            if (obj is not Vec3F objAsVec3F)
             {
                 return false;
             }
 
-            return Equals(objAsPos3F);
+            return Equals(objAsVec3F);
         }
 
         public override int GetHashCode()
