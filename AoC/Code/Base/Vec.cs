@@ -548,91 +548,80 @@ namespace AoC.Base
     #endregion
 
 
-    #region Pos2D
-    public class Pos2D : IEquatable<Pos2D>, IComparable<Pos2D>, IComparable
+    #region Vec2D
+    public class Vec2D : IEquatable<Vec2D>, IComparable<Vec2D>, IComparable
     {
-        public decimal X { get; set; }
-        public decimal Y { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
 
-        private static Pos2D _zero;
-        public static Pos2D Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos2D();
-                return _zero;
-            }
-        }
+        private static Vec2D _zero;
+        public static readonly Vec2D Zero = new();
 
-        public Pos2D()
+        public Vec2D()
         {
             X = default;
             Y = default;
         }
 
-        public Pos2D(decimal x, decimal y)
+        public Vec2D(double x, double y)
         {
             X = x;
             Y = y;
         }
 
-        public Pos2D(Pos2D other)
+        public Vec2D(Vec2D other)
         {
             X = other.X;
             Y = other.Y;
         }
 
-        public static Pos2D Parse(string input)
+        public static Vec2D Parse(string input)
         {
             if (!input.Contains(','))
             {
                 return null;
             }
 
-            decimal[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(decimal.Parse).ToArray();
-            return new Pos2D(split[0], split[1]);
+            double[] split = Util.String.Split(input, ',').Select(double.Parse).ToArray();
+            return new(split[0], split[1]);
         }
 
-        public static Pos2D operator +(Pos2D a, Pos2D b)
+        public static Vec2D operator +(Vec2D a, Vec2D b)
         {
-            return new Pos2D(a.X + b.X, a.Y + b.Y);
+            return new(a.X + b.X, a.Y + b.Y);
         }
 
-        public static Pos2D operator -(Pos2D a, Pos2D b)
+        public static Vec2D operator -(Vec2D a, Vec2D b)
         {
-            return new Pos2D(a.X - b.X, a.Y - b.Y);
+            return new(a.X - b.X, a.Y - b.Y);
         }
 
-        public static Pos2D operator *(Pos2D a, decimal mult)
+        public static Vec2D operator *(Vec2D a, double mult)
         {
-            return new Pos2D(a.X * mult, a.Y * mult);
+            return new(a.X * mult, a.Y * mult);
         }
 
-        public static Pos2D operator /(Pos2D a, decimal mult)
+        public static Vec2D operator /(Vec2D a, double mult)
         {
-            if (mult == decimal.Zero)
+            if (mult == 0.0d)
             {
-                return new Pos2D();
+                return new Vec2D();
             }
-            return new Pos2D(a.X / mult, a.Y / mult);
+            return new(a.X / mult, a.Y / mult);
         }
 
-        public decimal Manhattan(Pos2D other)
+        public double Manhattan(Vec2D other)
         {
-            return decimal.Abs(X - other.X) + decimal.Abs(Y - other.Y);
+            return double.Abs(X - other.X) + double.Abs(Y - other.Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos2D other)
+        public bool Equals(Vec2D other)
         {
             return X == other.X && Y == other.Y;
         }
 
-        public virtual int CompareTo(Pos2D other)
+        public virtual int CompareTo(Vec2D other)
         {
             int xCompare = X.CompareTo(other.X);
             if (xCompare != 0)
@@ -644,12 +633,11 @@ namespace AoC.Base
 
         public int CompareTo(object other)
         {
-            Pos2D otherAsPos2D = other as Pos2D;
-            if (otherAsPos2D == null)
+            if (other is not Vec2D otherAsVec)
             {
                 return -1;
             }
-            return otherAsPos2D.CompareTo(other);
+            return otherAsVec.CompareTo(other);
         }
         #endregion
 
@@ -666,13 +654,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos2D objAsPos2D = obj as Pos2D;
-            if (objAsPos2D == null)
+            if (obj is not Vec2D objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsPos2D);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
