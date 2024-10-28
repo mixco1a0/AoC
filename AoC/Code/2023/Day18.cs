@@ -182,8 +182,8 @@ U 2 (#7a21e3)"
             for (int i = 0; i < positions.Count; ++i)
             {
                 int j = (i + 1) % positions.Count;
-                Base.Vec2L vec = Base.Vec2L.FromPos(positions[i], positions[j]);
-                perimeter += vec.GetLength();
+                Base.Ray2L ray = Base.Ray2L.FromPos(positions[i], positions[j]);
+                perimeter += ray.GetLength();
             }
             return perimeter / 2 + 1;
         }

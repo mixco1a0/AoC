@@ -58,29 +58,29 @@ namespace AoC._2023
         private long _MinRange { get; }
         private long _MaxRange { get; }
 
-        private static string Count2DIntersections(List<Vec3L> hailstones, long minRange, long maxRange)
+        private static string Count2DIntersections(List<Ray3L> hailstones, long minRange, long maxRange)
         {
-            List<Vec2L> h2d = hailstones.Select(v3 => v3.DropZ()).ToList();
+            List<Ray2L> h2d = hailstones.Select(v3 => v3.DropZ()).ToList();
             // Log("Hailstones:");
             // h2d.ForEach(l => Log(l.ToString()));
             long count = 0;
             for (int i = 0; i < h2d.Count; ++i)
             {
-                Vec2L iH = h2d[i];
+                Ray2L iH = h2d[i];
                 for (int j = i + 1; j < h2d.Count; ++j)
                 {
-                    Vec2L jH = h2d[j];
-                    Vec.Intersection2D type = iH.GetIntersection(jH, out Pos2L pos2);
+                    Ray2L jH = h2d[j];
+                    Ray.Intersection2D type = iH.GetIntersection(jH, out Pos2L pos2);
                     switch (type)
                     {
-                        case Vec.Intersection2D.Parallel:
+                        case Ray.Intersection2D.Parallel:
                             // Log($"{iH} is parallel to {jH}");
                             break;
-                        case Vec.Intersection2D.Overlap:
+                        case Ray.Intersection2D.Overlap:
                             // Log($"{iH} overlaps {jH}");
                             ++count;
                             break;
-                        case Vec.Intersection2D.SinglePoint:
+                        case Ray.Intersection2D.SinglePoint:
                             // char inside = 'X';
                             // char whenPath = 'P';
                             if (pos2.X >= minRange && pos2.X <= maxRange && pos2.Y >= minRange && pos2.Y <= maxRange)
@@ -104,7 +104,7 @@ namespace AoC._2023
             return count.ToString();
         }
 
-        private static string FindRockValues(List<Vec3L> hailstones)
+        private static string FindRockValues(List<Ray3L> hailstones)
         {
             // rX + t * rDX = x + t * dx
             // rX - x = t * (dx - rDX)
@@ -173,7 +173,7 @@ namespace AoC._2023
         {
             GetVariable(nameof(_MinRange), 200_000_000_000_000, variables, out long minRange);
             GetVariable(nameof(_MaxRange), 400_000_000_000_000, variables, out long maxRange);
-            List<Vec3L> hailstones = inputs.Select(Vec3L.ParseVel).ToList();
+            List<Ray3L> hailstones = inputs.Select(Ray3L.ParseVel).ToList();
             if (count2DIntersections)
             {
                 return Count2DIntersections(hailstones, minRange, maxRange);
@@ -187,7 +187,7 @@ namespace AoC._2023
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true);
 
-        private static void GetHailstoneXYValues(Vec3L h1, Vec3L h2, ref double[,] aXY, int row)
+        private static void GetHailstoneXYValues(Ray3L h1, Ray3L h2, ref double[,] aXY, int row)
         {
             aXY[row, 0] = (double)h2.Vel.Y - h1.Vel.Y; // X
             aXY[row, 1] = (double)h1.Vel.X - h2.Vel.X; // Y
@@ -196,7 +196,7 @@ namespace AoC._2023
             aXY[row, 4] = (double)h2.Pos.X * h2.Vel.Y - (double)h2.Pos.Y * h2.Vel.X - (double)h1.Pos.X * h1.Vel.Y + (double)h1.Pos.Y * h1.Vel.X;
         }
 
-        private static void GetHailstoneZValues(Vec3L h1, Vec3L h2, double[] xydxdy, ref double[,] aZ, int row)
+        private static void GetHailstoneZValues(Ray3L h1, Ray3L h2, double[] xydxdy, ref double[,] aZ, int row)
         {
             aZ[row, 0] = (double)h1.Vel.X - h2.Vel.X; // Z
             aZ[row, 1] = (double)h2.Pos.X - h1.Pos.X; // DZ
