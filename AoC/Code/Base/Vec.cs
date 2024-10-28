@@ -1060,14 +1060,14 @@ namespace AoC.Base
 
 
     #region Pos3F
-    public class Pos3F : IEquatable<Pos3F>
+    public class Vec3F : IEquatable<Vec3F>
     {
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
 
-        private static Pos3F _zero;
-        public static Pos3F Zero
+        private static Vec3F _zero;
+        public static Vec3F Zero
         {
             get
             {
@@ -1075,33 +1075,33 @@ namespace AoC.Base
                 {
                     return _zero;
                 }
-                _zero = new Pos3F();
+                _zero = new();
                 return _zero;
             }
         }
 
-        public Pos3F()
+        public Vec3F()
         {
             X = default;
             Y = default;
             Z = default;
         }
 
-        public Pos3F(float x, float y, float z)
+        public Vec3F(float x, float y, float z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public Pos3F(Pos3F other)
+        public Vec3F(Vec3F other)
         {
             X = other.X;
             Y = other.Y;
             Z = other.Z;
         }
 
-        public static Pos3F Parse(string input)
+        public static Vec3F Parse(string input)
         {
             if (!input.Contains(','))
             {
@@ -1109,34 +1109,34 @@ namespace AoC.Base
             }
 
             float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
-            return new Pos3F(split[0], split[1], split[2]);
+            return new Vec3F(split[0], split[1], split[2]);
         }
 
-        public static Pos3F operator +(Pos3F a, Pos3F b)
+        public static Vec3F operator +(Vec3F a, Vec3F b)
         {
-            return new Pos3F(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+            return new Vec3F(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         }
 
-        public static Pos3F operator -(Pos3F a, Pos3F b)
+        public static Vec3F operator -(Vec3F a, Vec3F b)
         {
-            return new Pos3F(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+            return new Vec3F(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
-        public static Pos3F operator *(Pos3F a, float mult)
+        public static Vec3F operator *(Vec3F a, float mult)
         {
-            return new Pos3F(a.X * mult, a.Y * mult, a.Z * mult);
+            return new Vec3F(a.X * mult, a.Y * mult, a.Z * mult);
         }
 
-        public static Pos3F operator /(Pos3F a, float mult)
+        public static Vec3F operator /(Vec3F a, float mult)
         {
             if (mult == 0.0f)
             {
-                return new Pos3F();
+                return new Vec3F();
             }
-            return new Pos3F(a.X / mult, a.Y / mult, a.Z / mult);
+            return new Vec3F(a.X / mult, a.Y / mult, a.Z / mult);
         }
 
-        public float Manhattan(Pos3F other)
+        public float Manhattan(Vec3F other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
@@ -1147,7 +1147,7 @@ namespace AoC.Base
         }
 
         #region Interfaces
-        public bool Equals(Pos3F other)
+        public bool Equals(Vec3F other)
         {
             return X == other.X && Y == other.Y && Z == other.Z;
         }
@@ -1166,8 +1166,7 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos3F objAsPos3F = obj as Pos3F;
-            if (objAsPos3F == null)
+            if (obj is not Vec3F objAsPos3F)
             {
                 return false;
             }
