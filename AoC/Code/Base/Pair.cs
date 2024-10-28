@@ -84,8 +84,7 @@ namespace AoC.Base
                 return false;
             }
 
-            Pair<TFirst, TLast> objAsPair = obj as Pair<TFirst, TLast>;
-            if (objAsPair == null)
+            if (obj is not Pair<TFirst, TLast> objAsPair)
             {
                 return false;
             }
