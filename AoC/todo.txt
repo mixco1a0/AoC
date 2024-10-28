@@ -11,6 +11,10 @@ clean up performance logging
 
 clean up all of the utils
 
+add standard directions
+
+add grid move directions
+
 add versioning to perf data based on core changes that would affect
 all code that is run (core version?)
 
