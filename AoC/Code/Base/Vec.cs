@@ -141,44 +141,32 @@ namespace AoC.Base
 
 
     #region Pos2L
-    public class Pos2L : IEquatable<Pos2L>, IComparable<Pos2L>, IComparable
+    public class Vec2L : IEquatable<Vec2L>, IComparable<Vec2L>, IComparable
     {
         public long X { get; set; }
         public long Y { get; set; }
+        
+        public static readonly Vec2L Zero = new();
 
-        private static Pos2L _zero;
-        public static Pos2L Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos2L();
-                return _zero;
-            }
-        }
-
-        public Pos2L()
+        public Vec2L()
         {
             X = default;
             Y = default;
         }
 
-        public Pos2L(long x, long y)
+        public Vec2L(long x, long y)
         {
             X = x;
             Y = y;
         }
 
-        public Pos2L(Pos2L other)
+        public Vec2L(Vec2L other)
         {
             X = other.X;
             Y = other.Y;
         }
 
-        public static Pos2L Parse(string input)
+        public static Vec2L Parse(string input)
         {
             if (!input.Contains(','))
             {
@@ -186,45 +174,45 @@ namespace AoC.Base
             }
 
             long[] split = Util.String.Split(input, ',').Select(long.Parse).ToArray();
-            return new Pos2L(split[0], split[1]);
+            return new(split[0], split[1]);
         }
 
-        public static Pos2L operator +(Pos2L a, Pos2L b)
+        public static Vec2L operator +(Vec2L a, Vec2L b)
         {
-            return new Pos2L(a.X + b.X, a.Y + b.Y);
+            return new(a.X + b.X, a.Y + b.Y);
         }
 
-        public static Pos2L operator -(Pos2L a, Pos2L b)
+        public static Vec2L operator -(Vec2L a, Vec2L b)
         {
-            return new Pos2L(a.X - b.X, a.Y - b.Y);
+            return new(a.X - b.X, a.Y - b.Y);
         }
 
-        public static Pos2L operator *(Pos2L a, long mult)
+        public static Vec2L operator *(Vec2L a, long mult)
         {
-            return new Pos2L(a.X * mult, a.Y * mult);
+            return new(a.X * mult, a.Y * mult);
         }
 
-        public static Pos2L operator /(Pos2L a, long mult)
+        public static Vec2L operator /(Vec2L a, long mult)
         {
             if (mult == 0)
             {
-                return new Pos2L();
+                return new();
             }
-            return new Pos2L(a.X / mult, a.Y / mult);
+            return new(a.X / mult, a.Y / mult);
         }
 
-        public long Manhattan(Pos2L other)
+        public long Manhattan(Vec2L other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos2L other)
+        public bool Equals(Vec2L other)
         {
             return X == other.X && Y == other.Y;
         }
 
-        public virtual int CompareTo(Pos2L other)
+        public virtual int CompareTo(Vec2L other)
         {
             int xCompare = X.CompareTo(other.X);
             if (xCompare != 0)
@@ -236,12 +224,11 @@ namespace AoC.Base
 
         public int CompareTo(object other)
         {
-            Pos2L otherAsPos2 = other as Pos2L;
-            if (otherAsPos2 == null)
+            if (other is not Vec2L otherAsVec)
             {
                 return -1;
             }
-            return otherAsPos2.CompareTo(other);
+            return otherAsVec.CompareTo(other);
         }
         #endregion
 
@@ -258,13 +245,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos2L objAsPos2L = obj as Pos2L;
-            if (objAsPos2L == null)
+            if (obj is not Vec2L objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsPos2L);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -526,7 +512,6 @@ namespace AoC.Base
         public double X { get; set; }
         public double Y { get; set; }
 
-        private static Vec2D _zero;
         public static readonly Vec2D Zero = new();
 
         public Vec2D()
@@ -825,7 +810,7 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
-        public Pos2L DropZ()
+        public Vec2L DropZ()
         {
             return new(X, Y);
         }

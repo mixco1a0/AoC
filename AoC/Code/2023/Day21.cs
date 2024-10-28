@@ -54,11 +54,11 @@ namespace AoC._2023
         private static char Start = 'S';
 
         private enum Direction : int { North = 0, East = 1, South = 2, West = 3 }
-        static readonly Base.Pos2L[] GridMoves = new Base.Pos2L[] { new Base.Pos2L(0, 1), new Base.Pos2L(1, 0), new Base.Pos2L(0, -1), new Base.Pos2L(-1, 0) };
+        static readonly Base.Vec2L[] GridMoves = new Base.Vec2L[] { new Base.Vec2L(0, 1), new Base.Vec2L(1, 0), new Base.Vec2L(0, -1), new Base.Vec2L(-1, 0) };
 
-        private void ParseInput(List<string> inputs, out char[,] blankGrid, out Base.Pos2L start, out int xMax, out int yMax)
+        private void ParseInput(List<string> inputs, out char[,] blankGrid, out Base.Vec2L start, out int xMax, out int yMax)
         {
-            start = new Base.Pos2L();
+            start = new Base.Vec2L();
             blankGrid = new char[inputs[0].Length, inputs.Count()];
             for (int x = 0; x < inputs[0].Length; ++x)
             {
@@ -67,7 +67,7 @@ namespace AoC._2023
                     blankGrid[x, y] = inputs[y][x];
                     if (blankGrid[x, y] == Start)
                     {
-                        start = new Base.Pos2L(x, y);
+                        start = new Base.Vec2L(x, y);
                         blankGrid[x, y] = Plot;
                     }
                 }
@@ -76,7 +76,7 @@ namespace AoC._2023
             yMax = blankGrid.GetLength(1);
         }
 
-        private void PrintStepsTo(Dictionary<Base.Pos2L, int> stepsTo, char[,] grid, Base.Pos2L start, int maxSteps)
+        private void PrintStepsTo(Dictionary<Base.Vec2L, int> stepsTo, char[,] grid, Base.Vec2L start, int maxSteps)
         {
             char[,] temp = (char[,])grid.Clone();
             foreach (var pair in stepsTo)
@@ -97,9 +97,9 @@ namespace AoC._2023
             Util.Grid.PrintGrid(temp);
         }
 
-        private record StepCheck(Base.Pos2L Pos, int Steps);
+        private record StepCheck(Base.Vec2L Pos, int Steps);
 
-        private void PopulateSteps(ref Dictionary<Base.Pos2L, int> stepsTo, Base.Pos2L start, int xMax, int yMax, char[,] grid)
+        private void PopulateSteps(ref Dictionary<Base.Vec2L, int> stepsTo, Base.Vec2L start, int xMax, int yMax, char[,] grid)
         {
             PriorityQueue<StepCheck, int> checkNext = new();
             checkNext.Enqueue(new StepCheck(start, 0), 0);
@@ -107,9 +107,9 @@ namespace AoC._2023
             while (checkNext.Count > 0)
             {
                 StepCheck stepCheck = checkNext.Dequeue();
-                foreach (Base.Pos2L pos2L in GridMoves)
+                foreach (Base.Vec2L pos2L in GridMoves)
                 {
-                    Base.Pos2L next = stepCheck.Pos + pos2L;
+                    Base.Vec2L next = stepCheck.Pos + pos2L;
                     if (next.X < 0 || next.X >= xMax || next.Y < 0 || next.Y >= yMax)
                     {
                         continue;
@@ -140,10 +140,10 @@ namespace AoC._2023
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool infinite, int maxSteps)
         {
-            ParseInput(inputs, out char[,] grid, out Base.Pos2L start, out int xMax, out int yMax);
+            ParseInput(inputs, out char[,] grid, out Base.Vec2L start, out int xMax, out int yMax);
             GetVariable(nameof(_Steps), maxSteps, variables, out int stepCount);
 
-            Dictionary<Base.Pos2L, int> stepsTo = new();
+            Dictionary<Base.Vec2L, int> stepsTo = new();
             // PrintStepsTo(stepsTo, grid, start, 0);
             PopulateSteps(ref stepsTo, start, xMax, yMax, grid);
 

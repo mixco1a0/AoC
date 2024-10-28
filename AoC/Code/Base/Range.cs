@@ -43,7 +43,7 @@ namespace AoC.Base
         }
     }
 
-    public class RangeL : Pos2L, IComparable<RangeL>, IComparable
+    public class RangeL : Vec2L, IComparable<RangeL>, IComparable
     {
         public long Min { get => X; set => X = value; }
         public long Max { get => Y; set => Y = value; }

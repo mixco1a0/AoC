@@ -181,11 +181,11 @@ namespace AoC.Base
     #region Ray2L
     public class Ray2L : IEquatable<Ray2L>
     {
-        public Pos2L Pos { get; set; }
-        public Pos2L Vel { get; set; }
+        public Vec2L Pos { get; set; }
+        public Vec2L Vel { get; set; }
 
-        private Pos2L _next;
-        private Pos2L Next
+        private Vec2L _next;
+        private Vec2L Next
         {
             get
             {
@@ -223,12 +223,12 @@ namespace AoC.Base
             Vel = new();
         }
 
-        public static Ray2L FromPos(Pos2L pos, Pos2L next)
+        public static Ray2L FromPos(Vec2L pos, Vec2L next)
         {
             return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Ray2L FromVel(Pos2L pos, Pos2L vel)
+        public static Ray2L FromVel(Vec2L pos, Vec2L vel)
         {
             return new() { Pos = pos, Vel = vel };
         }
@@ -245,7 +245,7 @@ namespace AoC.Base
             return FromPos(new(split[0], split[1]), new(split[2], split[3]));
         }
 
-        public Ray.Intersection2D GetIntersection(Ray2L other, out Pos2L intersection)
+        public Ray.Intersection2D GetIntersection(Ray2L other, out Vec2L intersection)
         {
             intersection = new();
             if (A == other.A && B == other.B)

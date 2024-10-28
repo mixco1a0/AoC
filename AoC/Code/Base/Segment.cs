@@ -72,10 +72,10 @@ namespace AoC.Base
 
     public class SegmentL
     {
-        public Pos2L A { get; set; }
-        public Pos2L B { get; set; }
+        public Vec2L A { get; set; }
+        public Vec2L B { get; set; }
 
-        public SegmentL(Pos2L a, Pos2L b)
+        public SegmentL(Vec2L a, Vec2L b)
         {
             A = a;
             B = b;
@@ -86,7 +86,7 @@ namespace AoC.Base
             return new SegmentL(B, A);
         }
 
-        public bool Includes(Pos2L pos)
+        public bool Includes(Vec2L pos)
         {
             long xMin = Math.Min(A.X, B.X);
             long xMax = Math.Max(A.X, B.X);

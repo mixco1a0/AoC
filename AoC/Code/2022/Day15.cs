@@ -77,13 +77,13 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"
 
         private class Sensor
         {
-            public Base.Pos2L Pos { get; set; }
-            public Base.Pos2L ClosestBeacon { get; set; }
+            public Base.Vec2L Pos { get; set; }
+            public Base.Vec2L ClosestBeacon { get; set; }
 
             public Sensor()
             {
-                Pos = new Base.Pos2L();
-                ClosestBeacon = new Base.Pos2L();
+                Pos = new Base.Vec2L();
+                ClosestBeacon = new Base.Vec2L();
             }
 
             public long GetManhatten()

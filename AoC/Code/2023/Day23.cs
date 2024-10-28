@@ -91,7 +91,7 @@ namespace AoC._2023
         private static char Path = '.';
         private static char Forest = '#';
 
-        static readonly Base.Pos2L[] GridMoves = new Base.Pos2L[] { new Base.Pos2L(0, 1), new Base.Pos2L(1, 0), new Base.Pos2L(-1, 0), new Base.Pos2L(0, -1) };
+        static readonly Base.Vec2L[] GridMoves = new Base.Vec2L[] { new Base.Vec2L(0, 1), new Base.Vec2L(1, 0), new Base.Vec2L(-1, 0), new Base.Vec2L(0, -1) };
         static readonly Dictionary<char, Base.Pos2[]> PathMoves = new Dictionary<char, Base.Pos2[]>()
         {
             {Path, new Base.Pos2[] { new Base.Pos2(0, 1), new Base.Pos2(1, 0), new Base.Pos2(-1, 0), new Base.Pos2(0, -1) }},

@@ -70,7 +70,7 @@ namespace AoC._2023
                 for (int j = i + 1; j < h2d.Count; ++j)
                 {
                     Ray2L jH = h2d[j];
-                    Ray.Intersection2D type = iH.GetIntersection(jH, out Pos2L pos2);
+                    Ray.Intersection2D type = iH.GetIntersection(jH, out Vec2L pos2);
                     switch (type)
                     {
                         case Ray.Intersection2D.Parallel:
@@ -86,10 +86,10 @@ namespace AoC._2023
                             if (pos2.X >= minRange && pos2.X <= maxRange && pos2.Y >= minRange && pos2.Y <= maxRange)
                             {
                                 // inside = 'O';
-                                Pos2L iVel = iH.Vel;
-                                Pos2L iNextVel = pos2 - iH.Pos;
-                                Pos2L jVel = jH.Vel;
-                                Pos2L jNextVel = pos2 - jH.Pos;
+                                Vec2L iVel = iH.Vel;
+                                Vec2L iNextVel = pos2 - iH.Pos;
+                                Vec2L jVel = jH.Vel;
+                                Vec2L jNextVel = pos2 - jH.Pos;
                                 if ((iVel.X < 0 == iNextVel.X < 0) && (iVel.Y < 0 == iNextVel.Y < 0) && (jVel.X < 0 == jNextVel.X < 0) && (jVel.Y < 0 == jNextVel.Y < 0))
                                 {
                                     // whenPath = 'F';
