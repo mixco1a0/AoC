@@ -1059,26 +1059,14 @@ namespace AoC.Base
     #endregion
 
 
-    #region Pos3F
+    #region Vec3F
     public class Vec3F : IEquatable<Vec3F>
     {
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
 
-        private static Vec3F _zero;
-        public static Vec3F Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new();
-                return _zero;
-            }
-        }
+        public static readonly Vec3F Zero = new();
 
         public Vec3F()
         {
@@ -1109,31 +1097,31 @@ namespace AoC.Base
             }
 
             float[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(float.Parse).ToArray();
-            return new Vec3F(split[0], split[1], split[2]);
+            return new(split[0], split[1], split[2]);
         }
 
         public static Vec3F operator +(Vec3F a, Vec3F b)
         {
-            return new Vec3F(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+            return new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         }
 
         public static Vec3F operator -(Vec3F a, Vec3F b)
         {
-            return new Vec3F(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+            return new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
         public static Vec3F operator *(Vec3F a, float mult)
         {
-            return new Vec3F(a.X * mult, a.Y * mult, a.Z * mult);
+            return new(a.X * mult, a.Y * mult, a.Z * mult);
         }
 
         public static Vec3F operator /(Vec3F a, float mult)
         {
             if (mult == 0.0f)
             {
-                return new Vec3F();
+                return new();
             }
-            return new Vec3F(a.X / mult, a.Y / mult, a.Z / mult);
+            return new(a.X / mult, a.Y / mult, a.Z / mult);
         }
 
         public float Manhattan(Vec3F other)
@@ -1143,7 +1131,7 @@ namespace AoC.Base
 
         public Pos2F DropZ()
         {
-            return new Pos2F(X, Y);
+            return new(X, Y);
         }
 
         #region Interfaces
