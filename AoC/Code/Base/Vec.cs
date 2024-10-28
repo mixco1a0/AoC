@@ -49,7 +49,7 @@ namespace AoC.Base
                 return null;
             }
 
-            int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            int[] split = Util.String.Split(input, ',').Select(int.Parse).ToArray();
             return new Pos2(split[0], split[1]);
         }
 
@@ -185,7 +185,7 @@ namespace AoC.Base
                 return null;
             }
 
-            long[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            long[] split = Util.String.Split(input, ',').Select(long.Parse).ToArray();
             return new Pos2L(split[0], split[1]);
         }
 
@@ -321,7 +321,7 @@ namespace AoC.Base
                 return null;
             }
 
-            BigInteger[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(BigInteger.Parse).ToArray();
+            BigInteger[] split = Util.String.Split(input, ',').Select(BigInteger.Parse).ToArray();
             return new Pos2BI(split[0], split[1]);
         }
 
