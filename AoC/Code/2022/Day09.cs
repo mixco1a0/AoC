@@ -80,7 +80,7 @@ U 20"
             }
         }
 
-        private void Move(char direction, ref Base.Pos2 head)
+        private void Move(char direction, ref Base.Vec2 head)
         {
             switch (direction)
             {
@@ -99,13 +99,13 @@ U 20"
             }
         }
 
-        private void Adjust(char direction, ref Base.Pos2 head, ref Base.Pos2 tail)
+        private void Adjust(char direction, ref Base.Vec2 head, ref Base.Vec2 tail)
         {
             bool adjustX = Math.Abs(head.X - tail.X) > 1;
             bool adjustY = Math.Abs(head.Y - tail.Y) > 1;
             if (adjustX && adjustY)
             {
-                tail = new Base.Pos2(head.X + (head.X > tail.X ? -1 : 1), head.Y + (head.Y > tail.Y ? -1 : 1));
+                tail = new Base.Vec2(head.X + (head.X > tail.X ? -1 : 1), head.Y + (head.Y > tail.Y ? -1 : 1));
             }
             else if (adjustX)
             {
@@ -115,7 +115,7 @@ U 20"
                 }
                 else
                 {
-                    tail = new Base.Pos2(head.X + (head.X > tail.X ? -1 : 1), head.Y);
+                    tail = new Base.Vec2(head.X + (head.X > tail.X ? -1 : 1), head.Y);
                 }
             }
             else if (adjustY)
@@ -126,12 +126,12 @@ U 20"
                 }
                 else
                 {
-                    tail = new Base.Pos2(head.X, head.Y + (head.Y > tail.Y ? -1 : 1));
+                    tail = new Base.Vec2(head.X, head.Y + (head.Y > tail.Y ? -1 : 1));
                 }
             }
         }
 
-        private void PrintRope(Base.Pos2[] rope)
+        private void PrintRope(Base.Vec2[] rope)
         {
             int minX = Math.Min(rope.Min(r => r.X) - 1, -1);
             int maxX = Math.Max(rope.Max(r => r.X) + 2, 2);
@@ -170,14 +170,14 @@ U 20"
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int nodeCount)
         {
             Instruction[] instructions = inputs.Select(Instruction.Parse).ToArray();
-            Base.Pos2[] rope = new Base.Pos2[nodeCount];
+            Base.Vec2[] rope = new Base.Vec2[nodeCount];
             for (int r = 0; r < rope.Length; ++r)
             {
-                rope[r] = new Base.Pos2(0, 0);
+                rope[r] = new Base.Vec2(0, 0);
             }
             bool massPrint = false;
 
-            HashSet<Base.Pos2> visited = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> visited = new HashSet<Base.Vec2>();
             foreach (Instruction i in instructions)
             {
                 for (int s = 0; s < i.Steps; ++s)

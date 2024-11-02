@@ -89,7 +89,7 @@ namespace AoC._2021
             return maxHeight;
         }
 
-        private void AdjustVelocity(ref Base.Pos2 position, ref Base.Pos2 velocity)
+        private void AdjustVelocity(ref Base.Vec2 position, ref Base.Vec2 velocity)
         {
             position += velocity;
             if (velocity.X != 0)
@@ -103,8 +103,8 @@ namespace AoC._2021
         {
             for (int x = 1; ; ++x)
             {
-                Base.Pos2 probe = new Base.Pos2(0, 0);
-                Base.Pos2 velocity = new Base.Pos2(x, 0);
+                Base.Vec2 probe = new Base.Vec2(0, 0);
+                Base.Vec2 velocity = new Base.Vec2(x, 0);
                 while (velocity.X > 0 && probe.X <= maxX)
                 {
                     AdjustVelocity(ref probe, ref velocity);
@@ -120,19 +120,19 @@ namespace AoC._2021
         private int SolveAll(int startX, List<int> possibleYs, int minX, int maxX, int minY, int maxY)
         {
             possibleYs.AddRange(Enumerable.Range(1, minY * -1).Select(e => e * -1));
-            HashSet<Base.Pos2> knownLocations = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> knownLocations = new HashSet<Base.Vec2>();
             foreach (int y in possibleYs)
             {
                 for (int x = startX; x <= maxX; ++x)
                 {
-                    Base.Pos2 pos = new Base.Pos2(0, 0);
-                    Base.Pos2 vel = new Base.Pos2(x, y);
+                    Base.Vec2 pos = new Base.Vec2(0, 0);
+                    Base.Vec2 vel = new Base.Vec2(x, y);
                     while (pos.X < maxX && pos.Y > minY)
                     {
                         AdjustVelocity(ref pos, ref vel);
                         if (minX <= pos.X && pos.X <= maxX && minY <= pos.Y && pos.Y <= maxY)
                         {
-                            knownLocations.Add(new Base.Pos2(x, y));
+                            knownLocations.Add(new Base.Vec2(x, y));
                             break;
                         }
                     }

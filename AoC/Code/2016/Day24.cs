@@ -50,14 +50,14 @@ namespace AoC._2016
         private char OpenChar = '.';
         private char StartChar = '0';
 
-        private record Path(Base.Pos2 Coords, int Steps) { }
+        private record Path(Base.Vec2 Coords, int Steps) { }
 
-        private int PathTo(char[][] grid, Base.Pos2 max, Base.Pos2 start, char target)
+        private int PathTo(char[][] grid, Base.Vec2 max, Base.Vec2 start, char target)
         {
             Queue<Path> pendingChecks = new Queue<Path>();
             pendingChecks.Enqueue(new Path(start, 0));
 
-            HashSet<Base.Pos2> history = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> history = new HashSet<Base.Vec2>();
             history.Add(start);
 
             while (pendingChecks.Count > 0)
@@ -68,10 +68,10 @@ namespace AoC._2016
                     return cur.Steps;
                 }
 
-                Base.Pos2[] movements = new Base.Pos2[] { new Base.Pos2(0, -1), new Base.Pos2(-1, 0), new Base.Pos2(0, 1), new Base.Pos2(1, 0) };
-                foreach (Base.Pos2 movement in movements)
+                Base.Vec2[] movements = new Base.Vec2[] { new Base.Vec2(0, -1), new Base.Vec2(-1, 0), new Base.Vec2(0, 1), new Base.Vec2(1, 0) };
+                foreach (Base.Vec2 movement in movements)
                 {
-                    Base.Pos2 nextMove = cur.Coords + movement;
+                    Base.Vec2 nextMove = cur.Coords + movement;
                     if (nextMove.X >= 0 && nextMove.X < max.X && nextMove.Y >= 0 && nextMove.Y < max.Y)
                     {
                         if (grid[nextMove.Y][nextMove.X] == WallChar || history.Contains(nextMove))
@@ -88,17 +88,17 @@ namespace AoC._2016
             return (int)short.MaxValue;
         }
 
-        private int[] GeneratePaths(char[][] grid, Base.Pos2 max, char target, int totalTargets)
+        private int[] GeneratePaths(char[][] grid, Base.Vec2 max, char target, int totalTargets)
         {
             // get starting position
-            Base.Pos2 start = new Base.Pos2(-1, -1);
+            Base.Vec2 start = new Base.Vec2(-1, -1);
             for (int y = 0; y < max.Y && start.Y < 0; ++y)
             {
                 for (int x = 0; x < max.X; ++x)
                 {
                     if (grid[y][x] == target)
                     {
-                        start = new Base.Pos2(x, y);
+                        start = new Base.Vec2(x, y);
                         break;
                     }
                 }
@@ -152,9 +152,9 @@ namespace AoC._2016
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool returnHome)
         {
-            Base.Pos2 max = new Base.Pos2(inputs[0].Length, inputs.Count);
+            Base.Vec2 max = new Base.Vec2(inputs[0].Length, inputs.Count);
             char[][] grid = new char[inputs.Count][];
-            Base.Pos2 start = new Base.Pos2();
+            Base.Vec2 start = new Base.Vec2();
             for (int i = 0; i < inputs.Count; ++i)
             {
                 grid[i] = inputs[i].ToCharArray();

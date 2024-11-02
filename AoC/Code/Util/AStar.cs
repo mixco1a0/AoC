@@ -5,7 +5,7 @@ namespace AoC.Util
 {
     public class AStarNode
     {
-        public Base.Pos2 Prev { get; set; }
+        public Base.Vec2 Prev { get; set; }
         public bool Processed { get; set; }
         public long Length { get; set; }
 
@@ -30,14 +30,14 @@ namespace AoC.Util
         public int MaxY { get; private set; }
         public TNode[,] Nodes { get; private set; }
         public char[,] Input { get; private set; }
-        public Base.Pos2 Start { get; private set; }
-        public Base.Pos2 End { get; private set; }
+        public Base.Vec2 Start { get; private set; }
+        public Base.Vec2 End { get; private set; }
 
         public AStar(int maxX, int maxY)
         {
             Initialized = false;
-            Start = new Base.Pos2(-1, -1);
-            End = new Base.Pos2(-1, -1);
+            Start = new Base.Vec2(-1, -1);
+            End = new Base.Vec2(-1, -1);
             MaxX = maxX;
             MaxY = maxY;
             Nodes = new TNode[MaxX, MaxY];
@@ -57,11 +57,11 @@ namespace AoC.Util
                     Nodes[x, y] = initializeNode(x, y);
                     if (isStartNode(x, y))
                     {
-                        Start = new Base.Pos2(x, y);
+                        Start = new Base.Vec2(x, y);
                     }
                     if (isEndNode != null && isEndNode(x, y))
                     {
-                        End = new Base.Pos2(x, y);
+                        End = new Base.Vec2(x, y);
                     }
                 }
             }
@@ -91,21 +91,21 @@ namespace AoC.Util
                     Input[x, y] = getExpandedRaw(originalInput, x, y);
                     if (isStartNode(x, y))
                     {
-                        Start = new Base.Pos2(x, y);
+                        Start = new Base.Vec2(x, y);
                     }
                     if (isEndNode != null && isEndNode(x, y))
                     {
-                        End = new Base.Pos2(x, y);
+                        End = new Base.Vec2(x, y);
                     }
                 }
             }
         }
 
-        static readonly Base.Pos2[] NeighborOffsets = new Base.Pos2[] { new Base.Pos2(0, 1), new Base.Pos2(1, 0), new Base.Pos2(-1, 0), new Base.Pos2(0, -1) };
+        static readonly Base.Vec2[] NeighborOffsets = new Base.Vec2[] { new Base.Vec2(0, 1), new Base.Vec2(1, 0), new Base.Vec2(-1, 0), new Base.Vec2(0, -1) };
         static readonly char[] NeighborDirection = new char[] { '↓', '→', '←', '↑' };
 
         public delegate bool CanUseNode(TNode curNode, TNode nextNode);
-        public delegate bool IsEnd(Base.Pos2 curPos);
+        public delegate bool IsEnd(Base.Vec2 curPos);
         public delegate long AdjustLength(TNode curNode, TNode prevNode);
         public delegate long GetPriority(TNode curNode, TNode nextNode);
         public void Process(CanUseNode canUseNode = null, IsEnd isEnd = null, AdjustLength adjustLength = null, GetPriority getPriority = null)
@@ -124,7 +124,7 @@ namespace AoC.Util
             // by default, check for the end position
             if (isEnd == null)
             {
-                isEnd = (Base.Pos2 curPos) => { return curPos.Equals(End); };
+                isEnd = (Base.Vec2 curPos) => { return curPos.Equals(End); };
             }
 
             // by default, add 1 to the previous length
@@ -144,11 +144,11 @@ namespace AoC.Util
             Nodes[Start.X, Start.Y].Length = 0;
 
             // walk all the nodes
-            PriorityQueue<Base.Pos2, long> priorityQueue = new PriorityQueue<Base.Pos2, long>();
+            PriorityQueue<Base.Vec2, long> priorityQueue = new PriorityQueue<Base.Vec2, long>();
             priorityQueue.Enqueue(Start, 0);
             while (priorityQueue.Count > 0)
             {
-                Base.Pos2 curPos = priorityQueue.Dequeue();
+                Base.Vec2 curPos = priorityQueue.Dequeue();
                 TNode curNode = Nodes[curPos.X, curPos.Y];
 
                 // make sure nodes are only processed once
@@ -168,9 +168,9 @@ namespace AoC.Util
 
                 // check all neighbors
                 TNode prevNode = Nodes[curNode.Prev.X, curNode.Prev.Y];
-                foreach (Base.Pos2 neighborOffset in NeighborOffsets)
+                foreach (Base.Vec2 neighborOffset in NeighborOffsets)
                 {
-                    Base.Pos2 nextPos = curPos + neighborOffset;
+                    Base.Vec2 nextPos = curPos + neighborOffset;
                     if (nextPos.X >= 0 && nextPos.X < MaxX && nextPos.Y >= 0 && nextPos.Y < MaxY)
                     {
                         TNode nextNode = Nodes[nextPos.X, nextPos.Y];
@@ -227,18 +227,18 @@ namespace AoC.Util
         public void PrintPath(Core.Log.ELevel level = Core.Log.ELevel.Debug)
         {
             char[,] path = Input;
-            Base.Pos2 curPos = End;
+            Base.Vec2 curPos = End;
             while (curPos != null)
             {
                 TNode curNode = Nodes[curPos.X, curPos.Y];
-                Base.Pos2 prevPos = curNode.Prev;
+                Base.Vec2 prevPos = curNode.Prev;
 
                 if (prevPos.Equals(curPos))
                 {
                     break;
                 }
 
-                Base.Pos2 direction = curPos - prevPos;
+                Base.Vec2 direction = curPos - prevPos;
                 for (int i = 0; i < NeighborOffsets.Length; ++i)
                 {
                     if (NeighborOffsets[i].Equals(direction))

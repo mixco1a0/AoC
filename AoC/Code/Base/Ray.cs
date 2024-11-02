@@ -17,11 +17,11 @@ namespace AoC.Base
     #region Ray2
     public class Ray2 : IEquatable<Ray2>
     {
-        public Pos2 Pos { get; set; }
-        public Pos2 Vel { get; set; }
+        public Vec2 Pos { get; set; }
+        public Vec2 Vel { get; set; }
 
-        private Pos2 _next;
-        private Pos2 Next
+        private Vec2 _next;
+        private Vec2 Next
         {
             get
             {
@@ -63,12 +63,12 @@ namespace AoC.Base
             Vel = new();
         }
 
-        public static Ray2 FromPos(Pos2 pos, Pos2 next)
+        public static Ray2 FromPos(Vec2 pos, Vec2 next)
         {
             return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Ray2 FromVel(Pos2 pos, Pos2 vel)
+        public static Ray2 FromVel(Vec2 pos, Vec2 vel)
         {
             return new() { Pos = pos, Vel = vel };
         }
@@ -85,7 +85,7 @@ namespace AoC.Base
             return FromVel(new(split[0], split[1]), new(split[3], split[4]));
         }
 
-        public Ray.Intersection2D GetIntersection(Ray2 other, out Pos2 intersection)
+        public Ray.Intersection2D GetIntersection(Ray2 other, out Vec2 intersection)
         {
             intersection = new();
             // A1x + B1y = C1

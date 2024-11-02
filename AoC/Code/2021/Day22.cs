@@ -123,7 +123,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507"
             return testData;
         }
 
-        public class Point : Base.Pos2
+        public class Point : Base.Vec2
         {
             public int First { get => X; set => X = value; }
             public int Last { get => Y; set => Y = value; }

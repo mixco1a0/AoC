@@ -2,7 +2,7 @@ using System;
 
 namespace AoC.Base
 {
-    public class Range : Pos2, IComparable<Range>, IComparable
+    public class Range : Vec2, IComparable<Range>, IComparable
     {
         public int Min { get => X; set => X = value; }
         public int Max { get => Y; set => Y = value; }

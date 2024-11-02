@@ -67,7 +67,7 @@ fold along x=5"
         private class Pos2Parse
         {
 
-            public static Base.Pos2 Parse(string input)
+            public static Base.Vec2 Parse(string input)
             {
                 if (!input.Contains(','))
                 {
@@ -75,7 +75,7 @@ fold along x=5"
                 }
 
                 int[] split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-                return new Base.Pos2(split[0], split[1]);
+                return new Base.Vec2(split[0], split[1]);
             }
         }
 
@@ -94,10 +94,10 @@ fold along x=5"
             }
         }
 
-        private Base.Pos2[] Fold(Instruction instruction, Base.Pos2[] points)
+        private Base.Vec2[] Fold(Instruction instruction, Base.Vec2[] points)
         {
-            List<Base.Pos2> folded = new List<Base.Pos2>();
-            foreach (Base.Pos2 point in points)
+            List<Base.Vec2> folded = new List<Base.Vec2>();
+            foreach (Base.Vec2 point in points)
             {
                 if (instruction.XAxis)
                 {
@@ -107,7 +107,7 @@ fold along x=5"
                     }
                     else if (point.X > instruction.Index)
                     {
-                        folded.Add(new Base.Pos2(instruction.Index - (point.X - instruction.Index), point.Y));
+                        folded.Add(new Base.Vec2(instruction.Index - (point.X - instruction.Index), point.Y));
                     }
                 }
                 else
@@ -118,14 +118,14 @@ fold along x=5"
                     }
                     else if (point.Y > instruction.Index)
                     {
-                        folded.Add(new Base.Pos2(point.X, instruction.Index - (point.Y - instruction.Index)));
+                        folded.Add(new Base.Vec2(point.X, instruction.Index - (point.Y - instruction.Index)));
                     }
                 }
             }
             return folded.Distinct().ToArray();
         }
 
-        private string[] GetGlyph(Base.Pos2[] points)
+        private string[] GetGlyph(Base.Vec2[] points)
         {
             List<string> glyph = new List<string>();
             int maxX = points.Max(p => p.X);
@@ -151,7 +151,7 @@ fold along x=5"
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool oneFold)
         {
-            Base.Pos2[] points = inputs.Select(Pos2Parse.Parse).Where(p => p != null).ToArray();
+            Base.Vec2[] points = inputs.Select(Pos2Parse.Parse).Where(p => p != null).ToArray();
             Instruction[] instructions = inputs.Where(i => i.Contains("fold")).Select(Instruction.Parse).ToArray();
             foreach (Instruction instruction in instructions)
             {

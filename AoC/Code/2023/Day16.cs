@@ -65,7 +65,7 @@ namespace AoC._2023
         private enum Node { Empty = '.', Pos45 = '/', Neg45 = '\\', VSplit = '|', HSplit = '-' }
 
         private enum Dir { North, South, East, West }
-        private record ReDirect(Dir Dir, Base.Pos2 Re);
+        private record ReDirect(Dir Dir, Base.Vec2 Re);
 
         private static Dictionary<Node, Dictionary<Dir, List<ReDirect>>> ReDirects = new Dictionary<Node, Dictionary<Dir, List<ReDirect>>>()
         {
@@ -73,22 +73,22 @@ namespace AoC._2023
             {
                 { Dir.North, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.North, new Base.Pos2(0, -1))
+                        new ReDirect(Dir.North, new Base.Vec2(0, -1))
                     }
                 },
                 { Dir.South, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.South, new Base.Pos2(0, 1))
+                        new ReDirect(Dir.South, new Base.Vec2(0, 1))
                     }
                 },
                 { Dir.East, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.East, new Base.Pos2(1, 0))
+                        new ReDirect(Dir.East, new Base.Vec2(1, 0))
                     }
                 },
                 { Dir.West, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.West, new Base.Pos2(-1, 0))
+                        new ReDirect(Dir.West, new Base.Vec2(-1, 0))
                     }
                 },
             }},
@@ -96,22 +96,22 @@ namespace AoC._2023
             {
                 { Dir.North, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.East, new Base.Pos2(1, 0))
+                        new ReDirect(Dir.East, new Base.Vec2(1, 0))
                     }
                 },
                 { Dir.South, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.West, new Base.Pos2(-1, 0))
+                        new ReDirect(Dir.West, new Base.Vec2(-1, 0))
                     }
                 },
                 { Dir.East, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.North, new Base.Pos2(0, -1))
+                        new ReDirect(Dir.North, new Base.Vec2(0, -1))
                     }
                 },
                 { Dir.West, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.South, new Base.Pos2(0, 1))
+                        new ReDirect(Dir.South, new Base.Vec2(0, 1))
                     }
                 },
             }},
@@ -119,22 +119,22 @@ namespace AoC._2023
             {
                 { Dir.North, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.West, new Base.Pos2(-1, 0))
+                        new ReDirect(Dir.West, new Base.Vec2(-1, 0))
                     }
                 },
                 { Dir.South, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.East, new Base.Pos2(1, 0))
+                        new ReDirect(Dir.East, new Base.Vec2(1, 0))
                     }
                 },
                 { Dir.East, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.South, new Base.Pos2(0, 1))
+                        new ReDirect(Dir.South, new Base.Vec2(0, 1))
                     }
                 },
                 { Dir.West, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.North, new Base.Pos2(0, -1))
+                        new ReDirect(Dir.North, new Base.Vec2(0, -1))
                     }
                 },
             }},
@@ -142,24 +142,24 @@ namespace AoC._2023
             {
                 { Dir.North, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.North, new Base.Pos2(0, -1))
+                        new ReDirect(Dir.North, new Base.Vec2(0, -1))
                     }
                 },
                 { Dir.South, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.South, new Base.Pos2(0, 1))
+                        new ReDirect(Dir.South, new Base.Vec2(0, 1))
                     }
                 },
                 { Dir.East, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.North, new Base.Pos2(0, -1)),
-                        new ReDirect(Dir.South, new Base.Pos2(0, 1))
+                        new ReDirect(Dir.North, new Base.Vec2(0, -1)),
+                        new ReDirect(Dir.South, new Base.Vec2(0, 1))
                     }
                 },
                 { Dir.West, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.North, new Base.Pos2(0, -1)),
-                        new ReDirect(Dir.South, new Base.Pos2(0, 1))
+                        new ReDirect(Dir.North, new Base.Vec2(0, -1)),
+                        new ReDirect(Dir.South, new Base.Vec2(0, 1))
                     }
                 },
             }},
@@ -167,30 +167,30 @@ namespace AoC._2023
             {
                 { Dir.North, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.East, new Base.Pos2(1, 0)),
-                        new ReDirect(Dir.West, new Base.Pos2(-1, 0))
+                        new ReDirect(Dir.East, new Base.Vec2(1, 0)),
+                        new ReDirect(Dir.West, new Base.Vec2(-1, 0))
                     }
                 },
                 { Dir.South, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.East, new Base.Pos2(1, 0)),
-                        new ReDirect(Dir.West, new Base.Pos2(-1, 0))
+                        new ReDirect(Dir.East, new Base.Vec2(1, 0)),
+                        new ReDirect(Dir.West, new Base.Vec2(-1, 0))
                     }
                 },
                 { Dir.East, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.East, new Base.Pos2(1, 0))
+                        new ReDirect(Dir.East, new Base.Vec2(1, 0))
                     }
                 },
                 { Dir.West, new List<ReDirect>()
                     {
-                        new ReDirect(Dir.West, new Base.Pos2(-1, 0))
+                        new ReDirect(Dir.West, new Base.Vec2(-1, 0))
                     }
                 },
             }},
         };
 
-        private record Target(Base.Pos2 Pos, Dir Direction);
+        private record Target(Base.Vec2 Pos, Dir Direction);
         // {
         //     public override int GetHashCode()
         //     {
@@ -241,7 +241,7 @@ namespace AoC._2023
             }
         }
 
-        private int GetEnergizedCount(Node[,] nodes, Base.Pos2 startPos, Dir startDir)
+        private int GetEnergizedCount(Node[,] nodes, Base.Vec2 startPos, Dir startDir)
         {
             int xMax = nodes.GetLength(0);
             int yMax = nodes.GetLength(1);
@@ -262,7 +262,7 @@ namespace AoC._2023
                 Node node = nodes[target.Pos.X, target.Pos.Y];
                 foreach (ReDirect reDirect in ReDirects[node][target.Direction])
                 {
-                    Base.Pos2 targetPos = target.Pos + reDirect.Re;
+                    Base.Vec2 targetPos = target.Pos + reDirect.Re;
                     if (targetPos.X >= 0 && targetPos.X < xMax && targetPos.Y >= 0 && targetPos.Y < yMax)
                     {
                         targets.Push(new Target(targetPos, reDirect.Dir));
@@ -280,23 +280,23 @@ namespace AoC._2023
                 int maxEnergy = 0;
                 for (int x = 0; x < nodes.GetLength(0); ++x)
                 {
-                    int topEnergy = GetEnergizedCount(nodes, new Base.Pos2(x, 0), Dir.South);
+                    int topEnergy = GetEnergizedCount(nodes, new Base.Vec2(x, 0), Dir.South);
                     maxEnergy = Math.Max(maxEnergy, topEnergy);
-                    int bottomEnergy = GetEnergizedCount(nodes, new Base.Pos2(x, nodes.GetLength(1) - 1), Dir.North);
+                    int bottomEnergy = GetEnergizedCount(nodes, new Base.Vec2(x, nodes.GetLength(1) - 1), Dir.North);
                     maxEnergy = Math.Max(maxEnergy, bottomEnergy);
                 }
                 for (int y = 0; y < nodes.GetLength(1); ++y)
                 {
-                    int leftEnergy = GetEnergizedCount(nodes, new Base.Pos2(0, y), Dir.East);
+                    int leftEnergy = GetEnergizedCount(nodes, new Base.Vec2(0, y), Dir.East);
                     maxEnergy = Math.Max(maxEnergy, leftEnergy);
-                    int rightEnergy = GetEnergizedCount(nodes, new Base.Pos2(nodes.GetLength(0) - 1, y), Dir.West);
+                    int rightEnergy = GetEnergizedCount(nodes, new Base.Vec2(nodes.GetLength(0) - 1, y), Dir.West);
                     maxEnergy = Math.Max(maxEnergy, rightEnergy);
                 }
                 return maxEnergy.ToString();
             }
             else
             {
-                return GetEnergizedCount(nodes, new Base.Pos2(), Dir.East).ToString();
+                return GetEnergizedCount(nodes, new Base.Vec2(), Dir.East).ToString();
             }
         }
 

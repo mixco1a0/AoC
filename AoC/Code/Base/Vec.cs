@@ -4,45 +4,33 @@ using System.Numerics;
 
 namespace AoC.Base
 {
-    #region Pos2
-    public class Pos2 : IEquatable<Pos2>, IComparable<Pos2>, IComparable
+    #region Vec2
+    public class Vec2 : IEquatable<Vec2>, IComparable<Vec2>, IComparable
     {
         public int X { get; set; }
         public int Y { get; set; }
 
-        private static Pos2 _zero;
-        public static Pos2 Zero
-        {
-            get
-            {
-                if (_zero != null)
-                {
-                    return _zero;
-                }
-                _zero = new Pos2();
-                return _zero;
-            }
-        }
+        public static readonly Vec2 Zero = new();
 
-        public Pos2()
+        public Vec2()
         {
             X = default;
             Y = default;
         }
 
-        public Pos2(int x, int y)
+        public Vec2(int x, int y)
         {
             X = x;
             Y = y;
         }
 
-        public Pos2(Pos2 other)
+        public Vec2(Vec2 other)
         {
             X = other.X;
             Y = other.Y;
         }
 
-        public static Pos2 Parse(string input)
+        public static Vec2 Parse(string input)
         {
             if (!input.Contains(','))
             {
@@ -50,45 +38,45 @@ namespace AoC.Base
             }
 
             int[] split = Util.String.Split(input, ',').Select(int.Parse).ToArray();
-            return new Pos2(split[0], split[1]);
+            return new(split[0], split[1]);
         }
 
-        public static Pos2 operator +(Pos2 a, Pos2 b)
+        public static Vec2 operator +(Vec2 a, Vec2 b)
         {
-            return new Pos2(a.X + b.X, a.Y + b.Y);
+            return new(a.X + b.X, a.Y + b.Y);
         }
 
-        public static Pos2 operator -(Pos2 a, Pos2 b)
+        public static Vec2 operator -(Vec2 a, Vec2 b)
         {
-            return new Pos2(a.X - b.X, a.Y - b.Y);
+            return new(a.X - b.X, a.Y - b.Y);
         }
 
-        public static Pos2 operator *(Pos2 a, int mult)
+        public static Vec2 operator *(Vec2 a, int mult)
         {
-            return new Pos2(a.X * mult, a.Y * mult);
+            return new(a.X * mult, a.Y * mult);
         }
 
-        public static Pos2 operator /(Pos2 a, int mult)
+        public static Vec2 operator /(Vec2 a, int mult)
         {
             if (mult == 0)
             {
-                return new Pos2();
+                return new();
             }
-            return new Pos2(a.X / mult, a.Y / mult);
+            return new(a.X / mult, a.Y / mult);
         }
 
-        public int Manhattan(Pos2 other)
+        public int Manhattan(Vec2 other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
         }
 
         #region Interfaces
-        public bool Equals(Pos2 other)
+        public bool Equals(Vec2 other)
         {
             return X == other.X && Y == other.Y;
         }
 
-        public virtual int CompareTo(Pos2 other)
+        public virtual int CompareTo(Vec2 other)
         {
             int xCompare = X.CompareTo(other.X);
             if (xCompare != 0)
@@ -100,12 +88,11 @@ namespace AoC.Base
 
         public int CompareTo(object other)
         {
-            Pos2 otherAsPos2 = other as Pos2;
-            if (otherAsPos2 == null)
+            if (other is not Vec2 otherAsVec)
             {
                 return -1;
             }
-            return otherAsPos2.CompareTo(other);
+            return otherAsVec.CompareTo(other);
         }
         #endregion
 
@@ -122,13 +109,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Pos2 objAsPos2 = obj as Pos2;
-            if (objAsPos2 == null)
+            if (obj is not Vec2 objAsVec)
             {
                 return false;
             }
 
-            return Equals(objAsPos2);
+            return Equals(objAsVec);
         }
 
         public override int GetHashCode()
@@ -698,7 +684,7 @@ namespace AoC.Base
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
         }
 
-        public Pos2 DropZ()
+        public Vec2 DropZ()
         {
             return new(X, Y);
         }

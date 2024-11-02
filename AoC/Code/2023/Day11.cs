@@ -113,7 +113,7 @@ namespace AoC._2023
             return expandedX.Select(e => e.ToCharArray()).ToArray();
         }
 
-        private record Galaxy(Base.Pos2 Pos, int Id);
+        private record Galaxy(Base.Vec2 Pos, int Id);
 
         private Galaxy[] GetGalaxies(char[][] universe)
         {
@@ -125,7 +125,7 @@ namespace AoC._2023
                 {
                     if (universe[y][x] == '#')
                     {
-                        galaxies.Add(new Galaxy(new Base.Pos2(x, y), galaxyId++));
+                        galaxies.Add(new Galaxy(new Base.Vec2(x, y), galaxyId++));
                     }
                 }
             }

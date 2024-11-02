@@ -91,12 +91,12 @@ namespace AoC._2023
 
         private enum Direction { First, East = First, South, West, North, Last }
 
-        private static Dictionary<Direction, Base.Pos2> Next = new Dictionary<Direction, Base.Pos2>()
+        private static Dictionary<Direction, Base.Vec2> Next = new Dictionary<Direction, Base.Vec2>()
         {
-            {Direction.North, new Base.Pos2(0, -1)},
-            {Direction.South, new Base.Pos2(0, 1)},
-            {Direction.East, new Base.Pos2(1, 0)},
-            {Direction.West, new Base.Pos2(-1, 0)}
+            {Direction.North, new Base.Vec2(0, -1)},
+            {Direction.South, new Base.Vec2(0, 1)},
+            {Direction.East, new Base.Vec2(1, 0)},
+            {Direction.West, new Base.Vec2(-1, 0)}
         };
 
         private static Dictionary<Direction, char> DirectionChar = new Dictionary<Direction, char>()
@@ -123,7 +123,7 @@ namespace AoC._2023
             {Direction.West, Direction.East},
         };
 
-        private record Movement(Base.Pos2 Pos, Direction Direction, int Steps, int HeatLoss, string History)
+        private record Movement(Base.Vec2 Pos, Direction Direction, int Steps, int HeatLoss, string History)
         {
             public override string ToString()
             {
@@ -135,7 +135,7 @@ namespace AoC._2023
         {
             public int Weight { get; set; }
             public int[] Steps { get; set; }
-            public Base.Pos2[] Prev { get; set; }
+            public Base.Vec2[] Prev { get; set; }
             public bool[][] Done { get; set; }
             public long[] Path { get; set; }
             public string[] History { get; set; }
@@ -145,7 +145,7 @@ namespace AoC._2023
                 int count = (int)Direction.Last;
                 Weight = weight;
                 Steps = new int[count];
-                Prev = new Base.Pos2[count];
+                Prev = new Base.Vec2[count];
                 Done = new bool[count][];
                 Path = new long[count];
                 History = new string[count];
@@ -203,7 +203,7 @@ namespace AoC._2023
             {
                 nodes[0, 0].Path[(int)dir] = 0;
                 nodes[0, 0].Path[(int)dir] = 0;
-                nodes[0, 0].Prev[(int)dir] = Base.Pos2.Zero;
+                nodes[0, 0].Prev[(int)dir] = Base.Vec2.Zero;
             }
         }
 
@@ -222,7 +222,7 @@ namespace AoC._2023
                 }
             }
 
-            Base.Pos2 cur = new Base.Pos2();
+            Base.Vec2 cur = new Base.Vec2();
             foreach (char c in history)
             {
                 Direction d = Direction.Last;
@@ -260,7 +260,7 @@ namespace AoC._2023
             int xMax = nodes.GetLength(0);
             int yMax = nodes.GetLength(1);
             PriorityQueue<Movement, int> toCheck = new PriorityQueue<Movement, int>();
-            toCheck.Enqueue(new Movement(Base.Pos2.Zero, Direction.Last, 0, 0, ""), 0);
+            toCheck.Enqueue(new Movement(Base.Vec2.Zero, Direction.Last, 0, 0, ""), 0);
             int minHeatLoss = int.MaxValue;
             while (toCheck.Count != 0)
             {
@@ -319,7 +319,7 @@ namespace AoC._2023
                     }
 
                     // make sure position is valid
-                    Base.Pos2 next = cur.Pos + Next[d];
+                    Base.Vec2 next = cur.Pos + Next[d];
                     if (next.X < 0 || next.X >= xMax || next.Y < 0 || next.Y >= yMax)
                     {
                         continue;

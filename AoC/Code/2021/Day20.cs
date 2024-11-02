@@ -58,15 +58,15 @@ namespace AoC._2021
 
         static readonly char LightPixel = '#';
         static readonly char DarkPixel = '.';
-        static readonly Base.Pos2[] PixelCheck = new Base.Pos2[] { new Base.Pos2(-1, -1), new Base.Pos2(0, -1), new Base.Pos2(1, -1),
-                                                                     new Base.Pos2(-1, 0), new Base.Pos2(0, 0), new Base.Pos2(1, 0),
-                                                                     new Base.Pos2(-1, 1), new Base.Pos2(0, 1), new Base.Pos2(1, 1) };
+        static readonly Base.Vec2[] PixelCheck = new Base.Vec2[] { new Base.Vec2(-1, -1), new Base.Vec2(0, -1), new Base.Vec2(1, -1),
+                                                                     new Base.Vec2(-1, 0), new Base.Vec2(0, 0), new Base.Vec2(1, 0),
+                                                                     new Base.Vec2(-1, 1), new Base.Vec2(0, 1), new Base.Vec2(1, 1) };
 
         private char EnhancePixel(List<string> pixels, string algorithm, int x, int y, char defaultPixel)
         {
             StringBuilder sb = new StringBuilder();
-            Base.Pos2 curPixel = new Base.Pos2(x, y);
-            foreach (Base.Pos2 gridPixel in PixelCheck.Select(p => curPixel + p))
+            Base.Vec2 curPixel = new Base.Vec2(x, y);
+            foreach (Base.Vec2 gridPixel in PixelCheck.Select(p => curPixel + p))
             {
                 if (gridPixel.Y < 0 || gridPixel.Y >= pixels.Count || gridPixel.X < 0 || gridPixel.X >= pixels[y].Length)
                 {

@@ -85,28 +85,28 @@ L7JLJL-JLJLJL--JLJ.L"
             return testData;
         }
 
-        public Dictionary<char, List<Base.Pos2>> NextDirections = new Dictionary<char, List<Base.Pos2>>()
+        public Dictionary<char, List<Base.Vec2>> NextDirections = new Dictionary<char, List<Base.Vec2>>()
         {
-            {'|', new List<Base.Pos2>() {new Base.Pos2(0, -1), new Base.Pos2(0, 1)}},
-            {'-', new List<Base.Pos2>() {new Base.Pos2(-1, 0), new Base.Pos2(1, 0)}},
-            {'L', new List<Base.Pos2>() {new Base.Pos2(0, -1), new Base.Pos2(1, 0)}},
-            {'J', new List<Base.Pos2>() {new Base.Pos2(-1, 0), new Base.Pos2(0, -1)}},
-            {'7', new List<Base.Pos2>() {new Base.Pos2(-1, 0), new Base.Pos2(0, 1)}},
-            {'F', new List<Base.Pos2>() {new Base.Pos2(0, 1), new Base.Pos2(1, 0)}},
-            {'.', new List<Base.Pos2>() {}},
+            {'|', new List<Base.Vec2>() {new Base.Vec2(0, -1), new Base.Vec2(0, 1)}},
+            {'-', new List<Base.Vec2>() {new Base.Vec2(-1, 0), new Base.Vec2(1, 0)}},
+            {'L', new List<Base.Vec2>() {new Base.Vec2(0, -1), new Base.Vec2(1, 0)}},
+            {'J', new List<Base.Vec2>() {new Base.Vec2(-1, 0), new Base.Vec2(0, -1)}},
+            {'7', new List<Base.Vec2>() {new Base.Vec2(-1, 0), new Base.Vec2(0, 1)}},
+            {'F', new List<Base.Vec2>() {new Base.Vec2(0, 1), new Base.Vec2(1, 0)}},
+            {'.', new List<Base.Vec2>() {}},
         };
 
 
-        private List<Base.Pos2> Neighbors = new List<Base.Pos2>
+        private List<Base.Vec2> Neighbors = new List<Base.Vec2>
         {
-            new Base.Pos2(-1, -1),
-            new Base.Pos2(-1, 0),
-            new Base.Pos2(-1, 1),
-            new Base.Pos2(1, 0),
-            new Base.Pos2(0, 1),
-            new Base.Pos2(-1, -1),
-            new Base.Pos2(0, -1),
-            new Base.Pos2(1, -1),
+            new Base.Vec2(-1, -1),
+            new Base.Vec2(-1, 0),
+            new Base.Vec2(-1, 1),
+            new Base.Vec2(1, 0),
+            new Base.Vec2(0, 1),
+            new Base.Vec2(-1, -1),
+            new Base.Vec2(0, -1),
+            new Base.Vec2(1, -1),
         };
 
         public Dictionary<char, List<string>> Expanded = new Dictionary<char, List<string>>()
@@ -126,22 +126,22 @@ L7JLJL-JLJLJL--JLJ.L"
             if (startY > 0)
             {
                 char n = grid[startY - 1][startX];
-                hasN = NextDirections[n].Contains(new Base.Pos2(0, 1));
+                hasN = NextDirections[n].Contains(new Base.Vec2(0, 1));
             }
             if (startY < grid.Length - 1)
             {
                 char s = grid[startY + 1][startX];
-                hasS = NextDirections[s].Contains(new Base.Pos2(0, -1));
+                hasS = NextDirections[s].Contains(new Base.Vec2(0, -1));
             }
             if (startY < grid[startY].Length - 1)
             {
                 char e = grid[startY][startX + 1];
-                hasE = NextDirections[e].Contains(new Base.Pos2(-1, 0));
+                hasE = NextDirections[e].Contains(new Base.Vec2(-1, 0));
             }
             if (startX > 0)
             {
                 char w = grid[startY][startX - 1];
-                hasW = NextDirections[w].Contains(new Base.Pos2(1, 0));
+                hasW = NextDirections[w].Contains(new Base.Vec2(1, 0));
             }
             if (hasN)
             {
@@ -195,13 +195,13 @@ L7JLJL-JLJLJL--JLJ.L"
             gridSimple[startY][startX] = grid[startY][startX];
         }
 
-        private record Step(Base.Pos2 Pos, int Steps);
+        private record Step(Base.Vec2 Pos, int Steps);
 
         private int StepThroughPipes(ref char[][] grid, ref char[][] gridSimple, int startX, int startY)
         {
             PriorityQueue<Step, int> priorityQueue = new PriorityQueue<Step, int>();
-            Dictionary<Base.Pos2, int> visited = new Dictionary<Base.Pos2, int>();
-            priorityQueue.Enqueue(new Step(new Base.Pos2(startX, startY), 0), 0);
+            Dictionary<Base.Vec2, int> visited = new Dictionary<Base.Vec2, int>();
+            priorityQueue.Enqueue(new Step(new Base.Vec2(startX, startY), 0), 0);
             int maxSteps = 0;
             while (priorityQueue.Count > 0)
             {
@@ -214,9 +214,9 @@ L7JLJL-JLJLJL--JLJ.L"
                 gridSimple[cur.Pos.Y][cur.Pos.X] = '#';
                 maxSteps = Math.Max(maxSteps, cur.Steps);
                 visited[cur.Pos] = cur.Steps;
-                foreach (Base.Pos2 pos2 in NextDirections[grid[cur.Pos.Y][cur.Pos.X]])
+                foreach (Base.Vec2 pos2 in NextDirections[grid[cur.Pos.Y][cur.Pos.X]])
                 {
-                    Base.Pos2 next = cur.Pos + pos2;
+                    Base.Vec2 next = cur.Pos + pos2;
                     if (next.X >= 0 && next.Y >= 0 && next.X < grid[0].Length && next.Y < grid.Length)
                     {
                         priorityQueue.Enqueue(new Step(next, cur.Steps + 1), cur.Steps + 1);
@@ -260,44 +260,44 @@ L7JLJL-JLJLJL--JLJ.L"
 
         private void FloodFill(ref char[][] gridExpanded)
         {
-            Queue<Base.Pos2> queue = new Queue<Base.Pos2>();
+            Queue<Base.Vec2> queue = new Queue<Base.Vec2>();
             Func<char, bool> check = (c) => c != '#';
             for (int x = 0; x < gridExpanded[0].Length; ++x)
             {
                 if (check(gridExpanded[0][x]))
                 {
-                    queue.Enqueue(new Base.Pos2(x, 0));
+                    queue.Enqueue(new Base.Vec2(x, 0));
                 }
                 if (check(gridExpanded[gridExpanded.Length - 1][x]))
                 {
-                    queue.Enqueue(new Base.Pos2(x, gridExpanded.Length - 1));
+                    queue.Enqueue(new Base.Vec2(x, gridExpanded.Length - 1));
                 }
             }
             for (int y = 0; y < gridExpanded.Length; ++y)
             {
                 if (check(gridExpanded[y][0]))
                 {
-                    queue.Enqueue(new Base.Pos2(0, y));
+                    queue.Enqueue(new Base.Vec2(0, y));
                 }
                 if (check(gridExpanded[y][gridExpanded[y].Length - 1]))
                 {
-                    queue.Enqueue(new Base.Pos2(gridExpanded[y].Length - 1, y));
+                    queue.Enqueue(new Base.Vec2(gridExpanded[y].Length - 1, y));
                 }
             }
 
             // flood fill
             while (queue.Count > 0)
             {
-                Base.Pos2 cur = queue.Dequeue();
+                Base.Vec2 cur = queue.Dequeue();
                 if (gridExpanded[cur.Y][cur.X] == '#')
                 {
                     continue;
                 }
 
                 gridExpanded[cur.Y][cur.X] = '#';
-                foreach (Base.Pos2 neighbor in Neighbors)
+                foreach (Base.Vec2 neighbor in Neighbors)
                 {
-                    Base.Pos2 next = neighbor + cur;
+                    Base.Vec2 next = neighbor + cur;
                     if (next.X >= 0 && next.Y >= 0 && next.X < gridExpanded[0].Length && next.Y < gridExpanded.Length && gridExpanded[next.Y][next.X] == '.')
                     {
                         queue.Enqueue(next);

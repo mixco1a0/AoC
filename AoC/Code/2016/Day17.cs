@@ -95,17 +95,17 @@ namespace AoC._2016
                 return new DoorStatus(open);
             }
 
-            static public Base.Pos2[] Directions = new Base.Pos2[4] { new Base.Pos2(0, -1), new Base.Pos2(0, 1), new Base.Pos2(-1, 0), new Base.Pos2(1, 0) };
+            static public Base.Vec2[] Directions = new Base.Vec2[4] { new Base.Vec2(0, -1), new Base.Vec2(0, 1), new Base.Vec2(-1, 0), new Base.Vec2(1, 0) };
 
             static public char[] Letters = new char[4] { 'U', 'D', 'L', 'R' };
         }
 
-        private record WalkStatus(string Path, Base.Pos2 Coords) { }
+        private record WalkStatus(string Path, Base.Vec2 Coords) { }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findLongestPath)
         {
             Queue<WalkStatus> pendingWalks = new Queue<WalkStatus>();
-            pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Base.Pos2(0, 0)));
+            pendingWalks.Enqueue(new WalkStatus(inputs.First(), new Base.Vec2(0, 0)));
             int longestPath = 0;
             while (pendingWalks.Count > 0)
             {
@@ -128,7 +128,7 @@ namespace AoC._2016
                 {
                     if (ds.Status[i])
                     {
-                        Base.Pos2 newCoords = ws.Coords + DoorStatus.Directions[i];
+                        Base.Vec2 newCoords = ws.Coords + DoorStatus.Directions[i];
                         if (newCoords.X >= 0 && newCoords.X <= 3 && newCoords.Y >= 0 && newCoords.Y <= 3)
                         {
                             pendingWalks.Enqueue(new WalkStatus($"{ws.Path}{DoorStatus.Letters[i]}", newCoords));

@@ -4,10 +4,10 @@ namespace AoC.Base
 {
     public class Segment
     {
-        public Pos2 A { get; set; }
-        public Pos2 B { get; set; }
+        public Vec2 A { get; set; }
+        public Vec2 B { get; set; }
 
-        public Segment(Pos2 a, Pos2 b)
+        public Segment(Vec2 a, Vec2 b)
         {
             A = a;
             B = b;
@@ -18,7 +18,7 @@ namespace AoC.Base
             return new Segment(B, A);
         }
 
-        public bool Includes(Pos2 pos)
+        public bool Includes(Vec2 pos)
         {
             int xMin = Math.Min(A.X, B.X);
             int xMax = Math.Max(A.X, B.X);
@@ -36,7 +36,7 @@ namespace AoC.Base
             return false;
         }
 
-        public Pos2 GetIntersection(Segment other)
+        public Vec2 GetIntersection(Segment other)
         {
             // if this is X oriented, other is Y oriented
             if (A.X == B.X && other.A.Y == other.B.Y)
@@ -46,7 +46,7 @@ namespace AoC.Base
                 if ((yRange.HasInc(other.A.Y) || yRange.Flip().HasInc(other.A.Y)) &&
                     (xRange.HasInc(A.X) || xRange.Flip().HasInc(A.X)))
                 {
-                    return new Pos2(A.X, other.A.Y);
+                    return new Vec2(A.X, other.A.Y);
                 }
             }
             // if this is Y oriented, other is X oriented
@@ -57,7 +57,7 @@ namespace AoC.Base
                 if ((xRange.HasInc(other.A.X) || xRange.Flip().HasInc(other.A.X)) &&
                     (yRange.HasInc(A.Y) || yRange.Flip().HasInc(A.Y)))
                 {
-                    return new Pos2(other.A.X, A.Y);
+                    return new Vec2(other.A.X, A.Y);
                 }
             }
             // no other way to get intersection currently
