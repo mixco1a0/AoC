@@ -2,10 +2,6 @@ add quick way to run through all the days
 
 remove Day.SkipTestData
 
-add algorithm folder
-
-breakout linear solver from d24 2023
-
 clean up performance logging
 
 clean up all of the utils

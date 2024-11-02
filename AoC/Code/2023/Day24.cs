@@ -140,7 +140,7 @@ namespace AoC._2023
             {
                 GetHailstoneXYValues(hailstones[_r], hailstones[_r + 1], ref aXY, _r);
             }
-            double[] xydxdy = Solve(aXY);
+            double[] xydxdy = Algorithm.LinearSolver.Solve(aXY);
 
             // at this point we have solved for x, y, dx, and dy
             // get a reduced version of equations using x and z
@@ -154,7 +154,7 @@ namespace AoC._2023
             {
                 GetHailstoneZValues(hailstones[_r], hailstones[_r + 1], xydxdy, ref aZ, _r);
             }
-            double[] zdz = Solve(aZ);
+            double[] zdz = Algorithm.LinearSolver.Solve(aZ);
 
             double x = double.Round(xydxdy[0]);
             double dx = double.Round(xydxdy[2]);
@@ -201,52 +201,6 @@ namespace AoC._2023
             aZ[row, 0] = (double)h1.Vel.X - h2.Vel.X; // Z
             aZ[row, 1] = (double)h2.Pos.X - h1.Pos.X; // DZ
             aZ[row, 2] = h2.Pos.X * h2.Vel.Z - (double)h2.Pos.Z * h2.Vel.X - (double)h1.Pos.X * h1.Vel.Z + (double)h1.Pos.Z * h1.Vel.X - xydxdy[0] * (h2.Vel.Z - h1.Vel.Z) - xydxdy[2] * (h1.Pos.Z - h2.Pos.Z);
-        }
-
-        private static double[] Solve(double[,] a)
-        {
-            int m = a.GetLength(0);
-            int n = a.GetLength(1);
-            return GaussianElimination(a, m, n);
-        }
-
-        private static double[] GaussianElimination(double[,] a, int rMax, int cMax)
-        {
-            int r = 0;
-            int c = 0;
-            while (r < rMax && c < cMax)
-            {
-                for (int _c = c + 1; _c < cMax; ++_c)
-                {
-                    a[r, _c] /= a[r, c];
-                }
-                a[r, c] = 1;
-
-                for (int _r = 0; _r < rMax; ++_r)
-                {
-                    if (_r == r)
-                    {
-                        continue;
-                    }
-
-                    double factor = a[_r, c] * -1;
-                    a[_r, c] = 0;
-                    for (int _c = c + 1; _c < cMax; ++_c)
-                    {
-                        a[_r, _c] += a[r, _c] * factor;
-                    }
-                }
-
-                ++r;
-                ++c;
-            }
-
-            double[] solve = new double[rMax];
-            for (int _r = 0; _r < rMax; ++_r)
-            {
-                solve[_r] = a[_r, cMax - 1];
-            }
-            return solve;
         }
 
         private static void Print(double[,] a)
