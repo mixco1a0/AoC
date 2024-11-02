@@ -30,11 +30,11 @@ namespace AoC.Util
         /// Call split on a string and then parse it into ints
         /// </summary>
         /// <param name="input">string of separated ints</param>
-        /// <param name="seperator">characters used as seperators</param>
+        /// <param name="seperators">characters used as seperators</param>
         /// <returns></returns>
-        public static IEnumerable<int> Split(string input, string seperator)
+        public static IEnumerable<int> Split(string input, string seperators)
         {
-            string[] split = input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] split = String.Split(input, seperators);
             return split.Where(s => int.TryParse(s, out int result)).Select(int.Parse);
         }
 
@@ -46,7 +46,7 @@ namespace AoC.Util
         /// <returns></returns>
         public static IEnumerable<int> Split(string input, char seperator)
         {
-            string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] split = String.Split(input, seperator);
             return split.Where(s => int.TryParse(s, out int result)).Select(int.Parse);
         }
 
@@ -54,11 +54,11 @@ namespace AoC.Util
         /// Call split on a string and then parse it into longs
         /// </summary>
         /// <param name="input">string of separated longs</param>
-        /// <param name="seperator">characters used as seperators</param>
+        /// <param name="seperators">characters used as seperators</param>
         /// <returns></returns>
-        public static IEnumerable<long> SplitL(string input, string seperator)
+        public static IEnumerable<long> SplitL(string input, string seperators)
         {
-            string[] split = input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] split = String.Split(input, seperators);
             return split.Where(s => long.TryParse(s, out long result)).Select(long.Parse);
         }
 
@@ -70,7 +70,7 @@ namespace AoC.Util
         /// <returns></returns>
         public static IEnumerable<long> SplitL(string input, char seperator)
         {
-            string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] split = String.Split(input, seperator);
             return split.Where(s => long.TryParse(s, out long result)).Select(long.Parse);
         }
 
@@ -78,11 +78,11 @@ namespace AoC.Util
         /// Call split on a string and then parse it into BigIntegers
         /// </summary>
         /// <param name="input">string of separated BigIntegers</param>
-        /// <param name="seperator">characters used as seperators</param>
+        /// <param name="seperators">characters used as seperators</param>
         /// <returns></returns>
-        public static IEnumerable<BigInteger> SplitBI(string input, string seperator)
+        public static IEnumerable<BigInteger> SplitBI(string input, string seperators)
         {
-            string[] split = input.Split(seperator.ToCharArray(), StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] split = String.Split(input, seperators);
             return split.Where(s => BigInteger.TryParse(s, out BigInteger result)).Select(BigInteger.Parse);
         }
 
@@ -94,26 +94,26 @@ namespace AoC.Util
         /// <returns></returns>
         public static IEnumerable<BigInteger> SplitBI(string input, char seperator)
         {
-            string[] split = input.Split(seperator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] split = String.Split(input, seperator);
             return split.Where(s => BigInteger.TryParse(s, out BigInteger result)).Select(BigInteger.Parse);
         }
 
         /// <summary>
-        /// 
+        /// Get the least common multiples
         /// </summary>
         /// <param name="longs"></param>
         /// <returns></returns>
         public static long LeastCommonMultiple(IEnumerable<long> longs)
         {
-            Dictionary<long, int> primeFactors = new Dictionary<long, int>();
+            Dictionary<long, int> primeFactors = [];
             foreach (long l in longs)
             {
                 PrimeFactors(l, out Dictionary<long, int> pfs);
                 foreach (long pf in pfs.Keys)
                 {
-                    if (primeFactors.ContainsKey(pf))
+                    if (primeFactors.TryGetValue(pf, out int value))
                     {
-                        primeFactors[pf] = Math.Max(primeFactors[pf], pfs[pf]);
+                        primeFactors[pf] = Math.Max(value, pfs[pf]);
                     }
                     else
                     {
@@ -138,14 +138,14 @@ namespace AoC.Util
         /// <param name="primeFactors">all prime factors</param>
         public static void PrimeFactors(long number, out List<long> primeFactors)
         {
-            primeFactors = new List<long>();
+            primeFactors = [];
             while (number % 2 == 0)
             {
                 primeFactors.Add(2);
                 number /= 2;
             }
 
-            for (int i = 3; i < Math.Sqrt(number); i = i + 2)
+            for (int i = 3; i < Math.Sqrt(number); i += 2)
             {
                 while (number % i == 0)
                 {

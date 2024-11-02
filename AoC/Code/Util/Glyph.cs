@@ -22,7 +22,7 @@ namespace AoC.Util
 
     public class Glyph5x6 : IGlyph
     {
-        private static readonly Dictionary<char, string[]> s_alphabet = new Dictionary<char, string[]>()
+        private static readonly Dictionary<char, string[]> s_alphabet = new()
         {
             {'A', new string[] {
                 ".##..",
@@ -176,7 +176,7 @@ namespace AoC.Util
             _5x6,
         }
 
-        private static readonly Dictionary<EType, IGlyph> Converters = new Dictionary<EType, IGlyph>()
+        private static readonly Dictionary<EType, IGlyph> Converters = new()
         {
             {EType._5x6, new Glyph5x6()},
         };
@@ -190,7 +190,7 @@ namespace AoC.Util
         {
             if (glyphs == null || glyphs[0] == null)
             {
-                return "glyph error";
+                return "<glyph error>";
             }
 
             IGlyph glyphConverter = Converters[type];
@@ -216,7 +216,7 @@ namespace AoC.Util
             int length = glyphs[0].Length % glyphConverter.Width;
             if (length != 0)
             {
-                string empty = new string(Glyph.Off, glyphConverter.Width - length);
+                string empty = new(Glyph.Off, glyphConverter.Width - length);
                 for (int i = 0; i < glyphs.Length; ++i)
                 {
                     glyphs[i] += empty;
@@ -224,7 +224,7 @@ namespace AoC.Util
             }
 
             // convert glyph to letter
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = 0; i < glyphs[0].Length; i += glyphConverter.Width)
             {
                 IEnumerable<string> glyph = glyphs.Select(g => g.Substring(i, glyphConverter.Width));
