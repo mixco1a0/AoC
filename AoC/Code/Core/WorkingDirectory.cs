@@ -5,7 +5,7 @@ namespace AoC.Core
     public static class WorkingDirectory
     {
         private static string s_baseDir;
-        static public string Get
+        public static string Get
         {
             get
             {
