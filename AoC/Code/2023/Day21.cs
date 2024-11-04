@@ -94,7 +94,7 @@ namespace AoC._2023
                 }
             }
             temp[start.X, start.Y] = Start;
-            Util.Grid.PrintGrid(temp);
+            Util.Grid.Print2D(Core.Log.ELevel.Debug, temp);
         }
 
         private record StepCheck(Base.Vec2L Pos, int Steps);

@@ -164,7 +164,7 @@ U 20"
                 grid[maxY][0 - minX] = 's';
             }
 
-            Util.Grid.PrintGrid(Core.Log.ELevel.Debug, grid);
+            Util.Grid.Print2D(Core.Log.ELevel.Debug, grid);
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int nodeCount)

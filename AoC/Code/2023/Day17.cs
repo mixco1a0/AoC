@@ -250,8 +250,8 @@ namespace AoC._2023
                 chars2[cur.X, cur.Y] = (char)(nodes[cur.X, cur.Y].Weight + '0');
             }
 
-            Grid.PrintGrid(chars, Core.Log.ELevel.Debug);
-            Grid.PrintGrid(chars2, Core.Log.ELevel.Debug);
+            Grid.Print2D(Core.Log.ELevel.Debug, chars);
+            Grid.Print2D(Core.Log.ELevel.Debug, chars2);
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int minSteps, int maxSteps)

@@ -97,7 +97,7 @@ namespace AoC._2023
                 }
                 ++i;
             }
-            Util.Grid.RotateGrid(true, ref expandedY);
+            Util.Grid.Rotate2D(true, ref expandedY);
             List<string> expandedX = new List<string>();
             i = 0;
             foreach (string input in expandedY)
@@ -109,7 +109,7 @@ namespace AoC._2023
                 }
                 ++i;
             }
-            Util.Grid.RotateGrid(false, ref expandedX);
+            Util.Grid.Rotate2D(false, ref expandedX);
             return expandedX.Select(e => e.ToCharArray()).ToArray();
         }
 

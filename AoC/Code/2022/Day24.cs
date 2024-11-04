@@ -183,7 +183,7 @@ namespace AoC._2022
                 }
             }
 
-            Util.Grid.PrintGrid(grid, Core.Log.ELevel.Debug);
+            Util.Grid.Print2D(Core.Log.ELevel.Debug, grid);
         }
 
         private bool IsSpotSafe(int cycle, int x, int y)

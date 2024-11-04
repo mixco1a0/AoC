@@ -103,7 +103,7 @@ namespace AoC._2023
 
         private void ParseInput(List<string> inputs, bool slippery, out char[,] grid, out Base.Vec2 start, out Base.Vec2 end, out int xMax, out int yMax)
         {
-            Util.Grid.ParseInput(inputs, out grid, out xMax, out yMax);
+            Util.Grid.Parse2D(inputs, out grid, out xMax, out yMax);
 
             if (!slippery)
             {

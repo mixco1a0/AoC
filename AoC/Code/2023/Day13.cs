@@ -129,7 +129,7 @@ namespace AoC._2023
                 }
             }
 
-            Util.Grid.RotateGrid(true, ref pattern);
+            Util.Grid.Rotate2D(true, ref pattern);
             for (int i = 0; i < pattern.Count - 1; ++i)
             {
                 if (IsReflected(pattern, i, fixSmudge))
