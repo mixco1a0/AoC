@@ -7,23 +7,42 @@ namespace AoC.Util
 {
     public static class Grid
     {
-        public enum Direction2D { North, East, South, West, NorthEast, SouthEast, SouthWest, NorthWest }
+        public enum Direction2D { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest }
 
         public static readonly Dictionary<Direction2D, Base.Vec2> Next2D = new()
         {
             { Direction2D.North,        new Base.Vec2( 0, -1) },
-            { Direction2D.East,         new Base.Vec2( 1,  0) },
-            { Direction2D.South,        new Base.Vec2( 0,  1) },
-            { Direction2D.West,         new Base.Vec2(-1,  0) },
-
             { Direction2D.NorthEast,    new Base.Vec2( 1, -1) },
+            { Direction2D.East,         new Base.Vec2( 1,  0) },
             { Direction2D.SouthEast,    new Base.Vec2( 1,  1) },
+            { Direction2D.South,        new Base.Vec2( 0,  1) },
             { Direction2D.SouthWest,    new Base.Vec2(-1,  1) },
+            { Direction2D.West,         new Base.Vec2(-1,  0) },
             { Direction2D.NorthWest,    new Base.Vec2(-1, -1) },
         };
 
+        public static readonly Direction2D[] IterOrth = 
+        [
+            Direction2D.North,
+            Direction2D.East,
+            Direction2D.South,
+            Direction2D.West
+        ];
+
+        public static readonly Direction2D[] IterAll = 
+        [
+            Direction2D.North,
+            Direction2D.NorthEast,
+            Direction2D.East,
+            Direction2D.SouthEast,
+            Direction2D.South,
+            Direction2D.SouthWest,
+            Direction2D.West,
+            Direction2D.NorthWest
+        ];
+
         #region Print 2D
-        static public void Print2D(Core.Log.ELevel level, List<string> grid)
+        public static void Print2D(Core.Log.ELevel level, List<string> grid)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(level, $"Printing grid {grid.First().Length}x{grid.Count}:");
@@ -37,7 +56,7 @@ namespace AoC.Util
             }
         }
 
-        static public void Print2D(Core.Log.ELevel level, List<List<char>> grid)
+        public static void Print2D(Core.Log.ELevel level, List<List<char>> grid)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(level, $"Printing grid {grid[0].Count}x{grid.Count}:");
@@ -50,7 +69,7 @@ namespace AoC.Util
             }
         }
 
-        static public void Print2D(Core.Log.ELevel level, char[][] grid)
+        public static void Print2D(Core.Log.ELevel level, char[][] grid)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(level, $"Printing grid {grid[0].Length}x{grid.Length}:");
@@ -63,7 +82,7 @@ namespace AoC.Util
             }
         }
 
-        static public void Print2D(Core.Log.ELevel level, char[,] grid)
+        public static void Print2D(Core.Log.ELevel level, char[,] grid)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(level, $"Printing grid {grid.GetLength(0)}x{grid.GetLength(1)}:");
@@ -78,7 +97,7 @@ namespace AoC.Util
         #endregion
 
         #region Parse 2D
-        static public void Parse2D(List<string> inputs, out char[][] grid, out int maxCol, out int maxRow)
+        public static void Parse2D(List<string> inputs, out char[][] grid, out int maxCol, out int maxRow)
         {
             maxCol = inputs[0].Length;
             maxRow = inputs.Count;
@@ -94,7 +113,7 @@ namespace AoC.Util
             }
         }
 
-        static public void Parse2D(List<string> inputs, out char[,] grid, out int maxCol, out int maxRow)
+        public static void Parse2D(List<string> inputs, out char[,] grid, out int maxCol, out int maxRow)
         {
             maxCol = inputs[0].Length;
             maxRow = inputs.Count;
@@ -111,7 +130,7 @@ namespace AoC.Util
         #endregion
 
         #region Modify 2D
-        static public void Rotate2D(bool right, ref List<string> grid)
+        public static void Rotate2D(bool right, ref List<string> grid)
         {
             List<string> newGrid = [];
             if (right)
@@ -131,7 +150,7 @@ namespace AoC.Util
             grid = newGrid;
         }
 
-        static public void Flip2D(bool horizontal, ref List<string> grid)
+        public static void Flip2D(bool horizontal, ref List<string> grid)
         {
             if (horizontal)
             {
@@ -148,7 +167,7 @@ namespace AoC.Util
         #endregion
 
         #region Process 2D
-        static public bool ProcessGrid(ref List<List<char>> grid, Func<int, int, List<List<char>>, char> ProcessIndexFunc)
+        public static bool ProcessGrid(ref List<List<char>> grid, Func<int, int, List<List<char>>, char> ProcessIndexFunc)
         {
             List<List<char>> newGrid = [];
             foreach (List<char> row in grid)
@@ -171,7 +190,7 @@ namespace AoC.Util
             return !complete;
         }
 
-        static public int ProcessIndexBorder(int x, int y, List<List<char>> grid, char match)
+        public static int ProcessIndexBorder(int x, int y, List<List<char>> grid, char match)
         {
             int borderMatch = 0;
             for (int _x = x - 1; _x <= x + 1; ++_x)
@@ -202,7 +221,7 @@ namespace AoC.Util
             return borderMatch;
         }
 
-        static public Dictionary<char, int> ProcessIndexBorder(int x, int y, List<List<char>> grid)
+        public static Dictionary<char, int> ProcessIndexBorder(int x, int y, List<List<char>> grid)
         {
             Dictionary<char, int> borderValues = new();
             for (int _x = x - 1; _x <= x + 1; ++_x)
@@ -238,7 +257,7 @@ namespace AoC.Util
             return borderValues;
         }
 
-        static public string GetDynamicIndexKey(List<int> index)
+        public static string GetDynamicIndexKey(List<int> index)
         {
             StringBuilder sb = new();
             foreach (int i in index)
@@ -249,7 +268,7 @@ namespace AoC.Util
             return sb.ToString();
         }
 
-        static public bool ProcessGrid(ref Dictionary<string, char> grid, List<Base.Range> indexRanges, Func<Dictionary<string, char>, List<int>, char> ProcessIndexFunc)
+        public static bool ProcessGrid(ref Dictionary<string, char> grid, List<Base.Range> indexRanges, Func<Dictionary<string, char>, List<int>, char> ProcessIndexFunc)
         {
             bool complete = true;
 
@@ -287,7 +306,7 @@ namespace AoC.Util
             }
         }
 
-        static public int ProcessIndexBorder(List<int> index, Dictionary<string, char> grid, char match)
+        public static int ProcessIndexBorder(List<int> index, Dictionary<string, char> grid, char match)
         {
             int borderMatch = 0;
             string indexKey = GetDynamicIndexKey(index);
