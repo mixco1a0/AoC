@@ -7,14 +7,19 @@ namespace AoC.Util
 {
     public static class Grid
     {
-        public enum Direction2D { North, East, South, West }
+        public enum Direction2D { North, East, South, West, NorthEast, SouthEast, SouthWest, NorthWest }
 
         public static readonly Dictionary<Direction2D, Base.Vec2> Next2D = new()
         {
-            { Direction2D.North, new Base.Vec2( 0, -1) },
-            { Direction2D.South, new Base.Vec2( 0,  1) },
-            { Direction2D.East,  new Base.Vec2( 1,  0) },
-            { Direction2D.West,  new Base.Vec2(-1,  0) }
+            { Direction2D.North,        new Base.Vec2( 0, -1) },
+            { Direction2D.East,         new Base.Vec2( 1,  0) },
+            { Direction2D.South,        new Base.Vec2( 0,  1) },
+            { Direction2D.West,         new Base.Vec2(-1,  0) },
+
+            { Direction2D.NorthEast,    new Base.Vec2( 1, -1) },
+            { Direction2D.SouthEast,    new Base.Vec2( 1,  1) },
+            { Direction2D.SouthWest,    new Base.Vec2(-1,  1) },
+            { Direction2D.NorthWest,    new Base.Vec2(-1, -1) },
         };
 
         #region Print 2D
