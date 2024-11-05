@@ -7,9 +7,15 @@ namespace AoC.Util
 {
     public static class Grid
     {
+        #region Direction 2D
         public enum Direction2D { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest }
 
-        public static readonly Dictionary<Direction2D, Base.Vec2> Next2D = new()
+        /// <summary>
+        /// NorthWest (-1, -1) | North     ( 0, -1) | NorthEast ( 1, -1)
+        /// West      (-1,  0) |           ( 0,  0) | East      ( 1,  0)
+        /// SouthWest (-1,  1) | South     ( 0,  1) | SouthEast ( 1,  1)
+        /// </summary>
+        public static readonly Dictionary<Direction2D, Base.Vec2> DirectionVec2DMap = new()
         {
             { Direction2D.North,        new Base.Vec2( 0, -1) },
             { Direction2D.NorthEast,    new Base.Vec2( 1, -1) },
@@ -40,6 +46,7 @@ namespace AoC.Util
             Direction2D.West,
             Direction2D.NorthWest
         ];
+        #endregion
 
         #region Print 2D
         public static void Print2D(Core.Log.ELevel level, List<string> grid)
