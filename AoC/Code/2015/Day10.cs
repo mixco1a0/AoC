@@ -78,7 +78,7 @@ namespace AoC._2015
             for (int i = 0; i < times; ++i)
             {
                 input = Process(input);
-                Log(Core.Log.ELevel.Spam, $"{i} complete [{input.Length}]");
+                // Log(Core.Log.ELevel.Spam, $"{i} complete [{input.Length}]");
             }
             return input.Length.ToString();
         }

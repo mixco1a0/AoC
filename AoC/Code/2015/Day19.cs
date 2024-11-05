@@ -131,7 +131,7 @@ HOHOHO"
             {
                 if (steps != minSteps && steps < minSteps)
                 {
-                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"New min found {steps}");
+                    // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"New min found {steps}");
                 }
                 minSteps = Math.Min(minSteps, steps);
                 return;
@@ -145,7 +145,7 @@ HOHOHO"
             if (!unique.Contains(molecule))
             {
                 unique.Add(molecule);
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Testing: {molecule}");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Testing: {molecule}");
             }
             else
             {

@@ -82,7 +82,7 @@ Dublin to Belfast = 141"
                 dist = curToInfo.Where(i => visitableCities.Contains(i.Destination)).Max(i => i.Distance);
             }
             string nextCity = curToInfo.Where(i => visitableCities.Contains(i.Destination)).Where(i => i.Distance == dist).First().Destination;
-            Log(Core.Log.ELevel.Spam, $"{startCity} >--[{dist}]--> {nextCity}");
+            // Log(Core.Log.ELevel.Spam, $"{startCity} >--[{dist}]--> {nextCity}");
             return dist + FindPathRecurse(map, nextCity, visitableCities.Where(c => c != nextCity).ToList(), findMin);
         }
 
