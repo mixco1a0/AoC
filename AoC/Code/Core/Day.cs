@@ -48,7 +48,7 @@ namespace AoC.Core
         private string LogID { get; set; }
         private Dictionary<string, List<TestDatum>> TestData { get; set; }
         private Dictionary<Part, Func<List<string>, Dictionary<string, string>, string>> PartSpecificFunctions { get; set; }
-        private bool ShouldSkipTestData(Part part) => GetSolutionVersion(part).Equals(BaseVersion);
+        private bool ShouldSkipTestData(Part part) => !GetSolutionVersion(part).Equals(BaseVersion);
 
         protected Day()
         {
