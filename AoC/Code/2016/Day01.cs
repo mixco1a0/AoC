@@ -91,7 +91,7 @@ namespace AoC._2016
                 if (segmentCheck)
                 {
                     Base.Segment cur = new Base.Segment(prev, new Base.Vec2(coordX, coordY));
-                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
+                    // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
                     Base.Vec2 intersection = null;
                     // check for intersection
                     foreach (Base.Segment visit in visited.Take(visited.Count - 1))

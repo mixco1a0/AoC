@@ -317,7 +317,7 @@ Filesystem            Size  Used  Avail  Use%
             Node emptyNode = nodes.Where(n => n.Used == 0).First();
             Node goalNode = nodeGrid[0][maxX];
 
-            PrintGrid(nodeGrid, nodeGrid[0][0].Coords, goalNode.Coords, emptyNode.Coords);
+            //PrintGrid(nodeGrid, nodeGrid[0][0].Coords, goalNode.Coords, emptyNode.Coords);
 
             while (optimizedPath.Count > 0)
             {

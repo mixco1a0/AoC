@@ -121,7 +121,7 @@ namespace AoC._2016
 
                     if (prevUsed != usedIndices)
                     {
-                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"pwd={password}");
+                        // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"pwd={password}");
                     }
                 }
             }

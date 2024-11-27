@@ -122,7 +122,7 @@ namespace AoC._2016
                             if (extendedMatches.Contains(cur.Match))
                             {
                                 verifiedKeys.Add(new HashCheck(cur.Match, cur.Start, i, cur.Raw));
-                                Log(Core.Log.ELevel.Spam, $"\'{cur.Match}\' @ {cur.Raw} [Idx {cur.Start,5}] [{encoded}]");
+                                // Log(Core.Log.ELevel.Spam, $"\'{cur.Match}\' @ {cur.Raw} [Idx {cur.Start,5}] [{encoded}]");
                                 pendingKeys.RemoveAt(j);
                             }
                             else
@@ -143,13 +143,13 @@ namespace AoC._2016
                 }
             }
             verifiedKeys.Sort((a, b) => a.Start > b.Start ? 1 : -1);
-            if (stretchCount > 0)
-            {
-                foreach (var key in verifiedKeys)
-                {
-                    Log(Core.Log.ELevel.Spam, $"{key}");
-                }
-            }
+            // if (stretchCount > 0)
+            // {
+            //     foreach (var key in verifiedKeys)
+            //     {
+            //         Log(Core.Log.ELevel.Spam, $"{key}");
+            //     }
+            // }
             return verifiedKeys[MaxKeys - 1].Start.ToString();
         }
 
