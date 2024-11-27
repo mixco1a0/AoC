@@ -24,8 +24,6 @@ namespace AoC._2023
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();

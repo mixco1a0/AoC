@@ -19,8 +19,6 @@ namespace AoC._2021
                     return base.GetSolutionVersion(part);
             }
         }
-        
-        public override bool SkipTestData => true;
 
         protected override List<Core.TestDatum> GetTestData()
         {
