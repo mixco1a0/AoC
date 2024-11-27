@@ -87,6 +87,31 @@ namespace AoC.Core
                         Log.WriteLine(Log.ELevel.Info, "");
                     }
                 }
+                else if (Args.HasValue(Config.ESupportedArgument.RunNamespace))
+                {
+                    Args.Remove(Config.ESupportedArgument.ForceTests);
+                    string runNamespace = Args[Config.ESupportedArgument.RunNamespace];
+                    Dictionary<string, Type> days = GetDaysInNamespace(runNamespace);
+                    if (days.Count == 0)
+                    {
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find any solutions for namespace {runNamespace}");
+                    }
+                    else
+                    {
+                        Util.Timer timer = new();
+                        timer.Start();
+                        Log.WriteLine(Log.ELevel.Info, $"Running all {runNamespace} Advent of Code solutions\n");
+                        foreach (var pair in days)
+                        {
+                            Day day = RunDay(runNamespace, pair.Key, true /*forceSkipWarmup*/);
+                            Log.WriteLine(Log.ELevel.Info, "...");
+                            Log.WriteLine(Log.ELevel.Info, "..");
+                            Log.WriteLine(Log.ELevel.Info, ".");
+                        }
+                        timer.Stop();
+                        Log.WriteLine(Log.ELevel.Info, $"Ran all {runNamespace} Advent of Code solutions in {timer.GetElapsedMs()} (ms)\n");
+                    }
+                }
 
                 // show performance
                 if (Args.Has(Config.ESupportedArgument.ShowPerf))
@@ -163,9 +188,9 @@ namespace AoC.Core
         /// <param name="baseNamespace"></param>
         /// <param name="dayName"></param>
         /// <returns></returns>
-        private Day RunDay(string baseNamespace, string dayName)
+        private Day RunDay(string baseNamespace, string dayName, bool forceSkipWarmup = false)
         {
-            if (Args.Has(Config.ESupportedArgument.RunWarmup))
+            if (!forceSkipWarmup && Args.Has(Config.ESupportedArgument.RunWarmup))
             {
                 Log.WriteLine(Log.ELevel.Info, "...Warming up\n");
                 RunWarmup();
@@ -177,7 +202,7 @@ namespace AoC.Core
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
             {
-                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[days.Keys.Where(k => k.ToLower().Contains(dayName.ToLower())).First()].FullName);
+                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[days.Keys.Where(k => k.Contains(dayName, StringComparison.CurrentCultureIgnoreCase)).First()].FullName);
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();

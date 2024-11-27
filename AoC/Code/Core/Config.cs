@@ -30,6 +30,8 @@ namespace AoC.Core
             RunWarmup,
             SkipLatest,
             ForceTests,
+            RunNamespace,
+            RunAll,
 
             // performance options
             ShowPerf,

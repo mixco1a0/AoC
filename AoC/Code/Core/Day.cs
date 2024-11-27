@@ -104,9 +104,6 @@ namespace AoC.Core
 
             // run part 2
             RunInternal(Part.Two, input, output);
-
-            // reset logging
-            LogID = DefaultLogID;
         }
 
         public void Run(Part part)
@@ -121,9 +118,6 @@ namespace AoC.Core
 
             // run part
             RunInternal(part, input, output);
-
-            // reset logging
-            LogID = DefaultLogID;
         }
 
         private IEnumerable<string> GetInputFile()
@@ -167,6 +161,9 @@ namespace AoC.Core
 
         private void RunInternal(Part part, IEnumerable<string> problemInput, IEnumerable<string> problemOutput)
         {
+            Log(Core.Log.ELevel.Info, "");
+            Core.Log.WriteLine(Core.Log.ELevel.Info, $"Running {Year}.{DayName}.Part{part}");
+
             // get test data if there is any
             IEnumerable<TestDatum> partSpecificTestData = TestData[DayName].Where(datum => datum.TestPart == part);
 
@@ -185,6 +182,9 @@ namespace AoC.Core
 
             TimeResults[part] = RunTimedInternal(RunType.Problem, part, problemInput.ToList(), problemOutput.ElementAt(((int)part) - 1), null);
             TimeWasted[part] = TimeWaste;
+
+            // reset logging
+            LogID = DefaultLogID;
         }
 
         private double RunTimedInternal(RunType runType, Part part, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)

@@ -1,6 +1,8 @@
-add quick way to run through all the days
+add quick way to run through all the days in entire workspace
 
 remove Day.SkipTestData
+
+make a util that properly displays time according to specific units -> Program.PrintPerf()
 
 clean up performance logging
 
