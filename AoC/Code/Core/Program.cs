@@ -98,9 +98,9 @@ namespace AoC.Core
                     }
                     else
                     {
+                        Log.WriteLine(Log.ELevel.Info, $"Running all {runNamespace} Advent of Code solutions\n");
                         Util.Timer timer = new();
                         timer.Start();
-                        Log.WriteLine(Log.ELevel.Info, $"Running all {runNamespace} Advent of Code solutions\n");
                         foreach (var pair in days)
                         {
                             Day day = RunDay(runNamespace, pair.Key, true /*forceSkipWarmup*/);
@@ -110,6 +110,33 @@ namespace AoC.Core
                         }
                         timer.Stop();
                         Log.WriteLine(Log.ELevel.Info, $"Ran all {runNamespace} Advent of Code solutions in {timer.GetElapsedMs()} (ms)\n");
+                    }
+                }
+                else if (Args.Has(Config.ESupportedArgument.RunAll))
+                {
+                    List<Dictionary<string, Type>> allDays = GetAllDays();
+                    if (allDays.Count == 0)
+                    {
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find any solutions");
+                    }
+                    else
+                    {
+                        Log.WriteLine(Log.ELevel.Info, $"Running all Advent of Code solutions\n");
+                        Util.Timer timer = new();
+                        timer.Start();
+                        foreach (var dict in allDays)
+                        {
+                            Log.WriteLine(Log.ELevel.Info, $"Running all {dict.First().Value.Namespace} Advent of Code solutions\n");
+                            foreach (var pair in dict)
+                            {
+                                Day day = RunDay(pair.Value.Namespace, pair.Key, true /*forceSkipWarmup*/);
+                                Log.WriteLine(Log.ELevel.Info, "...");
+                                Log.WriteLine(Log.ELevel.Info, "..");
+                                Log.WriteLine(Log.ELevel.Info, ".");
+                            }
+                        }
+                        timer.Stop();
+                        Log.WriteLine(Log.ELevel.Info, $"Ran all Advent of Code solutions in {timer.GetElapsedMs()} (ms)\n");
                     }
                 }
 
@@ -164,6 +191,22 @@ namespace AoC.Core
             return Assembly.GetExecutingAssembly().GetTypes()
                                 .Where(t => t.BaseType == typeof(Day) && t.Namespace.Contains(baseNamespace))
                                 .ToDictionary(t => t.Name, t => t);
+        }
+
+        /// <summary>
+        /// Get all days.
+        /// </summary>
+        /// <returns></returns>
+        private static List<Dictionary<string, Type>> GetAllDays()
+        {
+            List<Dictionary<string, Type>> allDays = [];
+            IEnumerable<Type> days = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.BaseType == typeof(Day));
+            IEnumerable<string> namespaces = days.Select(d => d.Namespace).OrderBy(_ => _).Distinct();
+            foreach (string n in namespaces)
+            {
+                allDays.Add(days.Where(d => d.Namespace == n).ToDictionary(d => d.Name, d => d));
+            }
+            return allDays;
         }
 
         /// <summary>

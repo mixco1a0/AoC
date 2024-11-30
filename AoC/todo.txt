@@ -1,5 +1,3 @@
-add quick way to run through all the days in entire workspace
-
 make a util that properly displays time according to specific units -> Program.PrintPerf()
 
 clean up performance logging
