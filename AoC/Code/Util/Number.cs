@@ -7,25 +7,6 @@ namespace AoC.Util
 {
     public static class Number
     {
-        public static BigInteger Abs(BigInteger bigInteger)
-        {
-            if (bigInteger >= 0)
-            {
-                return bigInteger;
-            }
-            return bigInteger * -1;
-        }
-
-        public static BigInteger Max(BigInteger bigIntegerA, BigInteger bigIntegerB)
-        {
-            return bigIntegerA >= bigIntegerB ? bigIntegerA : bigIntegerB;
-        }
-
-        public static BigInteger Min(BigInteger bigIntegerA, BigInteger bigIntegerB)
-        {
-            return bigIntegerA <= bigIntegerB ? bigIntegerA : bigIntegerB;
-        }
-
         /// <summary>
         /// Call split on a string and then parse it into ints
         /// </summary>

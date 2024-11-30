@@ -311,7 +311,7 @@ namespace AoC.Base
 
         public BigInteger Manhattan(Vec2BI other)
         {
-            return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y);
+            return BigInteger.Abs(X - other.X) + BigInteger.Abs(Y - other.Y);
         }
 
         #region Interfaces
@@ -905,7 +905,7 @@ namespace AoC.Base
 
         public BigInteger Manhattan(Vec3BI other)
         {
-            return Util.Number.Abs(X - other.X) + Util.Number.Abs(Y - other.Y) + Util.Number.Abs(Z - other.Z);
+            return BigInteger.Abs(X - other.X) + BigInteger.Abs(Y - other.Y) + BigInteger.Abs(Z - other.Z);
         }
 
         public Vec2BI DropZ()
