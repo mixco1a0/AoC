@@ -722,7 +722,7 @@ namespace AoC.Core
 
                 TimeMagnitude tm = getTimeMagnitude(time);
                 string yesColor = string.Format("{0:000.000}", tm.First);
-                Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), new List<Color>() { color });
+                Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), [color]);
 
                 string remainingLog = string.Format(" ({0}{1}{0}){2}", Log.ColorMarker, tm.Last, logEnder);
                 Log.WriteAppend(Log.ELevel.Info, remainingLog, [timeUnitColor[tm.Last]]);
