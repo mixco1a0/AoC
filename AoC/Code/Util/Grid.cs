@@ -10,6 +10,18 @@ namespace AoC.Util
         #region Direction 2D
         public enum Direction2D { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest }
 
+        public static readonly Dictionary<Direction2D, char> DirectionArrowMap = new()
+        {
+            { Direction2D.North,        '↑' },
+            { Direction2D.NorthEast,    '↗' },
+            { Direction2D.East,         '→' },
+            { Direction2D.SouthEast,    '↘' },
+            { Direction2D.South,        '↓' },
+            { Direction2D.SouthWest,    '↙' },
+            { Direction2D.West,         '←' },
+            { Direction2D.NorthWest,    '↖' },
+        };
+
         /// <summary>
         /// NorthWest (-1, -1) | North     ( 0, -1) | NorthEast ( 1, -1)
         /// West      (-1,  0) |           ( 0,  0) | East      ( 1,  0)
