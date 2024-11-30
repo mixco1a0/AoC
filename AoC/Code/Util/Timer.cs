@@ -14,10 +14,7 @@ namespace AoC.Util
 
         public void Stop()
         {
-            if (m_stopwatch != null)
-            {
-                m_stopwatch.Stop();
-            }
+            m_stopwatch?.Stop();
         }
 
         public double GetElapsedMs()

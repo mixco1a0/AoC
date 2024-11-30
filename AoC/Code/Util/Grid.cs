@@ -179,7 +179,7 @@ namespace AoC.Util
             List<List<char>> newGrid = [];
             foreach (List<char> row in grid)
             {
-                newGrid.Add(new List<char>(row));
+                newGrid.Add([.. row]);
             }
             bool complete = true;
             for (int x = 0; x < grid.Count; ++x)
@@ -230,7 +230,7 @@ namespace AoC.Util
 
         public static Dictionary<char, int> ProcessIndexBorder(int x, int y, List<List<char>> grid)
         {
-            Dictionary<char, int> borderValues = new();
+            Dictionary<char, int> borderValues = [];
             for (int _x = x - 1; _x <= x + 1; ++_x)
             {
                 if (_x < 0 || _x >= grid.Count)
