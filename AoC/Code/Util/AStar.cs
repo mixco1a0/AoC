@@ -101,8 +101,8 @@ namespace AoC.Util
             }
         }
 
-        static readonly Base.Vec2[] NeighborOffsets = new Base.Vec2[] { new Base.Vec2(0, 1), new Base.Vec2(1, 0), new Base.Vec2(-1, 0), new Base.Vec2(0, -1) };
-        static readonly char[] NeighborDirection = new char[] { '↓', '→', '←', '↑' };
+        static readonly Base.Vec2[] NeighborOffsets = [new Base.Vec2(0, 1), new Base.Vec2(1, 0), new Base.Vec2(-1, 0), new Base.Vec2(0, -1)];
+        static readonly char[] NeighborDirection = ['↓', '→', '←', '↑'];
 
         public delegate bool CanUseNode(TNode curNode, TNode nextNode);
         public delegate bool IsEnd(Base.Vec2 curPos);
@@ -116,22 +116,13 @@ namespace AoC.Util
             }
 
             // by default, all nodes should be usable
-            if (canUseNode == null)
-            {
-                canUseNode = (TNode curNode, TNode nextNode) => { return true; };
-            }
+            canUseNode ??= (TNode curNode, TNode nextNode) => { return true; };
 
             // by default, check for the end position
-            if (isEnd == null)
-            {
-                isEnd = (Base.Vec2 curPos) => { return curPos.Equals(End); };
-            }
+            isEnd ??= (Base.Vec2 curPos) => { return curPos.Equals(End); };
 
             // by default, add 1 to the previous length
-            if (adjustLength == null)
-            {
-                adjustLength = (TNode curNode, TNode prevNode) => { return prevNode.Length + 1; };
-            }
+            adjustLength ??= (TNode curNode, TNode prevNode) => { return prevNode.Length + 1; };
 
             // by default, use the next node's length as the priority
             if (getPriority == null)

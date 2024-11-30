@@ -8,7 +8,7 @@ namespace AoC.Util
 
         public void Start()
         {
-            m_stopwatch = new Stopwatch();
+            m_stopwatch = new();
             m_stopwatch.Start();
         }
 

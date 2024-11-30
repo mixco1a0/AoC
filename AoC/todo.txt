@@ -2,17 +2,13 @@ make a util that properly displays time according to specific units -> Program.P
 
 clean up performance logging
 
-clean up all of the utils
-
-add standard directions
-
-add grid move directions
-
 add versioning to perf data based on core changes that would affect
 all code that is run (core version?)
 
 fix color ranges not respecting max and mins of their respective type
 write out entire perf log for days, remove top X% and bottom X%
+
+remove astar NeighborOffsets
 
 warm up needs to warm up all cores in a threaded approach
 remove processor restriction
