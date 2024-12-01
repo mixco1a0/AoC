@@ -161,7 +161,10 @@ namespace AoC.Core
         private void RunInternal(Part part, IEnumerable<string> problemInput, IEnumerable<string> problemOutput)
         {
             Log(Core.Log.ELevel.Info, "");
-            Core.Log.WriteLine(Core.Log.ELevel.Info, $"Running {Year}.{DayName}.Part{part}");
+            if (UseLogs)
+            {
+                Core.Log.WriteLine(Core.Log.ELevel.Info, $"Running {Year}.{DayName}.Part{part}");
+            }
 
             // get test data if there is any
             IEnumerable<TestDatum> partSpecificTestData = TestData[DayName].Where(datum => datum.TestPart == part);
