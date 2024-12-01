@@ -25,9 +25,14 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
-                    Output = "",
+                    Output = "11",
                     RawInput =
-@""
+@"3   4
+4   3
+2   5
+1   3
+3   9
+3   3"
                 },
                 new Core.TestDatum
                 {
@@ -42,7 +47,21 @@ namespace AoC._2024
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            List<int> left = [], right = [];
+            foreach (string i in inputs)
+            {
+                int[] split = Util.String.Split(i, ' ').Select(int.Parse).ToArray();
+                left.Add(split[0]);
+                right.Add(split[1]);
+            }
+            left.Sort();
+            right.Sort();
+            int sum = 0;
+            for (int i = 0; i < left.Count; ++i)
+            {
+                sum += int.Abs(left[i] - right[i]);
+            }
+            return sum.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
