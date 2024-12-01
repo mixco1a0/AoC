@@ -22,8 +22,6 @@ namespace AoC._2022
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -50,18 +48,18 @@ namespace AoC._2022
         static private readonly char RockVal = '#';
         static private readonly char SandVal = 'o';
 
-        private Queue<Base.Pos2> Parse(string input)
+        private Queue<Base.Vec2> Parse(string input)
         {
             int[] split = input.Split(", ->".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-            Queue<Base.Pos2> positions = new Queue<Base.Pos2>();
+            Queue<Base.Vec2> positions = new Queue<Base.Vec2>();
             for (int i = 0; i < split.Length - 1; i += 2)
             {
-                positions.Enqueue(new Base.Pos2(split[i], split[i + 1]));
+                positions.Enqueue(new Base.Vec2(split[i], split[i + 1]));
             }
             return positions;
         }
 
-        void UpdateMax(Base.Pos2 pos, ref int minX, ref int maxX, ref int minY, ref int maxY)
+        void UpdateMax(Base.Vec2 pos, ref int minX, ref int maxX, ref int minY, ref int maxY)
         {
             minX = Math.Min(minX, pos.X);
             maxX = Math.Max(maxX, pos.X);
@@ -69,29 +67,29 @@ namespace AoC._2022
             maxY = Math.Max(maxY, pos.Y);
         }
 
-        void AddRock(ref Dictionary<Base.Pos2, char> cave, int x, int y)
+        void AddRock(ref Dictionary<Base.Vec2, char> cave, int x, int y)
         {
-            Base.Pos2 rock = new Base.Pos2(x, y);
+            Base.Vec2 rock = new Base.Vec2(x, y);
             if (!cave.ContainsKey(rock))
             {
                 cave[rock] = RockVal;
             }
         }
 
-        void GenerateCave(List<string> inputs, out Dictionary<Base.Pos2, char> cave, out int minX, out int maxX, out int minY, out int maxY)
+        void GenerateCave(List<string> inputs, out Dictionary<Base.Vec2, char> cave, out int minX, out int maxX, out int minY, out int maxY)
         {
-            cave = new Dictionary<Base.Pos2, char>();
+            cave = new Dictionary<Base.Vec2, char>();
             minX = int.MaxValue;
             maxX = int.MinValue;
             minY = int.MaxValue;
             maxY = int.MinValue;
             foreach (string input in inputs)
             {
-                Queue<Base.Pos2> rocks = Parse(input);
-                Base.Pos2 curRock = rocks.Dequeue();
+                Queue<Base.Vec2> rocks = Parse(input);
+                Base.Vec2 curRock = rocks.Dequeue();
                 cave[curRock] = RockVal;
                 UpdateMax(curRock, ref minX, ref maxX, ref minY, ref maxY);
-                Base.Pos2 nextRock = null;
+                Base.Vec2 nextRock = null;
                 while (rocks.Count > 0)
                 {
                     nextRock = rocks.Dequeue();
@@ -135,7 +133,7 @@ namespace AoC._2022
             }
         }
 
-        void PrintCave(Dictionary<Base.Pos2, char> cave, int minX, int maxX, int minY, int maxY, bool endlessVoid)
+        void PrintCave(Dictionary<Base.Vec2, char> cave, int minX, int maxX, int minY, int maxY, bool endlessVoid)
         {
             StringBuilder sb = new StringBuilder();
             Core.Log.WriteLine(Core.Log.ELevel.Debug, "");
@@ -145,7 +143,7 @@ namespace AoC._2022
                 sb.Append($"{y,4}| ");
                 for (int x = minX - 1; x <= maxX + 1; ++x)
                 {
-                    Base.Pos2 cur = new Base.Pos2(x, y);
+                    Base.Vec2 cur = new Base.Vec2(x, y);
                     if (cave.ContainsKey(cur))
                     {
                         sb.Append(cave[cur]);
@@ -182,10 +180,10 @@ namespace AoC._2022
             Core.Log.WriteLine(Core.Log.ELevel.Debug, "");
         }
 
-        static readonly Base.Pos2[] Movement = new Base.Pos2[] { new Base.Pos2(0, 1), new Base.Pos2(-1, 1), new Base.Pos2(1, 1) };
-        private bool DropSand(ref Dictionary<Base.Pos2, char> cave, int maxY, bool endlessVoid, out Base.Pos2 sand)
+        static readonly Base.Vec2[] Movement = new Base.Vec2[] { new Base.Vec2(0, 1), new Base.Vec2(-1, 1), new Base.Vec2(1, 1) };
+        private bool DropSand(ref Dictionary<Base.Vec2, char> cave, int maxY, bool endlessVoid, out Base.Vec2 sand)
         {
-            sand = new Base.Pos2(500, 0);
+            sand = new Base.Vec2(500, 0);
             while (true)
             {
                 // infinite free fall
@@ -196,9 +194,9 @@ namespace AoC._2022
 
                 // try to move it
                 bool moved = false;
-                foreach (Base.Pos2 move in Movement)
+                foreach (Base.Vec2 move in Movement)
                 {
-                    Base.Pos2 newSand = sand + move;
+                    Base.Vec2 newSand = sand + move;
                     if (cave.ContainsKey(newSand))
                     {
                         continue;
@@ -224,14 +222,14 @@ namespace AoC._2022
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool endlessVoid)
         {
-            GenerateCave(inputs, out Dictionary<Base.Pos2, char> cave, out int minX, out int maxX, out int minY, out int maxY);
+            GenerateCave(inputs, out Dictionary<Base.Vec2, char> cave, out int minX, out int maxX, out int minY, out int maxY);
             if (!endlessVoid)
             {
                 maxY += 2;
             }
 
             int sandCount = 0;
-            while (DropSand(ref cave, maxY, endlessVoid, out Base.Pos2 sand))
+            while (DropSand(ref cave, maxY, endlessVoid, out Base.Vec2 sand))
             {
                 ++sandCount;
                 cave[sand] = SandVal;

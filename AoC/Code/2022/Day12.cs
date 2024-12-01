@@ -21,8 +21,6 @@ namespace AoC._2022
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -91,7 +89,7 @@ abdefghi"
                 {
                     return curNode.Height - 1 <= nextNode.Height;
                 };
-                Util.AStar<Node>.IsEnd isEnd = (Base.Pos2 pos) => { return aStar.Nodes[pos.X, pos.Y].Height == 0; };
+                Util.AStar<Node>.IsEnd isEnd = (Base.Vec2 pos) => { return aStar.Nodes[pos.X, pos.Y].Height == 0; };
                 aStar.Process(canUsedNode, isEnd);
             }
             else

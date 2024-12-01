@@ -20,8 +20,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -75,21 +73,21 @@ namespace AoC._2015
         private const char U = '^';
         private const char D = 'v';
 
-        private Dictionary<char, Base.Pos2> Movements = new Dictionary<char, Base.Pos2>()
+        private Dictionary<char, Base.Vec2> Movements = new Dictionary<char, Base.Vec2>()
         {
-            {L, new Base.Pos2(-1, 0)},
-            {R, new Base.Pos2(1, 0)},
-            {U, new Base.Pos2(0, 1)},
-            {D, new Base.Pos2(0, -1)},
+            {L, new Base.Vec2(-1, 0)},
+            {R, new Base.Vec2(1, 0)},
+            {U, new Base.Vec2(0, 1)},
+            {D, new Base.Vec2(0, -1)},
         };
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool usingRobotSanta)
         {
             bool santaMove = true;
-            Base.Pos2 santaCoords = new Base.Pos2();
-            Base.Pos2 robotCoords = new Base.Pos2();
+            Base.Vec2 santaCoords = new Base.Vec2();
+            Base.Vec2 robotCoords = new Base.Vec2();
 
-            HashSet<Base.Pos2> visitedCoords = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> visitedCoords = new HashSet<Base.Vec2>();
             visitedCoords.Add(santaCoords);
             foreach (char c in string.Join(' ', inputs))
             {

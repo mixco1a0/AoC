@@ -23,8 +23,6 @@ namespace AoC._2016
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -121,7 +119,7 @@ namespace AoC._2016
 
                     if (prevUsed != usedIndices)
                     {
-                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"pwd={password}");
+                        // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"pwd={password}");
                     }
                 }
             }

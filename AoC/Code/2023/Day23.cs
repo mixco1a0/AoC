@@ -22,8 +22,6 @@ namespace AoC._2023
             }
         }
 
-        public override bool SkipTestData => false;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -91,19 +89,19 @@ namespace AoC._2023
         private static char Path = '.';
         private static char Forest = '#';
 
-        static readonly Base.Pos2L[] GridMoves = new Base.Pos2L[] { new Base.Pos2L(0, 1), new Base.Pos2L(1, 0), new Base.Pos2L(-1, 0), new Base.Pos2L(0, -1) };
-        static readonly Dictionary<char, Base.Pos2[]> PathMoves = new Dictionary<char, Base.Pos2[]>()
+        static readonly Base.Vec2L[] GridMoves = new Base.Vec2L[] { new Base.Vec2L(0, 1), new Base.Vec2L(1, 0), new Base.Vec2L(-1, 0), new Base.Vec2L(0, -1) };
+        static readonly Dictionary<char, Base.Vec2[]> PathMoves = new Dictionary<char, Base.Vec2[]>()
         {
-            {Path, new Base.Pos2[] { new Base.Pos2(0, 1), new Base.Pos2(1, 0), new Base.Pos2(-1, 0), new Base.Pos2(0, -1) }},
-            {'^',  new Base.Pos2[] { new Base.Pos2(0, -1) }},
-            {'>',  new Base.Pos2[] { new Base.Pos2(1, 0)  }},
-            {'<',  new Base.Pos2[] { new Base.Pos2(-1, 0) }},
-            {'v',  new Base.Pos2[] { new Base.Pos2(0, 1)  }},
+            {Path, new Base.Vec2[] { new Base.Vec2(0, 1), new Base.Vec2(1, 0), new Base.Vec2(-1, 0), new Base.Vec2(0, -1) }},
+            {'^',  new Base.Vec2[] { new Base.Vec2(0, -1) }},
+            {'>',  new Base.Vec2[] { new Base.Vec2(1, 0)  }},
+            {'<',  new Base.Vec2[] { new Base.Vec2(-1, 0) }},
+            {'v',  new Base.Vec2[] { new Base.Vec2(0, 1)  }},
         };
 
-        private void ParseInput(List<string> inputs, bool slippery, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax)
+        private void ParseInput(List<string> inputs, bool slippery, out char[,] grid, out Base.Vec2 start, out Base.Vec2 end, out int xMax, out int yMax)
         {
-            Util.Grid.ParseInput(inputs, out grid, out xMax, out yMax);
+            Util.Grid.Parse2D(inputs, out grid, out xMax, out yMax);
 
             if (!slippery)
             {
@@ -119,30 +117,30 @@ namespace AoC._2023
                 }
             }
 
-            start = new Base.Pos2();
-            end = new Base.Pos2();
+            start = new Base.Vec2();
+            end = new Base.Vec2();
             for (int x = 0; x < xMax; ++x)
             {
                 if (grid[x, 0] == Path)
                 {
-                    start = new Base.Pos2(x, 0);
+                    start = new Base.Vec2(x, 0);
                 }
                 if (grid[x, yMax - 1] == Path)
                 {
-                    end = new Base.Pos2(x, yMax - 1);
+                    end = new Base.Vec2(x, yMax - 1);
                 }
             }
         }
 
         private class Trail
         {
-            public Base.Pos2 Pos { get; set; }
-            public Dictionary<Base.Pos2, int> Paths { get; set; }
+            public Base.Vec2 Pos { get; set; }
+            public Dictionary<Base.Vec2, int> Paths { get; set; }
 
             public Trail()
             {
-                Pos = new Base.Pos2();
-                Paths = new Dictionary<Base.Pos2, int>();
+                Pos = new Base.Vec2();
+                Paths = new Dictionary<Base.Vec2, int>();
             }
 
             public override string ToString()
@@ -161,11 +159,11 @@ namespace AoC._2023
             }
         }
 
-        private void GenerateTrails(char[,] grid, Base.Pos2 start, Base.Pos2 curPos, Base.Pos2 end, int xMax, int yMax, ref Dictionary<Base.Pos2, Trail> trails)
+        private void GenerateTrails(char[,] grid, Base.Vec2 start, Base.Vec2 curPos, Base.Vec2 end, int xMax, int yMax, ref Dictionary<Base.Vec2, Trail> trails)
         {
             // Log($"Checking {start}");
-            HashSet<Base.Pos2> visited = new HashSet<Base.Pos2>() { start };
-            HashSet<Base.Pos2> split = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> visited = new HashSet<Base.Vec2>() { start };
+            HashSet<Base.Vec2> split = new HashSet<Base.Vec2>();
             int length = start.Manhattan(curPos);
             while (true)
             {
@@ -180,17 +178,17 @@ namespace AoC._2023
                     return;
                 }
 
-                List<Base.Pos2> potentials = new List<Base.Pos2>();
-                foreach (Base.Pos2 movePos2 in PathMoves[path])
+                List<Base.Vec2> potentials = new List<Base.Vec2>();
+                foreach (Base.Vec2 movePos2 in PathMoves[path])
                 {
-                    Base.Pos2 nextPos2 = curPos + movePos2;
+                    Base.Vec2 nextPos2 = curPos + movePos2;
                     if (nextPos2.X >= 0 && nextPos2.X < xMax && nextPos2.Y >= 0 && nextPos2.Y < yMax && grid[nextPos2.X, nextPos2.Y] != Forest)
                     {
                         potentials.Add(nextPos2);
                     }
                 }
 
-                IEnumerable<Base.Pos2> unique = potentials.Where(p => !visited.Contains(p));
+                IEnumerable<Base.Vec2> unique = potentials.Where(p => !visited.Contains(p));
                 if (unique.Count() == 1)
                 {
                     visited.Add(curPos);
@@ -227,14 +225,14 @@ namespace AoC._2023
             {
                 trails[curPos] = new Trail() { Pos = curPos };
 
-                foreach (Base.Pos2 pos2 in split)
+                foreach (Base.Vec2 pos2 in split)
                 {
                     GenerateTrails(grid, curPos, pos2, end, xMax, yMax, ref trails);
                 }
             }
         }
 
-        private bool GetLongestTrail(Dictionary<Base.Pos2, Trail> trails, Base.Pos2 start, Base.Pos2 end, HashSet<Base.Pos2> history, out int longestTrail)
+        private bool GetLongestTrail(Dictionary<Base.Vec2, Trail> trails, Base.Vec2 start, Base.Vec2 end, HashSet<Base.Vec2> history, out int longestTrail)
         {
             history.Add(start);
             longestTrail = 0;
@@ -248,7 +246,7 @@ namespace AoC._2023
             {
                 if (!history.Contains(pair.Key))
                 {
-                    bool valid = GetLongestTrail(trails, pair.Key, end, new HashSet<Base.Pos2>(history), out int curLongest);
+                    bool valid = GetLongestTrail(trails, pair.Key, end, new HashSet<Base.Vec2>(history), out int curLongest);
                     anyValid |= valid;
                     if (valid)
                     {
@@ -262,12 +260,12 @@ namespace AoC._2023
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool slippery)
         {
-            ParseInput(inputs, slippery, out char[,] grid, out Base.Pos2 start, out Base.Pos2 end, out int xMax, out int yMax);
-            Dictionary<Base.Pos2, Trail> trails = new Dictionary<Base.Pos2, Trail>();
+            ParseInput(inputs, slippery, out char[,] grid, out Base.Vec2 start, out Base.Vec2 end, out int xMax, out int yMax);
+            Dictionary<Base.Vec2, Trail> trails = new Dictionary<Base.Vec2, Trail>();
             trails[start] = new Trail() { Pos = start };
             GenerateTrails(grid, start, start, end, xMax, yMax, ref trails);
             trails[end] = new Trail() { Pos = end };
-            GetLongestTrail(trails, start, end, new HashSet<Base.Pos2>(), out int longestTrail);
+            GetLongestTrail(trails, start, end, new HashSet<Base.Vec2>(), out int longestTrail);
             return longestTrail.ToString();
         }
 

@@ -21,8 +21,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -135,7 +133,7 @@ Defense+3   80     0       3";
             if (RunBattleSimulation(new Attacker(100, weapon.Damage + ring.Damage, armor.Armor + ring.Armor), boss))
             {
                 bestPrice = weapon.Cost + armor.Cost + ring.Cost;
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${bestPrice}");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${bestPrice}");
             }
 
             if (rings != null)
@@ -158,7 +156,7 @@ Defense+3   80     0       3";
             {
                 armorEnough = true;
                 bestPrice = weapon.Cost + armor.Cost;
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + {armor.Name} @ ${bestPrice}");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + {armor.Name} @ ${bestPrice}");
             }
 
             // get price without armor
@@ -181,7 +179,7 @@ Defense+3   80     0       3";
             // if weapon is enough, dont spend any more
             if (RunBattleSimulation(new Attacker(100, d, a), boss))
             {
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + @ ${weapon.Cost}");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Successful battle! {weapon.Name} + @ ${weapon.Cost}");
                 return weapon.Cost;
             }
             else
@@ -217,7 +215,7 @@ Defense+3   80     0       3";
             }
 
             int worstPrice = weapon.Cost + armor.Cost + ring.Cost;
-            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${worstPrice}");
+            // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + {armor.Name} + {ring.Name} @ ${worstPrice}");
 
             if (rings != null)
             {
@@ -238,7 +236,7 @@ Defense+3   80     0       3";
             {
                 armorEnough = false;
                 worstPrice = weapon.Cost + armor.Cost;
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + {armor.Name} @ ${worstPrice}");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + {armor.Name} @ ${worstPrice}");
             }
 
             // get price without armor
@@ -262,7 +260,7 @@ Defense+3   80     0       3";
             {
                 return int.MinValue;
             }
-            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + @ ${weapon.Cost}");
+            // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Unsuccessful battle! {weapon.Name} + @ ${weapon.Cost}");
 
             int worstPrice = int.MinValue;
             foreach (Item armor in armors)

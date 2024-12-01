@@ -11,10 +11,7 @@ namespace AoC.Core
         {
             get
             {
-                if (m_input == null)
-                {
-                    m_input = Day.ConvertDayFileToList(RawInput);
-                }
+                m_input ??= Day.ConvertDayFileToList(RawInput);
                 return m_input;
             }
         }

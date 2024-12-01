@@ -18,7 +18,8 @@ namespace AoC.Core
         private const char LogCorrect = '#';
         private const char LogUnknown = '?';
         private const char LogIncorrect = '!';
-        private static readonly string DefaultLogID = new string('.', 27);
+        public static string BaseVersion { get => "v0"; }
+        private static readonly string DefaultLogID = new('.', 27);
 
         private enum RunType
         {
@@ -27,8 +28,7 @@ namespace AoC.Core
         }
 
         #region Required Overrides
-        public virtual string GetSolutionVersion(Part part) => "v0";
-        public virtual bool SkipTestData => false;
+        public virtual string GetSolutionVersion(Part part) => BaseVersion;
         protected abstract List<TestDatum> GetTestData();
         public virtual void RunWarmup() { }
         protected abstract string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables);
@@ -42,32 +42,41 @@ namespace AoC.Core
         public Dictionary<Part, double> TimeWasted { get; private set; }
         private double TimeWaste { get; set; }
         private bool m_forceTests;
-        private string m_debugFile;
+        private readonly string m_debugFile;
 
         private string LogID { get; set; }
         private Dictionary<string, List<TestDatum>> TestData { get; set; }
         private Dictionary<Part, Func<List<string>, Dictionary<string, string>, string>> PartSpecificFunctions { get; set; }
+        private bool ShouldSkipTestData(Part part) => !GetSolutionVersion(part).Equals(BaseVersion);
 
         protected Day()
         {
             try
             {
-                TimeResults = new Dictionary<Part, double>();
-                TimeWasted = new Dictionary<Part, double>();
+                TimeResults = [];
+                TimeWasted = [];
                 TimeWaste = 0.0f;
 
-                Year = this.GetType().Namespace.ToString()[^4..];
-                DayName = this.GetType().ToString()[^5..].ToLower();
+                Year = GetType().Namespace.ToString()[^4..];
+                DayName = GetType().ToString()[^5..].ToLower();
                 LogID = DefaultLogID;
-                TestData = new Dictionary<string, List<TestDatum>>();
-                TestData[DayName] = GetTestData();
-                PartSpecificFunctions = new Dictionary<Part, Func<List<string>, Dictionary<string, string>, string>>
+                TestData = new()
+                {
+                    [DayName] = GetTestData()
+                };
+                PartSpecificFunctions = new()
                 {
                     {Part.One, RunPart1Solution},
                     {Part.Two, RunPart2Solution}
                 };
 
-                m_debugFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Debug", $"{DayName}", $"{Path.GetRandomFileName().Replace(".", "")}.log");
+                string debugPath = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Debug", $"{DayName}");
+                if (!Path.Exists(debugPath))
+                {
+                    Directory.CreateDirectory(debugPath);
+                }
+
+                m_debugFile = Path.Combine(debugPath, $"{Path.GetRandomFileName().Replace(".", "")}.log");
                 if (File.Exists(m_debugFile))
                 {
                     File.Delete(m_debugFile);
@@ -94,26 +103,31 @@ namespace AoC.Core
 
             // run part 2
             RunInternal(Part.Two, input, output);
-
-            // reset logging
-            LogID = DefaultLogID;
         }
 
         public void Run(Part part)
         {
             m_forceTests = false;
 
-            // run part
-            RunInternal(part, GetInputFile(), GetOutputFile());
+            // file input
+            IEnumerable<string> input = GetInputFile();
 
-            // reset logging
-            LogID = DefaultLogID;
+            // file output
+            IEnumerable<string> output = GetOutputFile();
+
+            // run part
+            RunInternal(part, input, output);
         }
 
         private IEnumerable<string> GetInputFile()
         {
-            string fileName = string.Format("{0}.txt", DayName);
-            string inputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "In", fileName);
+            string inputPath = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "In");
+            if (!Path.Exists(inputPath))
+            {
+                Directory.CreateDirectory(inputPath);
+            }
+
+            string inputFile = Path.Combine(inputPath, string.Format("{0}.txt", DayName));
             if (!File.Exists(inputFile))
             {
                 using (File.Create(inputFile)) { }
@@ -123,28 +137,36 @@ namespace AoC.Core
 
         private IEnumerable<string> GetOutputFile()
         {
-            string fileName = string.Format("{0}.txt", DayName);
-            string outputFile = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Out", fileName);
+            string outputPath = Path.Combine(Core.WorkingDirectory.Get, "Data", Year, "Out");
+            if (!Path.Exists(outputPath))
+            {
+                Directory.CreateDirectory(outputPath);
+            }
+
+            string outputFile = Path.Combine(outputPath, string.Format("{0}.txt", DayName));
             List<string> output;
             if (!File.Exists(outputFile))
             {
                 using (File.Create(outputFile)) { }
-                output = new List<string>();
+                output = [];
             }
             else
             {
                 output = ConvertDayFileToList(File.ReadAllText(outputFile)).ToList();
             }
-            output.AddRange(new string[2] { string.Empty, string.Empty });
+            output.AddRange([string.Empty, string.Empty]);
             return output;
         }
 
         private void RunInternal(Part part, IEnumerable<string> problemInput, IEnumerable<string> problemOutput)
         {
+            Log(Core.Log.ELevel.Info, "");
+            Core.Log.WriteLine(Core.Log.ELevel.Info, $"Running {Year}.{DayName}.Part{part}");
+
             // get test data if there is any
             IEnumerable<TestDatum> partSpecificTestData = TestData[DayName].Where(datum => datum.TestPart == part);
 
-            if (!SkipTestData || m_forceTests)
+            if (m_forceTests || !ShouldSkipTestData(part))
             {
                 // run tests if there are any
                 foreach (TestDatum datum in partSpecificTestData)
@@ -159,12 +181,15 @@ namespace AoC.Core
 
             TimeResults[part] = RunTimedInternal(RunType.Problem, part, problemInput.ToList(), problemOutput.ElementAt(((int)part) - 1), null);
             TimeWasted[part] = TimeWaste;
+
+            // reset logging
+            LogID = DefaultLogID;
         }
 
         private double RunTimedInternal(RunType runType, Part part, List<string> inputs, string expectedOuput, Dictionary<string, string> variables)
         {
-            TempLog.WriteLine = (s) => Log(s);
-            TempLog.WriteFile = (s) => LogFile(s);
+            TempLog.WriteLine = Log;
+            TempLog.WriteFile = LogFile;
             LogFiller();
 
             TimeWaste = 0.0f;
@@ -177,6 +202,7 @@ namespace AoC.Core
 
         private void RunTimedPartInternal(RunType runType, Part part, List<string> inputs, string expectedOuput, Dictionary<string, string> variables, out Util.Timer timer)
         {
+            const string errorString = "[ERROR]";
             timer = new Util.Timer();
             LogID = string.Format("{0}|{1}|{2}|part{3}|{4}", Year, DayName, runType.ToString().ToLower(), part == Part.One ? "1" : "2", GetSolutionVersion(part));
             try
@@ -189,7 +215,7 @@ namespace AoC.Core
                 {
                     if (actualOutput != expectedOuput)
                     {
-                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", LogIncorrect, Core.Log.Negative);
+                        LogAnswer($"{errorString} Expected: {expectedOuput} - Actual: {actualOutput} {errorString}", LogIncorrect, Core.Log.Negative);
                     }
                     else
                     {
@@ -198,13 +224,17 @@ namespace AoC.Core
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(expectedOuput))
+                    if (string.IsNullOrWhiteSpace(actualOutput))
+                    {
+                        LogAnswer($"{errorString} <no_output> {errorString}", LogIncorrect, Core.Log.Negative);
+                    }
+                    else if (string.IsNullOrWhiteSpace(expectedOuput))
                     {
                         LogAnswer(actualOutput, LogUnknown, Core.Log.Neutral);
                     }
                     else if (actualOutput != expectedOuput)
                     {
-                        LogAnswer($"[ERROR] Expected: {expectedOuput} - Actual: {actualOutput} [ERROR]", LogIncorrect, Core.Log.Negative);
+                        LogAnswer($"{errorString} Expected: {expectedOuput} - Actual: {actualOutput} {errorString}", LogIncorrect, Core.Log.Negative);
                     }
                     else
                     {
@@ -214,13 +244,14 @@ namespace AoC.Core
             }
             catch (Exception e)
             {
+                timer.Stop();
                 Core.Log.WriteException(e);
             }
         }
 
         protected void WasteTime(Action action)
         {
-            Util.Timer timer = new Util.Timer();
+            Util.Timer timer = new();
             timer.Start();
             action();
             timer.Stop();
@@ -254,16 +285,14 @@ namespace AoC.Core
                     {
                         Directory.CreateDirectory(path);
                     }
-                    using (FileStream fs = File.Create(m_debugFile)) { }
+                    using FileStream fs = File.Create(m_debugFile);
                 }
-                using (StreamWriter sw = File.AppendText(m_debugFile))
-                {
-                    sw.WriteLine($"[{LogID}] \t{log}");
-                }
+                using StreamWriter sw = File.AppendText(m_debugFile);
+                sw.WriteLine($"[{LogID}] \t{log}");
             }
         }
 
-        private void LogFiller()
+        private static void LogFiller()
         {
             if (UseLogs)
             {
@@ -275,10 +304,10 @@ namespace AoC.Core
         {
             if (UseLogs && !string.IsNullOrWhiteSpace(answer))
             {
-                string buffer = new string(filler, answer.Length);
-                string empty = new string(' ', answer.Length);
-                string bigFiller = new string(filler, 5);
-                string smallFiller = new string(filler, 3);
+                string buffer = new(filler, answer.Length);
+                string empty = new(' ', answer.Length);
+                string bigFiller = new(filler, 5);
+                string smallFiller = new(filler, 3);
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {bigFiller}{buffer}{bigFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {empty}  {smallFiller}");
                 Core.Log.WriteLine(Core.Log.ELevel.Info, $"[{LogID}] {smallFiller}  {Core.Log.ColorMarker}{answer}{Core.Log.ColorMarker}  {smallFiller}", new List<Color>() { color });
@@ -291,7 +320,7 @@ namespace AoC.Core
         {
             if (string.IsNullOrEmpty(input))
             {
-                return new List<string>();
+                return [];
             }
             return input.Split('\n').Select(str => str.Trim('\r'));
         }

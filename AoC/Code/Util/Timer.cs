@@ -8,16 +8,13 @@ namespace AoC.Util
 
         public void Start()
         {
-            m_stopwatch = new Stopwatch();
+            m_stopwatch = new();
             m_stopwatch.Start();
         }
 
         public void Stop()
         {
-            if (m_stopwatch != null)
-            {
-                m_stopwatch.Stop();
-            }
+            m_stopwatch?.Stop();
         }
 
         public double GetElapsedMs()

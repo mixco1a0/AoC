@@ -21,8 +21,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -78,7 +76,7 @@ namespace AoC._2015
             for (int i = 0; i < times; ++i)
             {
                 input = Process(input);
-                Log(Core.Log.ELevel.Spam, $"{i} complete [{input.Length}]");
+                // Log(Core.Log.ELevel.Spam, $"{i} complete [{input.Length}]");
             }
             return input.Length.ToString();
         }

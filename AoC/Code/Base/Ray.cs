@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace AoC.Base
 {
-    public static class Vec
+    public static class Ray
     {
         public enum Intersection2D
         {
@@ -14,14 +14,14 @@ namespace AoC.Base
         }
     }
 
-    #region Vec2
-    public class Vec2 : IEquatable<Vec2>
+    #region Ray2
+    public class Ray2 : IEquatable<Ray2>
     {
-        public Pos2 Pos { get; set; }
-        public Pos2 Vel { get; set; }
+        public Vec2 Pos { get; set; }
+        public Vec2 Vel { get; set; }
 
-        private Pos2 _next;
-        private Pos2 Next
+        private Vec2 _next;
+        private Vec2 Next
         {
             get
             {
@@ -57,37 +57,37 @@ namespace AoC.Base
             }
         }
 
-        public Vec2()
+        public Ray2()
         {
-            Pos = new Pos2();
-            Vel = new Pos2();
+            Pos = new();
+            Vel = new();
         }
 
-        public static Vec2 FromPos(Pos2 pos, Pos2 next)
+        public static Ray2 FromPos(Vec2 pos, Vec2 next)
         {
-            return new Vec2() { Pos = pos, Vel = next - pos };
+            return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Vec2 FromVel(Pos2 pos, Pos2 vel)
+        public static Ray2 FromVel(Vec2 pos, Vec2 vel)
         {
-            return new Vec2() { Pos = pos, Vel = vel };
+            return new() { Pos = pos, Vel = vel };
         }
 
-        public static Vec2 ParsePos(string input)
+        public static Ray2 ParsePos(string input)
         {
             int[] split = Util.Number.Split(input, ", @").ToArray();
-            return FromPos(new Pos2(split[0], split[1]), new Pos2(split[3], split[4]));
+            return FromPos(new(split[0], split[1]), new(split[3], split[4]));
         }
 
-        public static Vec2 ParseVel(string input)
+        public static Ray2 ParseVel(string input)
         {
             int[] split = Util.Number.Split(input, ", @").ToArray();
-            return FromVel(new Pos2(split[0], split[1]), new Pos2(split[3], split[4]));
+            return FromVel(new(split[0], split[1]), new(split[3], split[4]));
         }
 
-        public Vec.Intersection2D GetIntersection(Vec2 other, out Pos2 intersection)
+        public Ray.Intersection2D GetIntersection(Ray2 other, out Vec2 intersection)
         {
-            intersection = new Pos2();
+            intersection = new();
             // A1x + B1y = C1
             // A2x + B2y = C2
 
@@ -118,20 +118,20 @@ namespace AoC.Base
             // ----------------------------------
             if (A == other.A && B == other.B)
             {
-                return Vec.Intersection2D.Overlap;
+                return Ray.Intersection2D.Overlap;
             }
 
             long denominator = A * other.B - other.A * B;
             if (denominator == 0)
             {
-                return Vec.Intersection2D.Parallel;
+                return Ray.Intersection2D.Parallel;
             }
 
             long x = (other.B * C - B * other.C) / denominator;
             long y = -1 * (other.A * C - A * other.C) / denominator;
-            intersection = new Pos2((int)x, (int)y);
+            intersection = new((int)x, (int)y);
 
-            return Vec.Intersection2D.SinglePoint;
+            return Ray.Intersection2D.SinglePoint;
         }
 
         public int GetLength()
@@ -142,7 +142,7 @@ namespace AoC.Base
         }
 
         #region Interfaces
-        public bool Equals(Vec2 other)
+        public bool Equals(Ray2 other)
         {
             return Pos.Equals(other.Pos) && Vel.Equals(other.Vel);
         }
@@ -161,8 +161,7 @@ namespace AoC.Base
                 return false;
             }
 
-            Vec2 objAsVec2 = obj as Vec2;
-            if (objAsVec2 == null)
+            if (obj is not Ray2 objAsVec2)
             {
                 return false;
             }
@@ -179,14 +178,14 @@ namespace AoC.Base
     #endregion
 
 
-    #region Vec2L
-    public class Vec2L : IEquatable<Vec2L>
+    #region Ray2L
+    public class Ray2L : IEquatable<Ray2L>
     {
-        public Pos2L Pos { get; set; }
-        public Pos2L Vel { get; set; }
+        public Vec2L Pos { get; set; }
+        public Vec2L Vel { get; set; }
 
-        private Pos2L _next;
-        private Pos2L Next
+        private Vec2L _next;
+        private Vec2L Next
         {
             get
             {
@@ -218,53 +217,53 @@ namespace AoC.Base
             }
         }
 
-        public Vec2L()
+        public Ray2L()
         {
-            Pos = new Pos2L();
-            Vel = new Pos2L();
+            Pos = new();
+            Vel = new();
         }
 
-        public static Vec2L FromPos(Pos2L pos, Pos2L next)
+        public static Ray2L FromPos(Vec2L pos, Vec2L next)
         {
-            return new Vec2L() { Pos = pos, Vel = next - pos };
+            return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Vec2L FromVel(Pos2L pos, Pos2L vel)
+        public static Ray2L FromVel(Vec2L pos, Vec2L vel)
         {
-            return new Vec2L() { Pos = pos, Vel = vel };
+            return new() { Pos = pos, Vel = vel };
         }
 
-        public static Vec2L ParsePos(string input)
+        public static Ray2L ParsePos(string input)
         {
             long[] split = Util.Number.SplitL(input, ", @").ToArray();
-            return FromPos(new Pos2L(split[0], split[1]), new Pos2L(split[2], split[3]));
+            return FromPos(new(split[0], split[1]), new(split[2], split[3]));
         }
 
-        public static Vec2L ParseVel(string input)
+        public static Ray2L ParseVel(string input)
         {
             long[] split = Util.Number.SplitL(input, ", @").ToArray();
-            return FromPos(new Pos2L(split[0], split[1]), new Pos2L(split[2], split[3]));
+            return FromPos(new(split[0], split[1]), new(split[2], split[3]));
         }
 
-        public Vec.Intersection2D GetIntersection(Vec2L other, out Pos2L intersection)
+        public Ray.Intersection2D GetIntersection(Ray2L other, out Vec2L intersection)
         {
-            intersection = new Pos2L();
+            intersection = new();
             if (A == other.A && B == other.B)
             {
-                return Vec.Intersection2D.Overlap;
+                return Ray.Intersection2D.Overlap;
             }
 
             BigInteger denominator = A * other.B - other.A * B;
             if (denominator == 0)
             {
-                return Vec.Intersection2D.Parallel;
+                return Ray.Intersection2D.Parallel;
             }
 
             BigInteger x = (other.B * C - B * other.C) / denominator;
             BigInteger y = -1 * (other.A * C - A * other.C) / denominator;
-            intersection = new Pos2L((long)x, (long)y);
+            intersection = new((long)x, (long)y);
 
-            return Vec.Intersection2D.SinglePoint;
+            return Ray.Intersection2D.SinglePoint;
         }
 
         public long GetLength()
@@ -275,7 +274,7 @@ namespace AoC.Base
         }
 
         #region Interfaces
-        public bool Equals(Vec2L other)
+        public bool Equals(Ray2L other)
         {
             return Pos.Equals(other.Pos) && Vel.Equals(other.Vel);
         }
@@ -294,8 +293,7 @@ namespace AoC.Base
                 return false;
             }
 
-            Vec2L objAsVec2L = obj as Vec2L;
-            if (objAsVec2L == null)
+            if (obj is not Ray2L objAsVec2L)
             {
                 return false;
             }
@@ -312,14 +310,14 @@ namespace AoC.Base
     #endregion
 
 
-    #region Vec3
-    public class Vec3 : IEquatable<Vec3>
+    #region Ray3
+    public class Ray3 : IEquatable<Ray3>
     {
-        public Pos3 Pos { get; set; }
-        public Pos3 Vel { get; set; }
+        public Vec3 Pos { get; set; }
+        public Vec3 Vel { get; set; }
 
-        private Pos3 _next;
-        private Pos3 Next
+        private Vec3 _next;
+        private Vec3 Next
         {
             get
             {
@@ -332,32 +330,32 @@ namespace AoC.Base
             }
         }
 
-        public Vec3()
+        public Ray3()
         {
-            Pos = new Pos3();
-            Vel = new Pos3();
+            Pos = new();
+            Vel = new();
         }
 
-        public static Vec3 FromPos(Pos3 pos, Pos3 next)
+        public static Ray3 FromPos(Vec3 pos, Vec3 next)
         {
-            return new Vec3() { Pos = pos, Vel = next - pos };
+            return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Vec3 FromVel(Pos3 pos, Pos3 vel)
+        public static Ray3 FromVel(Vec3 pos, Vec3 vel)
         {
-            return new Vec3() { Pos = pos, Vel = vel };
+            return new() { Pos = pos, Vel = vel };
         }
 
-        public static Vec3 ParsePos(string input)
+        public static Ray3 ParsePos(string input)
         {
             int[] split = Util.Number.Split(input, ", @").ToArray();
-            return FromPos(new Pos3(split[0], split[1], split[2]), new Pos3(split[3], split[4], split[5]));
+            return FromPos(new(split[0], split[1], split[2]), new(split[3], split[4], split[5]));
         }
 
-        public static Vec3 ParseVel(string input)
+        public static Ray3 ParseVel(string input)
         {
             int[] split = Util.Number.Split(input, ", @").ToArray();
-            return FromVel(new Pos3(split[0], split[1], split[2]), new Pos3(split[3], split[4], split[5]));
+            return FromVel(new(split[0], split[1], split[2]), new(split[3], split[4], split[5]));
         }
 
         public int GetLength()
@@ -367,13 +365,13 @@ namespace AoC.Base
             return (int)root;
         }
 
-        public Vec2 DropZ()
+        public Ray2 DropZ()
         {
-            return new Vec2() { Pos = Pos.DropZ(), Vel = Vel.DropZ() };
+            return new() { Pos = Pos.DropZ(), Vel = Vel.DropZ() };
         }
 
         #region Interfaces
-        public bool Equals(Vec3 other)
+        public bool Equals(Ray3 other)
         {
             return Pos.Equals(other.Pos) && Vel.Equals(other.Vel);
         }
@@ -392,13 +390,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Vec3 objAsVec3 = obj as Vec3;
-            if (objAsVec3 == null)
+            if (obj is not Ray3 objAsRay3)
             {
                 return false;
             }
 
-            return Equals(objAsVec3);
+            return Equals(objAsRay3);
         }
 
         public override int GetHashCode()
@@ -410,14 +407,14 @@ namespace AoC.Base
     #endregion
 
 
-    #region Vec3L
-    public class Vec3L : IEquatable<Vec3L>
+    #region Ray3L
+    public class Ray3L : IEquatable<Ray3L>
     {
-        public Pos3L Pos { get; set; }
-        public Pos3L Vel { get; set; }
+        public Vec3L Pos { get; set; }
+        public Vec3L Vel { get; set; }
 
-        private Pos3L _next;
-        private Pos3L Next
+        private Vec3L _next;
+        private Vec3L Next
         {
             get
             {
@@ -430,32 +427,32 @@ namespace AoC.Base
             }
         }
 
-        public Vec3L()
+        public Ray3L()
         {
-            Pos = new Pos3L();
-            Vel = new Pos3L();
+            Pos = new();
+            Vel = new();
         }
 
-        public static Vec3L FromPos(Pos3L pos, Pos3L next)
+        public static Ray3L FromPos(Vec3L pos, Vec3L next)
         {
-            return new Vec3L() { Pos = pos, Vel = next - pos };
+            return new() { Pos = pos, Vel = next - pos };
         }
 
-        public static Vec3L FromVel(Pos3L pos, Pos3L vel)
+        public static Ray3L FromVel(Vec3L pos, Vec3L vel)
         {
-            return new Vec3L() { Pos = pos, Vel = vel };
+            return new() { Pos = pos, Vel = vel };
         }
 
-        public static Vec3L ParsePos(string input)
+        public static Ray3L ParsePos(string input)
         {
             long[] split = Util.Number.SplitL(input, ", @").ToArray();
-            return FromPos(new Pos3L(split[0], split[1], split[2]), new Pos3L(split[3], split[4], split[5]));
+            return FromPos(new(split[0], split[1], split[2]), new(split[3], split[4], split[5]));
         }
 
-        public static Vec3L ParseVel(string input)
+        public static Ray3L ParseVel(string input)
         {
             long[] split = Util.Number.SplitL(input, ", @").ToArray();
-            return FromVel(new Pos3L(split[0], split[1], split[2]), new Pos3L(split[3], split[4], split[5]));
+            return FromVel(new(split[0], split[1], split[2]), new(split[3], split[4], split[5]));
         }
 
         public long GetLength()
@@ -465,13 +462,13 @@ namespace AoC.Base
             return (long)root;
         }
 
-        public Vec2L DropZ()
+        public Ray2L DropZ()
         {
-            return new Vec2L() { Pos = Pos.DropZ(), Vel = Vel.DropZ() };
+            return new() { Pos = Pos.DropZ(), Vel = Vel.DropZ() };
         }
 
         #region Interfaces
-        public bool Equals(Vec3L other)
+        public bool Equals(Ray3L other)
         {
             return Pos.Equals(other.Pos) && Vel.Equals(other.Vel);
         }
@@ -490,13 +487,12 @@ namespace AoC.Base
                 return false;
             }
 
-            Vec3L objAsVec3 = obj as Vec3L;
-            if (objAsVec3 == null)
+            if (obj is not Ray3L objAsRay3L)
             {
                 return false;
             }
 
-            return Equals(objAsVec3);
+            return Equals(objAsRay3L);
         }
 
         public override int GetHashCode()

@@ -24,10 +24,10 @@ namespace AoC.Core
             Min = Math.Min(Min, elapsedMs);
             Max = Math.Max(Max, elapsedMs);
 
-            double avg = Avg * (double)Count;
+            double avg = Avg * Count;
             avg += elapsedMs;
             ++Count;
-            Avg = avg / (double)Count;
+            Avg = avg / Count;
         }
     }
 
@@ -37,27 +37,29 @@ namespace AoC.Core
 
         public PerfVersion()
         {
-            VersionData = new Dictionary<string, PerfStat>();
+            VersionData = [];
         }
 
         public void AddData(string version, double elapsedMs)
         {
-            if (version != "v0")
+            if (version != Day.BaseVersion)
             {
-                if (!VersionData.ContainsKey(version))
+                if (!VersionData.TryGetValue(version, out PerfStat value))
                 {
-                    VersionData[version] = new PerfStat();
+                    value = new PerfStat();
+                    VersionData[version] = value;
                 }
-                VersionData[version].AddData(elapsedMs);
+
+                value.AddData(elapsedMs);
             }
             VersionData = VersionData.OrderByDescending(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat GetData(string version)
         {
-            if (VersionData.ContainsKey(version))
+            if (VersionData.TryGetValue(version, out PerfStat value))
             {
-                return VersionData[version];
+                return value;
             }
             return null;
         }
@@ -69,7 +71,7 @@ namespace AoC.Core
 
         public PerfPart()
         {
-            PartData = new Dictionary<Part, PerfVersion>();
+            PartData = [];
         }
 
         public void AddData(Day day)
@@ -77,20 +79,22 @@ namespace AoC.Core
             Dictionary<Part, double> results = day.TimeResults;
             foreach (var pair in results)
             {
-                if (!PartData.ContainsKey(pair.Key))
+                if (!PartData.TryGetValue(pair.Key, out PerfVersion value))
                 {
-                    PartData[pair.Key] = new PerfVersion();
+                    value = new PerfVersion();
+                    PartData[pair.Key] = value;
                 }
-                PartData[pair.Key].AddData(day.GetSolutionVersion(pair.Key), pair.Value);
+
+                value.AddData(day.GetSolutionVersion(pair.Key), pair.Value);
             }
             PartData = PartData.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(Part part, string version)
         {
-            if (PartData.ContainsKey(part))
+            if (PartData.TryGetValue(part, out PerfVersion value))
             {
-                return PartData[part].GetData(version);
+                return value.GetData(version);
             }
             return null;
         }
@@ -102,24 +106,26 @@ namespace AoC.Core
 
         public PerfDay()
         {
-            DayData = new Dictionary<string, PerfPart>();
+            DayData = [];
         }
 
         public void AddData(Day day)
         {
-            if (!DayData.ContainsKey(day.DayName))
+            if (!DayData.TryGetValue(day.DayName, out PerfPart value))
             {
-                DayData[day.DayName] = new PerfPart();
+                value = new PerfPart();
+                DayData[day.DayName] = value;
             }
-            DayData[day.DayName].AddData(day);
+
+            value.AddData(day);
             DayData = DayData.OrderByDescending(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(string day, Part part, string version)
         {
-            if (DayData.ContainsKey(day))
+            if (DayData.TryGetValue(day, out PerfPart value))
             {
-                return DayData[day].Get(part, version);
+                return value.Get(part, version);
             }
             return null;
         }
@@ -131,28 +137,28 @@ namespace AoC.Core
 
         public PerfData()
         {
-            YearData = new Dictionary<string, PerfDay>();
+            YearData = [];
         }
 
         public void AddData(Day day)
         {
-            if (!YearData.ContainsKey(day.Year))
+            if (!YearData.TryGetValue(day.Year, out PerfDay value))
             {
-                YearData[day.Year] = new PerfDay();
+                value = new PerfDay();
+                YearData[day.Year] = value;
             }
-            YearData[day.Year].AddData(day);
+
+            value.AddData(day);
             YearData = YearData.OrderByDescending(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public PerfStat Get(string year, string day, Part part, string version)
         {
-            if (YearData.ContainsKey(year))
+            if (YearData.TryGetValue(year, out PerfDay value))
             {
-                return YearData[year].Get(day, part, version);
+                return value.Get(day, part, version);
             }
             return null;
         }
     }
-
-    // TODO: Add PerfFileVersion, bump versions based on changes to non day specific logic
 }

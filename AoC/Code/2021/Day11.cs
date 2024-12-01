@@ -21,8 +21,6 @@ namespace AoC._2021
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -78,16 +76,16 @@ namespace AoC._2021
             return testData;
         }
 
-        private List<Base.Pos2> Surrounding = new List<Base.Pos2>
+        private List<Base.Vec2> Surrounding = new List<Base.Vec2>
         {
-            new Base.Pos2(-1, -1),
-            new Base.Pos2(0, -1),
-            new Base.Pos2(1, -1),
-            new Base.Pos2(-1, 0),
-            new Base.Pos2(1, 0),
-            new Base.Pos2(-1, 1),
-            new Base.Pos2(0, 1),
-            new Base.Pos2(1, 1),
+            new Base.Vec2(-1, -1),
+            new Base.Vec2(0, -1),
+            new Base.Vec2(1, -1),
+            new Base.Vec2(-1, 0),
+            new Base.Vec2(1, 0),
+            new Base.Vec2(-1, 1),
+            new Base.Vec2(0, 1),
+            new Base.Vec2(1, 1),
         };
 
         private void PrintGrid(int[,] grid, int maxX, int maxY)
@@ -107,8 +105,8 @@ namespace AoC._2021
 
         private int Step(ref int[,] grid, int maxX, int maxY)
         {
-            HashSet<Base.Pos2> history = new HashSet<Base.Pos2>();
-            Queue<Base.Pos2> flash = new Queue<Base.Pos2>();
+            HashSet<Base.Vec2> history = new HashSet<Base.Vec2>();
+            Queue<Base.Vec2> flash = new Queue<Base.Vec2>();
             for (int x = 0; x < maxX; ++x)
             {
                 for (int y = 0; y < maxY; ++y)
@@ -116,14 +114,14 @@ namespace AoC._2021
                     ++grid[x, y];
                     if (grid[x, y] > 9)
                     {
-                        flash.Enqueue(new Base.Pos2(x, y));
+                        flash.Enqueue(new Base.Vec2(x, y));
                     }
                 }
             }
 
             while (flash.Count > 0)
             {
-                Base.Pos2 cur = flash.Dequeue();
+                Base.Vec2 cur = flash.Dequeue();
                 if (cur.X < 0 || cur.X >= maxX || cur.Y < 0 || cur.Y >= maxY)
                 {
                     continue;
@@ -135,7 +133,7 @@ namespace AoC._2021
                 if (++grid[cur.X, cur.Y] > 9)
                 {
                     history.Add(cur);
-                    foreach (Base.Pos2 next in Surrounding)
+                    foreach (Base.Vec2 next in Surrounding)
                     {
                         flash.Enqueue(cur + next);
                     }
@@ -144,7 +142,7 @@ namespace AoC._2021
             }
 
             int flashCount = 0;
-            foreach (Base.Pos2 cur in history)
+            foreach (Base.Vec2 cur in history)
             {
                 if (grid[cur.X, cur.Y] > 9)
                 {

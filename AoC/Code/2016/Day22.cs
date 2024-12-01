@@ -22,8 +22,6 @@ namespace AoC._2016
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -56,7 +54,7 @@ Filesystem            Size  Used  Avail  Use%
 
         public class Node
         {
-            public Base.Pos2 Coords { get; set; }
+            public Base.Vec2 Coords { get; set; }
             public uint Size { get; set; }
             public uint Used { get; set; }
             public uint Avail { get; set; }
@@ -64,7 +62,7 @@ Filesystem            Size  Used  Avail  Use%
 
             public Node()
             {
-                Coords = new Base.Pos2();
+                Coords = new Base.Vec2();
                 Size = 0;
                 Used = 0;
                 Avail = 0;
@@ -118,7 +116,7 @@ Filesystem            Size  Used  Avail  Use%
                 node.Name = split[0].Substring(split[0].LastIndexOf('/') + 1);
 
                 string[] coordSplit = split[0].Split("-xy".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).TakeLast(2).ToArray();
-                node.Coords = new Base.Pos2(int.Parse(coordSplit[0]), int.Parse(coordSplit[1]));
+                node.Coords = new Base.Vec2(int.Parse(coordSplit[0]), int.Parse(coordSplit[1]));
                 node.Size = uint.Parse(split[1]);
                 node.Used = uint.Parse(split[2]);
                 node.Avail = uint.Parse(split[3]);
@@ -179,10 +177,10 @@ Filesystem            Size  Used  Avail  Use%
                     continue;
                 }
 
-                Base.Pos2[] nextCoords = new Base.Pos2[] { new Base.Pos2(0, -1), new Base.Pos2(-1, 0), new Base.Pos2(0, 1), new Base.Pos2(1, 0) };
-                foreach (Base.Pos2 next in nextCoords)
+                Base.Vec2[] nextCoords = new Base.Vec2[] { new Base.Vec2(0, -1), new Base.Vec2(-1, 0), new Base.Vec2(0, 1), new Base.Vec2(1, 0) };
+                foreach (Base.Vec2 next in nextCoords)
                 {
-                    Base.Pos2 nextNodeCoords = nsh.Node.Coords + next;
+                    Base.Vec2 nextNodeCoords = nsh.Node.Coords + next;
                     if (nextNodeCoords.X >= 0 && nextNodeCoords.X <= maxX && nextNodeCoords.Y >= 0 && nextNodeCoords.Y <= maxY)
                     {
                         Node nextNode = nodeGrid[nextNodeCoords.Y][nextNodeCoords.X];
@@ -222,10 +220,10 @@ Filesystem            Size  Used  Avail  Use%
                     return ns.Steps;
                 }
 
-                Base.Pos2[] nextCoords = new Base.Pos2[] { new Base.Pos2(0, -1), new Base.Pos2(-1, 0), new Base.Pos2(0, 1), new Base.Pos2(1, 0) };
-                foreach (Base.Pos2 next in nextCoords)
+                Base.Vec2[] nextCoords = new Base.Vec2[] { new Base.Vec2(0, -1), new Base.Vec2(-1, 0), new Base.Vec2(0, 1), new Base.Vec2(1, 0) };
+                foreach (Base.Vec2 next in nextCoords)
                 {
-                    Base.Pos2 nextNodeCoords = ns.Node.Coords + next;
+                    Base.Vec2 nextNodeCoords = ns.Node.Coords + next;
                     if (nextNodeCoords.X >= 0 && nextNodeCoords.X <= maxX && nextNodeCoords.Y >= 0 && nextNodeCoords.Y <= maxY)
                     {
                         Node nextNode = nodeGrid[nextNodeCoords.Y][nextNodeCoords.X];
@@ -243,7 +241,7 @@ Filesystem            Size  Used  Avail  Use%
             return (uint)int.MaxValue;
         }
 
-        private void PrintGrid(Node[][] nodeGrid, Base.Pos2 start, Base.Pos2 goal, Base.Pos2 empty)
+        private void PrintGrid(Node[][] nodeGrid, Base.Vec2 start, Base.Vec2 goal, Base.Vec2 empty)
         {
             float size = 0;
             uint nodeCount = 0;
@@ -317,7 +315,7 @@ Filesystem            Size  Used  Avail  Use%
             Node emptyNode = nodes.Where(n => n.Used == 0).First();
             Node goalNode = nodeGrid[0][maxX];
 
-            PrintGrid(nodeGrid, nodeGrid[0][0].Coords, goalNode.Coords, emptyNode.Coords);
+            //PrintGrid(nodeGrid, nodeGrid[0][0].Coords, goalNode.Coords, emptyNode.Coords);
 
             while (optimizedPath.Count > 0)
             {

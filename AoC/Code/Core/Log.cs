@@ -160,11 +160,11 @@ namespace AoC.Core
 
         public static void WriteException(Exception e)
         {
-            List<Color> exceptionColor = new List<Color>() { Negative };
-            WriteLine(ELevel.Fatal, $"{Core.Log.ColorMarker}{e.Message}{Core.Log.ColorMarker}", exceptionColor);
+            List<Color> exceptionColor = [Negative];
+            WriteLine(ELevel.Fatal, $"{ColorMarker}{e.Message}{ColorMarker}", exceptionColor);
             foreach (string st in e.StackTrace.Split("\n"))
             {
-                WriteLine(ELevel.Fatal, $"{Core.Log.ColorMarker}{st}{Core.Log.ColorMarker}", exceptionColor);
+                WriteLine(ELevel.Fatal, $"{ColorMarker}{st}{ColorMarker}", exceptionColor);
             }
         }
 
@@ -175,7 +175,7 @@ namespace AoC.Core
 
         private static string GetColorFormat(EPlane plane, byte r, byte g, byte b)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.AppendFormat("\x1b[{0};2;{1};{2};{3}m", (byte)plane, r, g, b);
             return sb.ToString();
         }
@@ -184,13 +184,13 @@ namespace AoC.Core
         {
             string[] split = Regex.Split(message, ColorRegex);
             int colorIndex = 0;
-            StringBuilder colorizedMessage = new StringBuilder();
+            StringBuilder colorizedMessage = new();
             for (int i = 0; i < split.Length; ++i)
             {
                 if (!string.IsNullOrWhiteSpace(split[i]) && split[i][0] == ColorMarker)
                 {
                     string format = GetColorFormat(EPlane.Foreground, colors[colorIndex++]);
-                    colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i].Substring(1, split[i].Length - 2)).Replace('{', '[').Replace('}', ']'));
+                    colorizedMessage.AppendFormat(string.Format("{0}{1}", format, split[i][1..^1]).Replace('{', '[').Replace('}', ']'));
                 }
                 else
                 {
@@ -217,7 +217,7 @@ namespace AoC.Core
 
             if (level >= LogLevel)
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 if (sameLine)
                 {
                     sb.Append('\r');
@@ -237,7 +237,7 @@ namespace AoC.Core
 
         public static string GetLogTimeStamp()
         {
-            return $"|{DateTime.Now.ToString("hh:mm:ss.fff")}| ";
+            return $"|{DateTime.Now:hh:mm:ss.fff}| ";
         }
     }
 }

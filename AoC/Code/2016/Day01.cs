@@ -21,8 +21,6 @@ namespace AoC._2016
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -61,7 +59,7 @@ namespace AoC._2016
         {
             // used for segment checks
             List<Base.Segment> visited = new List<Base.Segment>();
-            Base.Pos2 prev = new Base.Pos2(0, 0);
+            Base.Vec2 prev = new Base.Vec2(0, 0);
 
             int coordX = 0, coordY = 0, curDirection = 0;
             string[] input = inputs[0].Split(" ,".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -90,9 +88,9 @@ namespace AoC._2016
 
                 if (segmentCheck)
                 {
-                    Base.Segment cur = new Base.Segment(prev, new Base.Pos2(coordX, coordY));
-                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
-                    Base.Pos2 intersection = null;
+                    Base.Segment cur = new Base.Segment(prev, new Base.Vec2(coordX, coordY));
+                    // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"({cur.A.X,4},{cur.A.Y,4}) -> ({cur.B.X,4}, {cur.B.Y,4})");
+                    Base.Vec2 intersection = null;
                     // check for intersection
                     foreach (Base.Segment visit in visited.Take(visited.Count - 1))
                     {

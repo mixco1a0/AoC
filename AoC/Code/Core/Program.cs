@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,12 +18,12 @@ namespace AoC.Core
         private int m_curProcessor = 0;
 
         private const long DefaultRecordCount = 1000;
-        private long m_recordCount = DefaultRecordCount;
+        private readonly long m_recordCount = DefaultRecordCount;
         private long RecordCount { get { return m_recordCount; } }
 
         private const long DefaultMaxPerfTimeoutMs = 3600000;
         private const long MaxPerfTimeoutPerCoreMs = 150000;
-        private long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
+        private readonly long m_maxPerfTimeoutMs = DefaultMaxPerfTimeoutMs;
         private long MaxPerfTimeMs { get { return m_maxPerfTimeoutMs; } }
 
         private Config Args { get; set; }
@@ -88,6 +87,58 @@ namespace AoC.Core
                         Log.WriteLine(Log.ELevel.Info, "");
                     }
                 }
+                else if (Args.HasValue(Config.ESupportedArgument.RunNamespace))
+                {
+                    Args.Remove(Config.ESupportedArgument.ForceTests);
+                    string runNamespace = Args[Config.ESupportedArgument.RunNamespace];
+                    Dictionary<string, Type> days = GetDaysInNamespace(runNamespace);
+                    if (days.Count == 0)
+                    {
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find any solutions for namespace {runNamespace}");
+                    }
+                    else
+                    {
+                        Log.WriteLine(Log.ELevel.Info, $"Running all {runNamespace} Advent of Code solutions\n");
+                        Util.Timer timer = new();
+                        timer.Start();
+                        foreach (var pair in days)
+                        {
+                            Day day = RunDay(runNamespace, pair.Key, true /*forceSkipWarmup*/);
+                            Log.WriteLine(Log.ELevel.Info, "...");
+                            Log.WriteLine(Log.ELevel.Info, "..");
+                            Log.WriteLine(Log.ELevel.Info, ".");
+                        }
+                        timer.Stop();
+                        Log.WriteLine(Log.ELevel.Info, $"Ran all {runNamespace} Advent of Code solutions in {timer.GetElapsedMs()} (ms)\n");
+                    }
+                }
+                else if (Args.Has(Config.ESupportedArgument.RunAll))
+                {
+                    List<Dictionary<string, Type>> allDays = GetAllDays();
+                    if (allDays.Count == 0)
+                    {
+                        Log.WriteLine(Log.ELevel.Error, $"Unable to find any solutions");
+                    }
+                    else
+                    {
+                        Log.WriteLine(Log.ELevel.Info, $"Running all Advent of Code solutions\n");
+                        Util.Timer timer = new();
+                        timer.Start();
+                        foreach (var dict in allDays)
+                        {
+                            Log.WriteLine(Log.ELevel.Info, $"Running all {dict.First().Value.Namespace} Advent of Code solutions\n");
+                            foreach (var pair in dict)
+                            {
+                                Day day = RunDay(pair.Value.Namespace, pair.Key, true /*forceSkipWarmup*/);
+                                Log.WriteLine(Log.ELevel.Info, "...");
+                                Log.WriteLine(Log.ELevel.Info, "..");
+                                Log.WriteLine(Log.ELevel.Info, ".");
+                            }
+                        }
+                        timer.Stop();
+                        Log.WriteLine(Log.ELevel.Info, $"Ran all Advent of Code solutions in {timer.GetElapsedMs()} (ms)\n");
+                    }
+                }
 
                 // show performance
                 if (Args.Has(Config.ESupportedArgument.ShowPerf))
@@ -111,9 +162,9 @@ namespace AoC.Core
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        private Config ParseConfig(string[] args)
+        private static Config ParseConfig(string[] args)
         {
-            Config config = new Config();
+            Config config = [];
             config.Init(args);
             return config;
         }
@@ -135,11 +186,27 @@ namespace AoC.Core
         /// </summary>
         /// <param name="baseNamespace"></param>
         /// <returns></returns>
-        private Dictionary<string, Type> GetDaysInNamespace(string baseNamespace)
+        private static Dictionary<string, Type> GetDaysInNamespace(string baseNamespace)
         {
             return Assembly.GetExecutingAssembly().GetTypes()
                                 .Where(t => t.BaseType == typeof(Day) && t.Namespace.Contains(baseNamespace))
                                 .ToDictionary(t => t.Name, t => t);
+        }
+
+        /// <summary>
+        /// Get all days.
+        /// </summary>
+        /// <returns></returns>
+        private static List<Dictionary<string, Type>> GetAllDays()
+        {
+            List<Dictionary<string, Type>> allDays = [];
+            IEnumerable<Type> days = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.BaseType == typeof(Day));
+            IEnumerable<string> namespaces = days.Select(d => d.Namespace).OrderBy(_ => _).Distinct();
+            foreach (string n in namespaces)
+            {
+                allDays.Add(days.Where(d => d.Namespace == n).ToDictionary(d => d.Name, d => d));
+            }
+            return allDays;
         }
 
         /// <summary>
@@ -164,9 +231,9 @@ namespace AoC.Core
         /// <param name="baseNamespace"></param>
         /// <param name="dayName"></param>
         /// <returns></returns>
-        private Day RunDay(string baseNamespace, string dayName)
+        private Day RunDay(string baseNamespace, string dayName, bool forceSkipWarmup = false)
         {
-            if (Args.Has(Config.ESupportedArgument.RunWarmup))
+            if (!forceSkipWarmup && Args.Has(Config.ESupportedArgument.RunWarmup))
             {
                 Log.WriteLine(Log.ELevel.Info, "...Warming up\n");
                 RunWarmup();
@@ -178,7 +245,7 @@ namespace AoC.Core
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             if (days.Count > 0)
             {
-                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[days.Keys.Where(k => k.ToLower().Contains(dayName.ToLower())).First()].FullName);
+                ObjectHandle handle = Activator.CreateInstance(Assembly.GetExecutingAssembly().FullName, days[days.Keys.Where(k => k.Contains(dayName, StringComparison.CurrentCultureIgnoreCase)).First()].FullName);
                 if (handle != null)
                 {
                     Day day = (Day)handle.Unwrap();
@@ -217,7 +284,7 @@ namespace AoC.Core
         {
             CycleHighPriorityCore();
 
-            Func<long, int, long> Warmup = (long seed, int count) =>
+            static long Warmup(long seed, int count)
             {
                 long result = seed;
                 for (int i = 0; i < count; ++i)
@@ -225,17 +292,16 @@ namespace AoC.Core
                     result ^= i ^ seed;
                 }
                 return result;
-            };
+            }
 
-            long result = 0;
             const int count = 100000000;
             long seed = Environment.TickCount;
 
-            Util.Timer timer = new Util.Timer();
+            Util.Timer timer = new();
             timer.Start();
             while (timer.GetElapsedMs() < 1500)
             {
-                result = Warmup(seed, count);
+                _ = Warmup(seed, count);
             }
         }
 
@@ -318,11 +384,11 @@ namespace AoC.Core
             {
                 if (DateTime.Now > timeout)
                 {
-                    Log.WriteLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 50)));
+                    Log.WriteLine(Log.ELevel.Info, string.Format("...{0:000.0}% [timed out]{1}\n\r", i / (double)maxI * 100.0f, new string(' ', 50)));
                 }
                 else
                 {
-                    Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}%{1}\n\r", (double)i / (double)(maxI) * 100.0f, new string(' ', 60)));
+                    Log.WriteSameLine(Log.ELevel.Info, string.Format("...{0:000.0}%{1}\n\r", i / (double)maxI * 100.0f, new string(' ', 60)));
                 }
             }
 
@@ -339,9 +405,7 @@ namespace AoC.Core
 
             Log.WriteLine(Log.ELevel.Info, $"Running {baseNamespace} Performance\n");
 
-            PerfData perfData;
-            string runDataFileName;
-            LoadPerfData(out runDataFileName, out perfData);
+            LoadPerfData(out string runDataFileName, out PerfData perfData);
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             foreach (string key in days.Keys)
             {
@@ -353,7 +417,7 @@ namespace AoC.Core
                     {
                         for (Part part = Part.One; part <= Part.Two; ++part)
                         {
-                            if (day.GetSolutionVersion(part) == "v0")
+                            if (day.GetSolutionVersion(part).Equals(Day.BaseVersion))
                             {
                                 continue;
                             }
@@ -386,10 +450,7 @@ namespace AoC.Core
             Day.UseLogs = false;
 
             Log.WriteLine(Log.ELevel.Info, $"Showing {baseNamespace} Performance\n");
-
-            PerfData perfData;
-            string runDataFileName;
-            LoadPerfData(out runDataFileName, out perfData);
+            LoadPerfData(out _, out PerfData perfData);
             PrintPerf(baseNamespace, perfData);
             Day.UseLogs = true;
         }
@@ -399,7 +460,7 @@ namespace AoC.Core
         /// </summary>
         /// <param name="perfDataFileName"></param>
         /// <param name="perfData"></param>
-        private void LoadPerfData(out string perfDataFileName, out PerfData perfData)
+        private static void LoadPerfData(out string perfDataFileName, out PerfData perfData)
         {
             perfDataFileName = Path.Combine(WorkingDirectory.Get, "Data", "perfdata.json");
             if (File.Exists(perfDataFileName))
@@ -420,19 +481,17 @@ namespace AoC.Core
         /// </summary>
         /// <param name="perfDataFileName"></param>
         /// <param name="perfData"></param>
-        private void SaveRunData(string perfDataFileName, PerfData perfData)
+        private static void SaveRunData(string perfDataFileName, PerfData perfData)
         {
             Log.WriteLine(Log.ELevel.Info, $"Saving {perfDataFileName}\n");
 
             string rawJson = JsonConvert.SerializeObject(perfData, Formatting.Indented);
-            using (StreamWriter sWriter = new StreamWriter(perfDataFileName))
-            {
-                sWriter.Write(rawJson);
-            }
+            using StreamWriter sWriter = new(perfDataFileName);
+            sWriter.Write(rawJson);
         }
 
-        internal class TimeMagnitude : Base.Pair<double, string> { public TimeMagnitude(double d, string s) : base(d, s) { } }
-        internal class ColorRange : Base.RangeF { public ColorRange(float min, float max) : base(min, max) { } }
+        internal class TimeMagnitude(double d, string s) : Base.Pair<double, string>(d, s) { }
+        internal class ColorRange(float min, float max) : Base.RangeF(min, max) { }
 
         /// <summary>
         /// Print out all the performance information from run data
@@ -446,31 +505,33 @@ namespace AoC.Core
 
             Dictionary<string, Type> days = GetDaysInNamespace(baseNamespace);
             int maxStringLength = 0;
-            Dictionary<Part, List<string>> logs = new Dictionary<Part, List<string>>();
-            Dictionary<Part, List<double>> mins = new Dictionary<Part, List<double>>();
-            Dictionary<Part, List<double>> avgs = new Dictionary<Part, List<double>>();
-            Dictionary<Part, List<double>> maxs = new Dictionary<Part, List<double>>();
-            Dictionary<Part, List<Color>> minColors = new Dictionary<Part, List<Color>>();
-            Dictionary<Part, List<Color>> avgColors = new Dictionary<Part, List<Color>>();
-            Dictionary<Part, List<Color>> maxColors = new Dictionary<Part, List<Color>>();
+            Dictionary<Part, List<string>> logs = [];
+            Dictionary<Part, List<double>> mins = [];
+            Dictionary<Part, List<double>> avgs = [];
+            Dictionary<Part, List<double>> maxs = [];
+            Dictionary<Part, List<Color>> minColors = [];
+            Dictionary<Part, List<Color>> avgColors = [];
+            Dictionary<Part, List<Color>> maxColors = [];
             for (Part part = Part.One; part <= Part.Two; ++part)
             {
-                logs[part] = new List<string>();
-                mins[part] = new List<double>();
-                avgs[part] = new List<double>();
-                maxs[part] = new List<double>();
+                logs[part] = [];
+                mins[part] = [];
+                avgs[part] = [];
+                maxs[part] = [];
 
-                minColors[part] = new List<Color>();
-                avgColors[part] = new List<Color>();
-                maxColors[part] = new List<Color>();
+                minColors[part] = [];
+                avgColors[part] = [];
+                maxColors[part] = [];
             }
 
-            List<TimeMagnitude> timeMagnitudes = new List<TimeMagnitude>();
-            timeMagnitudes.Add(new TimeMagnitude(60000.0, " m"));
-            timeMagnitudes.Add(new TimeMagnitude(1000.0, " s"));
-            timeMagnitudes.Add(new TimeMagnitude(1.0, "ms"));
-            timeMagnitudes.Add(new TimeMagnitude(.001, "µs"));
-            Func<double, TimeMagnitude> getTimeMagnitude = (double val) =>
+            List<TimeMagnitude> timeMagnitudes =
+            [
+                new TimeMagnitude(60000.0, " m"),
+                new TimeMagnitude(1000.0, " s"),
+                new TimeMagnitude(1.0, "ms"),
+                new TimeMagnitude(.001, "µs"),
+            ];
+            TimeMagnitude getTimeMagnitude(double val)
             {
                 foreach (var pair in timeMagnitudes)
                 {
@@ -480,13 +541,15 @@ namespace AoC.Core
                     }
                 }
                 return timeMagnitudes.Last();
-            };
+            }
 
-            Dictionary<string, Color> timeUnitColor = new Dictionary<string, Color>();
-            timeUnitColor[" m"] = Color.Violet;
-            timeUnitColor[" s"] = Log.Negative;
-            timeUnitColor["ms"] = Log.Neutral;
-            timeUnitColor["µs"] = Log.Positive;
+            Dictionary<string, Color> timeUnitColor = new()
+            {
+                [" m"] = Color.Violet,
+                [" s"] = Log.Negative,
+                ["ms"] = Log.Neutral,
+                ["µs"] = Log.Positive
+            };
 
             // min and max only take into account the avg
             // there needs to be a min and max for the Min and the Max
@@ -559,32 +622,32 @@ namespace AoC.Core
                 }
             }
 
-            Func<double, double> getAvg = (double val) =>
+            double getAvg(double val)
             {
                 if (val.Equals(double.NaN))
                 {
                     return double.NaN;
                 }
                 return (val - min) / (max - min);
-            };
+            }
 
-            ColorRange loR = new ColorRange(Log.Neutral.R, Log.Negative.R);
-            ColorRange loG = new ColorRange(Log.Neutral.G, Log.Negative.G);
-            ColorRange loB = new ColorRange(Log.Neutral.B, Log.Negative.B);
-            ColorRange hiR = new ColorRange(Log.Positive.R, Log.Neutral.R);
-            ColorRange hiG = new ColorRange(Log.Positive.G, Log.Neutral.G);
-            ColorRange hiB = new ColorRange(Log.Positive.B, Log.Neutral.B);
-            Func<double, Color> getColor = (double avg) =>
+            ColorRange loR = new(Log.Neutral.R, Log.Negative.R);
+            ColorRange loG = new(Log.Neutral.G, Log.Negative.G);
+            ColorRange loB = new(Log.Neutral.B, Log.Negative.B);
+            ColorRange hiR = new(Log.Positive.R, Log.Neutral.R);
+            ColorRange hiG = new(Log.Positive.G, Log.Neutral.G);
+            ColorRange hiB = new(Log.Positive.B, Log.Neutral.B);
+            Color getColor(double avg)
             {
                 if (avg.Equals(double.NaN))
                 {
                     return Log.Neutral;
                 }
 
-                Func<double, ColorRange, int> getRangedColor = (double avg, ColorRange colorRange) =>
+                int getRangedColor(double avg, ColorRange colorRange)
                 {
-                    return Math.Max(Math.Min((int)((int)(((colorRange.Max - colorRange.Min) * avg) + colorRange.Min)), 255), 0);
-                };
+                    return Math.Max(Math.Min((int)(((colorRange.Max - colorRange.Min) * avg) + colorRange.Min), 255), 0);
+                }
 
                 int r = 0, g = 0, b = 0;
                 if (avg >= 0.5f)
@@ -601,12 +664,12 @@ namespace AoC.Core
                 }
 
                 return Color.FromArgb(r, g, b);
-            };
+            }
 
             if (compactPerf)
             {
                 int maxLength = logs.SelectMany(l => l.Value).Select(lv => lv.Replace($"{Log.ColorMarker}", "")).Max(lv => lv.Length) + 2;
-                string separator = new string('#', maxLength * 2 + 10);
+                string separator = new('#', maxLength * 2 + 10);
                 for (int i = 0; i < logs[Part.Two].Count; ++i)
                 {
                     if (i % 5 == 0)
@@ -614,10 +677,10 @@ namespace AoC.Core
                         Log.WriteLine(Log.ELevel.Info, separator);
                     }
                     Log.Write(Log.ELevel.Info, "##  ");
-                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], new List<Color>() { getColor(getAvg(avgs[Part.One][i])), avgColors[Part.One][i] });
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.One][i], [getColor(getAvg(avgs[Part.One][i])), avgColors[Part.One][i]]);
                     Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.One][i].Replace($"{Log.ColorMarker}", "").Length));
                     Log.WriteAppend(Log.ELevel.Info, "##  ");
-                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], new List<Color>() { getColor(getAvg(avgs[Part.Two][i])), avgColors[Part.Two][i] });
+                    Log.WriteAppend(Log.ELevel.Info, logs[Part.Two][i], [getColor(getAvg(avgs[Part.Two][i])), avgColors[Part.Two][i]]);
                     Log.WriteAppend(Log.ELevel.Info, new string(' ', maxLength - logs[Part.Two][i].Replace($"{Log.ColorMarker}", "").Length));
                     Log.WriteAppend(Log.ELevel.Info, "##");
                     Log.WriteAppendEnd(Log.ELevel.Info);
@@ -627,7 +690,7 @@ namespace AoC.Core
             }
             else
             {
-                string separator = new string('#', maxStringLength);
+                string separator = new('#', maxStringLength);
                 Log.WriteLine(Log.ELevel.Info, separator);
                 for (int i = 0; i < logs[Part.One].Count; ++i)
                 {
@@ -636,7 +699,7 @@ namespace AoC.Core
                         double minColor = getAvg(mins[part][i]);
                         double avgColor = getAvg(avgs[part][i]);
                         double maxColor = getAvg(maxs[part][i]);
-                        List<Color> colors = new List<Color>() { getColor(minColor), getColor(avgColor), getColor(maxColor), avgColors[part][i], minColors[part][i], maxColors[part][i] };
+                        List<Color> colors = [getColor(minColor), getColor(avgColor), getColor(maxColor), avgColors[part][i], minColors[part][i], maxColors[part][i]];
                         Log.WriteLine(Log.ELevel.Info, logs[part][i], colors);
                     }
                     Log.WriteLine(Log.ELevel.Info, separator);
@@ -647,32 +710,32 @@ namespace AoC.Core
             double p2Total = avgs[Part.Two].Where(a => !a.Equals(double.NaN)).Sum();
             double totals = p1Total + p2Total;
 
-            Func<string, string, string, string> getLogHeader = (string day, string part, string version) =>
+            string getLogHeader(string day, string part, string version)
             {
                 return string.Format("[{0}|{1}|{2}|{3}]", baseNamespace[^4..], day, part, version);
-            };
+            }
 
-            Action<double, string, string, string, Color> logTotal = (double time, string logHeader, string valueType, string logEnder, Color color) =>
+            void logTotal(double time, string logHeader, string valueType, string logEnder, Color color)
             {
                 string noColor = string.Format("{0}{1} {2}=", compactPerf ? "##  " : "", logHeader, valueType);
                 Log.Write(Log.ELevel.Info, noColor);
 
                 TimeMagnitude tm = getTimeMagnitude(time);
                 string yesColor = string.Format("{0:000.000}", tm.First);
-                Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), new List<Color>() { color });
+                Log.WriteAppend(Log.ELevel.Info, string.Format("{0}{1}{0}", Log.ColorMarker, yesColor), [color]);
 
                 string remainingLog = string.Format(" ({0}{1}{0}){2}", Log.ColorMarker, tm.Last, logEnder);
-                Log.WriteAppend(Log.ELevel.Info, remainingLog, new List<Color>() { timeUnitColor[tm.Last] });
+                Log.WriteAppend(Log.ELevel.Info, remainingLog, [timeUnitColor[tm.Last]]);
 
                 if (compactPerf)
                 {
                     int curLen = noColor.Length + yesColor.Length + remainingLog.Length - 2;
-                    string end = new string(' ', maxStringLength - curLen - 2);
+                    string end = new(' ', maxStringLength - curLen - 2);
                     Log.WriteAppend(Log.ELevel.Info, $"{end}##");
                 }
 
                 Log.WriteAppendEnd(Log.ELevel.Info);
-            };
+            }
 
             logTotal(p1Total, getLogHeader("total", "part1", "--"), "Sum", string.Empty, Log.Neutral);
             logTotal(p2Total, getLogHeader("total", "part2", "--"), "Sum", string.Empty, Log.Neutral);

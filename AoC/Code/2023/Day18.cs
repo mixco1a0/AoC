@@ -23,8 +23,6 @@ namespace AoC._2023
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -76,14 +74,14 @@ U 2 (#7a21e3)"
         private const char Empty = '.';
 
         private enum Direction { North = 'U', South = 'D', East = 'R', West = 'L', None = '.' }
-        private static Dictionary<Direction, Base.Pos2L> Next = new Dictionary<Direction, Base.Pos2L>()
+        private static Dictionary<Direction, Base.Vec2L> Next = new Dictionary<Direction, Base.Vec2L>()
         {
-            {Direction.North, new Base.Pos2L(0, -1)},
-            {Direction.South, new Base.Pos2L(0, 1)},
-            {Direction.East, new Base.Pos2L(1, 0)},
-            {Direction.West, new Base.Pos2L(-1, 0)}
+            {Direction.North, new Base.Vec2L(0, -1)},
+            {Direction.South, new Base.Vec2L(0, 1)},
+            {Direction.East, new Base.Vec2L(1, 0)},
+            {Direction.West, new Base.Vec2L(-1, 0)}
         };
-        static readonly Base.Pos2L[] GridMoves = new Base.Pos2L[] { new Base.Pos2L(0, 1), new Base.Pos2L(1, 0), new Base.Pos2L(-1, 0), new Base.Pos2L(0, -1) };
+        static readonly Base.Vec2L[] GridMoves = new Base.Vec2L[] { new Base.Vec2L(0, 1), new Base.Vec2L(1, 0), new Base.Vec2L(-1, 0), new Base.Vec2L(0, -1) };
 
         private record Instruction(Direction Direction, long Meters, string RGB)
         {
@@ -116,9 +114,9 @@ U 2 (#7a21e3)"
             }
         }
 
-        private record Check(Base.Pos2L Pos2L, bool IsBorder);
+        private record Check(Base.Vec2L Pos2L, bool IsBorder);
 
-        private void GetPositions(List<string> inputs, out List<Base.Pos2L> positions, bool useHex)
+        private void GetPositions(List<string> inputs, out List<Base.Vec2L> positions, bool useHex)
         {
             List<Instruction> instructions;
             if (useHex)
@@ -130,24 +128,24 @@ U 2 (#7a21e3)"
                 instructions = inputs.Select(Instruction.Parse).ToList();
             }
 
-            positions = new List<Base.Pos2L>();
-            Base.Pos2L cur = new Base.Pos2L(), min = new Base.Pos2L();
+            positions = new List<Base.Vec2L>();
+            Base.Vec2L cur = new Base.Vec2L(), min = new Base.Vec2L();
             foreach (Instruction instruction in instructions)
             {
-                Base.Pos2L next = new Base.Pos2L();
+                Base.Vec2L next = new Base.Vec2L();
                 switch (instruction.Direction)
                 {
                     case Direction.North:
-                        next = cur + new Base.Pos2L(0, -instruction.Meters);
+                        next = cur + new Base.Vec2L(0, -instruction.Meters);
                         break;
                     case Direction.East:
-                        next = cur + new Base.Pos2L(instruction.Meters, 0);
+                        next = cur + new Base.Vec2L(instruction.Meters, 0);
                         break;
                     case Direction.South:
-                        next = cur + new Base.Pos2L(0, instruction.Meters);
+                        next = cur + new Base.Vec2L(0, instruction.Meters);
                         break;
                     case Direction.West:
-                        next = cur + new Base.Pos2L(-instruction.Meters, 0);
+                        next = cur + new Base.Vec2L(-instruction.Meters, 0);
                         break;
                 }
                 min.X = Math.Min(min.X, next.X);
@@ -162,35 +160,35 @@ U 2 (#7a21e3)"
             }
         }
 
-        private BigInteger CalcShoelace(List<Base.Pos2L> positions)
+        private BigInteger CalcShoelace(List<Base.Vec2L> positions)
         {
             // area = 1/2 * (x1y2 + x2y3 + xny1 - x2y1 - x3y2 - x1yn)
             BigInteger area = 0;
             for (int i = 0; i < positions.Count; ++i)
             {
                 int j = (i + 1) % positions.Count;
-                Base.Pos2L cur = positions[i];
-                Base.Pos2L nxt = positions[j];
+                Base.Vec2L cur = positions[i];
+                Base.Vec2L nxt = positions[j];
                 area += cur.X * nxt.Y - nxt.X * cur.Y;
             }
             return area / 2;
         }
 
-        private BigInteger CalcPerimeter(List<Base.Pos2L> positions)
+        private BigInteger CalcPerimeter(List<Base.Vec2L> positions)
         {
             BigInteger perimeter = 0;
             for (int i = 0; i < positions.Count; ++i)
             {
                 int j = (i + 1) % positions.Count;
-                Base.Vec2L vec = Base.Vec2L.FromPos(positions[i], positions[j]);
-                perimeter += vec.GetLength();
+                Base.Ray2L ray = Base.Ray2L.FromPos(positions[i], positions[j]);
+                perimeter += ray.GetLength();
             }
             return perimeter / 2 + 1;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useHex)
         {
-            GetPositions(inputs, out List<Base.Pos2L> positions, useHex);
+            GetPositions(inputs, out List<Base.Vec2L> positions, useHex);
             return (CalcShoelace(positions) + CalcPerimeter(positions)).ToString();
         }
 

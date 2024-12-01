@@ -21,8 +21,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -63,6 +61,11 @@ namespace AoC._2015
             int needed = 0;
             foreach (string input in inputs)
             {
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    continue;
+                }
+                
                 List<int> dims = input.Split("x").Select(c => int.Parse(c)).ToList();
                 dims.Sort();
                 int x = dims[0], y = dims[1], z = dims[2];

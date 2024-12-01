@@ -21,8 +21,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -87,7 +85,7 @@ David would gain 41 happiness units by sitting next to Carol."
                     int curHappiness = 0;
                     curHappiness += h1;
                     curHappiness += people.Where(p => p.Key == nextTo).First().Value.Where(u => u.Name == person).First().Happiness;
-                    Log(Core.Log.ELevel.Spam, $"{new string('\t', tab)}{person} <={curHappiness}=> {nextTo}");
+                    // Log(Core.Log.ELevel.Spam, $"{new string('\t', tab)}{person} <={curHappiness}=> {nextTo}");
                     curHappiness += ArrangeSeats(people, nextTo, new List<string>(peopleSitting), tab + 1);
 
                     max = Math.Max(max, curHappiness);

@@ -22,8 +22,6 @@ namespace AoC._2016
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -50,7 +48,7 @@ UUUUD"
             return testData;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Pos2 start)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, string[] numPad, Base.Vec2 start)
         {
             Base.Range range = new Base.Range(0, numPad.First().Length - 1);
             StringBuilder code = new StringBuilder();
@@ -59,7 +57,7 @@ UUUUD"
             {
                 foreach (char c in input)
                 {
-                    Base.Pos2 old = new Base.Pos2(x, y);
+                    Base.Vec2 old = new Base.Vec2(x, y);
                     switch (c)
                     {
                         case 'U':
@@ -89,11 +87,11 @@ UUUUD"
         static string[] numberPad1 = { "123", "456", "789" };
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad1, new Base.Pos2(1, 1));
+            => SharedSolution(inputs, variables, numberPad1, new Base.Vec2(1, 1));
 
         static string[] numberPad2 = { "  1  ", " 234 ", "56789", " ABC ", "  D  " };
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, numberPad2, new Base.Pos2(0, 2));
+            => SharedSolution(inputs, variables, numberPad2, new Base.Vec2(0, 2));
     }
 }

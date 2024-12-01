@@ -22,8 +22,6 @@ namespace AoC._2023
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -73,7 +71,7 @@ namespace AoC._2023
             }
         }
 
-        public record Symbol(Base.Pos2 Pos, char Character);
+        public record Symbol(Base.Vec2 Pos, char Character);
 
         public class Schematic
         {
@@ -123,7 +121,7 @@ namespace AoC._2023
                             {
                                 updateParts();
                             }
-                            Symbols.Add(new Symbol(new Base.Pos2(parser.Index, curRow), parser.Character));
+                            Symbols.Add(new Symbol(new Base.Vec2(parser.Index, curRow), parser.Character));
                         }
                     }
                     if (sb.Length > 0)

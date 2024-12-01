@@ -21,8 +21,6 @@ namespace AoC._2023
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -205,17 +203,17 @@ hdj{m>838:A,pv}
         {
             Dictionary<string, List<Rule>> workflowDictionary = workflows.ToDictionary(w => w.Id, w => w.Rules);
             // TODO: don't use Pos2, needs a range or something else
-            Dictionary<Part, Base.Pos2> completeState = new Dictionary<Part, Base.Pos2>()
+            Dictionary<Part, Base.Vec2> completeState = new Dictionary<Part, Base.Vec2>()
             {
-                {Part.X, new Base.Pos2(1, 4000)},
-                {Part.M, new Base.Pos2(1, 4000)},
-                {Part.A, new Base.Pos2(1, 4000)},
-                {Part.S, new Base.Pos2(1, 4000)}
+                {Part.X, new Base.Vec2(1, 4000)},
+                {Part.M, new Base.Vec2(1, 4000)},
+                {Part.A, new Base.Vec2(1, 4000)},
+                {Part.S, new Base.Vec2(1, 4000)}
             };
             return WalkWorkflows(Initial, workflowDictionary, completeState);
         }
 
-        private long WalkWorkflows(string workflowId, Dictionary<string, List<Rule>> workflowDictionary, Dictionary<Part, Base.Pos2> state)
+        private long WalkWorkflows(string workflowId, Dictionary<string, List<Rule>> workflowDictionary, Dictionary<Part, Base.Vec2> state)
         {
             if (workflowId == Accept)
             {
@@ -240,18 +238,18 @@ hdj{m>838:A,pv}
             long count = 0;
             foreach (Rule rule in rules)
             {
-                GetNextStates(rule, state, out Dictionary<Part, Base.Pos2> trueState, out Dictionary<Part, Base.Pos2> falseState);
+                GetNextStates(rule, state, out Dictionary<Part, Base.Vec2> trueState, out Dictionary<Part, Base.Vec2> falseState);
                 count += WalkWorkflows(rule.Target, workflowDictionary, trueState);
                 state = falseState;
             }
             return count;
         }
 
-        private void GetNextStates(Rule rule, Dictionary<Part, Base.Pos2> state, out Dictionary<Part, Base.Pos2> trueState, out Dictionary<Part, Base.Pos2> falseState)
+        private void GetNextStates(Rule rule, Dictionary<Part, Base.Vec2> state, out Dictionary<Part, Base.Vec2> trueState, out Dictionary<Part, Base.Vec2> falseState)
         {
             // duplicate of current state
-            trueState = state.ToDictionary(pair => pair.Key, pair => new Base.Pos2(pair.Value));
-            falseState = state.ToDictionary(pair => pair.Key, pair => new Base.Pos2(pair.Value));
+            trueState = state.ToDictionary(pair => pair.Key, pair => new Base.Vec2(pair.Value));
+            falseState = state.ToDictionary(pair => pair.Key, pair => new Base.Vec2(pair.Value));
 
             if (rule.Part == Part.None)
             {
@@ -259,8 +257,8 @@ hdj{m>838:A,pv}
             }
 
             // determine true state vs false state
-            Base.Pos2 truePos = trueState[rule.Part];
-            Base.Pos2 falsePos = falseState[rule.Part];
+            Base.Vec2 truePos = trueState[rule.Part];
+            Base.Vec2 falsePos = falseState[rule.Part];
 
             switch (rule.Op)
             {

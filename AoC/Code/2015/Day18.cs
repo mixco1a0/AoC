@@ -22,8 +22,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -121,12 +119,12 @@ namespace AoC._2015
             lights[lights.Count - 1][0] = '#';
             lights[lights.Count - 1][lights[0].Count - 1] = '#';
 
-            Util.Grid.PrintGrid(Core.Log.ELevel.Spam, lights);
+            // Util.Grid.Print2D(Core.Log.ELevel.Spam, lights);
             for (int i = 0; i < steps; ++i)
             {
                 Util.Grid.ProcessGrid(ref lights, GetLocationStateCornersOn);
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"After {i + 1} step");
-                Util.Grid.PrintGrid(Core.Log.ELevel.Spam, lights);
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"After {i + 1} step");
+                // Util.Grid.Print2D(Core.Log.ELevel.Spam, lights);
             }
             return string.Join("", lights.Select(c => string.Join("", c))).Replace(".", "").Count().ToString();
         }

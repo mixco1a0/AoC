@@ -21,8 +21,6 @@ namespace AoC._2022
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -51,7 +49,7 @@ namespace AoC._2022
             return testData;
         }
 
-        private void FindVisibleX(ref HashSet<Base.Pos2> visiblePoints, ref List<string> grid, int start, int end, Func<int, int> iter)
+        private void FindVisibleX(ref HashSet<Base.Vec2> visiblePoints, ref List<string> grid, int start, int end, Func<int, int> iter)
         {
             int max = Math.Max(start, end);
             for (int y = 0; y < grid.Count; ++y)
@@ -60,7 +58,7 @@ namespace AoC._2022
                 for (int x = start; 0 <= x && x <= max; x = iter(x))
                 {
                     int value = grid[y][x] - '0';
-                    Base.Pos2 cur = new Base.Pos2(x, y);
+                    Base.Vec2 cur = new Base.Vec2(x, y);
                     if (!visiblePoints.Contains(cur))
                     {
                         if (value > maxVisible)
@@ -73,7 +71,7 @@ namespace AoC._2022
             }
         }
 
-        private void FindVisibleY(ref HashSet<Base.Pos2> visiblePoints, ref List<string> grid, int start, int end, Func<int, int> iter)
+        private void FindVisibleY(ref HashSet<Base.Vec2> visiblePoints, ref List<string> grid, int start, int end, Func<int, int> iter)
         {
             int max = Math.Max(start, end);
             for (int x = 0; x < grid[0].Length; ++x)
@@ -82,7 +80,7 @@ namespace AoC._2022
                 for (int y = start; 0 <= y && y <= max; y = iter(y))
                 {
                     int value = grid[y][x] - '0';
-                    Base.Pos2 cur = new Base.Pos2(x, y);
+                    Base.Vec2 cur = new Base.Vec2(x, y);
                     if (!visiblePoints.Contains(cur))
                     {
                         if (value > maxVisible)
@@ -97,7 +95,7 @@ namespace AoC._2022
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            HashSet<Base.Pos2> visiblePoints = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> visiblePoints = new HashSet<Base.Vec2>();
             List<string> grid = new List<string>(inputs);
             FindVisibleY(ref visiblePoints, ref grid, 0, grid.Count - 1, (int i) => { return i + 1; });
             FindVisibleY(ref visiblePoints, ref grid, grid.Count - 1, 0, (int i) => { return i - 1; });
@@ -160,7 +158,7 @@ namespace AoC._2022
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
         {
-            HashSet<Base.Pos2> visiblePoints = new HashSet<Base.Pos2>();
+            HashSet<Base.Vec2> visiblePoints = new HashSet<Base.Vec2>();
             List<string> grid = new List<string>(inputs);
             int maxScore = 0;
             for (int y = 0; y < grid.Count; ++y)

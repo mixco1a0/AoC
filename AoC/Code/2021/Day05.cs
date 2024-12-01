@@ -22,8 +22,6 @@ namespace AoC._2021
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -67,8 +65,8 @@ namespace AoC._2021
             public static Base.Segment Parse(string input)
             {
                 int[] vals = input.Split(", ->".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
-                Base.Pos2 a = new Base.Pos2(vals[0], vals[1]);
-                Base.Pos2 b = new Base.Pos2(vals[2], vals[3]);
+                Base.Vec2 a = new Base.Vec2(vals[0], vals[1]);
+                Base.Vec2 b = new Base.Vec2(vals[2], vals[3]);
                 return new Base.Segment(a, b);
             }
         }
@@ -81,17 +79,17 @@ namespace AoC._2021
             DiagonalDown,
         }
 
-        private Dictionary<Direction, Base.Pos2> Movement = new Dictionary<Direction, Base.Pos2>()
+        private Dictionary<Direction, Base.Vec2> Movement = new Dictionary<Direction, Base.Vec2>()
         {
-            { Direction.NegativeX, new Base.Pos2(-1, 0) },
-            { Direction.NegativeY, new Base.Pos2(0, -1) },
-            { Direction.DiagonalUp, new Base.Pos2(-1, -1) },
-            { Direction.DiagonalDown, new Base.Pos2(-1, 1) },
+            { Direction.NegativeX, new Base.Vec2(-1, 0) },
+            { Direction.NegativeY, new Base.Vec2(0, -1) },
+            { Direction.DiagonalUp, new Base.Vec2(-1, -1) },
+            { Direction.DiagonalDown, new Base.Vec2(-1, 1) },
         };
 
-        private void PrintGrid(Dictionary<Base.Pos2, int> grid)
+        private void PrintGrid(Dictionary<Base.Vec2, int> grid)
         {
-            HashSet<Base.Pos2> coords = grid.Keys.ToHashSet();
+            HashSet<Base.Vec2> coords = grid.Keys.ToHashSet();
             int maxX = coords.Select(c => c.X).Max();
             int maxY = coords.Select(c => c.Y).Max();
             for (int y = 0; y <= maxY; ++y)
@@ -100,7 +98,7 @@ namespace AoC._2021
                 sb.AppendFormat("{0,3} | ", y);
                 for (int x = 0; x <= maxX; ++x)
                 {
-                    Base.Pos2 cur = new Base.Pos2(x, y);
+                    Base.Vec2 cur = new Base.Vec2(x, y);
                     if (grid.ContainsKey(cur))
                     {
                         sb.Append($"{grid[cur],1}");
@@ -118,8 +116,8 @@ namespace AoC._2021
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool checkDiagonals)
         {
-            Dictionary<Base.Pos2, int> overlaps = new Dictionary<Base.Pos2, int>();
-            Action<int, Direction, Base.Pos2> CheckCoords = (count, dir, start) =>
+            Dictionary<Base.Vec2, int> overlaps = new Dictionary<Base.Vec2, int>();
+            Action<int, Direction, Base.Vec2> CheckCoords = (count, dir, start) =>
             {
                 for (int i = 0; i <= count; ++i)
                 {
@@ -145,8 +143,8 @@ namespace AoC._2021
                 }
                 else if (checkDiagonals)
                 {
-                    Base.Pos2 start = segment.A.X > segment.B.X ? segment.A : segment.B;
-                    Base.Pos2 end = start.Equals(segment.A) ? segment.B : segment.A;
+                    Base.Vec2 start = segment.A.X > segment.B.X ? segment.A : segment.B;
+                    Base.Vec2 end = start.Equals(segment.A) ? segment.B : segment.A;
                     if (end.Y < start.Y)
                     {
                         CheckCoords(Math.Abs(segment.A.X - segment.B.X), Direction.DiagonalUp, start);

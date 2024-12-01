@@ -21,8 +21,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -131,7 +129,7 @@ HOHOHO"
             {
                 if (steps != minSteps && steps < minSteps)
                 {
-                    Core.Log.WriteLine(Core.Log.ELevel.Spam, $"New min found {steps}");
+                    // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"New min found {steps}");
                 }
                 minSteps = Math.Min(minSteps, steps);
                 return;
@@ -145,7 +143,7 @@ HOHOHO"
             if (!unique.Contains(molecule))
             {
                 unique.Add(molecule);
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Testing: {molecule}");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Testing: {molecule}");
             }
             else
             {

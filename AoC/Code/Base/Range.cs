@@ -2,7 +2,7 @@ using System;
 
 namespace AoC.Base
 {
-    public class Range : Pos2, IComparable<Range>, IComparable
+    public class Range : Vec2, IComparable<Range>, IComparable
     {
         public int Min { get => X; set => X = value; }
         public int Max { get => Y; set => Y = value; }
@@ -43,7 +43,7 @@ namespace AoC.Base
         }
     }
 
-    public class RangeL : Pos2L, IComparable<RangeL>, IComparable
+    public class RangeL : Vec2L, IComparable<RangeL>, IComparable
     {
         public long Min { get => X; set => X = value; }
         public long Max { get => Y; set => Y = value; }
@@ -84,7 +84,7 @@ namespace AoC.Base
         }
     }
 
-    public class RangeF : Pos2F
+    public class RangeF : Vec2F
     {
         public float Min { get => X; set => X = value; }
         public float Max { get => Y; set => Y = value; }

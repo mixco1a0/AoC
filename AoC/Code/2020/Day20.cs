@@ -22,8 +22,6 @@ namespace AoC._2020
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -467,7 +465,7 @@ Tile 3079:
                 Right = temp;
 
                 List<string> raw = Raw;
-                Util.Grid.RotateGrid(true, ref raw);
+                Util.Grid.Rotate2D(true, ref raw);
                 Raw = raw;
             }
 
@@ -481,7 +479,7 @@ Tile 3079:
                 Left = temp;
 
                 List<string> raw = Raw;
-                Util.Grid.RotateGrid(false, ref raw);
+                Util.Grid.Rotate2D(false, ref raw);
                 Raw = raw;
             }
 
@@ -496,7 +494,7 @@ Tile 3079:
                 Left = LeftR;
 
                 List<string> raw = Raw;
-                Util.Grid.FlipGrid(false, ref raw);
+                Util.Grid.Flip2D(false, ref raw);
                 Raw = raw;
             }
 
@@ -511,7 +509,7 @@ Tile 3079:
                 Bottom = BottomR;
 
                 List<string> raw = Raw;
-                Util.Grid.FlipGrid(true, ref raw);
+                Util.Grid.Flip2D(true, ref raw);
             }
 
             public List<string> Prune()
@@ -743,11 +741,11 @@ Tile 3079:
                 }
 
                 // DebugWriteLine($"[{checkCount}] No monsters found, rotating image");
-                Util.Grid.RotateGrid(true, ref grid);
+                Util.Grid.Rotate2D(true, ref grid);
                 if (++checkCount % 4 == 0)
                 {
                     // DebugWriteLine($"[{checkCount}] No monsters found, flipping image");
-                    Util.Grid.FlipGrid(true, ref grid);
+                    Util.Grid.Flip2D(true, ref grid);
                 }
 
                 if (checkCount > 8)

@@ -21,8 +21,6 @@ namespace AoC._2015
             }
         }
 
-        public override bool SkipTestData => true;
-
         protected override List<Core.TestDatum> GetTestData()
         {
             List<Core.TestDatum> testData = new List<Core.TestDatum>();
@@ -111,24 +109,24 @@ namespace AoC._2015
 
             if (player.HP <= 0)
             {
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Player is dead!");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Player is dead!");
                 return false;
             }
 
             if (boss.HP <= 0)
             {
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Boss is dead!");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Boss is dead!");
                 minMana = Math.Min(minMana, spentMana);
                 return true;
             }
 
             if (spentMana > minMana)
             {
-                Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Too much mana!");
+                // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Too much mana!");
                 return false;
             }
 
-            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Turn {turnCount} - Boss HP = {boss.HP} - Player HP = {player.HP}, Mana = {player.Mana}");
+            // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Turn {turnCount} - Boss HP = {boss.HP} - Player HP = {player.HP}, Mana = {player.Mana}");
 
             List<KeyValuePair<int, int>> curEffects = player.Effects.Select(p => new KeyValuePair<int, int>(p.Key, p.Value)).ToList();
             // resolve effects now
@@ -139,15 +137,15 @@ namespace AoC._2015
                 {
                     case 0:
                         player.Armor += curEffect.Armor;
-                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Armor!");
+                        // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Armor!");
                         break;
                     case 1:
                         boss.HP -= curEffect.Damage;
-                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Poison boss for {curEffect.Damage}!");
+                        // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Poison boss for {curEffect.Damage}!");
                         break;
                     case 2:
                         player.Mana += curEffect.Mana;
-                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Recover {curEffect.Mana} mana!");
+                        // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Recover {curEffect.Mana} mana!");
                         break;
                 }
             }
@@ -169,7 +167,7 @@ namespace AoC._2015
                         {
                             continue;
                         }
-                        Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Casting {spell.Name}!");
+                        // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Casting {spell.Name}!");
 
                         nextPlayer.Mana -= spell.Cost;
                         nextPlayer.HP += spell.Heal;
@@ -189,7 +187,7 @@ namespace AoC._2015
                 return false;
             }
 
-            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Boss hitting for {Math.Max(1, boss.Damage - player.Armor)} damage!");
+            // Core.Log.WriteLine(Core.Log.ELevel.Spam, $"{curTab}Boss hitting for {Math.Max(1, boss.Damage - player.Armor)} damage!");
             // boss turn
             player.HP -= Math.Max(1, boss.Damage - player.Armor);
 
