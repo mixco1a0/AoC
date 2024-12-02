@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AoC.Core;
 
 namespace AoC._2024
 {
@@ -13,8 +12,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v2",
+                Core.Part.Two => "v2",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -55,7 +54,6 @@ namespace AoC._2024
         {
             Uninitialized,
             None,
-            NoneSkip,
             Increasing,
             Decreasing
         }
@@ -68,7 +66,7 @@ namespace AoC._2024
                 return new Report { Levels = Util.String.Split(input, ' ').Select(int.Parse).ToArray() };
             }
 
-            public bool IsSafe()
+            private static bool IsSafeInternal(int[] levels)
             {
                 LevelType levelType = LevelType.Uninitialized;
 
@@ -79,7 +77,7 @@ namespace AoC._2024
                 }
 
                 int prev = 0;
-                foreach (int level in Levels)
+                foreach (int level in levels)
                 {
                     switch (levelType)
                     {
@@ -122,16 +120,19 @@ namespace AoC._2024
                 return true;
             }
 
+            public bool IsSafe()
+            {
+                return IsSafeInternal(Levels);
+            }
+
             public bool IsDampenedSafe()
             {
                 // remove each index and try again
-                List<int> originalLevels = [.. Levels];
-                for (int i = 0; i < originalLevels.Count; ++i)
+                for (int i = 0; i < Levels.Length; ++i)
                 {
-                    List<int> removed = [.. originalLevels];
+                    List<int> removed = [.. Levels];
                     removed.RemoveAt(i);
-                    Levels = [.. removed];
-                    if (IsSafe())
+                    if (IsSafeInternal([.. removed]))
                     {
                         return true;
                     }
