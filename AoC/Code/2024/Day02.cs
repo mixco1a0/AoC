@@ -100,7 +100,6 @@ namespace AoC._2024
                             }
                             else
                             {
-                                // unsafe diff
                                 return false;
                             }
                             break;
@@ -125,118 +124,23 @@ namespace AoC._2024
 
             public bool IsDampenedSafe()
             {
-                LevelType levelType = LevelType.Uninitialized;
-
-                static bool isDiffSafe(int prev, int cur)
+                // remove each index and try again
+                List<int> originalLevels = [.. Levels];
+                for (int i = 0; i < originalLevels.Count; ++i)
                 {
-                    int diff = int.Abs(prev - cur);
-                    return diff >= 1 && diff <= 3;
-                }
-
-                int prev = 0;
-                int prevPrev = 0;
-                int unsafeCount = 0;
-                foreach (int level in Levels)
-                {
-                    switch (levelType)
+                    List<int> removed = [.. originalLevels];
+                    removed.RemoveAt(i);
+                    Levels = [.. removed];
+                    if (IsSafe())
                     {
-                        case LevelType.Uninitialized:
-                            levelType = LevelType.None;
-                            break;
-                        case LevelType.None:
-                            if (isDiffSafe(prev, level))
-                            {
-                                if (level > prev)
-                                {
-                                    levelType = LevelType.Increasing;
-                                }
-                                else
-                                {
-                                    levelType = LevelType.Decreasing;
-                                }
-                            }
-                            else
-                            {
-                                ++unsafeCount;
-                                levelType = LevelType.NoneSkip;
-                            }
-                            break;
-                        case LevelType.NoneSkip:
-                            if (isDiffSafe(prev, level))
-                            {
-                                if (level > prev)
-                                {
-                                    levelType = LevelType.Increasing;
-                                }
-                                else
-                                {
-                                    levelType = LevelType.Decreasing;
-                                }
-                            }
-                            if (isDiffSafe(prevPrev, level))
-                            {
-                                if (level > prevPrev)
-                                {
-                                    levelType = LevelType.Increasing;
-                                }
-                                else
-                                {
-                                    levelType = LevelType.Decreasing;
-                                }
-                            }
-                            else
-                            {
-                                // two unsafe
-                                ++unsafeCount;
-                            }
-                            break;
-                        case LevelType.Increasing:
-                            if (level >= prev && isDiffSafe(prev, level))
-                            {
-                                // do nothing
-                            }
-                            else if (level >= prevPrev && isDiffSafe(prevPrev, level))
-                            {
-                                ++unsafeCount;
-                            }
-                            else
-                            {
-                                // more than one unsafe diff
-                                ++unsafeCount;
-                            }
-                            break;
-                        case LevelType.Decreasing:
-                            if (level <= prev && isDiffSafe(prev, level))
-                            {
-                                // do nothing
-                            }
-                            else if (level <= prevPrev && isDiffSafe(prevPrev, level))
-                            {
-                                ++unsafeCount;
-                            }
-                            else
-                            {
-                                // more than one unsafe diff
-                                ++unsafeCount;
-                            }
-                            break;
+                        return true;
                     }
-
-                    if (unsafeCount > 1)
-                    {
-                        Core.TempLog.WriteLine($"Unsafe => [{prevPrev}, {prev}, {level}] | {string.Join(' ', Levels)}");
-                        return false;
-                    }
-
-                    prevPrev = prev;
-                    prev = level;
                 }
-
-                return true;
+                return false;
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useProblemDampener)
+        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useProblemDampener)
         {
             List<Report> reports = inputs.Select(Report.Parse).ToList();
             if (!useProblemDampener)
@@ -251,7 +155,5 @@ namespace AoC._2024
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true);
-        // 340 => TOO LOW
-        // 372 => TOO LOW
     }
 }
