@@ -10,7 +10,7 @@ namespace AoC.Util
         #region Direction 2D
         public enum Direction2D { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
 
-        public static readonly Dictionary<Direction2D, char> DirectionArrowMap = new()
+        public static readonly Dictionary<Direction2D, char> Direction2DArrowMap = new()
         {
             { Direction2D.North,        '↑' },
             { Direction2D.NorthEast,    '↗' },
@@ -20,6 +20,7 @@ namespace AoC.Util
             { Direction2D.SouthWest,    '↙' },
             { Direction2D.West,         '←' },
             { Direction2D.NorthWest,    '↖' },
+            { Direction2D.None,         '.' },
         };
 
         /// <summary>
@@ -27,7 +28,7 @@ namespace AoC.Util
         /// West      (-1,  0) |           ( 0,  0) | East      ( 1,  0)
         /// SouthWest (-1,  1) | South     ( 0,  1) | SouthEast ( 1,  1)
         /// </summary>
-        public static readonly Dictionary<Direction2D, Base.Vec2> DirectionVec2DMap = new()
+        public static readonly Dictionary<Direction2D, Base.Vec2> Direction2DVec2Map = new()
         {
             { Direction2D.North,        new Base.Vec2( 0, -1) },
             { Direction2D.NorthEast,    new Base.Vec2( 1, -1) },
@@ -37,9 +38,49 @@ namespace AoC.Util
             { Direction2D.SouthWest,    new Base.Vec2(-1,  1) },
             { Direction2D.West,         new Base.Vec2(-1,  0) },
             { Direction2D.NorthWest,    new Base.Vec2(-1, -1) },
+            { Direction2D.None,         new Base.Vec2( 0,  0) },
         };
 
-        public static readonly Direction2D[] IterOrth = 
+        public static readonly Dictionary<Direction2D, Direction2D> Direction2DOpposite = new()
+        {
+            { Direction2D.North,        Direction2D.South     },
+            { Direction2D.NorthEast,    Direction2D.SouthWest },
+            { Direction2D.East,         Direction2D.West      },
+            { Direction2D.SouthEast,    Direction2D.NorthWest },
+            { Direction2D.South,        Direction2D.North     },
+            { Direction2D.SouthWest,    Direction2D.NorthEast },
+            { Direction2D.West,         Direction2D.East      },
+            { Direction2D.NorthWest,    Direction2D.SouthEast },
+            { Direction2D.None,         Direction2D.None      },
+        };
+
+        public static readonly Dictionary<Direction2D, Direction2D> Direction2DRotateR = new()
+        {
+            { Direction2D.North,        Direction2D.East      },
+            { Direction2D.NorthEast,    Direction2D.SouthEast },
+            { Direction2D.East,         Direction2D.South     },
+            { Direction2D.SouthEast,    Direction2D.SouthWest },
+            { Direction2D.South,        Direction2D.West      },
+            { Direction2D.SouthWest,    Direction2D.NorthWest },
+            { Direction2D.West,         Direction2D.North     },
+            { Direction2D.NorthWest,    Direction2D.NorthEast },
+            { Direction2D.None,         Direction2D.None      },
+        };
+
+        public static readonly Dictionary<Direction2D, Direction2D> Direction2DRotateL = new()
+        {
+            { Direction2D.North,        Direction2D.West      },
+            { Direction2D.NorthEast,    Direction2D.NorthWest },
+            { Direction2D.East,         Direction2D.North     },
+            { Direction2D.SouthEast,    Direction2D.NorthEast },
+            { Direction2D.South,        Direction2D.East      },
+            { Direction2D.SouthWest,    Direction2D.SouthEast },
+            { Direction2D.West,         Direction2D.South     },
+            { Direction2D.NorthWest,    Direction2D.SouthWest },
+            { Direction2D.None,         Direction2D.None      },
+        };
+
+        public static readonly Direction2D[] IterOrth2D = 
         [
             Direction2D.North,
             Direction2D.East,
@@ -47,7 +88,15 @@ namespace AoC.Util
             Direction2D.West
         ];
 
-        public static readonly Direction2D[] IterAll = 
+        public static readonly Direction2D[] IterCorners2D = 
+        [
+            Direction2D.NorthEast,
+            Direction2D.SouthEast,
+            Direction2D.SouthWest,
+            Direction2D.NorthWest
+        ];
+
+        public static readonly Direction2D[] IterAll2D = 
         [
             Direction2D.North,
             Direction2D.NorthEast,
