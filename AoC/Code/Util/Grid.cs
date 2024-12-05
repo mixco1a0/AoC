@@ -8,7 +8,7 @@ namespace AoC.Util
     public static class Grid
     {
         #region Direction 2D
-        public enum Direction2D { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest }
+        public enum Direction2D { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
 
         public static readonly Dictionary<Direction2D, char> DirectionArrowMap = new()
         {
