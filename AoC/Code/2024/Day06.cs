@@ -41,9 +41,18 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "6",
                     RawInput =
-@""
+@"....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#..."
                 },
             ];
             return testData;
@@ -52,17 +61,61 @@ namespace AoC._2024
         private static readonly char StartingPos = '^';
         private static readonly char Obstacle = '#';
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private record DirectedLocation(Base.Vec2 Vec2, Util.Grid.Direction2D Direction2D);
+
+        private static bool CanFindLoop(char[,] grid, int maxCol, int maxRow, Base.Vec2 startingPos, Base.Vec2 obstaclePos)
+        {
+            bool isInGrid(Base.Vec2 vec2)
+            {
+                return vec2.X >= 0 && vec2.X < maxCol && vec2.Y >= 0 && vec2.Y < maxRow;
+            }
+            char getAt(Base.Vec2 vec2)
+            {
+                return grid[vec2.X, vec2.Y];
+            }
+
+            HashSet<DirectedLocation> visited = [];
+            Base.Vec2 curPos = startingPos;
+            Util.Grid.Direction2D curDirection = Util.Grid.Direction2D.North;
+            while (true)
+            {
+                DirectedLocation dl = new(curPos, curDirection);
+                if (visited.Contains(dl))
+                {
+                    return true;
+                }
+
+                visited.Add(dl);
+                Base.Vec2 nextPos = curPos + Util.Grid.Direction2DVec2Map[curDirection];
+                if (!isInGrid(nextPos))
+                {
+                    // guard left area
+                    break;
+                }
+
+                if (nextPos.Equals(obstaclePos) || getAt(nextPos) == Obstacle)
+                {
+                    curDirection = Util.Grid.Direction2DRotateR[curDirection];
+                }
+                else
+                {
+                    curPos = nextPos;
+                }
+            }
+            return false;
+        }
+
+        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findOriginalPath)
         {
             Util.Grid.Parse2D(inputs, out char[,] grid, out int maxCol, out int maxRow);
-            Base.Vec2 curPos = new();
+            Base.Vec2 startingPos = new();
             for (int _c = 0; _c < maxCol; ++_c)
             {
                 for (int _r = 0; _r < maxRow; ++_r)
                 {
                     if (grid[_c, _r] == StartingPos)
                     {
-                        curPos = new(_c, _r);
+                        startingPos = new(_c, _r);
                         break;
                     }
                 }
@@ -77,9 +130,10 @@ namespace AoC._2024
                 return grid[vec2.X, vec2.Y];
             }
 
+            Base.Vec2 curPos = startingPos;
             HashSet<Base.Vec2> visited = [];
             Util.Grid.Direction2D curDirection = Util.Grid.Direction2D.North;
-            while(true)
+            while (true)
             {
                 visited.Add(curPos);
                 Base.Vec2 nextPos = curPos + Util.Grid.Direction2DVec2Map[curDirection];
@@ -99,13 +153,32 @@ namespace AoC._2024
                 }
             }
 
-            return visited.Count.ToString();
+            if (findOriginalPath)
+            {
+                return visited.Count.ToString();
+            }
+
+            int timeParadoxSafetyCount = 0;
+            foreach (Base.Vec2 vec2 in visited)
+            {
+                if (vec2.Equals(startingPos))
+                {
+                    continue;
+                }
+
+                if (CanFindLoop(grid, maxCol, maxRow, startingPos, vec2))
+                {
+                    ++timeParadoxSafetyCount;
+                }
+            }
+
+            return timeParadoxSafetyCount.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
