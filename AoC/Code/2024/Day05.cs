@@ -59,9 +59,36 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "123",
                     RawInput =
-@""
+@"47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47"
                 },
             ];
             return testData;
@@ -72,7 +99,7 @@ namespace AoC._2024
         private List<Pair> PageRules { get; set; }
         private List<List<int>> Pages { get; set; }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool processCorrectOnly)
         {
             PageRules = [];
             Pages = [];
@@ -106,18 +133,30 @@ namespace AoC._2024
                         break;
                     }
                 }
-                if (isValid)
+                if (processCorrectOnly)
                 {
-                    sum += pages[(pages.Count - 1) / 2];
+                    if (isValid)
+                    {
+                        sum += pages[(pages.Count - 1) / 2];
+                    }
+                }
+                else
+                {
+                    if (!isValid)
+                    {
+                        List<int> sortedPages = [.. pageRules.GroupBy(pr => pr.First).Select(pr => new Pair(pr.Key, pr.Count())).OrderByDescending(pair => pair.Last).Select(pair => pair.First)];
+                        sortedPages.AddRange(pageRules.Select(pr => pr.Last).Where(pr => !sortedPages.Contains(pr)));
+                        sum += sortedPages[(sortedPages.Count - 1) / 2];
+                    }
                 }
             }
             return sum.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
     }
 }
