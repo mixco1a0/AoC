@@ -136,7 +136,7 @@ namespace AoC.Base
             }
         }
 
-        public bool InGrid(Base.Vec2 vec2)
+        public bool Has(Base.Vec2 vec2)
         {
             return vec2.X >= 0 && vec2.X < MaxCol && vec2.Y >= 0 && vec2.Y < MaxRow;
         }
