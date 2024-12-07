@@ -214,6 +214,5 @@ MXMXAXMASX"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true);
-        // 2015 => TOO HIGH
     }
 }
