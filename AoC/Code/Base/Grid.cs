@@ -141,9 +141,19 @@ namespace AoC.Base
             return vec2.X >= 0 && vec2.X < MaxCol && vec2.Y >= 0 && vec2.Y < MaxRow;
         }
 
+        public bool Has(int col, int row)
+        {
+            return col >= 0 && col < MaxCol && row >= 0 && row < MaxRow;
+        }
+
         public char At(Base.Vec2 vec2)
         {
             return Grid[vec2.X, vec2.Y];
+        }
+
+        public char At(int col, int row)
+        {
+            return Grid[col, row];
         }
     }
     #endregion
