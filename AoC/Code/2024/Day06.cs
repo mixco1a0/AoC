@@ -12,8 +12,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                Core.Part.One => "v1",
-                Core.Part.Two => "v1",
+                Core.Part.One => "v2",
+                Core.Part.Two => "v2",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -61,59 +61,48 @@ namespace AoC._2024
         private static readonly char StartingPos = '^';
         private static readonly char Obstacle = '#';
 
-        private record DirectedLocation(Base.Vec2 Vec2, Util.Grid.Direction2D Direction2D);
+        private record DirectedLocation(Base.Vec2 Vec2, Base.Grid2.Dir Dir);
 
-        private static bool CanFindLoop(char[,] grid, int maxCol, int maxRow, Base.Vec2 startingPos, Base.Vec2 obstaclePos)
+        private static bool WalkLoop(Base.Grid2 grid, Base.Vec2 startingPos, Base.Vec2 obstaclePos, bool useDirection, out HashSet<DirectedLocation> visited)
         {
-            bool isInGrid(Base.Vec2 vec2)
-            {
-                return vec2.X >= 0 && vec2.X < maxCol && vec2.Y >= 0 && vec2.Y < maxRow;
-            }
-            char getAt(Base.Vec2 vec2)
-            {
-                return grid[vec2.X, vec2.Y];
-            }
-
-            HashSet<DirectedLocation> visited = [];
+            visited = [];
             Base.Vec2 curPos = startingPos;
-            Util.Grid.Direction2D curDirection = Util.Grid.Direction2D.North;
+            Base.Grid2.Dir curDirection = Base.Grid2.Dir.North;
             while (true)
             {
-                DirectedLocation dl = new(curPos, curDirection);
-                if (visited.Contains(dl))
+                DirectedLocation dl = new(curPos, useDirection ? curDirection : Base.Grid2.Dir.None);
+                if (dl.Dir != Base.Grid2.Dir.None && visited.Contains(dl))
                 {
                     return true;
                 }
 
                 visited.Add(dl);
-                Base.Vec2 nextPos = curPos + Util.Grid.Direction2DVec2Map[curDirection];
-                if (!isInGrid(nextPos))
+                Base.Vec2 nextPos = curPos + Base.Grid2.Map.Neighbor[curDirection];
+                if (!grid.Has(nextPos))
                 {
-                    // guard left area
-                    break;
+                    return false;
                 }
 
-                if (nextPos.Equals(obstaclePos) || getAt(nextPos) == Obstacle)
+                if (grid.At(nextPos) == Obstacle || nextPos.Equals(obstaclePos))
                 {
-                    curDirection = Util.Grid.Direction2DRotateR[curDirection];
+                    curDirection = Base.Grid2.Map.RotateCW[curDirection];
                 }
                 else
                 {
                     curPos = nextPos;
                 }
             }
-            return false;
         }
 
         private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findOriginalPath)
         {
-            Util.Grid.Parse2D(inputs, out char[,] grid, out int maxCol, out int maxRow);
+            Base.Grid2 grid = new(inputs);
             Base.Vec2 startingPos = new();
-            for (int _c = 0; _c < maxCol; ++_c)
+            for (int _c = 0; _c < grid.MaxCol; ++_c)
             {
-                for (int _r = 0; _r < maxRow; ++_r)
+                for (int _r = 0; _r < grid.MaxRow; ++_r)
                 {
-                    if (grid[_c, _r] == StartingPos)
+                    if (grid.Grid[_c, _r] == StartingPos)
                     {
                         startingPos = new(_c, _r);
                         break;
@@ -121,52 +110,21 @@ namespace AoC._2024
                 }
             }
 
-            bool isInGrid(Base.Vec2 vec2)
-            {
-                return vec2.X >= 0 && vec2.X < maxCol && vec2.Y >= 0 && vec2.Y < maxRow;
-            }
-            char getAt(Base.Vec2 vec2)
-            {
-                return grid[vec2.X, vec2.Y];
-            }
-
-            Base.Vec2 curPos = startingPos;
-            HashSet<Base.Vec2> visited = [];
-            Util.Grid.Direction2D curDirection = Util.Grid.Direction2D.North;
-            while (true)
-            {
-                visited.Add(curPos);
-                Base.Vec2 nextPos = curPos + Util.Grid.Direction2DVec2Map[curDirection];
-                if (!isInGrid(nextPos))
-                {
-                    // guard left area
-                    break;
-                }
-
-                if (getAt(nextPos) == Obstacle)
-                {
-                    curDirection = Util.Grid.Direction2DRotateR[curDirection];
-                }
-                else
-                {
-                    curPos = nextPos;
-                }
-            }
-
+            WalkLoop(grid, startingPos, new(-1,-1), false, out HashSet<DirectedLocation> visited);
             if (findOriginalPath)
             {
                 return visited.Count.ToString();
             }
 
             int timeParadoxSafetyCount = 0;
-            foreach (Base.Vec2 vec2 in visited)
+            foreach (DirectedLocation visit in visited)
             {
-                if (vec2.Equals(startingPos))
+                if (visit.Vec2.Equals(startingPos))
                 {
                     continue;
                 }
 
-                if (CanFindLoop(grid, maxCol, maxRow, startingPos, vec2))
+                if (WalkLoop(grid, startingPos, visit.Vec2, true, out HashSet<DirectedLocation> _))
                 {
                     ++timeParadoxSafetyCount;
                 }
