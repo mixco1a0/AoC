@@ -25,9 +25,17 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
-                    Output = "",
+                    Output = "3749",
                     RawInput =
-@""
+@"190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20"
                 },
                 new Core.TestDatum
                 {
@@ -40,9 +48,54 @@ namespace AoC._2024
             return testData;
         }
 
+        private record Equation(long Result, List<long> Inputs)
+        {
+            public static Equation Parse(string input)
+            {
+                IEnumerable<long> values = Util.String.Split(input, ": ").Select(long.Parse);
+                return new Equation(values.First(), values.Skip(1).ToList());
+            }
+
+            public bool CanUseOps()
+            {
+                return CanUseOps(Inputs.First(), Inputs.Skip(1));
+            }
+
+            private bool CanUseOps(long value, IEnumerable<long> inputs)
+            {
+                if (!inputs.Any())
+                {
+                    return value == Result;
+                }
+                
+                // try adding first
+                long next = inputs.First();
+                if (CanUseOps(value + next, inputs.Skip(1)))
+                {
+                    return true;
+                }
+                // try multiplying next
+                else if (CanUseOps(value * next, inputs.Skip(1)))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
         {
-            return string.Empty;
+            List<Equation> equations = inputs.Select(Equation.Parse).ToList();
+            long sum = 0;
+            foreach (Equation equation in equations)
+            {
+                if (equation.CanUseOps())
+                {
+                    sum += equation.Result;
+                }
+            }
+            return sum.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
