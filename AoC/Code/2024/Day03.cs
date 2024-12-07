@@ -66,7 +66,6 @@ namespace AoC._2024
         {
             int sum = 0;
             string input = string.Join(' ', inputs);
-            //foreach (string input in inputs)
             {
                 Regex mulRegex = new(MulRegex);
                 Regex doRegex = new(DoRegex);

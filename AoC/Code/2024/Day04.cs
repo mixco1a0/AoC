@@ -188,7 +188,7 @@ MXMXAXMASX"
             return false;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool x_mas)
+        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool x_mas)
         {
             Base.Grid2 grid = new(inputs);
             int xmasCount = 0;

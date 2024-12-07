@@ -88,9 +88,10 @@ namespace AoC._2024
                 {
                     return true;
                 }
+                // try concatenation next
                 else if (useThreeOps)
                 {
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = new();
                     sb.Append(value);
                     sb.Append(next);
                     long newVal = long.Parse(sb.ToString());
@@ -101,7 +102,7 @@ namespace AoC._2024
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useThreeOps)
+        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useThreeOps)
         {
             List<Equation> equations = inputs.Select(Equation.Parse).ToList();
             long sum = 0;
