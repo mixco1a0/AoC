@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AoC._2024
 {
@@ -12,8 +13,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v1",
+                Core.Part.Two => "v1",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -40,9 +41,17 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "11387",
                     RawInput =
-@""
+@"190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20"
                 },
             ];
             return testData;
@@ -56,12 +65,12 @@ namespace AoC._2024
                 return new Equation(values.First(), values.Skip(1).ToList());
             }
 
-            public bool CanUseOps()
+            public bool CanUseOps(bool useThreeOps)
             {
-                return CanUseOps(Inputs.First(), Inputs.Skip(1));
+                return CanUseOps(Inputs.First(), Inputs.Skip(1), useThreeOps);
             }
 
-            private bool CanUseOps(long value, IEnumerable<long> inputs)
+            private bool CanUseOps(long value, IEnumerable<long> inputs, bool useThreeOps)
             {
                 if (!inputs.Any())
                 {
@@ -70,27 +79,35 @@ namespace AoC._2024
                 
                 // try adding first
                 long next = inputs.First();
-                if (CanUseOps(value + next, inputs.Skip(1)))
+                if (CanUseOps(value + next, inputs.Skip(1), useThreeOps))
                 {
                     return true;
                 }
                 // try multiplying next
-                else if (CanUseOps(value * next, inputs.Skip(1)))
+                else if (CanUseOps(value * next, inputs.Skip(1), useThreeOps))
                 {
                     return true;
+                }
+                else if (useThreeOps)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append(value);
+                    sb.Append(next);
+                    long newVal = long.Parse(sb.ToString());
+                    return CanUseOps(newVal, inputs.Skip(1), useThreeOps);
                 }
 
                 return false;
             }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useThreeOps)
         {
             List<Equation> equations = inputs.Select(Equation.Parse).ToList();
             long sum = 0;
             foreach (Equation equation in equations)
             {
-                if (equation.CanUseOps())
+                if (equation.CanUseOps(useThreeOps))
                 {
                     sum += equation.Result;
                 }
@@ -99,9 +116,9 @@ namespace AoC._2024
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
