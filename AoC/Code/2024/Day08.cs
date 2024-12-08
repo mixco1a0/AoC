@@ -43,9 +43,36 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "9",
                     RawInput =
-@""
+@"T.........
+...T......
+.T........
+..........
+..........
+..........
+..........
+..........
+..........
+.........."
+                },
+                new Core.TestDatum
+                {
+                    TestPart = Core.Part.Two,
+                    Output = "34",
+                    RawInput =
+@"............
+........0...
+.....0......
+.......0....
+....0.......
+......A.....
+............
+............
+........A...
+.........A..
+............
+............"
                 },
             ];
             return testData;
@@ -78,45 +105,88 @@ namespace AoC._2024
                 }
             }
 
-            public int CountAntinodes()
+            public int CountAntinodes(bool useResonantHarmonics)
             {
+                int antinodeCheckCount = useResonantHarmonics ? int.Max(Grid.MaxCol, Grid.MaxRow) : 1;
                 HashSet<Base.Vec2> antinodes = [];
                 foreach (var pair in Antennas)
                 {
                     List<Base.Vec2> locations = pair.Value;
+                    // if more than one antenna, auto antinodes
+                    if (useResonantHarmonics && locations.Count > 1)
+                    {
+                        foreach(Base.Vec2 loc in locations)
+                        {
+                            antinodes.Add(loc);
+                        }
+                    }
+
                     for (int a = 0; a < locations.Count; ++a)
                     {
                         for (int _a = a + 1; _a < locations.Count; ++_a)
                         {
                             Base.Vec2 diff = locations[_a] - locations[a];
+                            // check all pre locations
                             Base.Vec2 pre = locations[_a] + diff;
-                            if (Grid.Has(pre))
+                            for (int preCheck = 0; preCheck < antinodeCheckCount; ++preCheck)
                             {
-                                antinodes.Add(pre);
+                                if (Grid.Has(pre))
+                                {
+                                    antinodes.Add(pre);
+                                    pre += diff;
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
+
+                            // check all post locations
                             Base.Vec2 post = locations[a] - diff;
-                            if (Grid.Has(post))
+                            for (int postCheck = 0; postCheck < antinodeCheckCount; ++postCheck)
                             {
-                                antinodes.Add(post);
+                                if (Grid.Has(post))
+                                {
+                                    antinodes.Add(post);
+                                    post -= diff;
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
                 }
+
+                // if (useResonantHarmonics)
+                // {
+                //     char[,] printedGrid = Grid.Grid.Clone() as char[,];
+                //     foreach (Base.Vec2 vec2 in Grid)
+                //     {
+                //         if (antinodes.Contains(vec2))
+                //         {
+                //             printedGrid[vec2.X, vec2.Y] = '#';
+                //         }
+                //     }
+                //     Util.Grid.Print2D(Core.Log.ELevel.Spam, printedGrid);
+                // }
+
                 return antinodes.Count;
             }
 
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useResonantHarmonics)
         {
             AntennaMap am = new(inputs);
-            return am.CountAntinodes().ToString();
+            return am.CountAntinodes(useResonantHarmonics).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, false);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables);
+            => SharedSolution(inputs, variables, true);
     }
 }
