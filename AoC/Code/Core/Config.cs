@@ -264,15 +264,15 @@ namespace AoC.Core
         /// Generate a fresh config file
         /// </summary>
         /// <param name="configFileName"></param>
-        private void GenerateConfigFile(string configFileName)
+        private static void GenerateConfigFile(string configFileName)
         {
-            ConfigFile cf = new ConfigFile();
+            ConfigFile cf = new();
             for (ESupportedArgument arg = ESupportedArgument.Help; arg != ESupportedArgument.End; ++arg)
             {
                 cf.Values.Add(arg.ToString(), new Base.KeyVal<bool, string>(false, ""));
             }
             string rawJson = JsonConvert.SerializeObject(cf, Formatting.Indented);
-            using (StreamWriter sWriter = new StreamWriter(configFileName))
+            using (StreamWriter sWriter = new(configFileName))
             {
                 sWriter.Write(rawJson);
             }
