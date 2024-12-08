@@ -98,19 +98,16 @@ namespace AoC._2024
         {
             Base.Grid2 grid = new(inputs);
             Base.Vec2 startingPos = new();
-            for (int _c = 0; _c < grid.MaxCol; ++_c)
+            foreach (Base.Vec2 vec2 in grid)
             {
-                for (int _r = 0; _r < grid.MaxRow; ++_r)
+                if (grid.Grid[vec2.X, vec2.Y] == StartingPos)
                 {
-                    if (grid.Grid[_c, _r] == StartingPos)
-                    {
-                        startingPos = new(_c, _r);
-                        break;
-                    }
+                    startingPos = new(vec2.X, vec2.Y);
+                    break;
                 }
             }
 
-            WalkLoop(grid, startingPos, new(-1,-1), false, out HashSet<DirectedLocation> visited);
+            WalkLoop(grid, startingPos, new(-1, -1), false, out HashSet<DirectedLocation> visited);
             if (findOriginalPath)
             {
                 return visited.Count.ToString();

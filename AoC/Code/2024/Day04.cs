@@ -192,18 +192,15 @@ MXMXAXMASX"
         {
             Base.Grid2 grid = new(inputs);
             int xmasCount = 0;
-            for (int _c = 0; _c < grid.MaxCol; ++_c)
+            foreach (Base.Vec2 vec2 in grid)
             {
-                for (int _r = 0; _r < grid.MaxRow; ++_r)
+                if (!x_mas)
                 {
-                    if (!x_mas)
-                    {
-                        xmasCount += IsXmas(grid, _c, _r, 0, Base.Grid2.Dir.None);
-                    }
-                    else
-                    {
-                        xmasCount += IsXMas(grid, _c, _r, Base.Grid2.Dir.None) ? 1 : 0;
-                    }
+                    xmasCount += IsXmas(grid, vec2.X, vec2.Y, 0, Base.Grid2.Dir.None);
+                }
+                else
+                {
+                    xmasCount += IsXMas(grid, vec2.X, vec2.Y, Base.Grid2.Dir.None) ? 1 : 0;
                 }
             }
             return xmasCount.ToString();

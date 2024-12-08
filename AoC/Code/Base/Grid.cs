@@ -1,13 +1,13 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace AoC.Base
 {
-
     #region Grid2
-    public class Grid2
+    public class Grid2 : IEnumerable
     {
         #region Direction
         public enum Dir { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
@@ -154,6 +154,35 @@ namespace AoC.Base
         public char At(int col, int row)
         {
             return Grid[col, row];
+        }
+
+        public void Print(Core.Log.ELevel level)
+        {
+            StringBuilder sb = new();
+            Core.Log.WriteLine(level, $"Printing grid {MaxCol}x{MaxRow}:");
+            for (int _r = 0; _r < MaxRow; ++_r)
+            {
+                sb.Clear();
+                sb.Append($"{_r,4}| ");
+                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(col => Grid[col, _r])));
+                Core.Log.WriteLine(level, sb.ToString());
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator<Vec2> GetEnumerator()
+        {
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    yield return new(_c, _r);
+                }
+            }
         }
     }
     #endregion
