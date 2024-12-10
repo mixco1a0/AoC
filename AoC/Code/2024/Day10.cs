@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AoC.Base;
+using System.Text;
+using AoC.Util;
 
 namespace AoC._2024
 {
@@ -53,6 +54,19 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
+                    Output = "3",
+                    RawInput =
+@".....0.
+..4321.
+..5..2.
+..6543.
+..7..4.
+..8765.
+..9...."
+                },
+                new Core.TestDatum
+                {
+                    TestPart = Core.Part.Two,
                     Output = "",
                     RawInput =
 @""
@@ -76,7 +90,7 @@ namespace AoC._2024
             }
         }
 
-        private class Grid2T : Grid2<bool>;
+        private class Grid2T : Base.Grid2<bool>;
 
         private int GetTrailheadScore(Base.Grid2Char grid, Base.Vec2 trailhead)
         {
@@ -109,11 +123,88 @@ namespace AoC._2024
             return endPoints.Count;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private record NodeHistory(Base.Vec2 Cur, Base.Vec2 Prev);
+
+        private void PrintGrid(Base.Grid2Char grid, Base.Vec2 next, Grid2T.Dir dir)
+        {
+            StringBuilder sb = new();
+            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Printing grid {grid.MaxCol}x{grid.MaxRow}:");
+            for (int _r = 0; _r < grid.MaxRow; ++_r)
+            {
+                sb.Clear();
+                sb.Append($"{_r,4}| ");
+                for (int _c = 0; _c < grid.MaxCol; ++_c)
+                {
+                    if (next.X == _c && next.Y == _r)
+                    {
+                        sb.Append(Grid2T.Map.Arrow[dir]);
+                    }
+                    else
+                    {
+                        sb.Append(grid.At(_c, _r));
+                    }
+                }
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
+            }
+        }
+
+        private record Vec2Hash(Base.Vec2 Vec2, int History);
+
+        private int GetTrailheadRating(Base.Grid2Char grid, Base.Vec2 trailhead)
+        {
+            Queue<Vec2Hash> trails = [];
+            trails.Enqueue(new (trailhead, 0));
+            Dictionary<Base.Vec2, HashSet<int>> visited = [];
+            while (trails.Count > 0)
+            {
+                Vec2Hash cur = trails.Dequeue();
+                if (grid.At(cur.Vec2) == TrailEnd)
+                {
+                    continue;
+                }
+
+                foreach (Grid2T.Dir dir in Grid2T.Iter.Cardinal)
+                {
+                    Base.Vec2 next = cur.Vec2 + Grid2T.Map.Neighbor[dir];
+                    if (grid.Has(next))
+                    {
+                        int hash = HashCode.Combine(cur.History, next);
+                        if (visited.TryGetValue(next, out HashSet<int> value))
+                        {
+                            if (value.Contains(hash))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            visited.Add(next, []);
+                        }
+
+                        if (grid.At(next) == (grid.At(cur.Vec2) + 1))
+                        {
+                            trails.Enqueue(new(next, hash));
+                            visited[next].Add(hash);
+                            // PrintGrid(grid, next, dir);
+                        }
+                    }
+                }
+            }
+            return visited.Where(pair => grid.At(pair.Key) == TrailEnd).Select(pair => pair.Value.Count).Sum();
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool getRating)
         {
             Base.Grid2Char grid = new(inputs);
             GetTrailheads(grid, out HashSet<Base.Vec2> trailheads);
-            return trailheads.Select(th => GetTrailheadScore(grid, th)).Sum().ToString();
+            if (!getRating)
+            {
+                return trailheads.Select(th => GetTrailheadScore(grid, th)).Sum().ToString();
+            }
+            else
+            {
+                return trailheads.Select(th => GetTrailheadRating(grid, th)).Sum().ToString();
+            }
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
