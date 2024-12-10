@@ -14,8 +14,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v1",
+                Core.Part.Two => "v1",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -67,9 +67,16 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "81",
                     RawInput =
-@""
+@"89010123
+78121874
+87430965
+96549874
+45678903
+32019012
+01329801
+10456732"
                 },
             ];
             return testData;
