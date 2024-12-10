@@ -7,7 +7,25 @@ using System.Text;
 namespace AoC.Base
 {
     #region Grid2
-    public class Grid2 : IEnumerable
+    public class Grid2Char : Grid2<char>
+    {
+        public Grid2Char(List<string> rawGrid)
+        {
+            MaxCol = rawGrid[0].Length;
+            MaxRow = rawGrid.Count;
+
+            Grid = new char[MaxCol, MaxRow];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    Grid[_c, _r] = rawGrid[_r][_c];
+                }
+            }
+        }
+    }
+
+    public class Grid2<T> : IEnumerable
     {
         #region Direction
         public enum Dir { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
@@ -117,23 +135,15 @@ namespace AoC.Base
         };
         #endregion
 
-        public char[,] Grid { get; private set; }
-        public int MaxCol { get; private set; }
-        public int MaxRow { get; private set; }
+        public T[,] Grid { get; protected set; }
+        public int MaxCol { get; protected set; }
+        public int MaxRow { get; protected set; }
 
-        public Grid2(List<string> rawGrid)
+        public Grid2()
         {
-            MaxCol = rawGrid[0].Length;
-            MaxRow = rawGrid.Count;
-
-            Grid = new char[MaxCol, MaxRow];
-            for (int _c = 0; _c < MaxCol; ++_c)
-            {
-                for (int _r = 0; _r < MaxRow; ++_r)
-                {
-                    Grid[_c, _r] = rawGrid[_r][_c];
-                }
-            }
+            MaxCol = default;
+            MaxRow = default;
+            Grid = default;
         }
 
         public bool Has(Base.Vec2 vec2)
@@ -146,12 +156,12 @@ namespace AoC.Base
             return col >= 0 && col < MaxCol && row >= 0 && row < MaxRow;
         }
 
-        public char At(Base.Vec2 vec2)
+        public T At(Base.Vec2 vec2)
         {
             return Grid[vec2.X, vec2.Y];
         }
 
-        public char At(int col, int row)
+        public T At(int col, int row)
         {
             return Grid[col, row];
         }

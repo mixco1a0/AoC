@@ -82,7 +82,7 @@ namespace AoC._2024
 
         private class AntennaMap
         {
-            public Base.Grid2 Grid { get; set; }
+            public Base.Grid2Char Grid { get; set; }
             public Dictionary<char, List<Base.Vec2>> Antennas { get; set; }
 
             public AntennaMap(List<string> inputs)
