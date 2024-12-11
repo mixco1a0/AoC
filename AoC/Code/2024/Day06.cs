@@ -78,12 +78,12 @@ namespace AoC._2024
 
                 visited.Add(dl);
                 Base.Vec2 nextPos = curPos + Util.Grid2.Map.Neighbor[curDirection];
-                if (!grid.Has(nextPos))
+                if (!grid.Contains(nextPos))
                 {
                     return false;
                 }
 
-                if (grid.At(nextPos) == Obstacle || nextPos.Equals(obstaclePos))
+                if (grid[nextPos] == Obstacle || nextPos.Equals(obstaclePos))
                 {
                     curDirection = Util.Grid2.Map.RotateCW[curDirection];
                 }
@@ -100,7 +100,7 @@ namespace AoC._2024
             Base.Vec2 startingPos = new();
             foreach (Base.Vec2 vec2 in grid)
             {
-                if (grid.Grid[vec2.X, vec2.Y] == StartingPos)
+                if (grid[vec2] == StartingPos)
                 {
                     startingPos = new(vec2.X, vec2.Y);
                     break;

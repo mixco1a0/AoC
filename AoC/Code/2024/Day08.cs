@@ -91,7 +91,7 @@ namespace AoC._2024
                 Antennas = [];
                 foreach (Base.Vec2 vec2 in Grid)
                 {
-                    char key = Grid.At(vec2);
+                    char key = Grid[vec2];
                     if (key == EmptySpace)
                     {
                         continue;
@@ -130,7 +130,7 @@ namespace AoC._2024
                             Base.Vec2 pre = locations[_a] + diff;
                             for (int preCheck = 0; preCheck < antinodeCheckCount; ++preCheck)
                             {
-                                if (Grid.Has(pre))
+                                if (Grid.Contains(pre))
                                 {
                                     antinodes.Add(pre);
                                     pre += diff;
@@ -145,7 +145,7 @@ namespace AoC._2024
                             Base.Vec2 post = locations[a] - diff;
                             for (int postCheck = 0; postCheck < antinodeCheckCount; ++postCheck)
                             {
-                                if (Grid.Has(post))
+                                if (Grid.Contains(post))
                                 {
                                     antinodes.Add(post);
                                     post -= diff;

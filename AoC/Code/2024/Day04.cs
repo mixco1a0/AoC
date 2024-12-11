@@ -65,7 +65,7 @@ MXMXAXMASX"
 
         private static int IsXmas(Base.Grid2Char grid, int col, int row, int idx, Util.Grid2.Dir direction)
         {
-            if (grid.At(col, row) != XMAS[idx])
+            if (grid[col, row] != XMAS[idx])
             {
                 return 0;
             }
@@ -81,7 +81,7 @@ MXMXAXMASX"
                 foreach (var pair in Util.Grid2.Map.Neighbor)
                 {
                     Base.Vec2 next = cur + pair.Value;
-                    if (grid.Has(next))
+                    if (grid.Contains(next))
                     {
                         sum += IsXmas(grid, next.X, next.Y, idx + 1, pair.Key);
                     }
@@ -90,7 +90,7 @@ MXMXAXMASX"
             else
             {
                 Base.Vec2 next = cur + Util.Grid2.Map.Neighbor[direction];
-                if (grid.Has(next))
+                if (grid.Contains(next))
                 {
                     sum += IsXmas(grid, next.X, next.Y, idx + 1, direction);
                 }
@@ -105,7 +105,7 @@ MXMXAXMASX"
 
         private static bool IsXMas(Base.Grid2Char grid, int col, int row, Util.Grid2.Dir direction)
         {
-            if (grid.At(col, row) != XMAS[AIndex])
+            if (grid[col, row] != XMAS[AIndex])
             {
                 return false;
             }
@@ -134,10 +134,10 @@ MXMXAXMASX"
                 {
                     Base.Vec2 preA = cur + Util.Grid2.Map.Neighbor[dir];
                     Base.Vec2 postA = cur + Util.Grid2.Map.Neighbor[Util.Grid2.Map.Opposite[dir]];
-                    if (grid.Has(preA) && grid.Has(postA))
+                    if (grid.Contains(preA) && grid.Contains(postA))
                     {
-                        char preAChar = grid.At(preA);
-                        char postAChar = grid.At(postA);
+                        char preAChar = grid[preA];
+                        char postAChar = grid[postA];
                         if (isMas(preAChar, postAChar))
                         {
                             if (IsXMas(grid, col, row, Util.Grid2.Map.RotateCW[dir]))
@@ -152,10 +152,10 @@ MXMXAXMASX"
             {
                 Base.Vec2 preA = cur + Util.Grid2.Map.Neighbor[direction];
                 Base.Vec2 postA = cur + Util.Grid2.Map.Neighbor[Util.Grid2.Map.Opposite[direction]];
-                if (grid.Has(preA) && grid.Has(postA))
+                if (grid.Contains(preA) && grid.Contains(postA))
                 {
-                    char preAChar = grid.At(preA);
-                    char postAChar = grid.At(postA);
+                    char preAChar = grid[preA];
+                    char postAChar = grid[postA];
                     if (isMas(preAChar, postAChar))
                     {
                         // Util.Grid2.Dir original = Util.Grid2.Map.RotateCCW[direction];

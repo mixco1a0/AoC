@@ -11,15 +11,12 @@ namespace AoC.Base
     {
         public Grid2Char(List<string> rawGrid)
         {
-            MaxCol = rawGrid[0].Length;
-            MaxRow = rawGrid.Count;
-
-            Grid = new char[MaxCol, MaxRow];
+            m_array = new char[rawGrid.First().Length, rawGrid.Count];
             for (int _c = 0; _c < MaxCol; ++_c)
             {
                 for (int _r = 0; _r < MaxRow; ++_r)
                 {
-                    Grid[_c, _r] = rawGrid[_r][_c];
+                    m_array[_c, _r] = rawGrid[_r][_c];
                 }
             }
         }
@@ -40,7 +37,7 @@ namespace AoC.Base
                     }
                     else
                     {
-                        sb.Append(At(_c, _r));
+                        sb.Append(m_array[_c, _r]);
                     }
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
@@ -50,35 +47,40 @@ namespace AoC.Base
 
     public class Grid2<T> : IEnumerable
     {
-        public T[,] Grid { get; protected set; }
-        public int MaxCol { get; protected set; }
-        public int MaxRow { get; protected set; }
+        protected T[,] m_array;
+        public int MaxCol => m_array.GetLength(1);
+        public int MaxRow => m_array.GetLength(0);
 
         public Grid2()
         {
-            MaxCol = default;
-            MaxRow = default;
-            Grid = default;
+            m_array = default;
         }
 
-        public bool Has(Base.Vec2 vec2)
+        public Grid2(T[,] array)
         {
-            return vec2.X >= 0 && vec2.X < MaxCol && vec2.Y >= 0 && vec2.Y < MaxRow;
+            m_array = array;
         }
 
-        public bool Has(int col, int row)
+        public bool Contains(Base.Vec2 vec2)
+        {
+            return Contains(vec2.X, vec2.Y);
+        }
+
+        public bool Contains(int col, int row)
         {
             return col >= 0 && col < MaxCol && row >= 0 && row < MaxRow;
         }
 
-        public T At(Base.Vec2 vec2)
+        public T this[int col, int row]
         {
-            return Grid[vec2.X, vec2.Y];
+            get => m_array[col, row];
+            set => m_array[col, row] = value;
         }
 
-        public T At(int col, int row)
+        public T this[Base.Vec2 vec2]
         {
-            return Grid[col, row];
+            get => m_array[vec2.X, vec2.Y];
+            set => m_array[vec2.X, vec2.Y] = value;
         }
 
         public void Print(Core.Log.ELevel level)
@@ -89,7 +91,7 @@ namespace AoC.Base
             {
                 sb.Clear();
                 sb.Append($"{_r,4}| ");
-                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(col => Grid[col, _r])));
+                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(col => m_array[col, _r])));
                 Core.Log.WriteLine(level, sb.ToString());
             }
         }

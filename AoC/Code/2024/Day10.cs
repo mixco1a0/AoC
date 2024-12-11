@@ -89,7 +89,7 @@ namespace AoC._2024
             trailheads = [];
             foreach (Base.Vec2 vec2 in grid)
             {
-                if (grid.At(vec2) == TrailStart)
+                if (grid[vec2] == TrailStart)
                 {
                     trailheads.Add(vec2);
                 }
@@ -106,7 +106,7 @@ namespace AoC._2024
             {
                 Base.Vec2 cur = trails.Dequeue();
                 visited.Add(cur);
-                if (grid.At(cur) == TrailEnd)
+                if (grid[cur] == TrailEnd)
                 {
                     endPoints.Add(cur);
                     continue;
@@ -115,9 +115,9 @@ namespace AoC._2024
                 foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
                 {
                     Base.Vec2 next = cur + Util.Grid2.Map.Neighbor[dir];
-                    if (grid.Has(next) && !visited.Contains(next))
+                    if (grid.Contains(next) && !visited.Contains(next))
                     {
-                        if (grid.At(next) == (grid.At(cur) + 1))
+                        if (grid[next] == (grid[cur] + 1))
                         {
                             trails.Enqueue(next);
                         }
@@ -143,7 +143,7 @@ namespace AoC._2024
                     }
                     else
                     {
-                        sb.Append(grid.At(_c, _r));
+                        sb.Append(grid[_c, _r]);
                     }
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
@@ -160,7 +160,7 @@ namespace AoC._2024
             while (trails.Count > 0)
             {
                 Vec2Hash cur = trails.Dequeue();
-                if (grid.At(cur.Vec2) == TrailEnd)
+                if (grid[cur.Vec2] == TrailEnd)
                 {
                     continue;
                 }
@@ -168,7 +168,7 @@ namespace AoC._2024
                 foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
                 {
                     Base.Vec2 next = cur.Vec2 + Util.Grid2.Map.Neighbor[dir];
-                    if (grid.Has(next))
+                    if (grid.Contains(next))
                     {
                         int hash = HashCode.Combine(cur.History, next);
                         if (visited.TryGetValue(next, out HashSet<int> value))
@@ -183,7 +183,7 @@ namespace AoC._2024
                             visited.Add(next, []);
                         }
 
-                        if (grid.At(next) == (grid.At(cur.Vec2) + 1))
+                        if (grid[next] == (grid[cur.Vec2] + 1))
                         {
                             trails.Enqueue(new(next, hash));
                             visited[next].Add(hash);
@@ -192,7 +192,7 @@ namespace AoC._2024
                     }
                 }
             }
-            return visited.Where(pair => grid.At(pair.Key) == TrailEnd).Select(pair => pair.Value.Count).Sum();
+            return visited.Where(pair => grid[pair.Key] == TrailEnd).Select(pair => pair.Value.Count).Sum();
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool getRating)
