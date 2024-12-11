@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AoC.Util;
 
 namespace AoC._2024
 {
@@ -97,8 +96,6 @@ namespace AoC._2024
             }
         }
 
-        private class Grid2T : Base.Grid2<bool>;
-
         private int GetTrailheadScore(Base.Grid2Char grid, Base.Vec2 trailhead)
         {
             Queue<Base.Vec2> trails = [];
@@ -115,9 +112,9 @@ namespace AoC._2024
                     continue;
                 }
 
-                foreach (Grid2T.Dir dir in Grid2T.Iter.Cardinal)
+                foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
                 {
-                    Base.Vec2 next = cur + Grid2T.Map.Neighbor[dir];
+                    Base.Vec2 next = cur + Util.Grid2.Map.Neighbor[dir];
                     if (grid.Has(next) && !visited.Contains(next))
                     {
                         if (grid.At(next) == (grid.At(cur) + 1))
@@ -130,9 +127,7 @@ namespace AoC._2024
             return endPoints.Count;
         }
 
-        private record NodeHistory(Base.Vec2 Cur, Base.Vec2 Prev);
-
-        private void PrintGrid(Base.Grid2Char grid, Base.Vec2 next, Grid2T.Dir dir)
+        private void PrintGrid(Base.Grid2Char grid, Base.Vec2 next, Util.Grid2.Dir dir)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Printing grid {grid.MaxCol}x{grid.MaxRow}:");
@@ -144,7 +139,7 @@ namespace AoC._2024
                 {
                     if (next.X == _c && next.Y == _r)
                     {
-                        sb.Append(Grid2T.Map.Arrow[dir]);
+                        sb.Append(Util.Grid2.Map.Arrow[dir]);
                     }
                     else
                     {
@@ -170,9 +165,9 @@ namespace AoC._2024
                     continue;
                 }
 
-                foreach (Grid2T.Dir dir in Grid2T.Iter.Cardinal)
+                foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
                 {
-                    Base.Vec2 next = cur.Vec2 + Grid2T.Map.Neighbor[dir];
+                    Base.Vec2 next = cur.Vec2 + Util.Grid2.Map.Neighbor[dir];
                     if (grid.Has(next))
                     {
                         int hash = HashCode.Combine(cur.History, next);

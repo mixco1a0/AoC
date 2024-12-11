@@ -137,7 +137,7 @@ namespace AoC._2024
                     Capture capture = mulMC[i];
                     if (dosAndDonts.Where(dnd => dnd.HasInc(capture.Index)).Any())
                     {
-                        Log(capture.Value);
+                        // Log(capture.Value);
                         string match = capture.Value;
                         int[] values = Util.String.Split(capture.Value, "mul(,)").Select(int.Parse).ToArray();
                         sum += values[0] * values[1];

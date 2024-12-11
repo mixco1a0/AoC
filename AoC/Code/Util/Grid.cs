@@ -5,6 +5,117 @@ using System.Text;
 
 namespace AoC.Util
 {
+    public static class Grid2
+    {
+        #region Direction
+        public enum Dir { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
+
+        public static class Map
+        {
+            /// <summary>
+            /// NorthWest (-1, -1) | North     ( 0, -1) | NorthEast ( 1, -1)
+            /// West      (-1,  0) | None      ( 0,  0) | East      ( 1,  0)
+            /// SouthWest (-1,  1) | South     ( 0,  1) | SouthEast ( 1,  1)
+            /// </summary>
+            public static readonly Dictionary<Dir, Base.Vec2> Neighbor = new()
+            {
+                { Dir.North,        new Base.Vec2( 0, -1) },
+                { Dir.NorthEast,    new Base.Vec2( 1, -1) },
+                { Dir.East,         new Base.Vec2( 1,  0) },
+                { Dir.SouthEast,    new Base.Vec2( 1,  1) },
+                { Dir.South,        new Base.Vec2( 0,  1) },
+                { Dir.SouthWest,    new Base.Vec2(-1,  1) },
+                { Dir.West,         new Base.Vec2(-1,  0) },
+                { Dir.NorthWest,    new Base.Vec2(-1, -1) },
+                { Dir.None,         new Base.Vec2( 0,  0) },
+            };
+
+            public static readonly Dictionary<Dir, char> Arrow = new()
+            {
+                { Dir.North,        '↑' },
+                { Dir.NorthEast,    '↗' },
+                { Dir.East,         '→' },
+                { Dir.SouthEast,    '↘' },
+                { Dir.South,        '↓' },
+                { Dir.SouthWest,    '↙' },
+                { Dir.West,         '←' },
+                { Dir.NorthWest,    '↖' },
+                { Dir.None,         '.' },
+            };
+
+            public static readonly Dictionary<Dir, Dir> Opposite = new()
+            {
+                { Dir.North,        Dir.South     },
+                { Dir.NorthEast,    Dir.SouthWest },
+                { Dir.East,         Dir.West      },
+                { Dir.SouthEast,    Dir.NorthWest },
+                { Dir.South,        Dir.North     },
+                { Dir.SouthWest,    Dir.NorthEast },
+                { Dir.West,         Dir.East      },
+                { Dir.NorthWest,    Dir.SouthEast },
+                { Dir.None,         Dir.None      },
+            };
+
+            public static readonly Dictionary<Dir, Dir> RotateCW = new()
+            {
+                { Dir.North,        Dir.East      },
+                { Dir.NorthEast,    Dir.SouthEast },
+                { Dir.East,         Dir.South     },
+                { Dir.SouthEast,    Dir.SouthWest },
+                { Dir.South,        Dir.West      },
+                { Dir.SouthWest,    Dir.NorthWest },
+                { Dir.West,         Dir.North     },
+                { Dir.NorthWest,    Dir.NorthEast },
+                { Dir.None,         Dir.None      },
+            };
+
+            public static readonly Dictionary<Dir, Dir> RotateCCW = new()
+            {
+                { Dir.North,        Dir.West      },
+                { Dir.NorthEast,    Dir.NorthWest },
+                { Dir.East,         Dir.North     },
+                { Dir.SouthEast,    Dir.NorthEast },
+                { Dir.South,        Dir.East      },
+                { Dir.SouthWest,    Dir.SouthEast },
+                { Dir.West,         Dir.South     },
+                { Dir.NorthWest,    Dir.SouthWest },
+                { Dir.None,         Dir.None      },
+            };
+        };
+
+        public static class Iter
+        {
+            public static readonly Dir[] All =
+            [
+                Dir.North,
+                Dir.NorthEast,
+                Dir.East,
+                Dir.SouthEast,
+                Dir.South,
+                Dir.SouthWest,
+                Dir.West,
+                Dir.NorthWest
+            ];
+
+            public static readonly Dir[] Cardinal =
+            [
+                Dir.North,
+                Dir.East,
+                Dir.South,
+                Dir.West
+            ];
+
+            public static readonly Dir[] Ordinal =
+            [
+                Dir.NorthEast,
+                Dir.SouthEast,
+                Dir.SouthWest,
+                Dir.NorthWest
+            ];
+        };
+        #endregion
+    }
+
     public static class Grid
     {
         #region Print 2D

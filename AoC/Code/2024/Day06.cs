@@ -61,23 +61,23 @@ namespace AoC._2024
         private static readonly char StartingPos = '^';
         private static readonly char Obstacle = '#';
 
-        private record DirectedLocation(Base.Vec2 Vec2, Base.Grid2Char.Dir Dir);
+        private record DirectedLocation(Base.Vec2 Vec2, Util.Grid2.Dir Dir);
 
         private static bool WalkLoop(Base.Grid2Char grid, Base.Vec2 startingPos, Base.Vec2 obstaclePos, bool useDirection, out HashSet<DirectedLocation> visited)
         {
             visited = [];
             Base.Vec2 curPos = startingPos;
-            Base.Grid2Char.Dir curDirection = Base.Grid2Char.Dir.North;
+            Util.Grid2.Dir curDirection = Util.Grid2.Dir.North;
             while (true)
             {
-                DirectedLocation dl = new(curPos, useDirection ? curDirection : Base.Grid2Char.Dir.None);
-                if (dl.Dir != Base.Grid2Char.Dir.None && visited.Contains(dl))
+                DirectedLocation dl = new(curPos, useDirection ? curDirection : Util.Grid2.Dir.None);
+                if (dl.Dir != Util.Grid2.Dir.None && visited.Contains(dl))
                 {
                     return true;
                 }
 
                 visited.Add(dl);
-                Base.Vec2 nextPos = curPos + Base.Grid2Char.Map.Neighbor[curDirection];
+                Base.Vec2 nextPos = curPos + Util.Grid2.Map.Neighbor[curDirection];
                 if (!grid.Has(nextPos))
                 {
                     return false;
@@ -85,7 +85,7 @@ namespace AoC._2024
 
                 if (grid.At(nextPos) == Obstacle || nextPos.Equals(obstaclePos))
                 {
-                    curDirection = Base.Grid2Char.Map.RotateCW[curDirection];
+                    curDirection = Util.Grid2.Map.RotateCW[curDirection];
                 }
                 else
                 {

@@ -63,7 +63,7 @@ MXMXAXMASX"
         private static readonly int AIndex = 2;
         private static readonly int SIndex = 3;
 
-        private static int IsXmas(Base.Grid2Char grid, int col, int row, int idx, Base.Grid2Char.Dir direction)
+        private static int IsXmas(Base.Grid2Char grid, int col, int row, int idx, Util.Grid2.Dir direction)
         {
             if (grid.At(col, row) != XMAS[idx])
             {
@@ -76,9 +76,9 @@ MXMXAXMASX"
 
             int sum = 0;
             Base.Vec2 cur = new(col, row);
-            if (direction == Base.Grid2Char.Dir.None)
+            if (direction == Util.Grid2.Dir.None)
             {
-                foreach (var pair in Base.Grid2Char.Map.Neighbor)
+                foreach (var pair in Util.Grid2.Map.Neighbor)
                 {
                     Base.Vec2 next = cur + pair.Value;
                     if (grid.Has(next))
@@ -89,7 +89,7 @@ MXMXAXMASX"
             }
             else
             {
-                Base.Vec2 next = cur + Base.Grid2Char.Map.Neighbor[direction];
+                Base.Vec2 next = cur + Util.Grid2.Map.Neighbor[direction];
                 if (grid.Has(next))
                 {
                     sum += IsXmas(grid, next.X, next.Y, idx + 1, direction);
@@ -103,7 +103,7 @@ MXMXAXMASX"
             return sum;
         }
 
-        private static bool IsXMas(Base.Grid2Char grid, int col, int row, Base.Grid2Char.Dir direction)
+        private static bool IsXMas(Base.Grid2Char grid, int col, int row, Util.Grid2.Dir direction)
         {
             if (grid.At(col, row) != XMAS[AIndex])
             {
@@ -128,19 +128,19 @@ MXMXAXMASX"
             }
 
             Base.Vec2 cur = new(col, row);
-            if (direction == Base.Grid2Char.Dir.None)
+            if (direction == Util.Grid2.Dir.None)
             {
-                foreach (Base.Grid2Char.Dir dir in Base.Grid2Char.Iter.Ordinal)
+                foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Ordinal)
                 {
-                    Base.Vec2 preA = cur + Base.Grid2Char.Map.Neighbor[dir];
-                    Base.Vec2 postA = cur + Base.Grid2Char.Map.Neighbor[Base.Grid2Char.Map.Opposite[dir]];
+                    Base.Vec2 preA = cur + Util.Grid2.Map.Neighbor[dir];
+                    Base.Vec2 postA = cur + Util.Grid2.Map.Neighbor[Util.Grid2.Map.Opposite[dir]];
                     if (grid.Has(preA) && grid.Has(postA))
                     {
                         char preAChar = grid.At(preA);
                         char postAChar = grid.At(postA);
                         if (isMas(preAChar, postAChar))
                         {
-                            if (IsXMas(grid, col, row, Base.Grid2Char.Map.RotateCW[dir]))
+                            if (IsXMas(grid, col, row, Util.Grid2.Map.RotateCW[dir]))
                             {
                                 return true;
                             }
@@ -150,18 +150,18 @@ MXMXAXMASX"
             }
             else
             {
-                Base.Vec2 preA = cur + Base.Grid2Char.Map.Neighbor[direction];
-                Base.Vec2 postA = cur + Base.Grid2Char.Map.Neighbor[Base.Grid2Char.Map.Opposite[direction]];
+                Base.Vec2 preA = cur + Util.Grid2.Map.Neighbor[direction];
+                Base.Vec2 postA = cur + Util.Grid2.Map.Neighbor[Util.Grid2.Map.Opposite[direction]];
                 if (grid.Has(preA) && grid.Has(postA))
                 {
                     char preAChar = grid.At(preA);
                     char postAChar = grid.At(postA);
                     if (isMas(preAChar, postAChar))
                     {
-                        // Base.Grid2Char.Dir original = Base.Grid2Char.Map.RotateCCW[direction];
-                        // Base.Grid2Char.Dir originalOpposite = Base.Grid2Char.Map.Opposite[original];
-                        // Base.Vec2 origPreA = cur + Base.Grid2Char.Map.Neighbor[original];
-                        // Base.Vec2 origPostA = cur + Base.Grid2Char.Map.Neighbor[originalOpposite];
+                        // Util.Grid2.Dir original = Util.Grid2.Map.RotateCCW[direction];
+                        // Util.Grid2.Dir originalOpposite = Util.Grid2.Map.Opposite[original];
+                        // Base.Vec2 origPreA = cur + Util.Grid2.Map.Neighbor[original];
+                        // Base.Vec2 origPostA = cur + Util.Grid2.Map.Neighbor[originalOpposite];
                         // char[,] temp = new char[3, 3];
                         // for (int _c = 0; _c < 3; ++_c)
                         // {
@@ -196,11 +196,11 @@ MXMXAXMASX"
             {
                 if (!x_mas)
                 {
-                    xmasCount += IsXmas(grid, vec2.X, vec2.Y, 0, Base.Grid2Char.Dir.None);
+                    xmasCount += IsXmas(grid, vec2.X, vec2.Y, 0, Util.Grid2.Dir.None);
                 }
                 else
                 {
-                    xmasCount += IsXMas(grid, vec2.X, vec2.Y, Base.Grid2Char.Dir.None) ? 1 : 0;
+                    xmasCount += IsXMas(grid, vec2.X, vec2.Y, Util.Grid2.Dir.None) ? 1 : 0;
                 }
             }
             return xmasCount.ToString();
