@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AoC.Base;
 
 namespace AoC._2024
 {
@@ -12,8 +13,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v2",
+                Core.Part.Two => "v2",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -38,54 +39,82 @@ namespace AoC._2024
                     RawInput =
 @"125 17"
                 },
-                new Core.TestDatum
-                {
-                    TestPart = Core.Part.Two,
-                    Output = "",
-                    RawInput =
-@""
-                },
             ];
             return testData;
         }
 
         private int _BlinkCount { get; }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private static void UpdateStoneCount(ref Dictionary<long, long> stones, long stone, long count)
         {
-            GetVariable(nameof(_BlinkCount), 25, variables, out int blinkCount);
-            List<long> stones = Util.Number.SplitL(inputs.First(), ' ').ToList();
+            if (stones.ContainsKey(stone))
+            {
+                stones[stone] += count;
+            }
+            else
+            {
+                stones[stone] = count;
+            }
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int maxBlinkCount)
+        {
+            GetVariable(nameof(_BlinkCount), maxBlinkCount, variables, out int blinkCount);
+            Dictionary<long, long[]> stoneCache = [];
+            Dictionary<long, long> stones = [];
+            foreach (long stone in Util.Number.SplitL(inputs.First(), ' '))
+            {
+                UpdateStoneCount(ref stones, stone, 1);
+            }
+
             for (int _bc = 0; _bc < blinkCount; ++_bc)
             {
-                List<long> newStones = [];
-                foreach(long stone in stones)
+                Dictionary<long, long> stonesAfterBlink = [];
+                foreach (var pair in stones)
                 {
-                    if (stone == 0)
+                    if (stoneCache.TryGetValue(pair.Key, out long[] nextStones))
                     {
-                        newStones.Add(1);
+                        foreach (long nextStone in nextStones)
+                        {
+                            UpdateStoneCount(ref stonesAfterBlink, nextStone, pair.Value);
+                        }
+                        continue;
                     }
-                    else if (stone.ToString().Length % 2 == 0)
+
+                    if (pair.Key == 0)
                     {
-                        string s = stone.ToString();
-                        string s1 = s[..(s.Length / 2)];
-                        string s2 = s[(s.Length / 2)..];
-                        newStones.Add(long.Parse(s1));
-                        newStones.Add(long.Parse(s2));
+                        UpdateStoneCount(ref stonesAfterBlink, 1, pair.Value);
+                        stoneCache[0] = [1];
+                        continue;
+                    }
+
+                    string stoneString = pair.Key.ToString();
+                    if (stoneString.Length % 2 == 0)
+                    {
+                        string s = stoneString.ToString();
+                        long lowerStone = long.Parse(s[..(s.Length / 2)]);
+                        long upperStone = long.Parse(s[(s.Length / 2)..]);
+                        UpdateStoneCount(ref stonesAfterBlink, lowerStone, pair.Value);
+                        UpdateStoneCount(ref stonesAfterBlink, upperStone, pair.Value);
+                        stoneCache[pair.Key] = [lowerStone, upperStone];
                     }
                     else
                     {
-                        newStones.Add(stone * 2024);
+                        long newStone = pair.Key * 2024;
+                        UpdateStoneCount(ref stonesAfterBlink, newStone, pair.Value);
+                        stoneCache[pair.Key] = [newStone];
                     }
                 }
-                stones = [.. newStones];
+                stones = stonesAfterBlink;
             }
-            return stones.Count.ToString();
+
+            return stones.Select(pair => pair.Value).Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, false);
+            => SharedSolution(inputs, variables, 25);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, true);
+            => SharedSolution(inputs, variables, 75);
     }
 }
