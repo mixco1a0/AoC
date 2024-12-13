@@ -21,7 +21,7 @@ namespace AoC.Base
             }
         }
 
-        private void Print(Base.Vec2 next = null, Util.Grid2.Dir dir = Util.Grid2.Dir.None)
+        public override void PrintNextArrow(Core.Log.ELevel level, Base.Vec2 next = null, Util.Grid2.Dir dir = Util.Grid2.Dir.None)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Printing grid {MaxCol}x{MaxRow}:");
@@ -39,6 +39,36 @@ namespace AoC.Base
                     {
                         sb.Append(m_array[_c, _r]);
                     }
+                }
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
+            }
+        }
+    }
+    public class Grid2Bool : Grid2<bool>
+    {
+        public Grid2Bool(List<string> rawGrid)
+        {
+            m_array = new bool[rawGrid.First().Length, rawGrid.Count];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_c, _r] = false;
+                }
+            }
+        }
+
+        public override void Print(Core.Log.ELevel level)
+        {
+            StringBuilder sb = new();
+            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Printing grid {MaxCol}x{MaxRow}:");
+            for (int _r = 0; _r < MaxRow; ++_r)
+            {
+                sb.Clear();
+                sb.Append($"{_r,4}| ");
+                for (int _c = 0; _c < MaxCol; ++_c)
+                {
+                    sb.Append(m_array[_c, _r] ? '#' : '.');
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
             }
@@ -83,7 +113,20 @@ namespace AoC.Base
             set => m_array[vec2.X, vec2.Y] = value;
         }
 
-        public void Print(Core.Log.ELevel level)
+        public virtual void Print(Core.Log.ELevel level)
+        {
+            StringBuilder sb = new();
+            Core.Log.WriteLine(level, $"Printing grid {MaxCol}x{MaxRow}:");
+            for (int _r = 0; _r < MaxRow; ++_r)
+            {
+                sb.Clear();
+                sb.Append($"{_r,4}| ");
+                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(col => m_array[col, _r])));
+                Core.Log.WriteLine(level, sb.ToString());
+            }
+        }
+
+        public virtual void PrintNextArrow(Core.Log.ELevel level, Base.Vec2 next = null, Util.Grid2.Dir dir = Util.Grid2.Dir.None)
         {
             StringBuilder sb = new();
             Core.Log.WriteLine(level, $"Printing grid {MaxCol}x{MaxRow}:");
