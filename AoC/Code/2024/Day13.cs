@@ -13,8 +13,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v1",
+                Core.Part.Two => "v1",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -23,15 +23,6 @@ namespace AoC._2024
         {
             List<Core.TestDatum> testData =
             [
-//                 new Core.TestDatum
-//                 {
-//                     TestPart = Core.Part.One,
-//                     Output = "1",
-//                     RawInput =
-// @"Button A: X+19, Y+55
-// Button B: X+55, Y+26
-// Prize: X=4334, Y=4142"
-//                 },
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
@@ -205,33 +196,7 @@ Prize: X=18641, Y=10279"
             return bpA * 3 + bpB;
         }
 
-        private static int GetButtonPresses(Machine machine, MachineType priorityButton, int curButtonPresses, Base.Vec2L claw, int maxButtonPresses)
-        {
-            if (curButtonPresses > maxButtonPresses)
-            {
-                return int.MaxValue;
-            }
-
-            if (claw.X > machine.Prize.X || claw.Y > machine.Prize.Y)
-            {
-                return int.MaxValue;
-            }
-
-            Base.Vec2L claw1 = claw + (priorityButton == MachineType.ButtonA ? machine.ButtonA : machine.ButtonB);
-            Base.Vec2L claw2 = claw + (priorityButton == MachineType.ButtonA ? machine.ButtonB : machine.ButtonA);
-
-            int b1Presses = GetButtonPresses(machine, priorityButton, curButtonPresses + 1, claw1, maxButtonPresses);
-            int b2Presses = GetButtonPresses(machine, priorityButton, curButtonPresses + 1, claw2, maxButtonPresses);
-
-            if (b1Presses == int.MaxValue && b2Presses == int.MaxValue)
-            {
-                return int.MaxValue;
-            }
-
-            return int.Min(b1Presses, b2Presses);
-        }
-
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool adjustPrizes)
+        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool adjustPrizes)
         {
             long maxButtonPresses = adjustPrizes ? long.MaxValue : 100;
             long prizeAdjustment = adjustPrizes ? 10000000000000 : 0;

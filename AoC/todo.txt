@@ -1,3 +1,5 @@
+2024.d13 -> migrate triangle class outside, auto solving approach
+
 make a util that properly displays time according to specific units -> Program.PrintPerf()
 
 clean up performance logging
