@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AoC.Util;
 
 namespace AoC._2024
 {
@@ -136,7 +135,7 @@ MMMISSJEEE"
             }
         }
 
-        private record MoveDir(Base.Vec2 Vec2, Util.Grid2.Dir Dir);
+        private record Wall(Base.Vec2 Vec2, Util.Grid2.Dir Dir);
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool useDiscount)
         {
@@ -160,6 +159,7 @@ MMMISSJEEE"
                 // walk out the contiguous region 
                 Queue<Base.Vec2> sameNodes = [];
                 List<Base.Vec2> curRegionNodes = [];
+                List<Wall> walls = [];
                 sameNodes.Enqueue(curOrigin);
                 while (sameNodes.Count > 0)
                 {
@@ -177,12 +177,14 @@ MMMISSJEEE"
                         Base.Vec2 nextNode = curNode + Util.Grid2.Map.Neighbor[dir];
                         if (!grid.Contains(nextNode))
                         {
+                            walls.Add(new(curNode, dir));
                             ++nodePerimeter;
                             continue;
                         }
 
                         if (grid[nextNode] != curRegion)
                         {
+                            walls.Add(new(curNode, dir));
                             differentNodes.Enqueue(nextNode);
                             ++nodePerimeter;
                             continue;
@@ -198,118 +200,53 @@ MMMISSJEEE"
                 // calculate the faces
                 if (useDiscount)
                 {
-                    if (curRegionNodes.Count == 1 || curRegionNodes.Count == 2)
+                    int faceCount = 0;
+                    foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
                     {
-                        values[curOrigin].Faces = 4;
-                    }
-                    else
-                    {
-                        Base.Grid2Bool tempFlags = new(inputs);
+                        IEnumerable<Wall> dirWalls = walls.Where(w => w.Dir == dir);
+                        IEnumerable<IGrouping<int, Wall>> groupedWalls;
 
-                        // find a safe point to start moving around from
-                        Base.Vec2 faceOrigin = curOrigin;
-
-                        // TODO: just sort by X, then Y, always choosing min
-                        bool moved = true;
-                        while (moved)
+                        bool isNS = dir == Util.Grid2.Dir.North || dir == Util.Grid2.Dir.South;
+                        if (isNS)
                         {
-                            moved = false;
-                            while (true)
-                            {
-                                Base.Vec2 prevFace = faceOrigin - Util.Grid2.Map.Neighbor[Util.Grid2.Dir.West];
-                                if (curRegionNodes.Contains(prevFace))
-                                {
-                                    moved = true;
-                                    faceOrigin = prevFace;
-                                }
-                                break;
-                            }
-
-                            while (true)
-                            {
-                                Base.Vec2 prevFace = faceOrigin - Util.Grid2.Map.Neighbor[Util.Grid2.Dir.North];
-                                if (curRegionNodes.Contains(prevFace))
-                                {
-                                    moved = true;
-                                    faceOrigin = prevFace;
-                                }
-                                break;
-                            }
+                            dirWalls = dirWalls.OrderBy(w => w.Vec2.X);
+                            groupedWalls = dirWalls.GroupBy(w => w.Vec2.Y);
+                        }
+                        else
+                        {
+                            dirWalls = dirWalls.OrderBy(w => w.Vec2.Y);
+                            groupedWalls = dirWalls.GroupBy(w => w.Vec2.X);
                         }
 
-                        // goal node
-                        MoveDir moveDirOrigin = new(curOrigin, Util.Grid2.Dir.East);
-                        MoveDir prevMoveDir = moveDirOrigin;
-
-                        Base.Vec2 curNode = curOrigin;
-                        // Util.Grid2.Dir curDir = Util.Grid2.Dir.East;
-                        int faceCount = 0;
-
-                        Queue<MoveDir> wallWalk = [];
-                        wallWalk.Enqueue(moveDirOrigin);
-                        while (wallWalk.Count > 0)
+                        foreach (var grouping in groupedWalls)
                         {
-                            // tempFlags.Print(Core.Log.ELevel.Spam);
-
-                            MoveDir moveDir = wallWalk.Dequeue();
-                            // grid.PrintNextArrow(Core.Log.ELevel.Spam, moveDir.Vec2, moveDir.Dir);
-                            if (faceCount > 1 && prevMoveDir.Equals(moveDirOrigin))
+                            Base.Vec2 prev = new(grid.MaxCol, grid.MaxRow);
+                            foreach (Wall w in grouping)
                             {
-                                break;
+                                Base.Vec2 test = w.Vec2 - prev;
+                                if (isNS)
+                                {
+                                    if (test.X != 1)
+                                    {
+                                        ++faceCount;
+                                    }
+                                }
+                                else
+                                {
+                                    if (test.Y != 1)
+                                    {
+                                        ++faceCount;
+                                    }
+                                }
+                                prev = w.Vec2;
                             }
-
-                            tempFlags[moveDir.Vec2] = true;
-
-                            Util.Grid2.Dir ccwDir = Util.Grid2.Map.RotateCCW[moveDir.Dir];
-                            Base.Vec2 ccwNode = moveDir.Vec2 + Util.Grid2.Map.Neighbor[ccwDir];
-                            if (grid.Contains(ccwNode) && curRegionNodes.Contains(ccwNode))
-                            {
-                                ++faceCount;
-                                prevMoveDir = new(moveDir.Vec2, ccwDir);
-                                wallWalk.Enqueue(new(ccwNode, ccwDir));
-                                continue;
-                            }
-
-                            Base.Vec2 nextWall = moveDir.Vec2 + Util.Grid2.Map.Neighbor[moveDir.Dir];
-                            if (grid.Contains(nextWall) && curRegionNodes.Contains(nextWall))
-                            {
-                                prevMoveDir = new(nextWall, moveDir.Dir);
-                                wallWalk.Enqueue(new(nextWall, moveDir.Dir));
-                                continue;
-                            }
-
-                            Util.Grid2.Dir cwDir = Util.Grid2.Map.RotateCW[moveDir.Dir];
-                            Base.Vec2 cwNode = moveDir.Vec2 + Util.Grid2.Map.Neighbor[cwDir];
-                            if (grid.Contains(cwNode) && curRegionNodes.Contains(cwNode))
-                            {
-                                ++faceCount;
-                                prevMoveDir = new(moveDir.Vec2, cwDir);
-                                wallWalk.Enqueue(new(cwNode, cwDir));
-                                continue;
-                            }
-
-                            // turn in place
-                            ++faceCount;
-                            prevMoveDir = new(moveDir.Vec2, cwDir);
-                            wallWalk.Enqueue(new(moveDir.Vec2, cwDir));
                         }
-
-                        values[curOrigin].Faces = faceCount;
                     }
-
-                    // Log(Core.Log.ELevel.Spam, $"Region: {curRegion} @ {curOrigin} = {values[curOrigin]}");
-                    // grid.Print(Core.Log.ELevel.Spam);
-                    // flags.Print(Core.Log.ELevel.Spam);
+                    values[curOrigin].Faces += faceCount;
                 }
             }
 
-            if (!useDiscount)
-            {
-                return values.Select(v => v.Value.Area * v.Value.Perimeter).Sum().ToString();
-            }
-
-
-            return values.Select(v => v.Value.Area * v.Value.Faces).Sum().ToString();
+            return values.Select(v => v.Value.Area * (useDiscount ? v.Value.Faces : v.Value.Perimeter)).Sum().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
