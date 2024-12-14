@@ -23,6 +23,15 @@ namespace AoC._2024
         {
             List<Core.TestDatum> testData =
             [
+//                 new Core.TestDatum
+//                 {
+//                     TestPart = Core.Part.One,
+//                     Output = "1",
+//                     RawInput =
+// @"Button A: X+19, Y+55
+// Button B: X+55, Y+26
+// Prize: X=4334, Y=4142"
+//                 },
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
@@ -55,7 +64,16 @@ Prize: X=18641, Y=10279"
             return testData;
         }
 
-        private record Machine(Base.Vec2 ButtonA, Base.Vec2 ButtonB, Base.Vec2 Prize);
+        private record Machine(Base.Vec2 ButtonA, Base.Vec2 ButtonB, Base.Vec2 Prize)
+        {
+            public void Log(Action<string> log)
+            {
+                log($"Button A: X+{ButtonA.X}, Y+{ButtonA.Y}");
+                log($"Button B: X+{ButtonB.X}, Y+{ButtonB.Y}");
+                log($"Prize: X={Prize.X}, Y={Prize.Y}");
+                log("");
+            }
+        }
 
         private enum MachineType
         {
@@ -99,54 +117,100 @@ Prize: X=18641, Y=10279"
             return [.. machines];
         }
 
+        private static readonly double VARNAME = 0.0001;
+
+        private class Triple : Base.Vec3D
+        {
+            public double A { get => X; set => X = value; }
+            public double B { get => Y; set => Y = value; }
+            public double C { get => Z; set => Z = value; }
+
+            public Triple() : base() { }
+
+            public Triple(double a, double b, double c) : base(a, b, c) { }
+
+            public void SolveB()
+            {
+                B = Math.Sqrt(Math.Pow(C, 2) + Math.Pow(A, 2));
+            }
+
+            public override string ToString()
+            {
+                return $"({A:0.###},{B:0.###},{C:0.###})";
+            }
+        }
+
+        private class Triangle
+        {
+            public Triple S { get; set; }
+            public Triple A { get; set; }
+
+            public Triangle()
+            {
+                S = new();
+                A = new();
+            }
+
+            public Triangle(Base.Vec2 vec2)
+            {
+                S = new(a: vec2.Y, b: 0, c: vec2.X);
+                S.SolveB();
+
+                double a = Math.Pow(S.B, 2) + Math.Pow(S.C, 2) - Math.Pow(S.A, 2);
+                a /= 2 * S.B * S.C;
+                a = Math.Acos(a);
+
+                double c = Math.Pow(S.B, 2) + Math.Pow(S.A, 2) - Math.Pow(S.C, 2);
+                c /= 2 * S.B * S.A;
+                c = Math.Acos(c);
+
+                A = new(a: a, b: Math.PI / 2, c: c);
+            }
+
+            public override string ToString()
+            {
+                return $"S={S} | A={A}";
+            }
+
+            public void Solve()
+            {
+                A.B = Math.PI - A.C - A.A;
+                S.A = S.B * Math.Sin(A.A) / Math.Sin(A.B);
+                S.C = S.B * Math.Sin(A.C) / Math.Sin(A.B);
+            }
+        }
+
         private int GetButtonPresses(Machine machine)
         {
             const int maxButtonPresses = 100;
-            
-            // time to math
-            double prizeLength = Math.Sqrt(Math.Pow(machine.Prize.X, 2) + Math.Pow(machine.Prize.Y, 2));
-            double prizeAngleX = Math.Pow(prizeLength, 2) + Math.Pow(machine.Prize.X, 2) - Math.Pow(machine.Prize.Y, 2);
-            prizeAngleX /= 2 * prizeLength * machine.Prize.X;
-            prizeAngleX = Math.Acos(prizeAngleX);
-            // double prizeAngleY = Math.PI / 2 - prizeAngleX;
-            // Log($"Prize -> {prizeLength} | {prizeAngleX} | {prizeAngleY}");
-            // Log($"Prize -> {prizeLength} | {prizeAngleX}");
 
-            double buttonASize = Math.Sqrt(Math.Pow(machine.ButtonA.X, 2) + Math.Pow(machine.ButtonA.Y, 2));
-            double buttonAAngleX = Math.Pow(buttonASize, 2) + Math.Pow(machine.ButtonA.X, 2) - Math.Pow(machine.ButtonA.Y, 2);
-            buttonAAngleX /= 2 * buttonASize * machine.ButtonA.X;
-            buttonAAngleX = Math.Acos(buttonAAngleX);
-            // dont need angle y
-            // Log($"ButtonA -> {buttonASize} | {buttonAAngleX}");
+            Triangle prize = new(machine.Prize);
+            // Log(prize.ToString());
 
-            double buttonBSize = Math.Sqrt(Math.Pow(machine.ButtonB.X, 2) + Math.Pow(machine.ButtonB.Y, 2));
-            double buttonBAngleX = Math.Pow(buttonBSize, 2) + Math.Pow(machine.ButtonB.X, 2) - Math.Pow(machine.ButtonB.Y, 2);
-            buttonBAngleX /= 2 * buttonBSize * machine.ButtonB.X;
-            buttonBAngleX = Math.Acos(buttonBAngleX);
-            // dont need angle y
-            // Log($"ButtonB -> {buttonBSize} | {buttonBAngleX}");
+            Triangle buttonA = new(machine.ButtonA);
+            // Log(buttonA.ToString());
 
-            double sizeC = prizeLength;
-            double angleB = Math.Abs(prizeAngleX - buttonAAngleX);
-            double angleA = Math.Abs(prizeAngleX - buttonBAngleX);
-            double angleC = Math.PI - angleB - angleA;
+            Triangle buttonB = new(machine.ButtonB);
+            // Log(buttonB.ToString());
 
-            double sizeB = sizeC * Math.Sin(angleB) / Math.Sin(angleC);
-            double sizeA = sizeC * Math.Sin(angleA) / Math.Sin(angleC);
+            Triangle solver = new();
+            solver.S.B = prize.S.B;
+            solver.A.A = Math.Abs(prize.A.A - buttonA.A.A);
+            solver.A.C = Math.Abs(prize.A.C - buttonB.A.C);
+            solver.Solve();
+            // Log(solver.ToString());
 
-            double buttonPressesA = sizeA / buttonASize;
-            double buttonPressesB = sizeB / buttonBSize;
-            
-            int bpA = (int)Math.Round(buttonPressesA);
-            int bpB = (int)Math.Round(buttonPressesB);
-            if (bpA > maxButtonPresses || bpB > maxButtonPresses)
+            int bpA = (int)Math.Round(solver.S.C / buttonA.S.B);
+            int bpB = (int)Math.Round(solver.S.A / buttonB.S.B);
+
+            // verify the claw reached the targe
+            Base.Vec2 claw = machine.ButtonA * bpA + machine.ButtonB * bpB;
+            if (bpA > maxButtonPresses || bpB > maxButtonPresses || !claw.Equals(machine.Prize))
             {
                 return 0;
             }
 
-            // Log($"Machine -> {machine.Prize} | A @ {bpA} | B @ {bpB}");
             return bpA * 3 + bpB;
-
         }
 
         private int GetButtonPresses(Machine machine, MachineType priorityButton, int curButtonPresses, Base.Vec2 claw, int maxButtonPresses)
@@ -188,9 +252,9 @@ Prize: X=18641, Y=10279"
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, false);
-            // 34665 too high
+        // 34665 too high
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, true);
+            => "";//SharedSolution(inputs, variables, true);
     }
 }

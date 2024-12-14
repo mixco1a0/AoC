@@ -1060,4 +1060,116 @@ namespace AoC.Base
         #endregion
     }
     #endregion
+
+    #region Vec3D
+
+    public class Vec3D : IEquatable<Vec3D>
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Z { get; set; }
+
+        public static readonly Vec3F Zero = new();
+
+        public Vec3D()
+        {
+            X = default;
+            Y = default;
+            Z = default;
+        }
+
+        public Vec3D(double x, double y, double z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public Vec3D(Vec3D other)
+        {
+            X = other.X;
+            Y = other.Y;
+            Z = other.Z;
+        }
+
+        public static Vec3D Parse(string input)
+        {
+            if (!input.Contains(','))
+            {
+                return null;
+            }
+
+            double[] split = Util.String.Split(input, ',').Select(double.Parse).ToArray();
+            return new(split[0], split[1], split[2]);
+        }
+
+        public static Vec3D operator +(Vec3D a, Vec3D b)
+        {
+            return new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        }
+
+        public static Vec3D operator -(Vec3D a, Vec3D b)
+        {
+            return new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        }
+
+        public static Vec3D operator *(Vec3D a, double mult)
+        {
+            return new(a.X * mult, a.Y * mult, a.Z * mult);
+        }
+
+        public static Vec3D operator /(Vec3D a, double mult)
+        {
+            if (mult == 0.0f)
+            {
+                return new();
+            }
+            return new(a.X / mult, a.Y / mult, a.Z / mult);
+        }
+
+        public double Manhattan(Vec3D other)
+        {
+            return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
+        }
+
+        // public Vec2F DropZ()
+        // {
+        //     return new(X, Y);
+        // }
+
+        #region Interfaces
+        public bool Equals(Vec3D other)
+        {
+            return X == other.X && Y == other.Y && Z == other.Z;
+        }
+        #endregion
+
+        #region Overrides
+        public override string ToString()
+        {
+            return string.Format("[{0:00.000}, {1:00.000}, {2:00.000}]", X, Y, Z);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            if (obj is not Vec3D objAsVec)
+            {
+                return false;
+            }
+
+            return Equals(objAsVec);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y, Z);
+        }
+        #endregion
+    }
+    #endregion
 }
