@@ -64,7 +64,7 @@ Prize: X=18641, Y=10279"
             return testData;
         }
 
-        private record Machine(Base.Vec2 ButtonA, Base.Vec2 ButtonB, Base.Vec2 Prize)
+        private record Machine(Base.Vec2L ButtonA, Base.Vec2L ButtonB, Base.Vec2L Prize)
         {
             public void Log(Action<string> log)
             {
@@ -82,11 +82,11 @@ Prize: X=18641, Y=10279"
             Prize
         }
 
-        private Machine[] GetMachines(List<string> inputs)
+        private static Machine[] GetMachines(List<string> inputs, long prizeAdjustment)
         {
             List<Machine> machines = [];
-            Base.Vec2 a = default;
-            Base.Vec2 b = default;
+            Base.Vec2L a = default;
+            Base.Vec2L b = default;
 
             MachineType mt = MachineType.ButtonA;
             foreach (string input in inputs)
@@ -96,8 +96,8 @@ Prize: X=18641, Y=10279"
                     continue;
                 }
 
-                int[] split = Util.String.Split(input, "ButtonABPrize:+=, ").Where(i => int.TryParse(i, out _)).Select(int.Parse).ToArray();
-                Base.Vec2 cur = new(split[0], split[1]);
+                long[] split = Util.String.Split(input, "ButtonABPrize:+=, ").Where(i => long.TryParse(i, out _)).Select(long.Parse).ToArray();
+                Base.Vec2L cur = new(split[0], split[1]);
                 switch (mt)
                 {
                     case MachineType.ButtonA:
@@ -109,6 +109,8 @@ Prize: X=18641, Y=10279"
                         mt = MachineType.Prize;
                         break;
                     case MachineType.Prize:
+                        cur.X += prizeAdjustment;
+                        cur.Y += prizeAdjustment;
                         machines.Add(new(a, b, cur));
                         mt = MachineType.ButtonA;
                         break;
@@ -116,8 +118,6 @@ Prize: X=18641, Y=10279"
             }
             return [.. machines];
         }
-
-        private static readonly double VARNAME = 0.0001;
 
         private class Triple : Base.Vec3D
         {
@@ -151,7 +151,7 @@ Prize: X=18641, Y=10279"
                 A = new();
             }
 
-            public Triangle(Base.Vec2 vec2)
+            public Triangle(Base.Vec2L vec2)
             {
                 S = new(a: vec2.Y, b: 0, c: vec2.X);
                 S.SolveB();
@@ -180,31 +180,23 @@ Prize: X=18641, Y=10279"
             }
         }
 
-        private int GetButtonPresses(Machine machine)
+        private static long GetButtonPresses(Machine machine, long maxButtonPresses)
         {
-            const int maxButtonPresses = 100;
-
             Triangle prize = new(machine.Prize);
-            // Log(prize.ToString());
-
             Triangle buttonA = new(machine.ButtonA);
-            // Log(buttonA.ToString());
-
             Triangle buttonB = new(machine.ButtonB);
-            // Log(buttonB.ToString());
 
             Triangle solver = new();
             solver.S.B = prize.S.B;
             solver.A.A = Math.Abs(prize.A.A - buttonA.A.A);
             solver.A.C = Math.Abs(prize.A.C - buttonB.A.C);
             solver.Solve();
-            // Log(solver.ToString());
 
-            int bpA = (int)Math.Round(solver.S.C / buttonA.S.B);
-            int bpB = (int)Math.Round(solver.S.A / buttonB.S.B);
+            long bpA = (long)Math.Round(solver.S.C / buttonA.S.B);
+            long bpB = (long)Math.Round(solver.S.A / buttonB.S.B);
 
-            // verify the claw reached the targe
-            Base.Vec2 claw = machine.ButtonA * bpA + machine.ButtonB * bpB;
+            // verify the claw reached the target
+            Base.Vec2L claw = machine.ButtonA * bpA + machine.ButtonB * bpB;
             if (bpA > maxButtonPresses || bpB > maxButtonPresses || !claw.Equals(machine.Prize))
             {
                 return 0;
@@ -213,7 +205,7 @@ Prize: X=18641, Y=10279"
             return bpA * 3 + bpB;
         }
 
-        private int GetButtonPresses(Machine machine, MachineType priorityButton, int curButtonPresses, Base.Vec2 claw, int maxButtonPresses)
+        private static int GetButtonPresses(Machine machine, MachineType priorityButton, int curButtonPresses, Base.Vec2L claw, int maxButtonPresses)
         {
             if (curButtonPresses > maxButtonPresses)
             {
@@ -225,8 +217,8 @@ Prize: X=18641, Y=10279"
                 return int.MaxValue;
             }
 
-            Base.Vec2 claw1 = claw + (priorityButton == MachineType.ButtonA ? machine.ButtonA : machine.ButtonB);
-            Base.Vec2 claw2 = claw + (priorityButton == MachineType.ButtonA ? machine.ButtonB : machine.ButtonA);
+            Base.Vec2L claw1 = claw + (priorityButton == MachineType.ButtonA ? machine.ButtonA : machine.ButtonB);
+            Base.Vec2L claw2 = claw + (priorityButton == MachineType.ButtonA ? machine.ButtonB : machine.ButtonA);
 
             int b1Presses = GetButtonPresses(machine, priorityButton, curButtonPresses + 1, claw1, maxButtonPresses);
             int b2Presses = GetButtonPresses(machine, priorityButton, curButtonPresses + 1, claw2, maxButtonPresses);
@@ -239,22 +231,23 @@ Prize: X=18641, Y=10279"
             return int.Min(b1Presses, b2Presses);
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool adjustPrizes)
         {
-            Machine[] machines = GetMachines(inputs);
-            int buttonPresses = 0;
+            long maxButtonPresses = adjustPrizes ? long.MaxValue : 100;
+            long prizeAdjustment = adjustPrizes ? 10000000000000 : 0;
+            Machine[] machines = GetMachines(inputs, prizeAdjustment);
+            long buttonPresses = 0;
             foreach (Machine machine in machines)
             {
-                buttonPresses += GetButtonPresses(machine);
+                buttonPresses += GetButtonPresses(machine, maxButtonPresses);
             }
             return buttonPresses.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, false);
-        // 34665 too high
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => "";//SharedSolution(inputs, variables, true);
+            => SharedSolution(inputs, variables, true);
     }
 }
