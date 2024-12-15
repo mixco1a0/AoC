@@ -21,6 +21,18 @@ namespace AoC.Base
             }
         }
 
+        public Grid2Char(int maxCol, int maxRow, char defaultValue)
+        {
+            m_array = new char[maxRow, maxCol];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_r, _c] = defaultValue;
+                }
+            }
+        }
+
         public override void PrintNextArrow(Core.Log.ELevel level, Base.Vec2 next = null, Util.Grid2.Dir dir = Util.Grid2.Dir.None)
         {
             StringBuilder sb = new();
