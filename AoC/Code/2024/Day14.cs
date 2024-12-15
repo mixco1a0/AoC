@@ -22,14 +22,6 @@ namespace AoC._2024
         {
             List<Core.TestDatum> testData =
             [
-//                 new Core.TestDatum
-//                 {
-//                     TestPart = Core.Part.One,
-//                     Output = "12",
-//                     Variables = new Dictionary<string, string> { { nameof(_TilesWide), "11" }, { nameof(_TilesTall), "7" } },
-//                     RawInput =
-// @"p=2,4 v=2,-3"
-//                 },
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
@@ -107,27 +99,67 @@ p=9,5 v=-3,-3"
             }
         }
 
-        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findEasterEgg)
         {
             GetVariable(nameof(_TilesWide), 101, variables, out int tilesWide);
             GetVariable(nameof(_TilesTall), 103, variables, out int tilesTall);
             Base.Ray2[] robots = inputs.Select(Parse).ToArray();
+
             int[] quadrants = [0, 0, 0, 0, 0];
-
-            foreach (Base.Ray2 robot in robots)
+            if (!findEasterEgg)
             {
-                Base.Vec2 pos = robot.Tick(100);
-                pos.Mod(tilesWide, tilesTall);
-                int quadrant = GetQuadrant(tilesWide, tilesTall, ref pos);
-                ++quadrants[quadrant];
+                foreach (Base.Ray2 robot in robots)
+                {
+                    Base.Vec2 pos = robot.Tick(100);
+                    pos.Mod(tilesWide, tilesTall);
+                    int quadrant = GetQuadrant(tilesWide, tilesTall, ref pos);
+                    ++quadrants[quadrant];
+                }
+
+                int mult = 1;
+                foreach (int q in quadrants.Skip(1))
+                {
+                    mult *= q;
+                }
+                return mult.ToString();
             }
 
-            int mult = 1;
-            foreach (int q in quadrants.Skip(1))
+            // cycle is 10403
+            Base.Grid2Char grid;
+            for (int i = 0; i < 10403; ++i)
             {
-                mult *= q;
+                HashSet<Base.Vec2> used = [];
+                grid = new(tilesWide, tilesTall, '.');
+                foreach (Base.Ray2 robot in robots)
+                {
+                    Base.Vec2 pos = robot.Tick(i);
+                    pos.Mod(tilesWide, tilesTall);
+                    grid[pos] = '#';
+                    used.Add(pos);
+                }
+
+                int neighborCount = 0;
+                int minNeighborCount = inputs.Count * 2 / 3;
+                foreach (Base.Vec2 cur in used)
+                {
+                    foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
+                    {
+                        Base.Vec2 next = cur + Util.Grid2.Map.Neighbor[dir];
+                        if (used.Contains(next))
+                        {
+                            ++neighborCount;
+                            break;
+                        }
+                    }
+
+                    if (neighborCount == minNeighborCount)
+                    {
+                        // grid.Print(Core.Log.ELevel.Spam);
+                        return i.ToString();
+                    }
+                }
             }
-            return mult.ToString();
+            return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
