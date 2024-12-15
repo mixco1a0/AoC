@@ -22,6 +22,14 @@ namespace AoC._2024
         {
             List<Core.TestDatum> testData =
             [
+//                 new Core.TestDatum
+//                 {
+//                     TestPart = Core.Part.One,
+//                     Output = "12",
+//                     Variables = new Dictionary<string, string> { { nameof(_TilesWide), "11" }, { nameof(_TilesTall), "7" } },
+//                     RawInput =
+// @"p=2,4 v=2,-3"
+//                 },
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
@@ -67,31 +75,17 @@ p=9,5 v=-3,-3"
 
         public static int GetQuadrant(int tilesWide, int tilesTall, ref Base.Vec2 pos)
         {
-            int x = pos.X % tilesWide;
-            if (x < 0)
-            {
-                x += tilesWide;
-            }
-            pos.X = x;
-
-            int y = pos.Y % tilesTall;
-            if (y < 0)
-            {
-                y += tilesTall;
-            }
-            pos.Y = y;
-
             int nonX = (tilesWide - 1) / 2;
             int nonY = (tilesTall - 1) / 2;
 
-            if (x == nonX || y == nonY)
+            if (pos.X == nonX || pos.Y == nonY)
             {
                 return 0;
             }
 
-            if (x < nonX)
+            if (pos.X < nonX)
             {
-                if (y < nonY)
+                if (pos.Y < nonY)
                 {
                     return 1;
                 }
@@ -102,7 +96,7 @@ p=9,5 v=-3,-3"
             }
             else
             {
-                if (y < nonX)
+                if (pos.Y < nonY)
                 {
                     return 2;
                 }
@@ -115,31 +109,18 @@ p=9,5 v=-3,-3"
 
         private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
         {
-            List<string> test = ["123", "456"];
-            Base.Grid2Int testG = new(test);
-
             GetVariable(nameof(_TilesWide), 101, variables, out int tilesWide);
             GetVariable(nameof(_TilesTall), 103, variables, out int tilesTall);
             Base.Ray2[] robots = inputs.Select(Parse).ToArray();
             int[] quadrants = [0, 0, 0, 0, 0];
-            Base.Grid2Int grid = new(tilesWide, tilesTall);
-            foreach (Base.Ray2 robot in robots)
-            {
-                Base.Vec2 pos = robot.Tick(0);
-                ++grid[pos.X, pos.Y];
-            }
-            grid.Print(Core.Log.ELevel.Spam);
 
-            grid = new(tilesWide, tilesTall);
             foreach (Base.Ray2 robot in robots)
             {
                 Base.Vec2 pos = robot.Tick(100);
+                pos.Mod(tilesWide, tilesTall);
                 int quadrant = GetQuadrant(tilesWide, tilesTall, ref pos);
-                ++grid[pos.X, pos.Y];
                 ++quadrants[quadrant];
             }
-
-            grid.Print(Core.Log.ELevel.Spam);
 
             int mult = 1;
             foreach (int q in quadrants.Skip(1))
@@ -151,7 +132,6 @@ p=9,5 v=-3,-3"
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, false);
-            // TOO HIGH - 212266600
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true);

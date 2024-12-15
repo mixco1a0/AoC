@@ -65,6 +65,33 @@ namespace AoC.Base
             return new(a.X / mult, a.Y / mult);
         }
 
+        public static Vec2 operator %(Vec2 a, int mod)
+        {
+            if (mod == 0)
+            {
+                return new();
+            }
+            
+            Vec2 modded = new(a);
+            modded.Mod(mod, mod);
+            return modded;
+        }
+
+        public void Mod(int xMod, int yMod)
+        {
+            X %= xMod;
+            if (X < 0)
+            {
+                X += xMod;
+            }
+            
+            Y %= yMod;
+            if (Y < 0)
+            {
+                Y += yMod;
+            }
+        }
+
         public int Manhattan(Vec2 other)
         {
             return Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
