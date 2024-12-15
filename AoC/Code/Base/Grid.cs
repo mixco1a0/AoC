@@ -11,12 +11,12 @@ namespace AoC.Base
     {
         public Grid2Char(List<string> rawGrid)
         {
-            m_array = new char[rawGrid.First().Length, rawGrid.Count];
+            m_array = new char[rawGrid.Count, rawGrid.First().Length];
             for (int _c = 0; _c < MaxCol; ++_c)
             {
                 for (int _r = 0; _r < MaxRow; ++_r)
                 {
-                    m_array[_c, _r] = rawGrid[_r][_c];
+                    m_array[_r, _c] = rawGrid[_r][_c];
                 }
             }
         }
@@ -37,23 +37,24 @@ namespace AoC.Base
                     }
                     else
                     {
-                        sb.Append(m_array[_c, _r]);
+                        sb.Append(m_array[_r, _c]);
                     }
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
             }
         }
     }
+
     public class Grid2Bool : Grid2<bool>
     {
         public Grid2Bool(List<string> rawGrid)
         {
-            m_array = new bool[rawGrid.First().Length, rawGrid.Count];
+            m_array = new bool[rawGrid.Count, rawGrid.First().Length];
             for (int _c = 0; _c < MaxCol; ++_c)
             {
                 for (int _r = 0; _r < MaxRow; ++_r)
                 {
-                    m_array[_c, _r] = false;
+                    m_array[_r, _c] = false;
                 }
             }
         }
@@ -68,7 +69,50 @@ namespace AoC.Base
                 sb.Append($"{_r,4}| ");
                 for (int _c = 0; _c < MaxCol; ++_c)
                 {
-                    sb.Append(m_array[_c, _r] ? '#' : '.');
+                    sb.Append(m_array[_r, _c] ? '#' : '.');
+                }
+                Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
+            }
+        }
+    }
+    
+    public class Grid2Int : Grid2<int>
+    {
+        public Grid2Int(int maxCol, int maxRow)
+        {
+            m_array = new int[maxRow, maxCol];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_r, _c] = 0;
+                }
+            }
+        }
+
+        public Grid2Int(List<string> rawGrid)
+        {
+            m_array = new int[rawGrid.Count, rawGrid.First().Length];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_r, _c] = 0;
+                }
+            }
+        }
+
+        public override void Print(Core.Log.ELevel level)
+        {
+            StringBuilder sb = new();
+            Core.Log.WriteLine(Core.Log.ELevel.Spam, $"Printing grid {MaxCol}x{MaxRow}:");
+            for (int _r = 0; _r < MaxRow; ++_r)
+            {
+                sb.Clear();
+                sb.Append($"{_r,4}| ");
+                for (int _c = 0; _c < MaxCol; ++_c)
+                {
+                    sb.Append(m_array[_r, _c] == 0 ? '.' : m_array[_r, _c].ToString());
                 }
                 Core.Log.WriteLine(Core.Log.ELevel.Spam, sb.ToString());
             }
@@ -103,14 +147,14 @@ namespace AoC.Base
 
         public T this[int col, int row]
         {
-            get => m_array[col, row];
-            set => m_array[col, row] = value;
+            get => m_array[row, col];
+            set => m_array[row, col] = value;
         }
 
         public T this[Base.Vec2 vec2]
         {
-            get => m_array[vec2.X, vec2.Y];
-            set => m_array[vec2.X, vec2.Y] = value;
+            get => m_array[vec2.Y, vec2.X];
+            set => m_array[vec2.Y, vec2.X] = value;
         }
 
         public virtual void Print(Core.Log.ELevel level)
@@ -121,7 +165,7 @@ namespace AoC.Base
             {
                 sb.Clear();
                 sb.Append($"{_r,4}| ");
-                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(col => m_array[col, _r])));
+                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(_c => m_array[_r, _c])));
                 Core.Log.WriteLine(level, sb.ToString());
             }
         }
@@ -134,7 +178,7 @@ namespace AoC.Base
             {
                 sb.Clear();
                 sb.Append($"{_r,4}| ");
-                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(col => m_array[col, _r])));
+                sb.Append(string.Join(string.Empty, Enumerable.Range(0, MaxCol).Select(_c => m_array[_r, _c])));
                 Core.Log.WriteLine(level, sb.ToString());
             }
         }
