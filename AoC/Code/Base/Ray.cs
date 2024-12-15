@@ -63,6 +63,11 @@ namespace AoC.Base
             Vel = new();
         }
 
+        public Vec2 Tick(int tickCount)
+        {
+            return Pos + Vel * tickCount; 
+        }
+
         public static Ray2 FromPos(Vec2 pos, Vec2 next)
         {
             return new() { Pos = pos, Vel = next - pos };
