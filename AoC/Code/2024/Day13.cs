@@ -13,8 +13,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                Core.Part.One => "v1",
-                Core.Part.Two => "v1",
+                Core.Part.One => "v2",
+                Core.Part.Two => "v2",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -173,18 +173,32 @@ Prize: X=18641, Y=10279"
 
         private static long GetButtonPresses(Machine machine, long maxButtonPresses)
         {
-            Triangle prize = new(machine.Prize);
-            Triangle buttonA = new(machine.ButtonA);
-            Triangle buttonB = new(machine.ButtonB);
+            // Using Geometry to solve the equations...
+            // Triangle prize = new(machine.Prize);
+            // Triangle buttonA = new(machine.ButtonA);
+            // Triangle buttonB = new(machine.ButtonB);
 
-            Triangle solver = new();
-            solver.S.B = prize.S.B;
-            solver.A.A = Math.Abs(prize.A.A - buttonA.A.A);
-            solver.A.C = Math.Abs(prize.A.C - buttonB.A.C);
-            solver.Solve();
+            // Triangle solver = new();
+            // solver.S.B = prize.S.B;
+            // solver.A.A = Math.Abs(prize.A.A - buttonA.A.A);
+            // solver.A.C = Math.Abs(prize.A.C - buttonB.A.C);
+            // solver.Solve();
+            
+            // long bpA = (long)Math.Round(solver.S.C / buttonA.S.B);
+            // long bpB = (long)Math.Round(solver.S.A / buttonB.S.B);
 
-            long bpA = (long)Math.Round(solver.S.C / buttonA.S.B);
-            long bpB = (long)Math.Round(solver.S.A / buttonB.S.B);
+            // Using Linear Algebra to solve the equations...
+            double[,] abInput = new double[2, 3];
+            abInput[0, 0] = machine.ButtonA.X;
+            abInput[0, 1] = machine.ButtonB.X;
+            abInput[0, 2] = machine.Prize.X;
+            abInput[1, 0] = machine.ButtonA.Y;
+            abInput[1, 1] = machine.ButtonB.Y;
+            abInput[1, 2] = machine.Prize.Y;
+            double[] ab = Algorithm.LinearSolver.Solve(abInput);
+
+            long bpA = (long)Math.Round(ab[0]);
+            long bpB = (long)Math.Round(ab[1]);
 
             // verify the claw reached the target
             Base.Vec2L claw = machine.ButtonA * bpA + machine.ButtonB * bpB;
