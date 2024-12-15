@@ -19,20 +19,7 @@ namespace AoC.Base
     {
         public Vec2 Pos { get; set; }
         public Vec2 Vel { get; set; }
-
-        private Vec2 _next;
-        private Vec2 Next
-        {
-            get
-            {
-                if (_next != null)
-                {
-                    return _next;
-                }
-                _next = Pos + Vel;
-                return _next;
-            }
-        }
+        private Vec2 Next => Tick(1);
 
         // Ax + By = C
         // A = Vel.Y (Next.Y - Pos.Y)
@@ -63,9 +50,9 @@ namespace AoC.Base
             Vel = new();
         }
 
-        public Vec2 Tick(int tickCount)
+        public Vec2 Tick(int ticks)
         {
-            return Pos + Vel * tickCount; 
+            return Pos + Vel * ticks; 
         }
 
         public static Ray2 FromPos(Vec2 pos, Vec2 next)
