@@ -9,6 +9,18 @@ namespace AoC.Base
     #region Grid2
     public class Grid2Char : Grid2<char>
     {
+        public Grid2Char(Grid2Char grid)
+        {
+            m_array = new char[grid.MaxRow, grid.MaxCol];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_r, _c] = grid.m_array[_r, _c];
+                }
+            }
+        }
+
         public Grid2Char(List<string> rawGrid)
         {
             m_array = new char[rawGrid.Count, rawGrid.First().Length];
@@ -87,7 +99,7 @@ namespace AoC.Base
             }
         }
     }
-    
+
     public class Grid2Int : Grid2<int>
     {
         public Grid2Int(int maxCol, int maxRow)

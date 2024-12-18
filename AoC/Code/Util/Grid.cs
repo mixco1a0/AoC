@@ -43,6 +43,32 @@ namespace AoC.Util
                 { Dir.None,         '.' },
             };
 
+            public static readonly Dictionary<Dir, char> SimpleArrow = new()
+            {
+                { Dir.North,        '^' },
+                // { Dir.NorthEast,    '.' },
+                { Dir.East,         '>' },
+                // { Dir.SouthEast,    '.' },
+                { Dir.South,        'v' },
+                // { Dir.SouthWest,    '.' },
+                { Dir.West,         '<' },
+                // { Dir.NorthWest,    '.' },
+                // { Dir.None,         '.' },
+            };
+
+            public static readonly Dictionary<char, Dir> SimpleArrowFlipped = new()
+            {
+                { '^', Dir.North},
+                // { '.', Dir.NorthEast },
+                { '>', Dir.East },
+                // { '.', Dir.SouthEast },
+                { 'v', Dir.South },
+                // { '.', Dir.SouthWest },
+                { '<', Dir.West  },
+                // { '.', Dir.NorthWest },
+                // { '.', Dir.None },
+            };
+
             public static readonly Dictionary<Dir, Dir> Opposite = new()
             {
                 { Dir.North,        Dir.South     },
