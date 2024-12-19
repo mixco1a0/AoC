@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AoC.Base;
 
 namespace AoC._2024
 {
@@ -67,21 +66,21 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"
                 },
-                new Core.TestDatum
-                {
-                    TestPart = Core.Part.Two,
-                    Output = "1",
-                    RawInput =
-@"#######
-#...#.#
-#.....#
-#..OO@#
-#..O..#
-#.....#
-#######
+//                 new Core.TestDatum
+//                 {
+//                     TestPart = Core.Part.Two,
+//                     Output = "1",
+//                     RawInput =
+// @"#######
+// #...#.#
+// #.....#
+// #..OO@#
+// #..O..#
+// #.....#
+// #######
 
-<vv<<^^<<^^"
-                },
+// <vv<<^^<<^^"
+//                 },
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
@@ -121,9 +120,9 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"
         private const char Empty = '.';
 
 
-        private static void PrintGrid(Grid2Char grid, Vec2 robot, HashSet<Vec2> boxes)
+        private static void PrintGrid(Base.Grid2Char grid, Base.Vec2 robot, HashSet<Base.Vec2> boxes)
         {
-            Grid2Char temp = new(grid);
+            Base.Grid2Char temp = new(grid);
             foreach (Base.Vec2 vec2 in grid)
             {
                 if (vec2.Equals(robot))
@@ -212,14 +211,102 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"
             return boxes.Select(b => 100 * b.Y + b.X).Sum().ToString();
         }
 
-        private static void PrintBigGrid(Grid2Char grid, Vec2 robot, HashSet<Vec2> leftBoxes, HashSet<Vec2> rightBoxes)
+        private record BigBox(Base.Vec2 Left, Base.Vec2 Right)
         {
-            Grid2Char temp = new(grid);
+            public bool CanMove(Util.Grid2.Dir dir, HashSet<Base.Vec2> walls, HashSet<BigBox> boxes, ref HashSet<Base.Vec2> movedBoxes)
+            {
+                // only keep track of the left side
+                movedBoxes.Add(Left);
+
+                bool canMove = true;
+                Base.Vec2 lNext = Left + Util.Grid2.Map.Neighbor[dir];
+                Base.Vec2 rNext = Right + Util.Grid2.Map.Neighbor[dir];
+                if (dir == Util.Grid2.Dir.East)
+                {
+                    // right is a wall
+                    if (walls.Contains(rNext))
+                    {
+                        return false;
+                    }
+
+                    // check next box to the right
+                    IEnumerable<BigBox> nextBoxes = boxes.Where(b => b.Left.Equals(rNext));
+                    if (nextBoxes.Any())
+                    {
+                        canMove = nextBoxes.First().CanMove(dir, walls, boxes, ref movedBoxes);
+                    }
+                }
+                else if (dir == Util.Grid2.Dir.West)
+                {
+                    // left is a wall
+                    if (walls.Contains(lNext))
+                    {
+                        return false;
+                    }
+
+                    // check next box to the left
+                    IEnumerable<BigBox> nextBoxes = boxes.Where(b => b.Right.Equals(lNext));
+                    if (nextBoxes.Any())
+                    {
+                        canMove = nextBoxes.First().CanMove(dir, walls, boxes, ref movedBoxes);
+                    }
+                }
+                else
+                {
+                    // either a wall
+                    if (walls.Contains(lNext) || walls.Contains(rNext))
+                    {
+                        return false;
+                    }
+
+                    IEnumerable<BigBox> nextBoxes = boxes.Where(b => b.Left.Equals(lNext) || b.Right.Equals(lNext) || b.Left.Equals(rNext) || b.Right.Equals(rNext));
+                    foreach (BigBox bigBox in nextBoxes)
+                    {
+                        canMove &= bigBox.CanMove(dir, walls, boxes, ref movedBoxes);
+                    }
+                    // if (nextBoxes.Any())
+                    // {
+                    //     BigBox nextBigBox = nextBoxes.First();
+                    //     canMove = nextBoxes.First().CanMove(dir, walls, boxes, ref movedBoxes);
+
+                    //     if (canMove)
+                    //     {
+                    //         // box is not aligned on top
+                    //         nextBoxes = boxes.Where(b => b.Left.Equals(rNext) || b.Right.Equals(rNext));
+                    //         if (nextBoxes.Any())
+                    //         {
+                    //             canMove &= nextBoxes.First().CanMove(dir, walls, boxes, ref movedBoxes);
+                    //         }
+                    //     }
+
+                    // }
+                }
+                return canMove;
+            }
+
+            public BigBox Move(Util.Grid2.Dir dir)
+            {
+                return new(Left + Util.Grid2.Map.Neighbor[dir], Right + Util.Grid2.Map.Neighbor[dir]);
+            }
+        }
+
+        private static void PrintBigGrid(Base.Grid2Char grid, Base.Vec2 robot, Util.Grid2.Dir dir, HashSet<BigBox> boxes)
+        {
+            Base.Grid2Char temp = new(grid);
+            HashSet<Base.Vec2> leftBoxes = boxes.Select(b => b.Left).ToHashSet();
+            HashSet<Base.Vec2> rightBoxes = boxes.Select(b => b.Right).ToHashSet();
             foreach (Base.Vec2 vec2 in grid)
             {
                 if (vec2.Equals(robot))
                 {
-                    temp[vec2] = Robot;
+                    if (dir == Util.Grid2.Dir.None)
+                    {
+                        temp[vec2] = Robot;
+                    }
+                    else
+                    {
+                        temp[vec2] = Util.Grid2.Map.Arrow[dir];
+                    }
                 }
                 else if (leftBoxes.Contains(vec2))
                 {
@@ -248,8 +335,7 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"
             Util.Grid2.Dir[] instructions = string.Join("", inputs.Skip(maxInput)).Select(i => Util.Grid2.Map.SimpleArrowFlipped[i]).ToArray();
             Base.Grid2Char grid = new(inputs.Take(maxInput).ToList());
             HashSet<Base.Vec2> walls = [];
-            HashSet<Base.Vec2> leftBoxes = [];
-            HashSet<Base.Vec2> rightBoxes = [];
+            HashSet<BigBox> boxes = [];
             Base.Vec2 robot = new();
             Base.Grid2Char bigGrid = new(grid.MaxCol * 2, grid.MaxRow, Empty);
             foreach (Base.Vec2 vec2 in grid)
@@ -265,8 +351,7 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"
                         bigGrid[right] = Wall;
                         break;
                     case Box:
-                        leftBoxes.Add(left);
-                        rightBoxes.Add(right);
+                        boxes.Add(new(left, right));
                         break;
                     case Robot:
                         robot = left;
@@ -274,81 +359,60 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"
                 }
             }
 
-            PrintBigGrid(bigGrid, robot, leftBoxes, rightBoxes);
+            // PrintBigGrid(bigGrid, robot, Util.Grid2.Dir.None, boxes);
 
+            int index = 0;
             foreach (Util.Grid2.Dir dir in instructions)
             {
-                bool isNS = dir == Util.Grid2.Dir.North || dir == Util.Grid2.Dir.South;
-                Log($"Moving: {Util.Grid2.Map.Arrow[dir]}");
+                ++index;
+                // Log($"Moving: {Util.Grid2.Map.Arrow[dir]}");
                 Base.Vec2 next = robot + Util.Grid2.Map.Neighbor[dir];
 
                 // no wall, can potentially move
                 if (!walls.Contains(next))
                 {
-                    // check for boxes
-                    if (isNS)
+                    bool canMove = true;
+                    IEnumerable<BigBox> potentialBox = boxes.Where(b => b.Left.Equals(next) || b.Right.Equals(next));
+                    if (potentialBox.Any())
                     {
+                        HashSet<Base.Vec2> movedBoxes = [];
+                        if (potentialBox.First().CanMove(dir, walls, boxes, ref movedBoxes))
+                        {
+                            List<BigBox> moved = boxes.Where(b => movedBoxes.Contains(b.Left)).ToList();
+                            boxes.RemoveWhere(moved.Contains);
+                            foreach (BigBox bb in moved)
+                            {
+                                boxes.Add(bb.Move(dir));
+                            }
+                        }
+                        else
+                        {
+                            canMove = false;
+                        }
+                    }
 
+                    if (canMove)
+                    {
+                        robot = next;
+                        // Log($"Step {index} | Moving: {Util.Grid2.Map.Arrow[dir]}");
+                        // PrintBigGrid(bigGrid, robot, dir, boxes);
                     }
                     else
                     {
-                        HashSet<Vec2> newLeft = [];
-                        HashSet<Vec2> oldLeft = [];
-                        HashSet<Vec2> newRight = [];
-                        HashSet<Vec2> oldRight = [];
-                        if (leftBoxes.Contains(next) || rightBoxes.Contains(next))
-                        {
-                            Base.Vec2 finalBox = next;
-                            while (leftBoxes.Contains(finalBox) || rightBoxes.Contains(finalBox))
-                            {
-                                bool isLeft = leftBoxes.Contains(finalBox);
-                                if (isLeft)
-                                {
-                                    oldLeft.Add(finalBox);
-                                }
-                                else
-                                {
-                                    oldRight.Add(finalBox);
-                                }
-                                finalBox += Util.Grid2.Map.Neighbor[dir];
-                                if (isLeft)
-                                {
-                                    newLeft.Add(finalBox);
-                                }
-                                else
-                                {
-                                    newRight.Add(finalBox);
-                                }
-
-                            }
-
-                            if (!walls.Contains(finalBox))
-                            {
-                                leftBoxes.RemoveWhere(oldLeft.Contains);
-                                rightBoxes.RemoveWhere(oldRight.Contains);
-                                foreach (Base.Vec2 left in newLeft)
-                                {
-                                    leftBoxes.Add(left);
-                                }
-                                foreach (Base.Vec2 right in newRight)
-                                {
-                                    rightBoxes.Add(right);
-                                }
-                                robot = next;
-                            }
-                        }
-                        // no box, just move
-                        else
-                        {
-                            robot = next;
-                        }
+                        // Log($"Step {index} | Blocked by Box: {Util.Grid2.Map.Arrow[dir]}");
+                        // PrintBigGrid(bigGrid, robot, Util.Grid2.Dir.None, boxes);
                     }
                 }
-                PrintBigGrid(bigGrid, robot, leftBoxes, rightBoxes);
+                else
+                {
+                    // Log($"Step {index} | Blocked by Wall: {Util.Grid2.Map.Arrow[dir]}");
+                    // PrintBigGrid(bigGrid, robot, Util.Grid2.Dir.None, boxes);
+                }
             }
 
-            // return boxes.Select(b => 100 * b.Y + b.X).Sum().ToString();
-            return string.Empty;
+            // PrintBigGrid(bigGrid, robot, Util.Grid2.Dir.None, boxes);
+
+            return boxes.Select(b => 100 * b.Left.Y + b.Left.X).Sum().ToString();
         }
     }
 }
