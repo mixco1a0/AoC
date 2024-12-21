@@ -242,16 +242,15 @@ namespace AoC._2024
                     history = [.. sdv2.History];
                     history.Add(new(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2));
                 }
-                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, sdv2.History), sdv2.Score + 1000);
+                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, history), sdv2.Score + 1000);
 
                 if (findAllTiles)
                 {
                     history = [.. sdv2.History];
                     history.Add(new(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2));
                 }
-                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, sdv2.History), sdv2.Score + 1000);
+                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, history), sdv2.Score + 1000);
             }
-            
             return $"{minScore} @ {pathCount}".ToString();
         }
 
