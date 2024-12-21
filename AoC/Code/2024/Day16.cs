@@ -80,7 +80,7 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "8",
+                    Output = "10",
                     RawInput =
 @"#######
 ##...E#
@@ -186,6 +186,9 @@ namespace AoC._2024
             int pathCount = 0;
             int minScore = int.MaxValue;
 
+            Dictionary<Base.Vec2, int> pathScores = [];
+
+            HashSet<Base.Vec2> bestTiles = [];
             HashSet<DirectedVec2> visited = [];
             PriorityQueue<ScoredDV2, int> path = new();
             path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Dir.East, start), 0, []), 0);
@@ -195,9 +198,18 @@ namespace AoC._2024
                 if (findAllTiles)
                 {
                     // PrintPath(grid, sdv2);
-                    if (sdv2.Score > minScore || sdv2.History.Contains(sdv2.DV2))
+                    if (sdv2.Score > minScore)
                     {
                         continue;
+                    }
+
+                    if (sdv2.History.Select(h => h.Vec2).Contains(sdv2.DV2.Vec2))
+                    {
+                        List<Util.Grid2.Dir> dirs = sdv2.History.Where(h => h.Vec2.Equals(sdv2.DV2.Vec2)).Select(h => h.Dir).ToList();
+                        if (dirs.Contains(sdv2.DV2.Dir) || dirs.Contains(Util.Grid2.Map.Opposite[sdv2.DV2.Dir]))
+                        {
+                            continue;
+                        }
                     }
                 }
                 else
@@ -224,12 +236,16 @@ namespace AoC._2024
                             ++pathCount;
 
                             PrintPath(grid, sdv2);
+                            foreach (var pair in sdv2.History)
+                            {
+                                bestTiles.Add(pair.Vec2);
+                            }
                             continue;
                         }
                     }
                     else
                     {
-                        PrintPath(grid, sdv2);
+                        // PrintPath(grid, sdv2);
                         return sdv2.Score.ToString();
                     }
                 }
@@ -245,7 +261,7 @@ namespace AoC._2024
                 path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, [.. sdv2.History]), sdv2.Score + 1000);
             }
 
-            return $"{minScore} @ {pathCount}".ToString();
+            return bestTiles.Count.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
