@@ -169,6 +169,16 @@ namespace AoC._2024
             }
         }
 
+        private static void PrintPath(Base.Grid2Char grid, ScoredDV2 sdv2)
+        {
+            Base.Grid2Char g = new(grid);
+            foreach (var h in sdv2.History)
+            {
+                g[h.Vec2] = Util.Grid2.Map.Arrow[h.Dir];
+            }
+            g.Print(Core.Log.ELevel.Spam);
+        }
+
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findAllTiles)
         {
             GetPaths(inputs, out Base.Grid2Char grid, out HashSet<Base.Vec2> paths, out Base.Vec2 start, out Base.Vec2 end);
@@ -182,26 +192,23 @@ namespace AoC._2024
             while (path.Count > 0)
             {
                 ScoredDV2 sdv2 = path.Dequeue();
-                if (visited.Contains(sdv2.DV2))
+                if (findAllTiles)
                 {
-                    if (findAllTiles)
+                    // PrintPath(grid, sdv2);
+                    if (sdv2.Score > minScore || sdv2.History.Contains(sdv2.DV2))
                     {
-                        if (sdv2.History.Contains(sdv2.DV2))
-                        {
-                            continue;
-                        }
+                        continue;
                     }
-                    else
+                }
+                else
+                {
+                    if (visited.Contains(sdv2.DV2))
                     {
                         continue;
                     }
                 }
                 visited.Add(sdv2.DV2);
-
-                if (findAllTiles && sdv2.Score > minScore)
-                {
-                    continue;
-                }
+                sdv2.History.Add(sdv2.DV2);
 
                 // Log($"{sdv2}");
                 // grid.PrintNextArrow(Core.Log.ELevel.Spam, sdv2.DV2.Vec2, sdv2.DV2.Dir);
@@ -215,42 +222,29 @@ namespace AoC._2024
                         {
                             minScore = sdv2.Score;
                             ++pathCount;
+
+                            PrintPath(grid, sdv2);
                             continue;
                         }
                     }
                     else
                     {
+                        PrintPath(grid, sdv2);
                         return sdv2.Score.ToString();
                     }
                 }
 
                 // going straight is worth 1 point
-                List<DirectedVec2> history = [];
                 Base.Vec2 next = sdv2.DV2.Vec2 + Util.Grid2.Map.Neighbor[sdv2.DV2.Dir];
                 if (paths.Contains(next))
                 {
-                    if (findAllTiles)
-                    {
-                        history = [.. sdv2.History];
-                        history.Add(new(sdv2.DV2.Dir, next));
-                    }
-                    path.Enqueue(new ScoredDV2(new DirectedVec2(sdv2.DV2.Dir, next), sdv2.Score + 1, history), sdv2.Score + 1);
+                    path.Enqueue(new ScoredDV2(new DirectedVec2(sdv2.DV2.Dir, next), sdv2.Score + 1, [.. sdv2.History]), sdv2.Score + 1);
                 }
 
-                if (findAllTiles)
-                {
-                    history = [.. sdv2.History];
-                    history.Add(new(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2));
-                }
-                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, history), sdv2.Score + 1000);
-
-                if (findAllTiles)
-                {
-                    history = [.. sdv2.History];
-                    history.Add(new(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2));
-                }
-                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, history), sdv2.Score + 1000);
+                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, [.. sdv2.History]), sdv2.Score + 1000);
+                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, [.. sdv2.History]), sdv2.Score + 1000);
             }
+
             return $"{minScore} @ {pathCount}".ToString();
         }
 
