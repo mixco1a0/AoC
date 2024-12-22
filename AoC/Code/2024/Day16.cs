@@ -12,8 +12,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v1",
+                Core.Part.Two => "v1",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -76,6 +76,17 @@ namespace AoC._2024
 #.#.#.#########.#
 #S#.............#
 #################"
+                },
+                new Core.TestDatum
+                {
+                    TestPart = Core.Part.Two,
+                    Output = "5",
+                    RawInput =
+@"#####
+#..E#
+#.#.#
+#S..#
+#####"
                 },
                 new Core.TestDatum
                 {
@@ -143,9 +154,9 @@ namespace AoC._2024
 
         private record DirectedVec2(Util.Grid2.Dir Dir, Base.Vec2 Vec2);
 
-        private record ScoredDV2(DirectedVec2 DV2, int Score, List<DirectedVec2> History);
+        private record ScoredDV2(DirectedVec2 DV2, int Score);
 
-        private void GetPaths(List<string> inputs, out Base.Grid2Char grid, out HashSet<Base.Vec2> paths, out Base.Vec2 start, out Base.Vec2 end)
+        private static void GetPaths(List<string> inputs, out Base.Grid2Char grid, out HashSet<Base.Vec2> paths, out Base.Vec2 start, out Base.Vec2 end)
         {
             grid = new(inputs);
             paths = [];
@@ -157,6 +168,7 @@ namespace AoC._2024
                 {
                     case Start:
                         start = vec2;
+                        paths.Add(vec2);
                         break;
                     case End:
                         end = vec2;
@@ -169,83 +181,74 @@ namespace AoC._2024
             }
         }
 
-        private static void PrintPath(Base.Grid2Char grid, ScoredDV2 sdv2)
+        // private static void PrintPath(Base.Grid2Char grid, List<DirectedVec2> path)
+        // {
+        //     Base.Grid2Char g = new(grid);
+        //     foreach (var p in path)
+        //     {
+        //         g[p.Vec2] = Util.Grid2.Map.Arrow[p.Dir];
+        //     }
+        //     g.Print(Core.Log.ELevel.Spam);
+        // }
+
+        private static readonly Dictionary<Util.Grid2.Dir, int> DirToIdx = new()
         {
-            Base.Grid2Char g = new(grid);
-            foreach (var h in sdv2.History)
-            {
-                g[h.Vec2] = Util.Grid2.Map.Arrow[h.Dir];
-            }
-            g.Print(Core.Log.ELevel.Spam);
-        }
+            {Util.Grid2.Dir.North, 0},
+            {Util.Grid2.Dir.East, 1},
+            {Util.Grid2.Dir.South, 2},
+            {Util.Grid2.Dir.West, 3}
+        };
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findAllTiles)
         {
             GetPaths(inputs, out Base.Grid2Char grid, out HashSet<Base.Vec2> paths, out Base.Vec2 start, out Base.Vec2 end);
 
-            int pathCount = 0;
+            // keep track of each path's best possible score in every direction
+            Dictionary<Base.Vec2, int[]> pathScores = [];
+            if (findAllTiles)
+            {
+                foreach (Base.Vec2 p in paths)
+                {
+                    pathScores[p] = [int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue];
+                }
+                pathScores[start] = [int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue];
+                pathScores[end] = [int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue];
+            }
+
             int minScore = int.MaxValue;
-
-            Dictionary<Base.Vec2, int> pathScores = [];
-
-            HashSet<Base.Vec2> bestTiles = [];
             HashSet<DirectedVec2> visited = [];
             PriorityQueue<ScoredDV2, int> path = new();
-            path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Dir.East, start), 0, []), 0);
+            path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Dir.East, start), 0), 0);
             while (path.Count > 0)
             {
                 ScoredDV2 sdv2 = path.Dequeue();
+
+                // only visit each location + direction once
+                if (visited.Contains(sdv2.DV2))
+                {
+                    continue;
+                }
+                visited.Add(sdv2.DV2);
+
+                // update the location's best score
                 if (findAllTiles)
                 {
-                    // PrintPath(grid, sdv2);
                     if (sdv2.Score > minScore)
                     {
                         continue;
                     }
-
-                    if (sdv2.History.Select(h => h.Vec2).Contains(sdv2.DV2.Vec2))
-                    {
-                        List<Util.Grid2.Dir> dirs = sdv2.History.Where(h => h.Vec2.Equals(sdv2.DV2.Vec2)).Select(h => h.Dir).ToList();
-                        if (dirs.Contains(sdv2.DV2.Dir) || dirs.Contains(Util.Grid2.Map.Opposite[sdv2.DV2.Dir]))
-                        {
-                            continue;
-                        }
-                    }
+                    pathScores[sdv2.DV2.Vec2][DirToIdx[sdv2.DV2.Dir]] = sdv2.Score;
                 }
-                else
-                {
-                    if (visited.Contains(sdv2.DV2))
-                    {
-                        continue;
-                    }
-                }
-                visited.Add(sdv2.DV2);
-                sdv2.History.Add(sdv2.DV2);
-
-                // Log($"{sdv2}");
-                // grid.PrintNextArrow(Core.Log.ELevel.Spam, sdv2.DV2.Vec2, sdv2.DV2.Dir);
 
                 // win condition
                 if (sdv2.DV2.Vec2.Equals(end))
                 {
                     if (findAllTiles)
                     {
-                        if (sdv2.Score <= minScore)
-                        {
-                            minScore = sdv2.Score;
-                            ++pathCount;
-
-                            PrintPath(grid, sdv2);
-                            foreach (var pair in sdv2.History)
-                            {
-                                bestTiles.Add(pair.Vec2);
-                            }
-                            continue;
-                        }
+                        minScore = sdv2.Score;
                     }
                     else
                     {
-                        // PrintPath(grid, sdv2);
                         return sdv2.Score.ToString();
                     }
                 }
@@ -254,14 +257,74 @@ namespace AoC._2024
                 Base.Vec2 next = sdv2.DV2.Vec2 + Util.Grid2.Map.Neighbor[sdv2.DV2.Dir];
                 if (paths.Contains(next))
                 {
-                    path.Enqueue(new ScoredDV2(new DirectedVec2(sdv2.DV2.Dir, next), sdv2.Score + 1, [.. sdv2.History]), sdv2.Score + 1);
+                    path.Enqueue(new ScoredDV2(new DirectedVec2(sdv2.DV2.Dir, next), sdv2.Score + 1), sdv2.Score + 1);
                 }
 
-                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, [.. sdv2.History]), sdv2.Score + 1000);
-                path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000, [.. sdv2.History]), sdv2.Score + 1000);
+                // only turn clockwise if going straight is possible after
+                next = sdv2.DV2.Vec2 + Util.Grid2.Map.Neighbor[Util.Grid2.Map.RotateCW[sdv2.DV2.Dir]];
+                if (paths.Contains(next))
+                {
+                    path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000), sdv2.Score + 1000);
+                }
+
+                // only turn counter clockwise if going straight is possible after
+                next = sdv2.DV2.Vec2 + Util.Grid2.Map.Neighbor[Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir]];
+                if (paths.Contains(next))
+                {
+                    path.Enqueue(new ScoredDV2(new DirectedVec2(Util.Grid2.Map.RotateCCW[sdv2.DV2.Dir], sdv2.DV2.Vec2), sdv2.Score + 1000), sdv2.Score + 1000);
+                }
             }
 
-            return bestTiles.Count.ToString();
+            // go from end to start going down in score
+            visited.Clear();
+            HashSet<Base.Vec2> bestPath = [];
+            Queue<DirectedVec2> pathCheck = [];
+            foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
+            {
+                if (pathScores[end][DirToIdx[dir]] == minScore)
+                {
+                    pathCheck.Enqueue(new(dir, end));
+                }
+            }
+
+            while (pathCheck.Count > 0)
+            {
+                DirectedVec2 dv2 = pathCheck.Dequeue();
+                if (visited.Contains(dv2))
+                {
+                    continue;
+                }
+                visited.Add(dv2);
+                bestPath.Add(dv2.Vec2);
+
+                // move backwards
+                int curScore = pathScores[dv2.Vec2][DirToIdx[dv2.Dir]];
+                Base.Vec2 prevPath = dv2.Vec2 + Util.Grid2.Map.Neighbor[Util.Grid2.Map.Opposite[dv2.Dir]];
+                if (paths.Contains(prevPath))
+                {
+                    int prevScore = pathScores[prevPath][DirToIdx[dv2.Dir]];
+                    if (prevScore < curScore)
+                    {
+                        pathCheck.Enqueue(new(dv2.Dir, prevPath));
+                    }
+                }
+
+                // undo clockwise rotate
+                Util.Grid2.Dir ccw = Util.Grid2.Map.RotateCCW[dv2.Dir];
+                if (pathScores[dv2.Vec2][DirToIdx[ccw]] < curScore)
+                {
+                    pathCheck.Enqueue(new(ccw, dv2.Vec2));
+                }
+
+                // undo counter clockwise rotate
+                Util.Grid2.Dir cw = Util.Grid2.Map.RotateCW[dv2.Dir];
+                if (pathScores[dv2.Vec2][DirToIdx[cw]] < curScore)
+                {
+                    pathCheck.Enqueue(new(cw, dv2.Vec2));
+                }
+            }
+
+            return bestPath.Count.ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
