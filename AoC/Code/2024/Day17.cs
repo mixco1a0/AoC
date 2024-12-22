@@ -91,9 +91,13 @@ Program: 0,1,5,4,3,0"
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "117440",
                     RawInput =
-@""
+@"Register A: 2024
+Register B: 0
+Register C: 0
+
+Program: 0,3,5,4,3,0"
                 },
             ];
             return testData;
@@ -114,8 +118,11 @@ Program: 0,1,5,4,3,0"
         private class Computer
         {
             public int[] Program { get; private set; }
+
             public int A { get; set; }
+            private int m_b;
             public int B { get; set; }
+            private int m_c;
             public int C { get; set; }
             public int InstructionPointer { get; set; }
             public List<int> Output { get; set; }
@@ -124,9 +131,21 @@ Program: 0,1,5,4,3,0"
             {
                 A = Util.String.Split(inputs[0], "RegisterA: ").Select(int.Parse).First();
                 B = Util.String.Split(inputs[1], "RegisterB: ").Select(int.Parse).First();
+                m_b = B;
                 C = Util.String.Split(inputs[2], "RegisterC: ").Select(int.Parse).First();
+                m_c = C;
                 Program = Util.String.Split(inputs[4], "Program:, ").Select(int.Parse).ToArray();
+                InstructionPointer = 0;
                 Output = [];
+            }
+
+            public void Reset(int a)
+            {
+                A = a;
+                B = m_b;
+                C = m_c;
+                InstructionPointer = 0;
+                Output.Clear();
             }
 
             public bool Step()
@@ -207,14 +226,42 @@ Program: 0,1,5,4,3,0"
                 InstructionPointer += 2;
                 return true;
             }
+
+            public bool CanContinue()
+            {
+                if (Output.Count == 0)
+                {
+                    return true;
+                }
+
+                return Output.SequenceEqual(Program.Take(Output.Count));
+            }
+
+            public bool IsComplete()
+            {
+                return Output.SequenceEqual(Program);
+            }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findA)
         {
             Computer computer = new(inputs);
-            while (computer.Step()) ;
-            Log($"A={computer.A} | B={computer.B} | C={computer.C} | Output={string.Join(',', computer.Output)}");
-            return string.Join(',', computer.Output);
+            if (!findA)
+            {
+                while (computer.Step()) ;
+                return string.Join(',', computer.Output);
+            }
+            // Log($"A={computer.A} | B={computer.B} | C={computer.C} | Output={string.Join(',', computer.Output)}");
+            for (int _a = 0; _a < int.MaxValue; ++_a)
+            {
+                computer.Reset(_a);
+                while (computer.Step() && computer.CanContinue());
+                if (computer.IsComplete())
+                {
+                    return _a.ToString();
+                }
+            }
+            return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
