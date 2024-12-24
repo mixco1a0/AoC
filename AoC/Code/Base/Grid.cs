@@ -71,6 +71,18 @@ namespace AoC.Base
 
     public class Grid2Bool : Grid2<bool>
     {
+        public Grid2Bool(int maxCol, int maxRow, bool defaultVal = false)
+        {
+            m_array = new bool[maxRow, maxCol];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_r, _c] = defaultVal;
+                }
+            }
+        }
+
         public Grid2Bool(List<string> rawGrid)
         {
             m_array = new bool[rawGrid.Count, rawGrid.First().Length];
@@ -102,14 +114,14 @@ namespace AoC.Base
 
     public class Grid2Int : Grid2<int>
     {
-        public Grid2Int(int maxCol, int maxRow)
+        public Grid2Int(int maxCol, int maxRow, int defaultVal = 0)
         {
             m_array = new int[maxRow, maxCol];
             for (int _c = 0; _c < MaxCol; ++_c)
             {
                 for (int _r = 0; _r < MaxRow; ++_r)
                 {
-                    m_array[_r, _c] = 0;
+                    m_array[_r, _c] = defaultVal;
                 }
             }
         }
