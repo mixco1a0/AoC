@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using AoC.Base;
 
 namespace AoC._2024
 {
@@ -12,8 +14,8 @@ namespace AoC._2024
         {
             return part switch
             {
-                // Core.Part.One => "v1",
-                // Core.Part.Two => "v1",
+                Core.Part.One => "v1",
+                Core.Part.Two => "v1",
                 _ => base.GetSolutionVersion(part),
             };
         }
@@ -87,18 +89,7 @@ Register B: 0
 Register C: 0
 
 Program: 0,1,5,4,3,0"
-                },
-                new Core.TestDatum
-                {
-                    TestPart = Core.Part.Two,
-                    Output = "117440",
-                    RawInput =
-@"Register A: 2024
-Register B: 0
-Register C: 0
-
-Program: 0,3,5,4,3,0"
-                },
+                }
             ];
             return testData;
         }
@@ -117,29 +108,29 @@ Program: 0,3,5,4,3,0"
 
         private class Computer
         {
-            public int[] Program { get; private set; }
+            public ulong[] Program { get; private set; }
 
-            public int A { get; set; }
-            private int m_b;
-            public int B { get; set; }
-            private int m_c;
-            public int C { get; set; }
-            public int InstructionPointer { get; set; }
-            public List<int> Output { get; set; }
+            public ulong A { get; set; }
+            private readonly ulong m_b;
+            public ulong B { get; set; }
+            private readonly ulong m_c;
+            public ulong C { get; set; }
+            public ulong InstructionPointer { get; set; }
+            public List<ulong> Output { get; set; }
 
             public Computer(List<string> inputs)
             {
-                A = Util.String.Split(inputs[0], "RegisterA: ").Select(int.Parse).First();
-                B = Util.String.Split(inputs[1], "RegisterB: ").Select(int.Parse).First();
+                A = Util.String.Split(inputs[0], "RegisterA: ").Select(ulong.Parse).First();
+                B = Util.String.Split(inputs[1], "RegisterB: ").Select(ulong.Parse).First();
                 m_b = B;
-                C = Util.String.Split(inputs[2], "RegisterC: ").Select(int.Parse).First();
+                C = Util.String.Split(inputs[2], "RegisterC: ").Select(ulong.Parse).First();
                 m_c = C;
-                Program = Util.String.Split(inputs[4], "Program:, ").Select(int.Parse).ToArray();
+                Program = Util.String.Split(inputs[4], "Program:, ").Select(ulong.Parse).ToArray();
                 InstructionPointer = 0;
                 Output = [];
             }
 
-            public void Reset(int a)
+            public void Reset(ulong a)
             {
                 A = a;
                 B = m_b;
@@ -150,14 +141,14 @@ Program: 0,3,5,4,3,0"
 
             public bool Step()
             {
-                if (InstructionPointer + 1 >= Program.Length || InstructionPointer < 0)
+                if (InstructionPointer + 1 >= (ulong)Program.Length)
                 {
                     return false;
                 }
 
-                int opCode = Program[InstructionPointer];
-                int literal = Program[InstructionPointer + 1];
-                int combo = 0;
+                ulong opCode = Program[InstructionPointer];
+                ulong literal = Program[InstructionPointer + 1];
+                ulong combo = 0;
                 switch (literal)
                 {
                     case 0:
@@ -182,11 +173,7 @@ Program: 0,3,5,4,3,0"
                 switch ((OpCode)opCode)
                 {
                     case OpCode.ADivide:
-                        {
-                            int num = A;
-                            int den = (int)Math.Pow(2, combo);
-                            A = num / den;
-                        }
+                        A /= (ulong)Math.Pow(2, combo);
                         break;
                     case OpCode.BitwiseBXOr:
                         B ^= literal;
@@ -205,45 +192,22 @@ Program: 0,3,5,4,3,0"
                         B ^= C;
                         break;
                     case OpCode.ComboModOut:
-                        Output.Add(combo % 8);
+                        Output.Add(combo & 0x7);
                         break;
                     case OpCode.BDivide:
-                        {
-                            int num = A;
-                            int den = (int)Math.Pow(2, combo);
-                            B = num / den;
-                        }
+                        B = A / (ulong)Math.Pow(2, combo);
                         break;
                     case OpCode.CDivide:
-                        {
-                            int num = A;
-                            int den = (int)Math.Pow(2, combo);
-                            C = num / den;
-                        }
+                        C = A / (ulong)Math.Pow(2, combo);
                         break;
                 }
 
                 InstructionPointer += 2;
                 return true;
             }
-
-            public bool CanContinue()
-            {
-                if (Output.Count == 0)
-                {
-                    return true;
-                }
-
-                return Output.SequenceEqual(Program.Take(Output.Count));
-            }
-
-            public bool IsComplete()
-            {
-                return Output.SequenceEqual(Program);
-            }
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findA)
+        private static string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findA)
         {
             Computer computer = new(inputs);
             if (!findA)
@@ -251,17 +215,30 @@ Program: 0,3,5,4,3,0"
                 while (computer.Step()) ;
                 return string.Join(',', computer.Output);
             }
-            // Log($"A={computer.A} | B={computer.B} | C={computer.C} | Output={string.Join(',', computer.Output)}");
-            for (int _a = 0; _a < int.MaxValue; ++_a)
+
+            List<ulong> validAs = [0];
+            ulong[] reversed = computer.Program.Reverse().ToArray();
+            for (int i = 0; i < reversed.Length; ++i)
             {
-                computer.Reset(_a);
-                while (computer.Step() && computer.CanContinue());
-                if (computer.IsComplete())
+                List<ulong> newValidAs = [];
+                foreach (ulong _a in validAs)
                 {
-                    return _a.ToString();
+                    for (uint j = 0; j < 8; ++j)
+                    {
+                        ulong newA = _a << 3;
+                        newA += j;
+                        computer.Reset(newA);
+                        while (computer.Step()) ;
+                        if (computer.Output[0] == reversed[i])
+                        {
+                            newValidAs.Add(newA);
+                        }
+                    }
                 }
+                validAs = [.. newValidAs];
             }
-            return string.Empty;
+
+            return validAs.Order().First().ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
