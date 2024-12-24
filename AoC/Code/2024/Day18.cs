@@ -57,9 +57,34 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "",
+                    Output = "6,1",
+                    Variables = new Dictionary<string, string> { { nameof(_GridSize), "6" }, { nameof(_CorruptedCount), "12" } },
                     RawInput =
-@""
+@"5,4
+4,2
+4,5
+3,0
+2,1
+6,3
+2,4
+1,5
+0,6
+3,3
+2,6
+5,1
+1,2
+5,5
+2,5
+6,5
+1,4
+0,4
+6,4
+1,1
+6,1
+1,0
+0,5
+1,6
+2,0"
                 },
             ];
             return testData;
@@ -73,17 +98,8 @@ namespace AoC._2024
 
         private record Vec2Score(Base.Vec2 Vec2, int Score);
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private int Run(Base.Grid2Int grid, HashSet<Base.Vec2> corruptedBytes, int gridSize)
         {
-            GetVariable(nameof(_GridSize), 70, variables, out int gridSize);
-            GetVariable(nameof(_CorruptedCount), 1024, variables, out int corruptedCount);
-            List<Base.Vec2> bytes = inputs.Select(i => Util.String.Split(i, ',').Select(int.Parse).ToArray()).Select(xy => new Base.Vec2(xy.First(), xy.Last())).ToList();
-            HashSet<Base.Vec2> corruptedBytes = [];
-            foreach (Base.Vec2 cb in bytes[..corruptedCount])
-            {
-                corruptedBytes.Add(cb);
-            }
-            Base.Grid2Int grid = new(gridSize + 1, gridSize + 1, int.MaxValue);
             PriorityQueue<Vec2Score, int> queue = new();
             queue.Enqueue(new(new(0, 0), 0), 0);
             while (queue.Count > 0)
@@ -110,7 +126,50 @@ namespace AoC._2024
                     }
                 }
             }
-            return grid[gridSize, gridSize].ToString();
+            return grid[gridSize, gridSize];
+        }
+
+        private void GetCorruptedBytes(List<Base.Vec2> bytes, int corruptedCount, out HashSet<Base.Vec2> corruptedBytes)
+        {
+            corruptedBytes = [];
+            foreach (Base.Vec2 cb in bytes[..corruptedCount])
+            {
+                corruptedBytes.Add(cb);
+            }
+        }
+
+        private void Print(Base.Grid2Int grid, HashSet<Base.Vec2> corruptedBytes)
+        {
+            Base.Grid2Char g = new(grid.MaxCol, grid.MaxRow, '.');
+            foreach (Base.Vec2 vec2 in corruptedBytes)
+            {
+                g[vec2] = '#';
+            }
+            g.Print(Core.Log.ELevel.Spam);
+        }
+
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findImpossible)
+        {
+            GetVariable(nameof(_GridSize), 70, variables, out int gridSize);
+            GetVariable(nameof(_CorruptedCount), 1024, variables, out int corruptedCount);
+            List<Base.Vec2> bytes = inputs.Select(i => Util.String.Split(i, ',').Select(int.Parse).ToArray()).Select(xy => new Base.Vec2(xy.First(), xy.Last())).ToList();
+            Base.Grid2Int grid = new(gridSize + 1, gridSize + 1, int.MaxValue);
+            if (!findImpossible)
+            {
+                GetCorruptedBytes(bytes, corruptedCount, out HashSet<Base.Vec2> corruptedBytes);
+                return Run(grid, corruptedBytes, gridSize).ToString();
+            }
+            for (int cc = corruptedCount + 1; cc < bytes.Count; ++cc)
+            {
+                GetCorruptedBytes(bytes, cc, out HashSet<Base.Vec2> corruptedBytes);
+                // Print(grid, corruptedBytes);
+                int score = Run(new(grid), corruptedBytes, gridSize);
+                if (score == int.MaxValue)
+                {
+                    return $"{bytes[cc - 1].X},{bytes[cc - 1].Y}";
+                }
+            }
+            return string.Empty;
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)

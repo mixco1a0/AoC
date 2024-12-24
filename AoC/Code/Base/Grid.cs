@@ -138,6 +138,18 @@ namespace AoC.Base
             }
         }
 
+        public Grid2Int(Grid2Int grid)
+        {
+            m_array = new int[grid.MaxRow, grid.MaxCol];
+            for (int _c = 0; _c < MaxCol; ++_c)
+            {
+                for (int _r = 0; _r < MaxRow; ++_r)
+                {
+                    m_array[_r, _c] = grid[_r, _c];
+                }
+            }
+        }
+
         public override void Print(Core.Log.ELevel level)
         {
             StringBuilder sb = new();
