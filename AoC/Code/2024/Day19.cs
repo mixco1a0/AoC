@@ -42,6 +42,15 @@ bbrgwb"
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
+                    Output = "4",
+                    RawInput =
+@"b, rr, r, ww, w, bbbb, rrrrr, wwwwww
+
+brrww"
+                },
+                new Core.TestDatum
+                {
+                    TestPart = Core.Part.Two,
                     Output = "2",
                     RawInput =
 @"r, wr, b, g, bwu, rb, gb, br
@@ -106,7 +115,14 @@ bbrgwb"
             None = 0b_0000_0000
         }
 
+        private record InvalidTowelIndex(int PatternIndex, int TowelIndex);
+
         private bool FindAllMatches { get; set; }
+        private List<Color[]> Towels { get; set; }
+        private List<Color[]> Patterns { get; set; }
+        private Dictionary<int, int> Memoize { get; set; }
+
+
 
         static Color GetColor(char c)
         {
@@ -134,13 +150,13 @@ bbrgwb"
             };
         }
 
-        private static void Parse(List<string> input, out List<Color[]> towels, out List<Color[]> patterns)
+        private void Parse(List<string> input)
         {
-            towels = [];
-            patterns = [];
+            Towels = [];
+            Patterns = [];
 
             string[] split = Util.String.Split(input.First(), ", ");
-            foreach (string s in split)
+            foreach (string s in split.Order())
             {
                 Color[] towel = new Color[s.Length];
                 int index = 0;
@@ -148,10 +164,10 @@ bbrgwb"
                 {
                     towel[index++] = GetColor(c);
                 }
-                towels.Add(towel);
+                Towels.Add(towel);
             }
 
-            foreach (string i in input.Skip(2))
+            foreach (string i in input.Skip(2).Order())
             {
                 Color[] pattern = new Color[i.Length];
                 int index = 0;
@@ -159,11 +175,11 @@ bbrgwb"
                 {
                     pattern[index++] = GetColor(t);
                 }
-                patterns.Add(pattern);
+                Patterns.Add(pattern);
             }
         }
 
-        private static string GetString(Color[] colors)
+        private static string GetString(IEnumerable<Color> colors)
         {
             StringBuilder sb = new();
             foreach (Color color in colors)
@@ -173,93 +189,90 @@ bbrgwb"
             return sb.ToString();
         }
 
-        private bool GetPossibleMatches(Color[] pattern, int patternIdx, List<Color[]> towels, int towelIdx, int colorIdx, ref int matchCount)
+        private int GetPatternMatches(Color[] pattern, int patternIndex)
         {
-            // check next color
-            Color[] towelColors = towels[towelIdx];
-            if (towelColors[colorIdx] == pattern[patternIdx])
+            // make sure this works
+            if (patternIndex == pattern.Length)
             {
-                // hit the end of the pattern
-                if (patternIdx + 1 == pattern.Length)
-                {
-                    // towel wasn't finished
-                    if (colorIdx != towelColors.Length - 1)
-                    {
-                        return false;
-                    }
+                return 1;
+            }
 
-                    // last towel was fully used
-                    ++matchCount;
-                    return true;
-                }
-                // check if current towel was completed
-                else if (colorIdx + 1 == towelColors.Length)
-                {
-                    // if (FindAllMatches)
-                    // {
-                    //     Log($"{new string(' ', patternIdx - towelColors.Length + 1)}{GetString(towelColors)}");
-                    // }
+            // get a hash of the remaining colors in the current pattern
+            int remainingPatternHash = 0;
+            foreach (Color color in pattern.Skip(patternIndex))
+            {
+                remainingPatternHash = HashCode.Combine(remainingPatternHash, color);
+            }
 
-                    // current towel is complete, check next index against all possible towels again
-                    for (int t = 0; t < towels.Count; ++t)
-                    {
-                        if (GetPossibleMatches(pattern, patternIdx + 1, towels, t, 0, ref matchCount) && !FindAllMatches)
-                        {
-                            return true;
-                        }
-                    }
+            // Log($"Pattern={new string(' ', patternIndex)}{GetString(pattern.Skip(patternIndex))} | Hash={remainingPatternHash}");
+
+            // return the cached result
+            if (Memoize.TryGetValue(remainingPatternHash, out int value))
+            {
+                return value;
+            }
+
+            // sum up the match count for all of the next towels being used
+            int totalPatternMatchCount = 0;
+            for (int t = 0; t < Towels.Count; ++t)
+            {
+                Color[] currentTowel = Towels[t];
+                // Log($"Towel...{new string(' ', pattern.Length)} | {GetString(currentTowel)}");
+
+                if (currentTowel.Length + patternIndex > pattern.Length)
+                {
+                    // towel is too long, skip it
+                    continue;
                 }
-                // keep checking current towel
+
+                // towel can be used, match sure the pattern matches completely
+                bool matches = true;
+                for (int c = 0; matches && c < currentTowel.Length; ++c)
+                {
+                    matches = currentTowel[c] == pattern[patternIndex + c];
+                }
+
+                // towel doesn't match, skip it
+                if (!matches)
+                {
+                    continue;
+                }
+
+                // check to see if this towel completes the pattern entirely
+                if (currentTowel.Length + patternIndex == pattern.Length)
+                {
+                    // this is a match
+                    ++totalPatternMatchCount;
+                }
                 else
                 {
-                    // if (FindAllMatches)
-                    // {
-                    //     Log($"{new string(' ', patternIdx - colorIdx)}{GetString(towelColors)} | ->");
-                    // }
-
-                    // keep going down the current towel
-                    if (GetPossibleMatches(pattern, patternIdx + 1, towels, towelIdx, colorIdx + 1, ref matchCount) && !FindAllMatches)
-                    {
-                        return true;
-                    }
+                    // there is still more pattern to match, get the rest of the pattern match count
+                    totalPatternMatchCount += GetPatternMatches(pattern, patternIndex + currentTowel.Length);
+                    // Log($"Pattern={new string(' ', patternIndex)}{GetString(pattern.Skip(patternIndex))} | Hash={remainingPatternHash}");
                 }
-            }
-            else
-            {
-                // if (FindAllMatches)
-                // {
-                //     Log($"{new string(' ', patternIdx)}{GetString(towelColors)} | FAIL");
-                // }
-            }
 
-            return false;
-        }
-
-        private void GetPossibleMatches(Color[] pattern, List<Color[]> towels, ref int possibleTowels)
-        {
-            // if (FindAllMatches)
-            // {
-            //     Log($"{GetString(pattern)}:");
-            // }
-
-            for (int t = 0; t < towels.Count; ++t)
-            {
-                if (GetPossibleMatches(pattern, 0, towels, t, 0, ref possibleTowels) && !FindAllMatches)
+                // short circuit future checks for part one
+                if (!FindAllMatches && totalPatternMatchCount > 0)
                 {
                     break;
                 }
             }
+
+            Memoize[remainingPatternHash] = totalPatternMatchCount;
+            return totalPatternMatchCount;
         }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool findAllMatches)
         {
             FindAllMatches = findAllMatches;
+            Memoize = [];
 
-            Parse(inputs, out List<Color[]> towels, out List<Color[]> patterns);
+            Parse(inputs);
             int possibleTowels = 0;
-            foreach (Color[] pattern in patterns)
+            foreach (Color[] pattern in Patterns)
             {
-                GetPossibleMatches(pattern, towels, ref possibleTowels);
+                // Log($"Solve=  {GetString(pattern)}:");
+                possibleTowels += GetPatternMatches(pattern, 0);
             }
             return possibleTowels.ToString();
         }
@@ -269,5 +282,7 @@ bbrgwb"
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
             => SharedSolution(inputs, variables, true);
+        // TOO LOW -> 15982
+        // TOO LOW -> 1952121237
     }
 }
