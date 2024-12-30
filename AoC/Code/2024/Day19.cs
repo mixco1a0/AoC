@@ -42,15 +42,6 @@ bbrgwb"
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
-                    Output = "4",
-                    RawInput =
-@"b, rr, r, ww, w, bbbb, rrrrr, wwwwww
-
-brrww"
-                },
-                new Core.TestDatum
-                {
-                    TestPart = Core.Part.Two,
                     Output = "2",
                     RawInput =
 @"r, wr, b, g, bwu, rb, gb, br
@@ -100,6 +91,15 @@ bwurrg
 brgr
 bbrgwb"
                 },
+                new Core.TestDatum
+                {
+                    TestPart = Core.Part.Two,
+                    Output = "1",
+                    RawInput =
+@"gw, bub, rur, rr, rrw, g, wb, ubr, urrr
+
+gwbubrurrrw"
+                },
             ];
             return testData;
         }
@@ -115,14 +115,10 @@ bbrgwb"
             None = 0b_0000_0000
         }
 
-        private record InvalidTowelIndex(int PatternIndex, int TowelIndex);
-
         private bool FindAllMatches { get; set; }
         private List<Color[]> Towels { get; set; }
         private List<Color[]> Patterns { get; set; }
-        private Dictionary<int, int> Memoize { get; set; }
-
-
+        private Dictionary<int, long> Memoize { get; set; }
 
         static Color GetColor(char c)
         {
@@ -189,14 +185,8 @@ bbrgwb"
             return sb.ToString();
         }
 
-        private int GetPatternMatches(Color[] pattern, int patternIndex)
+        private long GetPatternMatches(Color[] pattern, int patternIndex)
         {
-            // make sure this works
-            if (patternIndex == pattern.Length)
-            {
-                return 1;
-            }
-
             // get a hash of the remaining colors in the current pattern
             int remainingPatternHash = 0;
             foreach (Color color in pattern.Skip(patternIndex))
@@ -207,13 +197,13 @@ bbrgwb"
             // Log($"Pattern={new string(' ', patternIndex)}{GetString(pattern.Skip(patternIndex))} | Hash={remainingPatternHash}");
 
             // return the cached result
-            if (Memoize.TryGetValue(remainingPatternHash, out int value))
+            if (Memoize.TryGetValue(remainingPatternHash, out long value))
             {
                 return value;
             }
 
             // sum up the match count for all of the next towels being used
-            int totalPatternMatchCount = 0;
+            long totalPatternMatchCount = 0;
             for (int t = 0; t < Towels.Count; ++t)
             {
                 Color[] currentTowel = Towels[t];
@@ -268,7 +258,7 @@ bbrgwb"
             Memoize = [];
 
             Parse(inputs);
-            int possibleTowels = 0;
+            long possibleTowels = 0;
             foreach (Color[] pattern in Patterns)
             {
                 // Log($"Solve=  {GetString(pattern)}:");
