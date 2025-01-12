@@ -6,9 +6,9 @@ using System.Text;
 
 namespace AoC.Util
 {
+    #region Grid2
     namespace Grid2
     {
-        #region Direction
         public enum Dir { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
 
         public static class Map
@@ -198,7 +198,12 @@ namespace AoC.Util
                 }
             }
         }
-        #endregion
+    }
+    #endregion
+
+    public class Grid2<T>
+    {
+
     }
 
     public static class Grid
