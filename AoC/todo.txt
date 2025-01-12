@@ -1,5 +1,7 @@
 2024.d13 -> migrate triangle class outside, auto solving approach
 
+fix grid namespaces etc (what is 'util' vs what is 'base' vs what is 'core')
+
 make a util that properly displays time according to specific units -> Program.PrintPerf()
 
 clean up performance logging
