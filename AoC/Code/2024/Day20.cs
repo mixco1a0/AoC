@@ -25,16 +25,52 @@ namespace AoC._2024
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.One,
-                    Output = "",
-                    Variables = new Dictionary<string, string> { { nameof(_VarName), "0" } },
+                    Output = "10",
+                    Variables = new Dictionary<string, string> { { nameof(_PicosSaved), "10" } },
                     RawInput =
-@""
+@"###############
+#...#...#.....#
+#.#.#.#.#.###.#
+#S#...#.#.#...#
+#######.#.#.###
+#######.#.#...#
+#######.#.###.#
+###..E#...#...#
+###.#######.###
+#...###...#...#
+#.#####.#.###.#
+#.#...#.#.#...#
+#.#.#.#.#.#.###
+#...#...#...###
+###############"
+                },
+                new Core.TestDatum
+                {
+                    TestPart = Core.Part.One,
+                    Output = "1",
+                    Variables = new Dictionary<string, string> { { nameof(_PicosSaved), "50" } },
+                    RawInput =
+@"###############
+#...#...#.....#
+#.#.#.#.#.###.#
+#S#...#.#.#...#
+#######.#.#.###
+#######.#.#...#
+#######.#.###.#
+###..E#...#...#
+###.#######.###
+#...###...#...#
+#.#####.#.###.#
+#.#...#.#.#...#
+#.#.#.#.#.#.###
+#...#...#...###
+###############"
                 },
                 new Core.TestDatum
                 {
                     TestPart = Core.Part.Two,
                     Output = "",
-                    Variables = new Dictionary<string, string> { { nameof(_VarName), "0" } },
+                    Variables = new Dictionary<string, string> { { nameof(_PicosSaved), "0" } },
                     RawInput =
 @""
                 },
@@ -42,13 +78,96 @@ namespace AoC._2024
             return testData;
         }
 #pragma warning disable IDE1006 // Naming Styles
-        private static int _VarName { get; }
+        private static int _PicosSaved { get; }
 #pragma warning restore IDE1006 // Naming Styles
+
+        private enum Space
+        {
+            Start = 'S',
+            Path = '.',
+            End = 'E',
+            Wall = '#',
+        }
+
+        Base.Vec2 Start { get; set; }
+        Base.Vec2 End { get; set; }
+        Base.Grid2Char Grid { get; set; }
+        Dictionary<Base.Vec2, int> Path { get; set; }
+
+        private void InitializePath(List<string> inputs)
+        {
+            Start = new();
+            End = new();
+            Grid = new(inputs);
+            Path = [];
+            foreach (Base.Vec2 vec2 in Grid)
+            {
+                switch ((Space)Grid[vec2])
+                {
+                    case Space.Start:
+                        Start = vec2;
+                        Path[vec2] = 0;
+                        Grid[vec2] = (char)Space.Path;
+                        break;
+                    case Space.Path:
+                        Path[vec2] = int.MaxValue;
+                        break;
+                    case Space.End:
+                        End = vec2;
+                        Path[vec2] = int.MaxValue;
+                        Grid[vec2] = (char)Space.Path;
+                        break;
+                    case Space.Wall:
+                        break;
+                }
+            }
+        }
+
+        private void GeneratePathScores()
+        {
+            int score = 0;
+            for (Base.Vec2 pos = Start; !pos.Equals(End);)
+            {
+                foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
+                {
+                    Base.Vec2 next = pos + Util.Grid2.Map.Neighbor[dir];
+                    if (Grid.Contains(next) && Grid[next] == (char)Space.Path && Path[next] == int.MaxValue)
+                    {
+                        Path[pos] = score++;
+                        pos = next;
+                        break;
+                    }
+                }
+            }
+            Path[End] = score;
+        }
+
+        private int FindCheats(int picosSaved)
+        {
+            int cheatCount = 0;
+            foreach (Base.Vec2 pos in Path.Keys)
+            {
+                foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
+                {
+                    Base.Vec2 nextNext = pos + Util.Grid2.Map.Neighbor[dir] * 2;
+                    if (Path.TryGetValue(nextNext, out int score) && (score - Path[pos] - 2) >= picosSaved)
+                    {
+                        // Log($"{score - Path[pos] - 2} picos saved");
+                        // Base.Vec2 next = pos + Util.Grid2.Map.Neighbor[dir];
+                        // Grid.PrintNextArrow(Core.Log.ELevel.Spam, next, dir);
+                        ++cheatCount;
+                    }
+                }
+            }
+            return cheatCount;
+        }
 
         private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
         {
-            GetVariable(nameof(_VarName), 1, variables, out int varName);
-            return string.Empty;
+            GetVariable(nameof(_PicosSaved), 100, variables, out int picosSaved);
+            InitializePath(inputs);
+            GeneratePathScores();
+            return FindCheats(picosSaved).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
