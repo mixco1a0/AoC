@@ -26,7 +26,7 @@ namespace AoC._2024
                 {
                     TestPart = Core.Part.One,
                     Output = "22",
-                    Variables = { { nameof(_GridSize), "6" }, { nameof(_CorruptedCount), "12" } },
+                    Variables = new Dictionary<string, string> { { nameof(_GridSize), "6" }, { nameof(_CorruptedCount), "12" } },
                     RawInput =
 @"5,4
 4,2
