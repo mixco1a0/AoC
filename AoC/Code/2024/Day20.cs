@@ -142,38 +142,47 @@ namespace AoC._2024
             Path[End] = score;
         }
 
-        private int FindCheats(int picosSaved)
+        private int FindCheats(int picosSaved, int cheatPicos)
         {
             int cheatCount = 0;
             foreach (Base.Vec2 pos in Path.Keys)
             {
-                foreach (Util.Grid2.Dir dir in Util.Grid2.Iter.Cardinal)
+                Base.Grid2CharScanner scanner = new(Grid, pos, cheatPicos);
+                foreach (Base.Vec2 next in scanner)
                 {
-                    Base.Vec2 nextNext = pos + Util.Grid2.Map.Neighbor[dir] * 2;
-                    if (Path.TryGetValue(nextNext, out int score) && (score - Path[pos] - 2) >= picosSaved)
+                    if (next.Equals(pos))
                     {
+                        continue;
+                    }
+
+                    if (Path.TryGetValue(next, out int score))
+                    {
+                        int savings = score - Path[pos] - pos.Manhattan(next);
+                        if (savings >= picosSaved)
+                        {
+                            ++cheatCount;
+                        }
                         // Log($"{score - Path[pos] - 2} picos saved");
                         // Base.Vec2 next = pos + Util.Grid2.Map.Neighbor[dir];
                         // Grid.PrintNextArrow(Core.Log.ELevel.Spam, next, dir);
-                        ++cheatCount;
                     }
                 }
             }
             return cheatCount;
         }
 
-        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, bool _)
+        private string SharedSolution(List<string> inputs, Dictionary<string, string> variables, int cheatPicos)
         {
             GetVariable(nameof(_PicosSaved), 100, variables, out int picosSaved);
             InitializePath(inputs);
             GeneratePathScores();
-            return FindCheats(picosSaved).ToString();
+            return FindCheats(picosSaved, cheatPicos).ToString();
         }
 
         protected override string RunPart1Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, false);
+            => SharedSolution(inputs, variables, 2);
 
         protected override string RunPart2Solution(List<string> inputs, Dictionary<string, string> variables)
-            => SharedSolution(inputs, variables, true);
+            => SharedSolution(inputs, variables, 20);
     }
 }
