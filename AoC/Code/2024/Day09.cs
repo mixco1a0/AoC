@@ -106,7 +106,7 @@ namespace AoC._2024
         {
             List<int> working = [.. rawFileBlock];
             fileIdAndSize.Reverse();
-            // Core.TempLog.WriteLine($"Pre : {string.Join("", working.Select(w => w == -1 ? (char)'.' : (char)(w + '0')))}");
+            // Util.Log.WriteLine($"Pre : {string.Join("", working.Select(w => w == -1 ? (char)'.' : (char)(w + '0')))}");
             while (fileIdAndSize.Count > 0)
             {
                 IdInfo idInfo = fileIdAndSize.First();
@@ -142,9 +142,9 @@ namespace AoC._2024
                         break;
                     }
                 }
-                // Core.TempLog.WriteLine($"Step: {string.Join("", working.Select(w => w == -1 ? (char)'.' : (char)(w + '0')))}");
+                // Util.Log.WriteLine($"Step: {string.Join("", working.Select(w => w == -1 ? (char)'.' : (char)(w + '0')))}");
             }
-            // Core.TempLog.WriteLine($"Step: {string.Join("", working.Select(w => w == -1 ? (char)'.' : (char)(w + '0')))}");
+            // Util.Log.WriteLine($"Step: {string.Join("", working.Select(w => w == -1 ? (char)'.' : (char)(w + '0')))}");
             compressedFileBlock = [.. working];
         }
 

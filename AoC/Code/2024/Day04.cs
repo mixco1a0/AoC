@@ -98,7 +98,7 @@ MXMXAXMASX"
 
             // if (idx == 0 && sum > 0)
             // {
-            //     Core.TempLog.WriteLine($"{cur} -> {sum}");
+            //     Util.Log.WriteLine($"{cur} -> {sum}");
             // }
             return sum;
         }
@@ -178,7 +178,7 @@ MXMXAXMASX"
                         //         }
                         //     }
                         // }
-                        // Core.TempLog.WriteLine($"X @ {cur}");
+                        // Util.Log.WriteLine($"X @ {cur}");
                         // Util.Grid.Print2D(Core.Log.ELevel.Spam, temp);
                         return true;
                     }

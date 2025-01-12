@@ -258,7 +258,7 @@ The fourth floor contains nothing relevant."
                 List<string> ids = new List<string>();
                 Floors.ToList().ForEach(f => ids.AddRange(f.Generators.Union(f.Microchips)));
                 HashSet<string> pairedIds = ids.ToHashSet();
-                // Core.TempLog.WriteLine($"[{ID}] @ {Steps}");
+                // Util.Log.WriteLine($"[{ID}] @ {Steps}");
                 // foreach (Floor floor in Floors.Reverse())
                 // {
                 //     sb.AppendFormat("F{0} {1}", floor.ID + 1, Elevator.Current == floor.ID ? "E  " : ".  ");
@@ -266,10 +266,10 @@ The fourth floor contains nothing relevant."
                 //     {
                 //         sb.AppendFormat("{0}{1}", floor.Generators.Contains(pid) ? $"{pid.First()}G " : ".  ", floor.Microchips.Contains(pid) ? $"{pid.First()}M " : ".  ");
                 //     }
-                //     Core.TempLog.WriteLine(sb.ToString());
+                //     Util.Log.WriteLine(sb.ToString());
                 //     sb.Clear();
                 // }
-                // Core.TempLog.WriteLine("");
+                // Util.Log.WriteLine("");
             }
         }
 

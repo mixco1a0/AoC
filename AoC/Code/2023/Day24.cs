@@ -160,9 +160,9 @@ namespace AoC._2023
             double dy = double.Round(xydxdy[3]);
             double z = double.Round(zdz[0]);
             double dz = double.Round(zdz[1]);
-            // Core.TempLog.WriteLine($"X={x} @ {dx}");
-            // Core.TempLog.WriteLine($"Y={y} @ {dy}");
-            // Core.TempLog.WriteLine($"Z={z} @ {dz}");
+            // Util.Log.WriteLine($"X={x} @ {dx}");
+            // Util.Log.WriteLine($"Y={y} @ {dy}");
+            // Util.Log.WriteLine($"Z={z} @ {dz}");
             
             return (x + y + z).ToString();
         }
@@ -215,7 +215,7 @@ namespace AoC._2023
 
             string format = new('0', maxLen);
 
-            Core.TempLog.WriteLine($"Matrix {a.GetLength(dimension: 0)}x{a.GetLength(dimension: 1)}");
+            Util.Log.WriteLine($"Matrix {a.GetLength(dimension: 0)}x{a.GetLength(dimension: 1)}");
             for (int i = 0; i < a.GetLength(dimension: 0); ++i)
             {
                 StringBuilder sb = new($"a[{i}] = ");
@@ -228,7 +228,7 @@ namespace AoC._2023
                     string tmp = $"0:{format}.00";
                     sb.Append(string.Format("   {" + tmp + "}", a[i, j]));
                 }
-                Core.TempLog.WriteLine(sb.ToString());
+                Util.Log.WriteLine(sb.ToString());
             }
         }
 
