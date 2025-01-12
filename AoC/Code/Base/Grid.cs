@@ -69,6 +69,8 @@ namespace AoC.Base
         }
     }
 
+    public class Grid2CharScanner(Grid2Char grid, Vec2 origin, int maxScan) : Util.Grid2.Scanner<char>(grid, origin, maxScan);
+
     public class Grid2Bool : Grid2<bool>
     {
         public Grid2Bool(int maxCol, int maxRow, bool defaultVal = false)

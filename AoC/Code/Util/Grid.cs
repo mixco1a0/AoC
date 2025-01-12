@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace AoC.Util
 {
-    public static class Grid2
+    namespace Grid2
     {
         #region Direction
         public enum Dir { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, None }
@@ -139,6 +140,64 @@ namespace AoC.Util
                 Dir.NorthWest
             ];
         };
+
+        public class Scanner<T> : IEnumerable
+        {
+            protected readonly Base.Grid2<T> m_grid;
+            protected readonly Base.Vec2 m_origin;
+            protected readonly int m_maxScan;
+
+            protected Scanner()
+            {
+                m_grid = default;
+                m_origin = default;
+                m_maxScan = default;
+            }
+
+            public Scanner(Base.Grid2<T> grid, Base.Vec2 origin, int maxScan)
+            {
+                m_grid = grid;
+                m_origin = origin;
+                m_maxScan = maxScan;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            IEnumerator<Base.Vec2> GetEnumerator()
+            {
+                yield return m_origin;
+
+                for (int curMax = 1; curMax <= m_maxScan; ++curMax)
+                {
+                    foreach (Dir dir in Iter.Cardinal)
+                    {
+                        // current max manhatten
+                        Base.Vec2 next = m_origin + Map.Neighbor[dir] * curMax;
+                        if (m_grid.Contains(next))
+                        {
+                            yield return next;
+                        }
+
+                        // iterate over all of the other max manhatten distances
+                        Dir rot = Map.RotateCW[dir];
+                        for (int rotDist = 1; curMax - rotDist > 0; ++rotDist)
+                        {
+                            int dirDist = curMax - rotDist;
+                            Base.Vec2 dirVec2 = Map.Neighbor[dir] * dirDist;
+                            Base.Vec2 rotVec2 = Map.Neighbor[rot] * rotDist;
+                            next = m_origin + dirVec2 + rotVec2;
+                            if (m_grid.Contains(next))
+                            {
+                                yield return next;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         #endregion
     }
 
